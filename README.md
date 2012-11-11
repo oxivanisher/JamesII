@@ -12,6 +12,7 @@ You Need:
 * python
 * python-carrot (http://packages.python.org/carrot/)
 * python-sqlite
+* python-jabberbot (http://thp.io/2007/python-jabberbot/)
 
 
 Technologies and software used:
@@ -25,6 +26,7 @@ Technologies and software used:
 * SQLite http://www.sqlite.org/
 * XBMC Mediacenter http://wiki.xbmc.org/
 * Raspberry Pi http://www.raspberrypi.org/
+* Python Jabberbot http://thp.io/2007/python-jabberbot/
 
 
 Copy of the old Readme due lazyness:

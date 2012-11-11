@@ -15,17 +15,18 @@ You Need:
 ---------
 * python
 * python-carrot (http://packages.python.org/carrot/)
+* python-sqlite
 
 
 Technologies and software used:
 ------------------
-* XMPP (http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol)
-* AMQP (http://en.wikipedia.org/wiki/AMQP)
-* Motion (http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome)
-* [http://espeak.sourceforge.net/ eSpeak]
-* MPD [http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik]
-* Transmission (http://www.transmissionbt.com/)
-
+* XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol
+* AMQP http://en.wikipedia.org/wiki/AMQP
+* Motion http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome
+* eSpeak http://espeak.sourceforge.net/
+* MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
+* Transmission http://www.transmissionbt.com/
+* SQLite http://www.sqlite.org/
 
 Copy of the old Readme due lazyness:
 ------------------------------------

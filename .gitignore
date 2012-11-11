@@ -1,0 +1,4 @@
+settings/settings.py
+data/whoisonline.csv
+data/whoisonline.new
+nbproject/*

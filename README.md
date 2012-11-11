@@ -1,16 +1,21 @@
-JamesII
-=======
+JamesII: Yout Butler
+====================
 
 James your Butler brought to the next level.
 
 The Idea behing James Butler is to implement smarthome functions to your existing infrastraucture.
 
+You Need:
+---------
+* python
+* python-carrot
+
 
 Copy of the old Readme due lazyness:
 ====================================
 
-James: Your Buttler
--------------------
+James: Your Butler
+------------------
 
 What he does:
     - Monitors your LAN for unknown MAC addresses

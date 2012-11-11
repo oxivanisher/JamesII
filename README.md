@@ -8,6 +8,7 @@ The Idea behing James Butler is to implement smarthome functions and ideas to yo
 
 You Need:
 ---------
+* Wiring Pi Setup (https://github.com/WiringPi)
 * python
 * python-carrot (http://packages.python.org/carrot/)
 * python-sqlite

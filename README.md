@@ -3,12 +3,7 @@ James II: Your Butler
 
 James your Butler brought to the next level.
 
-The Idea behing James Butler is to implement smarthome functions and ideas to your existing infrastraucture like:
-* Linux Computers
-* Raspberry Pi
-* XBMC Mediacenter
-* Transmission
-* Motion
+The Idea behing James Butler is to implement smarthome functions and ideas to your existing infrastraucture like.
 
 
 You Need:
@@ -27,6 +22,9 @@ Technologies and software used:
 * MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
 * Transmission http://www.transmissionbt.com/
 * SQLite http://www.sqlite.org/
+* XBMC Mediacenter http://wiki.xbmc.org/
+* Raspberry Pi http://www.raspberrypi.org/
+
 
 Copy of the old Readme due lazyness:
 ------------------------------------
@@ -40,14 +38,14 @@ What he does:
 * Listens to XMPP commands (james bot)
 
 Installation:
-    default installation dir: /opt/james
+default installation dir: /opt/james
 
-    copy and edit:
-    - settings/james.cfg.example to settings/james.cfg
-    - settings/settings.sh.example to settings/settings.sh
+copy and edit:
+- settings/james.cfg.example to settings/james.cfg
+- settings/settings.sh.example to settings/settings.sh
 
-    add the watchdogs to crontab -e:
-    * * * * * /opt/james/new_event.sh periodic >/dev/null 2>&1
+add the watchdogs to crontab -e:
+* * * * * /opt/james/new_event.sh periodic >/dev/null 2>&1
 
 
 Attention:

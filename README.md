@@ -15,6 +15,15 @@ You Need:
 * python-jabberbot (http://thp.io/2007/python-jabberbot/)
 
 
+MQueue Setup:
+-------------
+ apt-get  install rabbitmq-server
+ rabbitmqctl add_user test test
+ rabbitmqctl add_vhost test
+ rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
+
+
+
 Technologies and software used:
 ------------------
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol

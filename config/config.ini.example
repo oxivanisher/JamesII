@@ -1,0 +1,6 @@
+[broker]
+host = localhost
+port = 5672
+user = test
+password = test
+vhost = test

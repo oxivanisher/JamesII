@@ -1,4 +1,8 @@
-settings/settings.py
+config/config.ini
 data/whoisonline.csv
 data/whoisonline.new
+src/*.swp
+src/*.pyc
+src/node/*.swp
+src/node/*.pyc
 nbproject/*

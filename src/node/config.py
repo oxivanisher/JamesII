@@ -21,7 +21,7 @@ class Config (object):
 									 'user' : config.get('broker','user'),
 									 'password' : config.get('broker','password'),
 									 'vhost' : config.get('broker','vhost') },
-						'xmpp_alert' : { 'user' : config.get('xmpp_alert','user'),
+						'xmpp_alert' : { 'jid' : config.get('xmpp_alert','jid'),
 									 'password' : config.get('xmpp_alert','password'),
 									 'destination' : config.get('xmpp_alert','destination')	}
 						}

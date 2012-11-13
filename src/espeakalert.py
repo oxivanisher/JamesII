@@ -6,10 +6,10 @@ from carrot.messaging import Consumer
 
 import node
 
-class Espeak(node.Base):
+class EspeakAlert(node.Base):
 	def __init__(self):
-		super(Espeak, self).__init__('espeak')
-		self.consumer = Consumer(connection=self.conn, queue="espeak",exchange="feed", routing_key="alert")
+		super(EspeakAlert, self).__init__('espeak')
+		self.consumer = Consumer(connection=self.conn, queue="alert", exchange="feed", routing_key="alert")
 		self.consumer.register_callback(self.import_feed_callback)
 
 	def import_feed_callback(self, message_data, message):
@@ -31,7 +31,7 @@ class Espeak(node.Base):
 
 
 
-node = Espeak()
+node = EspeakAlert()
 node.run()
 
 #say_pipe = os.popen('/usr/bin/espeak "' + args + '"', 'r')

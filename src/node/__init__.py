@@ -7,6 +7,7 @@ from carrot.messaging import Consumer
 class Base(object):
 	def __init__(self, name):
 		self.name = name
+		print("Node %s starting" % self.name)
 		
 
 		self.config = config.Config(self.name + '.ini')
@@ -23,6 +24,6 @@ class Base(object):
 	def run(self):
 		pass
 
-	def quit(self, msg = "Exiting..."):
+	def quit(self, msg = "Exiting node"):
 		print(msg)
 		sys.exit(0)

@@ -4,3 +4,8 @@ port = 5672
 user = test
 password = test
 vhost = test
+
+[xmpp_alert]
+user =
+password = 
+destination = 

@@ -23,4 +23,6 @@ class Base(object):
 	def run(self):
 		pass
 
-
+	def quit(self, msg = "Exiting..."):
+		print(msg)
+		sys.exit(0)

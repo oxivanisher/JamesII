@@ -6,14 +6,14 @@ from carrot.messaging import Publisher
 
 import node
 
-class Node(node.Base):
+class Cli(node.Base):
 	def __init__(self):
-		super(Node, self).__init__('cli')
+		super(Cli, self).__init__('cli')
 
 		self.publisher = Publisher(connection=self.conn, exchange="feed", routing_key="alert")
 
 	def __del__(self):
-		super(Node, self).__del__()
+		super(Cli, self).__del__()
 
 		self.publisher.close() 
 		
@@ -21,7 +21,7 @@ class Node(node.Base):
 
 	def execute(self, args):
 		if len(args) == 0:
-			print("erroer")
+			print("No command specified")
 			return
 
 		cmd = args[0]
@@ -31,7 +31,7 @@ class Node(node.Base):
 		try:
 			cmds[cmd](args[1:])
 		except KeyError:
-			print("unknown command")
+			print("Unknown command")
 
 		pass
 
@@ -41,5 +41,5 @@ class Node(node.Base):
 		print "alert:", args
 
 
-node = Node()
+node = Cli()
 node.execute(sys.argv[1:])

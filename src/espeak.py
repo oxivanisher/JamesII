@@ -6,9 +6,9 @@ from carrot.messaging import Consumer
 
 import node
 
-class Node(node.Base):
+class Espeak(node.Base):
 	def __init__(self):
-		super(Node, self).__init__('espeak')
+		super(Espeak, self).__init__('espeak')
 		self.consumer = Consumer(connection=self.conn, queue="espeak",exchange="feed", routing_key="alert")
 		self.consumer.register_callback(self.import_feed_callback)
 
@@ -31,7 +31,7 @@ class Node(node.Base):
 
 
 
-node = Node()
+node = Espeak()
 node.run()
 
 #say_pipe = os.popen('/usr/bin/espeak "' + args + '"', 'r')

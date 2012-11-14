@@ -24,7 +24,7 @@ class XmppAlert(node.Base):
 		self.xmpp_send(header, body)
 		
 	def xmpp_send(self, header, body):
-		text = ' '.join(header + "\n" + body)
+		text = header + "\n" + body
 		tojid = self.config.values['xmpp_alert']['destination']
 		
 		jid=xmpp.protocol.JID(self.config.values['xmpp_alert']['jid'])

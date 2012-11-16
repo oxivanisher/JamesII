@@ -1,20 +1,14 @@
 import os
 from ConfigParser import RawConfigParser
 
+class ConfigException (Exception):
+	pass
+
 class Config (object):
-	def __init__(self, filename = 'config.ini'):
-		self.filename = '../config/' + filename
+	def __init__(self, filenames = []):
 		config = RawConfigParser()
 
-		try:
-			if os.path.isfile(self.filename):
-				config.read(self.filename)
-			elif os.path.isfile('../config/config.ini'):
-				config.read('../config/config.ini')
-		except:
-			print("No cofiguration file found")
-			sys.exit(1)
-			
+		config.read(filenames)
 		
 		self.values = { 'broker' : { 'host' : config.get('broker','host'),
 									 'port' : config.get('broker','port'),

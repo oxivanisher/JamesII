@@ -9,7 +9,7 @@ import node
 class EspeakAlert(node.Base):
 	def __init__(self):
 		super(EspeakAlert, self).__init__('espeak')
-		self.consumer = Consumer(connection=self.conn, queue="alert", exchange_type="topic", exchange="feed", routing_key="espeak")
+		self.consumer = Consumer(connection=self.conn, queue="espeak", exchange_type="topic", exchange="james", routing_key="*")
 		self.consumer.register_callback(self.import_feed_callback)
 
 	def import_feed_callback(self, message_data, message):

@@ -12,7 +12,7 @@ import node
 class XmppAlert(node.Base):
 	def __init__(self):
 		super(XmppAlert, self).__init__('xmppalert')
-		self.consumer = Consumer(connection=self.conn, queue="alert", exchange_type="topic", exchange="feed", routing_key="xmpp")
+		self.consumer = Consumer(connection=self.conn, queue="xmpp", exchange_type="topic", exchange="james", routing_key="*")
 		self.consumer.register_callback(self.import_feed_callback)
 
 	def import_feed_callback(self, message_data, message):

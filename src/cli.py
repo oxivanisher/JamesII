@@ -10,7 +10,7 @@ class Cli(node.Base):
 	def __init__(self):
 		super(Cli, self).__init__('cli')
 
-		self.publisher = Publisher(connection=self.conn, exchange_type="topic", exchange="feed", routing_key="espeak")
+		self.publisher = Publisher(connection=self.conn, exchange_type="topic", exchange="james", routing_key="alert")
 
 	def __del__(self):
 		super(Cli, self).__del__()

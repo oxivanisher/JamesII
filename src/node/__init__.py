@@ -9,8 +9,13 @@ class Base(object):
 		self.name = name
 		print("Node %s starting" % self.name)
 		
+		try:
+			self.config = config.Config([self.name + ".ini", "../config/config.ini"])
+		except Exception as e:
+			print("ERROR on loading config: " + e)
+			sys.exit(1)
 
-		self.config = config.Config(self.name + '.ini')
+
 		self.conn = BrokerConnection(
 						hostname=self.config.values['broker']['host'],
 						port=self.config.values['broker']['port'],

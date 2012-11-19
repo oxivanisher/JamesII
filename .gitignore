@@ -1,13 +1,7 @@
 config/config.ini
 data/whoisonline.csv
 data/whoisonline.new
-src/*.swp
-src/*.pyc
-src/node/*.swp
-src/node/*.pyc
-src/james/*.pyc
-src/james/*.swp
-src/james/plugin/*.pyc
-src/james/plugin/*.swp
+*.swp
+*.pyc
 nbproject/*
 *.sublime-*

@@ -2,12 +2,12 @@
 from datetime import timedelta
 from james.plugin import *
 
-class TestPlugin(Plugin):
+class SystemPlugin(Plugin):
 
-	name = 'test'
+	name = 'system'
 
 	def __init__(self, core):
-		super(TestPlugin, self).__init__(core, TestPlugin.name)
+		super(SystemPlugin, self).__init__(core, SystemPlugin.name)
 
 		self.create_command('echo', self.cmd_echo, 'echos some text')
 		self.create_command('show', self.cmd_show, 'show whatever')
@@ -33,4 +33,4 @@ class TestPlugin(Plugin):
 
 
 
-Factory.register_plugin(TestPlugin)
+Factory.register_plugin(SystemPlugin)

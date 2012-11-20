@@ -106,6 +106,6 @@ class Factory(object):
 
 
 # Load plugins
-import test
+import system
 import cli
 import espeak

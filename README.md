@@ -6,16 +6,16 @@ James your Butler brought to the next level.
 The Idea behing James Butler is to implement smarthome functions and ideas to your existing infrastraucture like.
 
 
-You Need:
+You Need (outdated!):
 ---------
 * Wiring Pi Setup (https://github.com/WiringPi)
 * python
-* python-carrot (http://packages.python.org/carrot/)
+* python-pika (https://github.com/pika/pika)
 * python-sqlite
 * python-jabberbot (http://thp.io/2007/python-jabberbot/)
 
 
-MQueue Setup:
+MQueue Setup (also outdated!):
 -------------
  apt-get  install rabbitmq-server
  rabbitmqctl add_user test test
@@ -24,7 +24,7 @@ MQueue Setup:
 
 
 
-Technologies and software used:
+Technologies and software used (you guessed it: outdated!):
 ------------------
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol
 * AMQP http://en.wikipedia.org/wiki/AMQP

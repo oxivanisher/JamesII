@@ -1,9 +1,6 @@
 import os
 from ConfigParser import RawConfigParser
 
-class ConfigException (Exception):
-	pass
-
 class Config (object):
 	def __init__(self, filenames = []):
 		config = RawConfigParser()

@@ -1,11 +1,15 @@
 
+import config
 import json
 import pika
 import plugin
 
 class PluginNotFound(Exception):
 	pass
-
+class ConfigNotLoaded(Exception):
+	pass
+class ConnectionError(Exception):
+	pass
 
 class BroadcastChannel(object):
 	def __init__(self, core, name):
@@ -20,7 +24,6 @@ class BroadcastChannel(object):
 		self.channel.queue_bind(exchange=self.name, queue=self.queue_name)
 
 		self.channel.basic_consume(self.recv, queue=self.queue_name, no_ack=True)
-
 
 	def send(self, msg):
 		body = json.dumps(msg)
@@ -41,8 +44,16 @@ class Core(object):
 
 		self.plugins = []
 
+		try:
+			self.config = config.Config(["../config/config.ini"])
+		except Exception as e:
+			raise ConfigNotLoaded()
+
 		# Create global connection
-		self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+		try:
+			self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.config.values['broker']['host']))
+		except Exception as e:
+			raise ConnectionError()
 
 		self.request_channel = BroadcastChannel(self, 'request')
 		self.response_channel = BroadcastChannel(self, 'response')
@@ -51,7 +62,6 @@ class Core(object):
 		self.response_channel.add_listener(self.response_listener)
 
 		self.terminated = False
-
 
 	def load_plugin(self, name):
 		try:

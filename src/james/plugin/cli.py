@@ -10,10 +10,15 @@ class ConsoleThread(threading.Thread):
 		super(ConsoleThread, self).__init__()
 		self.plugin = plugin
 		self.terminated = False
+		sys.stdout.write('interactive cli interface to james online. server: ')
+		sys.stdout.write(plugin.core.config.values['broker']['host'] + ':')
+		sys.stdout.write(plugin.core.config.values['broker']['port'] + '\n')
+		sys.stdout.write('basic commands are help and exit' + '\n')
 
 	def run(self):
 		while (not self.terminated):
 			try:
+				sys.stdout.write('# ')
 				line = sys.stdin.readline()
 			except KeyboardInterrupt:
 				self.plugin.core.terminate()

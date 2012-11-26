@@ -2,7 +2,10 @@
 import config
 import json
 import pika
+import socket
+
 import plugin
+
 
 class PluginNotFound(Exception):
 	pass
@@ -62,6 +65,8 @@ class Core(object):
 		self.response_channel.add_listener(self.response_listener)
 
 		self.terminated = False
+
+		self.hostname = socket.getfqdn(socket.gethostname())
 
 	def load_plugin(self, name):
 		try:

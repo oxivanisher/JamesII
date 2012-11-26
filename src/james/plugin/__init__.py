@@ -88,7 +88,7 @@ class Plugin(object):
 		res = []
 		for cmd in self.cmds.values():
 			if not cmd.hide:
-				res.append("%-10s - %s" % (cmd.name, cmd.help))
+				res.append("%-15s - %s" % (cmd.name, cmd.help))
 		return res
 
 	def cmd_avail(self, args):
@@ -109,3 +109,4 @@ class Factory(object):
 import system
 import cli
 import espeak
+import mpd

@@ -9,3 +9,11 @@ vhost = test
 jid =
 password = 
 destination = 
+
+[mpd]
+host = ""
+port = ""
+password = ""
+radio_url = ""
+wakeup_url = ""
+sleep_url = ""

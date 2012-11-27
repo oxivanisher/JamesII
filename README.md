@@ -6,6 +6,9 @@ James your Butler brought to the next level.
 The Idea behing James Butler is to implement smarthome functions and ideas to your existing infrastraucture like.
 
 
+ATTENTION: This project is under heavy dev and this readme is probably outdated.
+---------------------------
+
 You Need (outdated!):
 ---------
 * Wiring Pi Setup (https://github.com/WiringPi-Python)
@@ -13,7 +16,7 @@ You Need (outdated!):
 * python-pika (https://github.com/pika/pika)
 * python-sqlite
 * python-jabberbot (http://thp.io/2007/python-jabberbot/)
-
+* python-psutil (http://code.google.com/p/psutil/)
 
 MQueue Setup (also outdated!):
 -------------

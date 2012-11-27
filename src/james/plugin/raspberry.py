@@ -16,18 +16,18 @@ class RaspberryPlugin(Plugin):
 
 		self.create_command('rasp_test', self.cmd_rasp_test, 'raspberry test')
 
-		io = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
+		self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
 		
-		#io.pinMode(1,io.OUTPUT)
-		#io.digitalWrite(1,io.HIGH)
+		#gpio.pinMode(1,gpio.OUTPUT)
+		#gpio.digitalWrite(1,gpio.HIGH)
 
 
 	def terminate(self):
 		pass
 
 	def cmd_rasp_test(self, args):
-		io.pinMode(1,io.OUTPUT)
-		io.digitalWrite(1,io.HIGH)
+		gpio.pinMode(1,gpio.OUTPUT)
+		gpio.digitalWrite(1,gpio.HIGH)
 		pass
 
 

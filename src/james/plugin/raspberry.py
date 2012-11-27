@@ -12,16 +12,14 @@ class RaspberryPlugin(Plugin):
 	def __init__(self, core):
 		super(RaspberryPlugin, self).__init__(core, RaspberryPlugin.name)
 
-		#self.create_command('say', self.cmd_say, 'say something')
+		self.create_command('rasp_test', self.cmd_rasp_test, 'raspberry test')
 
 	def terminate(self):
 		pass
 
-	# def cmd_say(self, args):
-	# 	self.speak(' '.join(args))
+	def cmd_rasp_test(self, args):
+		pass
 
-	# def speak(self, msg):
-	# 	subprocess.call(['/usr/bin/espeak', msg])
 
 
 

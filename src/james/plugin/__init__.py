@@ -110,3 +110,4 @@ import system
 import cli
 import espeak
 import mpd
+import raspberry

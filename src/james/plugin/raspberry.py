@@ -26,8 +26,8 @@ class RaspberryPlugin(Plugin):
 		pass
 
 	def cmd_rasp_test(self, args):
-		self.gpio.pinMode(1,gpio.OUTPUT)
-		self.gpio.digitalWrite(1,gpio.HIGH)
+		self.gpio.pinMode(1,self.gpio.OUTPUT)
+		self.gpio.digitalWrite(1,self.gpio.HIGH)
 		pass
 
 

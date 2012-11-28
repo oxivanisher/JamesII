@@ -9,6 +9,23 @@ The Idea behing James Butler is to implement smarthome functions and ideas to yo
 ATTENTION: This project is under heavy dev and this readme is probably outdated.
 ---------------------------
 
+ToDo:
+------
+Main:
+* centralized config management (config over rabbitmq)
+* add process monitor / events
+* add "discovery channel"
+* add messaging channel with message types (warn, info, error)
+
+Plugins:
+* plugin requirement checks before load
+* scripting plugin
+* psutils plugin for system informations
+* xbmc remote plugin
+* transmission remote plugin
+* xmpp service plugin
+
+
 You Need (outdated!):
 ---------
 * Wiring Pi Setup (https://github.com/WiringPi-Python)

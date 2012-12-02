@@ -3,7 +3,7 @@
 while true;
 do
 	clear
-	./james.py || break
+	sudo ./james.py || break
 	sleep 1
 
 	clear

@@ -1,7 +1,8 @@
 
-import commands
-
+import sys
 from datetime import timedelta
+
+import commands
 from james.plugin import *
 
 class SystemPlugin(Plugin):
@@ -12,6 +13,7 @@ class SystemPlugin(Plugin):
 		super(SystemPlugin, self).__init__(core, SystemPlugin.name)
 
 		self.create_command('echo', self.cmd_echo, 'echos some text')
+		self.create_command('quit', self.cmd_quit, 'quitting system')
 		self.create_command('show', self.cmd_show, 'show whatever')
 		self.create_command('uptime', self.cmd_uptime, 'show uptime')
 		self.create_command('who', self.cmd_who, 'who is currently logged in')
@@ -59,6 +61,11 @@ class SystemPlugin(Plugin):
 	def cmd_get_node_info(self, args):
 		print 'cmd get_node_info'
 		return "%-15s - %s" % (self.get_ip(), self.core.hostname)
+
+	def cmd_quit(self, args):
+		print 'JamesII shutting down.'
+		#sys.exit(0)
+		self.core.terminate()
 
 
 	# Helper Methods

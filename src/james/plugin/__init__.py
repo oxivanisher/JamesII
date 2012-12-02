@@ -111,3 +111,4 @@ import cli
 import espeak
 import mpd
 import raspberry
+import sysstat

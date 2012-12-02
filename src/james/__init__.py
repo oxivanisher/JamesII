@@ -44,6 +44,7 @@ class BroadcastChannel(object):
 
 class Core(object):
 	def __init__(self):
+		print 'JamesII starting up'
 
 		self.plugins = []
 

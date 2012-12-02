@@ -7,7 +7,6 @@ wiringpi_found = True
 try:
 	import wiringpi
 except ImportError, e:
-	print "Error Importing WiringPi Lib."
 	wiringpi_found = False
 #https://github.com/WiringPi/WiringPi-Python
 
@@ -25,7 +24,6 @@ class RaspberryPlugin(Plugin):
 
 		if wiringpi_found:
 			self.create_command('rasp_test', self.cmd_rasp_test, 'raspberry test')
-
 			self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
 		
 		#gpio.pinMode(1,gpio.OUTPUT)

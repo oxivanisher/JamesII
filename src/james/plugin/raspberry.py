@@ -1,7 +1,14 @@
 
 import subprocess
 import sys
-import wiringpi
+
+
+wiringpi_found = True
+try:
+	import wiringpi
+except ImportError, e:
+	print "Error Importing WiringPi Lib."
+	wiringpi_found = False
 #https://github.com/WiringPi/WiringPi-Python
 
 from james.plugin import *
@@ -12,11 +19,14 @@ class RaspberryPlugin(Plugin):
 	name = 'raspberry'
 
 	def __init__(self, core):
+
 		super(RaspberryPlugin, self).__init__(core, RaspberryPlugin.name)
 
-		self.create_command('rasp_test', self.cmd_rasp_test, 'raspberry test')
 
-		self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
+		if wiringpi_found:
+			self.create_command('rasp_test', self.cmd_rasp_test, 'raspberry test')
+
+			self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
 		
 		#gpio.pinMode(1,gpio.OUTPUT)
 		#gpio.digitalWrite(1,gpio.HIGH)

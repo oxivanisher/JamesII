@@ -14,7 +14,7 @@ class SystemPlugin(Plugin):
 
 		self.create_command('echo', self.cmd_echo, 'echos some text')
 		self.create_command('quit', self.cmd_quit, 'quitting system')
-		self.create_command('show', self.cmd_show, 'show whatever')
+		self.create_command('version', self.cmd_version, 'shows git checkout version')
 		self.create_command('uptime', self.cmd_uptime, 'show uptime')
 		self.create_command('who', self.cmd_who, 'who is currently logged in')
 		self.create_command('get_node_ip', self.cmd_get_ip, 'get the ip of the node')
@@ -31,9 +31,12 @@ class SystemPlugin(Plugin):
 			args[0] = 'you entered no text to echo...'
 		return args[0]
 
-	def cmd_show(self, args):
-		print 'cmd show'
-		return 'some text'
+	if os.path.isfile('/usr/bin/git'):
+		def cmd_version(self, args):
+			version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')
+			version = version_pipe.read().strip()
+			version_pipe.close()
+			return version
 
 	def cmd_uptime(self, args):
 		print 'cmd uptime'

@@ -20,7 +20,7 @@ Main:
 Plugins:
 * plugin requirement checks before load
 * scripting plugin
-* psutils plugin for system informations
+* psutils plugin for system informations - somewhat implemented
 * xbmc remote plugin
 * transmission remote plugin
 * xmpp service plugin
@@ -31,10 +31,11 @@ You Need (outdated!):
 * Wiring Pi Setup (https://github.com/WiringPi-Python)
 * python
 * python-pika (https://github.com/pika/pika)
-* python-sqlite
-* python-jabberbot (http://thp.io/2007/python-jabberbot/)
 * python-psutil (http://code.google.com/p/psutil/)
 * python-tz
+
+* python-sqlite
+* python-jabberbot (http://thp.io/2007/python-jabberbot/)
 
 MQueue Setup (also outdated!):
 -------------

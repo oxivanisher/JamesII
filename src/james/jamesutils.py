@@ -34,10 +34,10 @@ class JamesUtils(object):
 
 		now = datetime.datetime.now(timezone)
 		event = datetime.datetime.fromtimestamp(timestamp, timezone)  
-		midnight_timestamp = timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
-															tzinfo=None), is_dst=None).strftime('%s')
-		newyear_timestamp = timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
-															microsecond=0, tzinfo=None), is_dst=None).strftime('%s')
+		midnight_timestamp = int(timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
+															tzinfo=None), is_dst=None).strftime('%s'))
+		newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
+															microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
 
 		if age == 0:
 			return 'infinite'

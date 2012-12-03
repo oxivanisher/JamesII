@@ -28,11 +28,9 @@ class SysstatPlugin(Plugin):
 					(partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free))
 		return return_str
 
-
 	def cmd_sysstat_uptime(self, args):
-		sys_uptime = int(round(time.time(), 0)) - int(round(psutil.BOOT_TIME, 0))
-		james_uptime = int(round(time.time(), 0)) - int(round(self.core.startup_timestamp, 0))
-		return 'The System is running since %s seconds, JamesII since %s seconds.' % (sys_uptime, james_uptime)
+		return 'The System started %s, JamesII %s.' % (self.core.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))), 
+															self.core.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))
 
 	def cmd_sysstat_test(self, args):
 		return '1: ' + self.core.utils.get_short_age(self.core.startup_timestamp) +  '; 2: ' + self.core.utils.get_nice_age(self.core.startup_timestamp)

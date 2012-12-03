@@ -1,7 +1,14 @@
 
 import time
+#from datetime import datetime
+import datetime
+import pytz
 
 class JamesUtils(object):
+
+	def __init__(self, core):
+		self.core = core
+
 	def get_short_age(self, timestamp):
 		age = int(time.time() - timestamp)
 		if age == 0:
@@ -21,24 +28,30 @@ class JamesUtils(object):
 
 	def get_nice_age(self, timestamp):
 		age = int(time.time() - timestamp)
+
+		fmt = '%Y-%m-%d %H:%M:%S %Z%z'
+		timezone = pytz.timezone(self.core.config.values['core']['timezone'])
+
+		now = datetime.datetime.now(timezone)
+		event = datetime.datetime.fromtimestamp(timestamp, timezone)  
+		midnight_timestamp = timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
+															tzinfo=None), is_dst=None).strftime('%s')
+		newyear_timestamp = timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
+															microsecond=0, tzinfo=None), is_dst=None).strftime('%s')
+
 		if age == 0:
-			return 'never'
+			return 'infinite'
 		elif age < 60:
-			return 'before %s seconds' % (age)
+			return '%s seconds ago' % (age)
 		elif age < 3600:
-			return 'before %s minutes' % (int(age / 60))
-#		elif age > http://stackoverflow.com/questions/373370/how-do-i-get-the-utc-time-of-midnight-for-a-given-timezone
-#         } elseif ($timestamp > strtotime(date('n') . '/' . date('j') . '/' . date('Y'))) {
-#             $ageOfMsgReturn = strftime("Heute um %H:%M Uhr", $timestamp);
-#         } elseif ($timestamp > strtotime(date('m/d/y', mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"))))) {
-#             $ageOfMsgReturn = strftime("Gestern um %H:%M Uhr", $timestamp)
-#		elif age <= 604800:
-#			return ''
-#         } elseif ($ageOfMsg <= '604800') {
-#             $ageOfMsgReturn = strftime("Letzten %A", $timestamp);
-#         } elseif ($timestamp > strtotime('1/1/' . date('Y'))) {
-#             $ageOfMsgReturn = strftime("Am %d. %B", $timestamp);
-#         } else {
-#             $ageOfMsgReturn = strftime("Am %d. %b. %Y", $timestamp);
+			return '%s minutes ago' % (int(age / 60))
+		elif age > midnight_timestamp:
+			return 'today at %s:%s' % (event.strftime('%H'), event.strftime('%M'))
+		elif age > (midnight_timestamp - 86400):
+			return 'yesterday at %s:%s' % (event.strftime('%H'), event.strftime('%M'))
+		elif age <= 604800:
+			return event.strftime('last %A')
+		elif age > newyear_timestamp:
+			return event.strftime('at %d. of %B')
 		else:
-			return str(timestamp)
+			return event.strftime('at %d. of %b. %Y')

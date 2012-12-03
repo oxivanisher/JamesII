@@ -20,16 +20,14 @@ class JamesUtils(object):
 			return '%sy' % (int(age / 31449600))
 
 	def get_nice_age(self, timestamp):
-		return str(timestamp)
-#  public static function getNiceAge($timestamp) {
-#         $ageOfMsg = time() - $timestamp;
-#         if ($timestamp == 0) {
-#             $ageOfMsgReturn = "Noch nie";
-#         } elseif ($ageOfMsg < '60') {
-#             $ageOfMsgReturn = "Vor " . $ageOfMsg . " Sekunden";
-#         } elseif ($ageOfMsg < '3600') {
-#             $ageOfMsg = round(($ageOfMsg / 60), 1);
-#             $ageOfMsgReturn = "Vor " . $ageOfMsg . " Minuten";
+		age = int(time.time() - timestamp)
+		if age == 0:
+			return 'never'
+		elif age < 60:
+			return 'since %s seconds' % (age)
+		elif age < 3600:
+			return 'before %s minutes' % (int(age / 60))
+#		elif age > http://stackoverflow.com/questions/373370/how-do-i-get-the-utc-time-of-midnight-for-a-given-timezone
 #         } elseif ($timestamp > strtotime(date('n') . '/' . date('j') . '/' . date('Y'))) {
 #             $ageOfMsgReturn = strftime("Heute um %H:%M Uhr", $timestamp);
 #         } elseif ($timestamp > strtotime(date('m/d/y', mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"))))) {
@@ -40,6 +38,5 @@ class JamesUtils(object):
 #             $ageOfMsgReturn = strftime("Am %d. %B", $timestamp);
 #         } else {
 #             $ageOfMsgReturn = strftime("Am %d. %b. %Y", $timestamp);
-#         }
-#         return $ageOfMsgReturn;
-#     }
+		else:
+			return str(timestamp)

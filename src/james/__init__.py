@@ -72,7 +72,7 @@ class Core(object):
 
 		self.startup_timestamp = time.time()
 
-		self.utils = jamesutils.JamesUtils()
+		self.utils = jamesutils.JamesUtils(self)
 
 	def load_plugin(self, name):
 		try:

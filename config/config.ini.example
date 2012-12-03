@@ -17,3 +17,6 @@ password = ""
 radio_url = ""
 wakeup_url = ""
 sleep_url = ""
+
+[core]
+timezone = "Europe/Zurich"

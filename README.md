@@ -34,6 +34,7 @@ You Need (outdated!):
 * python-sqlite
 * python-jabberbot (http://thp.io/2007/python-jabberbot/)
 * python-psutil (http://code.google.com/p/psutil/)
+* python-tz
 
 MQueue Setup (also outdated!):
 -------------

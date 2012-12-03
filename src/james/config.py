@@ -20,7 +20,8 @@ class Config (object):
 									 'radio_url' : config.get('mpd','radio_url'),
 									 'sleep_url' : config.get('mpd','sleep_url'),
 									 'wakeup_url' : config.get('mpd','wakeup_url'),
-									 'port' : config.get('mpd','port') }
+									 'port' : config.get('mpd','port') },
+ 						'core' : { 'timezone' : config.get('core','timezone') }
 						}
 
 

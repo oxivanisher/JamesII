@@ -22,11 +22,11 @@ class SysstatPlugin(Plugin):
 		partitions = psutil.disk_partitions()
 		for partition in partitions:
 			usage = psutil.disk_usage(partition.mountpoint)
-			print "%s on %s as %s has %s used and %s free" % (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free)
+			return "%s on %s as %s has %s used and %s free" % (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free)
 
 	def cmd_sysstat_uptime(self, args):
 		sys_uptime = int(round(time.time(), 0)) - int(round(psutil.BOOT_TIME, 0))
 		james_uptime = int(round(time.time(), 0)) - int(round(self.core.startup_timestamp, 0))
-		print 'The System is running since %s seconds, JamesII since %s seconds.' % (sys_uptime, james_uptime)
+		return 'The System is running since %s seconds, JamesII since %s seconds.' % (sys_uptime, james_uptime)
 
 Factory.register_plugin(SysstatPlugin)

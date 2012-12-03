@@ -1,12 +1,12 @@
 
-import config
 import json
 import pika
 import socket
 import time
 
 import plugin
-
+import config
+import jamesutils
 
 class PluginNotFound(Exception):
 	pass
@@ -71,6 +71,8 @@ class Core(object):
 		self.hostname = socket.getfqdn(socket.gethostname())
 
 		self.startup_timestamp = time.time()
+
+		self.utils = jamesutils.JamesUtils()
 
 	def load_plugin(self, name):
 		try:

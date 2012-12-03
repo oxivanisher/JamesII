@@ -20,9 +20,12 @@ class SysstatPlugin(Plugin):
 
 	def cmd_sysstat_mount(self, args):
 		partitions = psutil.disk_partitions()
+		return_str = []
 		for partition in partitions:
 			usage = psutil.disk_usage(partition.mountpoint)
-			return "%s on %s as %s has %s used and %s free" % (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free)
+			return_str.append("%s on %s as %s has %s%% used and %s free." %
+					(partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free))
+		return return_str
 
 	def cmd_sysstat_uptime(self, args):
 		sys_uptime = int(round(time.time(), 0)) - int(round(psutil.BOOT_TIME, 0))

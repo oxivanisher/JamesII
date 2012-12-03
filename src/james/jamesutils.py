@@ -3,34 +3,24 @@ import time
 
 class JamesUtils(object):
 	def get_short_age(self, timestamp):
-		return str(timestamp)
-# public static function getAge($timestamp) {
-#         $ageOfMsg = time() - $timestamp;
-#         if ($timestamp == 0) {
-#             $ageOfMsgReturn = "";
-#         } elseif ($ageOfMsg < '60') {
-#             $ageOfMsgReturn = $ageOfMsg . " sec(s)";
-#         } elseif ($ageOfMsg > '59' && $ageOfMsg < '3600') {
-#             $ageOfMsg = round(($ageOfMsg / 60), 1);
-#             $ageOfMsgReturn = $ageOfMsg . " min(s)";
-#         } elseif ($ageOfMsg >= '3600' && $ageOfMsg < '86400') {
-#             $ageOfMsg = round(($ageOfMsg / 3600), 1);
-#             $ageOfMsgReturn = $ageOfMsg . " hr(s)";
-#         } elseif ($ageOfMsg >= '86400' && $ageOfMsg < '604800') {
-#             $ageOfMsg = round(($ageOfMsg / 86400), 1);
-#             $ageOfMsgReturn = $ageOfMsg . " day(s)";
-#         } elseif ($ageOfMsg >= '604800' && $ageOfMsg < '31449600') {
-#             $ageOfMsg = round(($ageOfMsg / 604800), 1);
-#             $ageOfMsgReturn = $ageOfMsg . " week(s)";
-#         } else {
-#             $ageOfMsg = round(($ageOfMsg / 31449600), 1);
-#             $ageOfMsgReturn = $ageOfMsg . " year(s)";
-#         }
-#         return $ageOfMsgReturn;
-#     }
+		age = int(time.time() - timestamp)
+		if age == 0:
+			return ''
+		elif age < 60:
+			return '%ss' % (age)
+		elif age > 59 and age < 3600:
+			return '%sm' % (int(age / 60))
+		elif age >= 3600 and age < 86400:
+			return '%sh' % (int(age / 3600))
+		elif age >= 86400 and age < 604800:
+			return '%sd' % (int(age / 86400))
+		elif age >= 604800 and age < 31449600:
+			return '%sw' % (int(age / 604800))
+		else:
+			return '%sy' % (int(age / 31449600))
 
 	def get_nice_age(self, timestamp):
-		return timestamp
+		return str(timestamp)
 #  public static function getNiceAge($timestamp) {
 #         $ageOfMsg = time() - $timestamp;
 #         if ($timestamp == 0) {

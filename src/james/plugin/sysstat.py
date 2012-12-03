@@ -35,6 +35,6 @@ class SysstatPlugin(Plugin):
 		return 'The System is running since %s seconds, JamesII since %s seconds.' % (sys_uptime, james_uptime)
 
 	def cmd_sysstat_test(self, args):
-		return '1: ' + self.core.utils.get_short_age(self.core.startup_timestamp) +  '; 2: ' + self.core.utils.get_short_age(self.core.startup_timestamp)
+		return '1: ' + self.core.utils.get_short_age(self.core.startup_timestamp) +  '; 2: ' + self.core.utils.get_nice_age(self.core.startup_timestamp)
 
 Factory.register_plugin(SysstatPlugin)

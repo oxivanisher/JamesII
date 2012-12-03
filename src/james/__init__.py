@@ -3,6 +3,7 @@ import config
 import json
 import pika
 import socket
+import time
 
 import plugin
 
@@ -68,6 +69,8 @@ class Core(object):
 		self.terminated = False
 
 		self.hostname = socket.getfqdn(socket.gethostname())
+
+		self.startup_timestamp = time.time()
 
 	def load_plugin(self, name):
 		try:

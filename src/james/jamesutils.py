@@ -24,7 +24,7 @@ class JamesUtils(object):
 		if age == 0:
 			return 'never'
 		elif age < 60:
-			return 'since %s seconds' % (age)
+			return 'before %s seconds' % (age)
 		elif age < 3600:
 			return 'before %s minutes' % (int(age / 60))
 #		elif age > http://stackoverflow.com/questions/373370/how-do-i-get-the-utc-time-of-midnight-for-a-given-timezone

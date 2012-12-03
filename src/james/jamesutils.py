@@ -31,7 +31,9 @@ class JamesUtils(object):
 #         } elseif ($timestamp > strtotime(date('n') . '/' . date('j') . '/' . date('Y'))) {
 #             $ageOfMsgReturn = strftime("Heute um %H:%M Uhr", $timestamp);
 #         } elseif ($timestamp > strtotime(date('m/d/y', mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"))))) {
-#             $ageOfMsgReturn = strftime("Gestern um %H:%M Uhr", $timestamp);
+#             $ageOfMsgReturn = strftime("Gestern um %H:%M Uhr", $timestamp)
+#		elif age <= 604800:
+#			return ''
 #         } elseif ($ageOfMsg <= '604800') {
 #             $ageOfMsgReturn = strftime("Letzten %A", $timestamp);
 #         } elseif ($timestamp > strtotime('1/1/' . date('Y'))) {

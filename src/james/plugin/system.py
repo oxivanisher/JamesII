@@ -15,8 +15,6 @@ class SystemPlugin(Plugin):
 		self.create_command('echo', self.cmd_echo, 'echos some text')
 		self.create_command('quit', self.cmd_quit, 'quitting system')
 		self.create_command('version', self.cmd_version, 'shows git checkout version')
-		self.create_command('uptime', self.cmd_uptime, 'show uptime')
-		self.create_command('who', self.cmd_who, 'who is currently logged in')
 		self.create_command('get_node_ip', self.cmd_get_ip, 'get the ip of the node')
 		self.create_command('get_node_name', self.cmd_get_node_name, 'get the name of the node')
 		self.create_command('get_node_info', self.cmd_get_node_info, 'get the name and ip of the node')
@@ -37,21 +35,6 @@ class SystemPlugin(Plugin):
 			version = version_pipe.read().strip()
 			version_pipe.close()
 			return version
-
-	def cmd_uptime(self, args):
-		print 'cmd uptime'
-		with open('/proc/uptime', 'r') as f:
-		    uptime_seconds = float(f.readline().split()[0])
-    		uptime_string = str(timedelta(seconds = uptime_seconds))
-    		return uptime_string
-
-	if os.path.isfile('/usr/bin/who'):
-		def cmd_who(self, args):
-			print 'cmd who'
-			who_pipe = os.popen('/usr/bin/who','r')
-			who = who_pipe.read().strip()
-			who_pipe.close()
-			return who
 
 	def cmd_get_ip(self, args):
 		print 'cmd get_ip'

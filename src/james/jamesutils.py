@@ -33,25 +33,44 @@ class JamesUtils(object):
 		timezone = pytz.timezone(self.core.config.values['core']['timezone'])
 
 		now = datetime.datetime.now(timezone)
-		event = datetime.datetime.fromtimestamp(timestamp, timezone)  
+		event = datetime.datetime.fromtimestamp(timestamp, timezone)
+		event_timestamp = int(event.strftime('%s'))
 		midnight_timestamp = int(timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
 															tzinfo=None), is_dst=None).strftime('%s'))
 		newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
 															microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
 
+
+		print "%s > (%s - 86400)" % (age, midnight_timestamp)
 		if age == 0:
 			return 'infinite'
 		elif age < 60:
 			return '%s seconds ago' % (age)
 		elif age < 3600:
 			return '%s minutes ago' % (int(age / 60))
-		elif age > midnight_timestamp:
+		elif event_timestamp > midnight_timestamp:
 			return 'today at %s:%s' % (event.strftime('%H'), event.strftime('%M'))
-		elif age > (midnight_timestamp - 86400):
+		elif event_timestamp > (midnight_timestamp - 86400):
 			return 'yesterday at %s:%s' % (event.strftime('%H'), event.strftime('%M'))
 		elif age <= 604800:
 			return event.strftime('last %A')
-		elif age > newyear_timestamp:
-			return event.strftime('at %d. of %B')
+		elif event_timestamp > newyear_timestamp:
+			return event.strftime('at the %d. of %B')
 		else:
-			return event.strftime('at %d. of %b. %Y')
+			return event.strftime('at the %d. of %b. %Y')
+
+	def bytes2human(self, n):
+	    # http://code.activestate.com/recipes/578019
+	    # >>> bytes2human(10000)
+	    # '9.8K'
+	    # >>> bytes2human(100001221)
+	    # '95.4M'
+	    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
+	    prefix = {}
+	    for i, s in enumerate(symbols):
+	        prefix[s] = 1 << (i+1)*10
+	    for s in reversed(symbols):
+	        if n >= prefix[s]:
+	            value = float(n) / prefix[s]
+	            return '%.1f%s' % (value, s)
+	    return "%sB" % n

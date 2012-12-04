@@ -53,7 +53,7 @@ class SysstatPlugin(Plugin):
 	    users = psutil.get_users()
 	    return_str = []
 	    print users
-	    #FIXME: WTF? würum machts das nume einisch?
+	    #FIXME: WTF? warum machts das nume einisch?
 	    for user in users:
 	        return_str.append("%-15s %-15s %s (%s)" % \
 					            (user.name,
@@ -74,7 +74,7 @@ class SysstatPlugin(Plugin):
 			ret_str += "%4s%%" % (int(cpu))
 		return_str.append("load avg %3s%%; threads %s" % (int(total / psutil.NUM_CPUS), ret_str))
 		return return_str
-		
+
 	def cmd_sysstat_memory(self, args):
 		mem = psutil.virtual_memory()
 		swap = psutil.swap_memory()

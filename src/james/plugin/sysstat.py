@@ -82,7 +82,12 @@ class SysstatPlugin(Plugin):
 		except: #FIXME: das isch nid schoen hie
 			mem_avail = False
 
-		swap = psutil.swap_memory()
+		swap_avail = True
+		try:
+			swap = psutil.swap_memory()
+		except: #FIXME: das isch nid schoen hie
+			swap_avail = False
+		
 
 		return_str = []
 
@@ -93,12 +98,13 @@ class SysstatPlugin(Plugin):
 								mem.percent,
 								self.core.utils.bytes2human(mem.available),
 								self.core.utils.bytes2human(mem.free)))
-			
-		return_str.append("swap used %s/%s %s%%; free %s" % \
-							(self.core.utils.bytes2human(swap.used),
-							self.core.utils.bytes2human(swap.total),
-							swap.percent,
-							self.core.utils.bytes2human(swap.free)))
+
+		if swap_avail:
+			return_str.append("swap used %s/%s %s%%; free %s" % \
+								(self.core.utils.bytes2human(swap.used),
+								self.core.utils.bytes2human(swap.total),
+								swap.percent,
+								self.core.utils.bytes2human(swap.free)))
 
 		return return_str
 

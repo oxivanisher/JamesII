@@ -39,9 +39,6 @@ class JamesUtils(object):
 															tzinfo=None), is_dst=None).strftime('%s'))
 		newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
 															microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
-
-
-		print "%s > (%s - 86400)" % (age, midnight_timestamp)
 		if age == 0:
 			return 'infinite'
 		elif age < 60:
@@ -61,10 +58,6 @@ class JamesUtils(object):
 
 	def bytes2human(self, n):
 	    # http://code.activestate.com/recipes/578019
-	    # >>> bytes2human(10000)
-	    # '9.8K'
-	    # >>> bytes2human(100001221)
-	    # '95.4M'
 	    symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
 	    prefix = {}
 	    for i, s in enumerate(symbols):

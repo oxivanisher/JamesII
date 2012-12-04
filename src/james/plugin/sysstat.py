@@ -50,18 +50,16 @@ class SysstatPlugin(Plugin):
 		return return_str
 
 	def cmd_sysstat_who(self, args):
-	    users = psutil.get_users()
-	    return_str = []
-	    print users
-	    #FIXME: WTF? warum machts das nume einisch?
-	    for user in users:
-	        return_str.append("%-15s %-15s %s (%s)" % \
-					            (user.name,
-					             user.terminal or '-',
-					             self.core.utils.get_short_age(user.started),
-					             #datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
-					             user.host)
-	        )
+		users = psutil.get_users()
+		return_str = []
+		for user in users:
+			return_str.append("%-15s %-15s %s (%s)" % \
+								(user.name,
+								user.terminal or '-',
+								self.core.utils.get_short_age(user.started),
+								#datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
+								user.host)
+			)
 		return return_str
 
 	def cmd_sysstat_cpu(self, args):

@@ -76,17 +76,24 @@ class SysstatPlugin(Plugin):
 		return return_str
 
 	def cmd_sysstat_memory(self, args):
-		mem = psutil.virtual_memory()
+		mem_avail = True
+		try:
+			mem = psutil.virtual_memory()
+		except: #FIXME: das isch nid schoen hie
+			mem_avail = False
+
 		swap = psutil.swap_memory()
 
 		return_str = []
 
-		return_str.append("memory used %s/%s %s%%; avail %s; free %s" % \
-							(self.core.utils.bytes2human(mem.used),
-							self.core.utils.bytes2human(mem.total),
-							mem.percent,
-							self.core.utils.bytes2human(mem.available),
-							self.core.utils.bytes2human(mem.free)))
+		if mem_avail:
+			return_str.append("memory used %s/%s %s%%; avail %s; free %s" % \
+								(self.core.utils.bytes2human(mem.used),
+								self.core.utils.bytes2human(mem.total),
+								mem.percent,
+								self.core.utils.bytes2human(mem.available),
+								self.core.utils.bytes2human(mem.free)))
+			
 		return_str.append("swap used %s/%s %s%%; free %s" % \
 							(self.core.utils.bytes2human(swap.used),
 							self.core.utils.bytes2human(swap.total),

@@ -15,6 +15,10 @@ class Command(object):
 		self.hide = hide
 
 
+class PluginMode:
+	AUTOLOAD = 0
+	MANAGED = 1
+	MANUAL = 2
 
 class Plugin(object):
 
@@ -23,7 +27,6 @@ class Plugin(object):
 		self.name = name
 		self.core = core
 		self.cmds = {}
-		self.mode = 0	#0: autoload, 1: managed, 2: exclusive
 
 		self.create_command('help', self.cmd_help, "Show information about plugins commands", True)
 		self.create_command('avail', self.cmd_avail, "Show available plugins", True)
@@ -83,9 +86,6 @@ class Plugin(object):
 					args = [args]
 				self.process_command_response(args)
 
-
-
-
 	def cmd_help(self, args):
 		res = []
 		for cmd in self.cmds.values():
@@ -97,25 +97,64 @@ class Plugin(object):
 		return os.uname()[1] + ' ' + self.name
 
 
+class PluginNotAvailable(Exception):
+	pass
+
 class Factory(object):
 
-	plugins = {}
+	descriptors = {}
 
 	@classmethod
-	def register_plugin(cls, plugin):
-		cls.plugins[plugin.name] = plugin
+	def register_plugin(cls, descriptor):
+		if not 'name' in descriptor.keys():
+			raise Exception("Plugin descriptor has no name field")
+		if not 'mode' in descriptor.keys():
+			raise Exception("Plugin descriptor has no mode field")
+		if not 'class' in descriptor.keys():
+			raise Exception("Plugin descriptor has no class field")
+
+		cls.descriptors[descriptor['name']] = descriptor
+
+		# Set a name and mode fields in the plugin class
+		descriptor['class'].name = descriptor['name']
+		descriptor['class'].mode = descriptor['mode']
+
+	@classmethod
+	def get_plugin_class(cls, name):
+		try:
+			return cls.descriptors[name]['class']
+		except KeyError, e:
+			raise PluginNotAvailable("Plugin '%s' not available" % (name))
+
+	@classmethod
+	def enum_plugin_classes_with_mode(cls, mode):
+		for name, descriptor in cls.descriptors.iteritems():
+			if descriptor['mode'] == mode:
+				yield descriptor['class']
 
 	@classmethod
 	def find_plugins(cls, path):
 		files = os.listdir(path)
 		for f in files:
+			# Get module filename and extension
 			(name, ext) = os.path.splitext(os.path.basename(f))
+			# Skip if not valid module
 			if ext != '.py' or name == '__init__':
 				continue
-			print("Loading plugin '%s'" % (name))
-			f = os.path.join(path, f)
-			py_mod = imp.find_module(name, [path])
+			# Load plugin
+			print("Found plugin '%s'" % (name))
+			plugin = None
+			info = imp.find_module(name, [path])
 			try:
-				imp.load_module(name, *py_mod)
+				plugin = imp.load_module(name, *info)
 			except ImportError, e:
-				print("Failed to load plugin '%s' (%s)" % (name, e))
+				print("Failed to initialize plugin '%s' (%s)" % (name, e))
+				continue
+			# Check plugin descriptor
+			try:
+				descriptor = plugin.__dict__['descriptor']
+				cls.register_plugin(descriptor)
+			except KeyError, e:
+				print("Plugin '%s' has no valid descriptor" % (name))
+				continue
+

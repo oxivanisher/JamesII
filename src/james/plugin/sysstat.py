@@ -8,8 +8,6 @@ from james.plugin import *
 
 class SysstatPlugin(Plugin):
 
-	name = 'sysstat'
-
 	def __init__(self, core):
 		super(SysstatPlugin, self).__init__(core, SysstatPlugin.name)
 
@@ -107,6 +105,9 @@ class SysstatPlugin(Plugin):
 		return return_str
 
 
-	#os.environ.items() for running as
+descriptor = {
+	'name' : 'sysstat',
+	'mode' : PluginMode.AUTOLOAD,
+	'class' : SysstatPlugin
+}
 
-Factory.register_plugin(SysstatPlugin)

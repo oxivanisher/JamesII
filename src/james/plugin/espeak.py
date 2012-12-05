@@ -5,8 +5,6 @@ from james.plugin import *
 
 class EspeakPlugin(Plugin):
 
-	name = 'espeak'
-
 	def __init__(self, core):
 		super(EspeakPlugin, self).__init__(core, EspeakPlugin.name)
 
@@ -22,5 +20,8 @@ class EspeakPlugin(Plugin):
 		subprocess.call(['/usr/bin/espeak', msg])
 
 
-
-Factory.register_plugin(EspeakPlugin)
+descriptor = {
+	'name' : 'espeak',
+	'mode' : PluginMode.MANAGED,
+	'class' : EspeakPlugin
+}

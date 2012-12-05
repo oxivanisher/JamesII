@@ -31,8 +31,6 @@ class ConsoleThread(threading.Thread):
 
 class CliPlugin(Plugin):
 
-	name = 'cli'
-
 	def __init__(self, core):
 		super(CliPlugin, self).__init__(core, CliPlugin.name)
 
@@ -54,4 +52,11 @@ class CliPlugin(Plugin):
 		print '\n'.join(args)
 
 
-Factory.register_plugin(CliPlugin)
+
+
+
+descriptor = {
+	'name' : 'cli',
+	'mode' : PluginMode.MANUAL,
+	'class' : CliPlugin
+}

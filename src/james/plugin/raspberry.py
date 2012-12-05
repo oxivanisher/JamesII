@@ -10,8 +10,6 @@ from james.plugin import *
 
 class RaspberryPlugin(Plugin):
 
-	name = 'raspberry'
-
 	def __init__(self, core):
 
 		super(RaspberryPlugin, self).__init__(core, RaspberryPlugin.name)
@@ -33,7 +31,9 @@ class RaspberryPlugin(Plugin):
 
 
 
-
-Factory.register_plugin(RaspberryPlugin)
-
+descriptor = {
+	'name' : 'raspberry',
+	'mode' : PluginMode.MANAGED,
+	'class' : RaspberryPlugin
+}
 

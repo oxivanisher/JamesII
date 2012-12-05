@@ -7,8 +7,6 @@ from james.plugin import *
 
 class SystemPlugin(Plugin):
 
-	name = 'system'
-
 	def __init__(self, core):
 		super(SystemPlugin, self).__init__(core, SystemPlugin.name)
 
@@ -60,4 +58,9 @@ class SystemPlugin(Plugin):
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'")
 
 
-Factory.register_plugin(SystemPlugin)
+descriptor = {
+	'name' : 'system',
+	'mode' : PluginMode.AUTOLOAD,
+	'class' : SystemPlugin
+}
+

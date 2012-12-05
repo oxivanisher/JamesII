@@ -102,18 +102,19 @@ class Core(object):
 
 	def load_plugin(self, name):
 		try:
-			cls = plugin.Factory.plugins[name]
-		except KeyError:
-			print("Plugin '%s' not available" % (name))
-			return
-			#raise PluginNotFound()
-
-		# Intantiate plugin instance
-		p = cls(self)
-
-		self.plugins.append(p)
+			print("Loading plugin '%s'" % (name))
+			c = plugin.Factory.get_plugin_class(name)
+			self.plugins.append(c(self))
+		except plugin.PluginNotAvailable, e:
+			print e
 
 	def autoload_plugins(self):
+
+		for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
+			print("Loading plugin '%s' (autoload)" % (c.name))
+			self.plugins.append(c(self))
+
+
 		#somehow check for plugin.mode.
 		#if 2: do not load, 1: load if self.hostname matches, 0: load always
 		# load means self.load_plugin(name)

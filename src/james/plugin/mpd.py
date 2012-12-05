@@ -7,8 +7,6 @@ from james.plugin import *
 
 class MpdPlugin(Plugin):
 
-	name = 'mpd'
-
 	def __init__(self, core):
 		super(MpdPlugin, self).__init__(core, MpdPlugin.name)
 
@@ -79,5 +77,9 @@ class MpdPlugin(Plugin):
 
 
 
+descriptor = {
+	'name' : 'mpd',
+	'mode' : PluginMode.MANAGED,
+	'class' : MpdPlugin
+}
 
-Factory.register_plugin(MpdPlugin)

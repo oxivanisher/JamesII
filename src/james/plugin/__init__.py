@@ -1,6 +1,7 @@
 
 import uuid
 import os
+import imp
 
 class CommandNotFound(Exception):
 	pass
@@ -103,12 +104,17 @@ class Factory(object):
 	def register_plugin(cls, plugin):
 		cls.plugins[plugin.name] = plugin
 
-
-
-# Load plugins
-import system
-import cli
-import espeak
-import mpd
-import raspberry
-import sysstat
+	@classmethod
+	def find_plugins(cls, path):
+		files = os.listdir(path)
+		for f in files:
+			(name, ext) = os.path.splitext(os.path.basename(f))
+			if ext != '.py' or name == '__init__':
+				continue
+			print("Loading plugin '%s'" % (name))
+			f = os.path.join(path, f)
+			py_mod = imp.find_module(name, [path])
+			try:
+				imp.load_module(name, *py_mod)
+			except ImportError, e:
+				print("Failed to load plugin '%s' (%s)" % (name, e))

@@ -52,6 +52,7 @@ class Core(object):
 		self.hostname = socket.getfqdn(socket.gethostname())
 		self.startup_timestamp = time.time()
 		self.utils = jamesutils.JamesUtils(self)
+		self.master = False
 
 
 		try:
@@ -62,6 +63,7 @@ class Core(object):
 		self.config = None
 		try:
 			self.config = config.Config("../config/config.ini")
+			self.master = True
 			print("Found master config")
 		except Exception as e:
 			print("No master config -> client mode")
@@ -122,7 +124,8 @@ class Core(object):
 	def discovery_listener(self, msg):
 		if msg[0] == 'hello':
 			print("Discovered new host '%s'" % (msg[1]))
-			self.config_channel.send(self.config.get_values())
+			if self.master:
+				self.config_channel.send(self.config.get_values())
 #		for p in self.plugins:
 #			p.handle_request(msg['uuid'], msg['name'], msg['body'])
 

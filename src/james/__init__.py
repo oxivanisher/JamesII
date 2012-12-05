@@ -43,7 +43,6 @@ class BroadcastChannel(object):
 		self.listeners.append(handler)
 
 
-
 class Core(object):
 	def __init__(self):
 		print 'JamesII starting up'
@@ -66,7 +65,7 @@ class Core(object):
 		try:
 			self.config = config.Config("../config/config.ini")
 			self.master = True
-			print("Found master config")
+			print("Found master config -> master mode")
 		except Exception as e:
 			print("No master config -> client mode")
 
@@ -101,7 +100,6 @@ class Core(object):
 		path = os.path.join(os.path.dirname(__file__), 'plugin')
 		plugin.Factory.find_plugins(path)
 
-
 	def load_plugin(self, name):
 		try:
 			cls = plugin.Factory.plugins[name]
@@ -114,6 +112,12 @@ class Core(object):
 		p = cls(self)
 
 		self.plugins.append(p)
+
+	def autoload_plugins(self):
+		#somehow check for plugin.mode.
+		#if 2: do not load, 1: load if self.hostname matches, 0: load always
+		# load means self.load_plugin(name)
+		pass
 
 	def send_request(self, uuid, name, body):
 		"""Sends a request."""
@@ -129,7 +133,6 @@ class Core(object):
 	def response_listener(self, msg):
 		for p in self.plugins:
 			p.handle_response(msg['uuid'], msg['name'], msg['body'])
-
 
 	def discovery_listener(self, msg):
 		if msg[0] == 'hello':
@@ -147,7 +150,6 @@ class Core(object):
 			self.config.set_values(msg)
 #		for p in self.plugins:
 #			p.handle_response(msg['uuid'], msg['name'], msg['body'])
-
 
 	def run(self):
 		while not self.terminated:

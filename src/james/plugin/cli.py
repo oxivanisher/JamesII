@@ -36,6 +36,8 @@ class CliPlugin(Plugin):
 	def __init__(self, core):
 		super(CliPlugin, self).__init__(core, CliPlugin.name)
 
+		self.mode = 2	#0: autoload, 1: managed, 2: exclusive
+
 		self.console_thread = ConsoleThread(self)
 
 		sys.stdout.write('interactive cli interface to james online. server: ')

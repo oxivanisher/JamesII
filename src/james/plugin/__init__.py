@@ -23,6 +23,7 @@ class Plugin(object):
 		self.name = name
 		self.core = core
 		self.cmds = {}
+		self.mode = 0	#0: autoload, 1: managed, 2: exclusive
 
 		self.create_command('help', self.cmd_help, "Show information about plugins commands", True)
 		self.create_command('avail', self.cmd_avail, "Show available plugins", True)

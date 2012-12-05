@@ -40,10 +40,10 @@ You Need (outdated!):
 
 MQueue Setup (also outdated!):
 -------------
- apt-get  install rabbitmq-server
- rabbitmqctl add_user test test
- rabbitmqctl add_vhost test
- rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
+apt-get  install rabbitmq-server
+rabbitmqctl add_user test test
+rabbitmqctl add_vhost test
+rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
 
 
 

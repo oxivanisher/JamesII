@@ -121,12 +121,14 @@ class Core(object):
 
 	def discovery_listener(self, msg):
 		if msg[0] == 'hello':
+			print("Discovered new host '%s'" % (msg[1]))
 			self.config_channel.send(self.config.get_values())
 #		for p in self.plugins:
 #			p.handle_request(msg['uuid'], msg['name'], msg['body'])
 
 	def config_listener(self, msg):
 		if not self.config:
+			print("Received config");
 			self.config = config.Config()
 			self.config.set_values(msg)
 #		for p in self.plugins:

@@ -39,8 +39,8 @@ class CliPlugin(Plugin):
 		self.console_thread = ConsoleThread(self)
 
 		sys.stdout.write('interactive cli interface to james online. server: ')
-		sys.stdout.write(self.core.config.values['broker']['host'] + ':')
-		sys.stdout.write(self.core.config.values['broker']['port'] + '\n')
+		sys.stdout.write(self.core.brokerconfig.values['broker']['host'] + ':')
+		sys.stdout.write(self.core.brokerconfig.values['broker']['port'] + '\n')
 		sys.stdout.write('basic commands are help and exit.' + '\n')
 
 		self.console_thread.start()

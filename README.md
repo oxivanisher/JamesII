@@ -24,6 +24,7 @@ Plugins:
 * xbmc remote plugin
 * transmission remote plugin
 * xmpp service plugin
+* at/timer countdown
 
 
 You Need (outdated!):

@@ -1,18 +1,31 @@
 import os
 from ConfigParser import RawConfigParser
 
-class Config (object):
-	def __init__(self, filenames = []):
+class BrokerConfig (object):
+	def __init__(self, filename):
 		config = RawConfigParser()
 
-		config.read(filenames)
+		config.read(filename)
 		
 		self.values = { 'broker' : { 'host' : config.get('broker','host'),
 									 'port' : config.get('broker','port'),
 									 'user' : config.get('broker','user'),
 									 'password' : config.get('broker','password'),
-									 'vhost' : config.get('broker','vhost') },
-						'xmpp_alert' : { 'jid' : config.get('xmpp_alert','jid'),
+									 'vhost' : config.get('broker','vhost') }
+						}
+
+
+class Config (object):
+	def __init__(self, filename = None):
+		self.values = {}
+
+		if not filename:
+			return
+
+		config = RawConfigParser()
+		config.read(filename)
+		
+		self.values = { 'xmpp_alert' : { 'jid' : config.get('xmpp_alert','jid'),
 									 'password' : config.get('xmpp_alert','password'),
 									 'destination' : config.get('xmpp_alert','destination')	},
  						'mpd' : { 'host' : config.get('mpd','host'),
@@ -24,6 +37,9 @@ class Config (object):
  						'core' : { 'timezone' : config.get('core','timezone') }
 						}
 
+	def get_values(self):
+		return self.values
 
-	def load (self):
-		pass
+	def set_values(self, values):
+		self.values = values
+

@@ -1,6 +1,7 @@
 
 import subprocess
 import sys
+
 from james.plugin import *
 
 class EspeakPlugin(Plugin):

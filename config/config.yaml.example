@@ -1,3 +1,4 @@
+# core settings
 core:
  timezone   : Europe/Zurich
 
@@ -13,3 +14,14 @@ mpd:
  host       : 
  password   : 
  port       : 
+
+# configure managed plugins
+managed_plugins:
+ - plugin   : espeak
+   hostname : hostname
+
+ - plugin   : mpd
+   hostname : hostname
+
+ - plugin   : espeak
+   hostname : hostname

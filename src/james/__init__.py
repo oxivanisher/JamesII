@@ -9,6 +9,7 @@ import sys
 import plugin
 import config
 import jamesutils
+import jamesmessage
 
 class PluginNotFound(Exception):
 	pass
@@ -42,25 +43,6 @@ class BroadcastChannel(object):
 
 	def add_listener(self, handler):
 		self.listeners.append(handler)
-
-
-class JamesMessage(object):
-	def __init__(self, plugin):
-		self.timestamp = time.time()
-
-		self.sender_host = this.hostname
-		self.sender_uuid = plugin.uuid
-		self.sender_plugin = plugin.name
-
-		self.reciever_host = None
-		self.reciever_uuid = None
-		self.reciever_plugin = None
-
-		self.message = None
-		self.header = None
-		self.level = 0 #0: Debug, 1: Info, 2: Warn, 3: Error
-
-		self.payload = None
 
 
 class Core(object):
@@ -117,6 +99,10 @@ class Core(object):
 		self.response_channel = BroadcastChannel(self, 'response')
 		self.response_channel.add_listener(self.response_listener)
 
+		# Create messaging channels
+		self.message_channel = BroadcastChannel(self, 'message')
+		self.message_channel.add_listener(self.message_listener)
+
 		# Load plugins
 		path = os.path.join(os.path.dirname(__file__), 'plugin')
 		plugin.Factory.find_plugins(path)
@@ -144,9 +130,18 @@ class Core(object):
 
 		sys.stdout.write("Loading managed plugins:")
 		for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
-			#FIXME: insert check for hostname in config here
-			sys.stdout.write(" %s" % (c.name))
-			self.plugins.append(c(self))
+			load_plugin = False
+
+			for mp in self.config['managed_plugins']:
+				if mp['plugin'] == c.name and mp['hostname'] == self.hostname:
+					load_plugin = True
+
+			if load_plugin:
+				sys.stdout.write(" +%s" % (c.name))
+				self.plugins.append(c(self))
+			else:
+				sys.stdout.write(" -%s" % (c.name))
+
 		sys.stdout.write("\n")
 
 	def send_request(self, uuid, name, body):
@@ -180,6 +175,12 @@ class Core(object):
 			#self.config.set_values(msg)
 #		for p in self.plugins:
 #			p.handle_response(msg['uuid'], msg['name'], msg['body'])
+
+	def send_message(self, msg):
+		self.message_channel.send(msg)
+
+	def message_listener(self, msg):
+		print("Recieved Message '%s'" % (msg))
 
 	def run(self):
 		while not self.terminated:

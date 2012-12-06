@@ -1,9 +1,8 @@
+
 import os
 import io
 import json
 import yaml
-#from jsonschema import validate
-from ConfigParser import RawConfigParser
 
 class YamlConfig (object):
 	def __init__(self, filename = None):

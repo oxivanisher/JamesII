@@ -160,7 +160,7 @@ class Core(object):
 	def config_listener(self, msg):
 		if not self.config:
 			print("Received config");
-			self.config = config.Config()
+			self.config = config.YamlConfig()
 			self.config.set_values(msg)
 #		for p in self.plugins:
 #			p.handle_response(msg['uuid'], msg['name'], msg['body'])

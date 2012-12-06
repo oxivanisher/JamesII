@@ -6,10 +6,11 @@ import yaml
 from ConfigParser import RawConfigParser
 
 class YamlConfig (object):
-	def __init__(self, filename):
+	def __init__(self, filename = None):
 		self.filename = filename
 		self.values = {}
-		self.load()
+		if filename:
+			self.load()
 
 	def load(self):
 		f = open(self.filename)

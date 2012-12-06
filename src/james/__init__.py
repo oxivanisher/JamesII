@@ -165,17 +165,11 @@ class Core(object):
 			# Broadcast configuration if master
 			if self.master:
 				self.config_channel.send(self.config)
-#		for p in self.plugins:
-#			p.handle_request(msg['uuid'], msg['name'], msg['body'])
 
 	def config_listener(self, msg):
 		if not self.config:
 			print("Received config");
 			self.config = msg
-			print("msg: %s; cfg: %s" % (msg, self.config))
-			#self.config.set_values(msg)
-#		for p in self.plugins:
-#			p.handle_response(msg['uuid'], msg['name'], msg['body'])
 
 	def send_message(self, msg):
 		self.message_channel.send(msg)

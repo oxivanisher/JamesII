@@ -1,6 +1,7 @@
 
 import threading
 import sys
+import json
 
 from james.plugin import *
 
@@ -21,6 +22,9 @@ class ConsoleThread(threading.Thread):
 			line = line.strip()
 			if (line == 'exit'):
 				self.plugin.core.terminate()
+			elif (line == 'dump_config'):
+				print("Dumping config:")
+				print(json.dumps(self.plugin.core.brokerconfig.get_values()))
 
 			args = line.split(' ')
 			self.plugin.send_command(args)
@@ -34,14 +38,12 @@ class CliPlugin(Plugin):
 	def __init__(self, core):
 		super(CliPlugin, self).__init__(core, CliPlugin.name)
 
-		self.mode = 2	#0: autoload, 1: managed, 2: exclusive
-
 		self.console_thread = ConsoleThread(self)
 
 		sys.stdout.write('interactive cli interface to james online. server: ')
 		sys.stdout.write(self.core.brokerconfig.values['broker']['host'] + ':')
 		sys.stdout.write(self.core.brokerconfig.values['broker']['port'] + '\n')
-		sys.stdout.write('basic commands are help and exit.' + '\n')
+		sys.stdout.write('basic commands are help, dump_config and exit.' + '\n')
 
 		self.console_thread.start()
 

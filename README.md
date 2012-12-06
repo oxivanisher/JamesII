@@ -29,11 +29,12 @@ Plugins:
 
 You Need (outdated!):
 ---------
-* Wiring Pi Setup (https://github.com/WiringPi-Python)
+* Wiring Pi Setup (https://github.com/WiringPi/WiringPi-Python)
 * python
 * python-pika (https://github.com/pika/pika)
 * python-psutil (http://code.google.com/p/psutil/)
 * python-tz
+* python-jsonschema
 
 * python-sqlite
 * python-jabberbot (http://thp.io/2007/python-jabberbot/)

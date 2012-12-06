@@ -2,6 +2,7 @@
 import uuid
 import os
 import imp
+import sys
 
 class CommandNotFound(Exception):
 	pass
@@ -135,6 +136,9 @@ class Factory(object):
 	@classmethod
 	def find_plugins(cls, path):
 		files = os.listdir(path)
+		plugin_load_error = []
+
+		sys.stdout.write("Discovering plugins:")
 		for f in files:
 			# Get module filename and extension
 			(name, ext) = os.path.splitext(os.path.basename(f))
@@ -142,19 +146,23 @@ class Factory(object):
 			if ext != '.py' or name == '__init__':
 				continue
 			# Load plugin
-			print("Found plugin '%s'" % (name))
+			sys.stdout.write(" %s" % (name))
 			plugin = None
 			info = imp.find_module(name, [path])
 			try:
 				plugin = imp.load_module(name, *info)
 			except ImportError, e:
-				print("Failed to initialize plugin '%s' (%s)" % (name, e))
+				plugin_load_error.append("Failed to initialize plugin '%s' (%s)" % (name, e))
 				continue
 			# Check plugin descriptor
 			try:
 				descriptor = plugin.__dict__['descriptor']
 				cls.register_plugin(descriptor)
 			except KeyError, e:
-				print("Plugin '%s' has no valid descriptor" % (name))
+				plugin_load_error.append("Plugin '%s' has no valid descriptor" % (name))
 				continue
+
+		sys.stdout.write("\n")
+		for e in plugin_load_error:
+			print(e)
 

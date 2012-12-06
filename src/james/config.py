@@ -1,5 +1,31 @@
 import os
+import io
+import json
+#from jsonschema import validate
 from ConfigParser import RawConfigParser
+
+class JamesConfig (object):
+	def __init__(self, filename):
+		self.filename = filename
+		self.values = {}
+		self.load()
+
+	def load(self):
+		self.values = json.loads(open(self.filename).read())
+
+	def save(self):
+		#FIXME: untested!
+		pass
+		with io.open(self.filename, 'w', encoding='utf-8') as outfile:
+			json.dumps(self.values, outfile)
+		pass
+
+	def get_values(self):
+		return self.values
+
+	def set_values(self, values):
+		self.values = values
+
 
 class BrokerConfig (object):
 	def __init__(self, filename):
@@ -14,6 +40,9 @@ class BrokerConfig (object):
 									 'vhost' : config.get('broker','vhost') }
 						}
 
+
+	def get_values(self):
+		return self.values
 
 class Config (object):
 	def __init__(self, filename = None):
@@ -34,12 +63,12 @@ class Config (object):
 									 'sleep_url' : config.get('mpd','sleep_url'),
 									 'wakeup_url' : config.get('mpd','wakeup_url'),
 									 'port' : config.get('mpd','port') },
- 						'core' : { 'timezone' : config.get('core','timezone') }
+						'core' : { 'timezone' : config.get('core','timezone') }
 						}
+
 
 	def get_values(self):
 		return self.values
 
 	def set_values(self, values):
 		self.values = values
-

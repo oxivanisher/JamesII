@@ -1,3 +1,5 @@
+config/broker.js
+config/config.js
 config/config.ini
 data/whoisonline.csv
 data/whoisonline.new

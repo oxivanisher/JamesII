@@ -11,6 +11,7 @@ class SysstatPlugin(Plugin):
 	def __init__(self, core):
 		super(SysstatPlugin, self).__init__(core, SysstatPlugin.name)
 
+		#FIXME: insert hierarchical commands here .... plx
 		self.create_command('sysstat_mount', self.cmd_sysstat_mount, 'show mounted partitions')
 		self.create_command('sysstat_uptime', self.cmd_sysstat_uptime, 'show system uptime')
 		self.create_command('sysstat_net', self.cmd_sysstat_net, 'show system network informations')

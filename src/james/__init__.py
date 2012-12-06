@@ -4,6 +4,7 @@ import json
 import pika
 import socket
 import time
+import sys
 
 import plugin
 import config
@@ -45,7 +46,7 @@ class BroadcastChannel(object):
 
 class Core(object):
 	def __init__(self):
-		print 'JamesII starting up'
+		sys.stdout.write('JamesII starting up')
 
 		self.plugins = []
 		self.terminated = False
@@ -62,12 +63,13 @@ class Core(object):
 
 		# Load master configuration
 		self.config = None
+
 		try:
-			self.config = config.Config("../config/config.ini")
+			self.config = config.JamesConfig("../config/config.js")
 			self.master = True
-			print("Found master config -> master mode")
+			sys.stdout.write(" (master mode)\n")
 		except Exception as e:
-			print("No master config -> client mode")
+			sys.stdout.write(" (client mode)\n")
 
 		# Create global connection
 		try:
@@ -110,15 +112,24 @@ class Core(object):
 
 	def autoload_plugins(self):
 
+		sys.stdout.write("Ignoring manual plugins:")
+		for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
+			sys.stdout.write(" %s" % (c.name))
+		sys.stdout.write("\n")
+
+		sys.stdout.write("Autoloading plugins:")
 		for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
-			print("Loading plugin '%s' (autoload)" % (c.name))
+			sys.stdout.write(" %s" % (c.name))
 			self.plugins.append(c(self))
+		sys.stdout.write("\n")
 
+		sys.stdout.write("Loading managed plugins:")
+		for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
+			#FIXME: insert check for hostname in config here
+			sys.stdout.write(" %s" % (c.name))
+			self.plugins.append(c(self))
+		sys.stdout.write("\n")
 
-		#somehow check for plugin.mode.
-		#if 2: do not load, 1: load if self.hostname matches, 0: load always
-		# load means self.load_plugin(name)
-		pass
 
 	def send_request(self, uuid, name, body):
 		"""Sends a request."""
@@ -156,6 +167,7 @@ class Core(object):
 		while not self.terminated:
 			try:
 				self.connection.process_data_events()
+				#print("process events")
 			except KeyboardInterrupt:
 				self.terminate()
 		

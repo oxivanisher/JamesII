@@ -44,6 +44,25 @@ class BroadcastChannel(object):
 		self.listeners.append(handler)
 
 
+class JamesMessage(object):
+	def __init__(self, plugin):
+		self.timestamp = time.time()
+
+		self.sender_host = this.hostname
+		self.sender_uuid = plugin.uuid
+		self.sender_plugin = plugin.name
+
+		self.reciever_host = None
+		self.reciever_uuid = None
+		self.reciever_plugin = None
+
+		self.message = None
+		self.header = None
+		self.level = 0 #0: Debug, 1: Info, 2: Warn, 3: Error
+
+		self.payload = None
+
+
 class Core(object):
 	def __init__(self):
 		sys.stdout.write('JamesII starting up')
@@ -70,8 +89,6 @@ class Core(object):
 			sys.stdout.write(" (master mode)\n")
 		except Exception as e:
 			sys.stdout.write(" (client mode)\n")
-
-		#print self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig.host))
 
 		# Create global connection
 		try:
@@ -131,7 +148,6 @@ class Core(object):
 			sys.stdout.write(" %s" % (c.name))
 			self.plugins.append(c(self))
 		sys.stdout.write("\n")
-
 
 	def send_request(self, uuid, name, body):
 		"""Sends a request."""

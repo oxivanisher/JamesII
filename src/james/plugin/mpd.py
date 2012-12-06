@@ -24,7 +24,7 @@ class MpdPlugin(Plugin):
 		if self.core.config['mpd']['port']:
 			self.connection_string += " --port=" + self.core.config['mpd']['port']
 		if self.core.config['mpd']['password']:
-			self.connection_string += " --password=" + self.core.config['mpd']['password']		
+			self.connection_string += " --password=" + self.core.config['mpd']['password']
 
 	def terminate(self):
 		pass

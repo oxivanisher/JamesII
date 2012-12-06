@@ -172,7 +172,7 @@ class Core(object):
 		if not self.config:
 			print("Received config");
 			self.config = config.YamlConfig().set_values(msg)
-			print("msg: %s; cfg: %s" % (msg, cfg))
+			print("msg: %s; cfg: %s" % (msg, self.config))
 			#self.config.set_values(msg)
 #		for p in self.plugins:
 #			p.handle_response(msg['uuid'], msg['name'], msg['body'])

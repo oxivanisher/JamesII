@@ -35,6 +35,7 @@ You Need (outdated!):
 * python-psutil (http://code.google.com/p/psutil/)
 * python-tz
 * python-jsonschema
+* python-yaml
 
 * python-sqlite
 * python-jabberbot (http://thp.io/2007/python-jabberbot/)

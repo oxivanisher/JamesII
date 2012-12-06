@@ -1,0 +1,5 @@
+vhost   : test
+host    : hostname
+password: test
+port    : 5672
+user    : test

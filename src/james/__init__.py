@@ -57,7 +57,7 @@ class Core(object):
 
 		# Load broker configuration
 		try:
-			self.brokerconfig = config.BrokerConfig("../config/broker.ini")
+			self.brokerconfig = config.YamlConfig("../config/broker.yaml").get_values()
 		except Exception as e:
 			raise ConfigNotLoaded()
 
@@ -65,15 +65,17 @@ class Core(object):
 		self.config = None
 
 		try:
-			self.config = config.JamesConfig("../config/config.js")
+			self.config = config.YamlConfig("../config/config.yaml").get_values()
 			self.master = True
 			sys.stdout.write(" (master mode)\n")
 		except Exception as e:
 			sys.stdout.write(" (client mode)\n")
 
+		#print self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig.host))
+
 		# Create global connection
 		try:
-			self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig.values['broker']['host']))
+			self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
 		except Exception as e:
 			raise ConnectionError()
 
@@ -151,7 +153,7 @@ class Core(object):
 			print("Discovered new host '%s'" % (msg[1]))
 			# Broadcast configuration if master
 			if self.master:
-				self.config_channel.send(self.config.get_values())
+				self.config_channel.send(self.config)
 #		for p in self.plugins:
 #			p.handle_request(msg['uuid'], msg['name'], msg['body'])
 

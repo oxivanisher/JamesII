@@ -1,0 +1,15 @@
+core:
+ timezone   : Europe/Zurich
+
+xmpp_alert:
+ destination: your@jid
+ jid        : botJid/resource
+ password   : password
+
+mpd:
+ radio_url  : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
+ sleep_url  : http://www.radioswissjazz.ch/live/aacp.m3u
+ wakeup_url : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
+ host       : 
+ password   : 
+ port       : 

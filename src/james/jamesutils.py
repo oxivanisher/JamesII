@@ -30,7 +30,7 @@ class JamesUtils(object):
 		age = int(time.time() - timestamp)
 
 		fmt = '%Y-%m-%d %H:%M:%S %Z%z'
-		timezone = pytz.timezone(self.core.config.values['core']['timezone'])
+		timezone = pytz.timezone(self.core.config['core']['timezone'])
 
 		now = datetime.datetime.now(timezone)
 		event = datetime.datetime.fromtimestamp(timestamp, timezone)

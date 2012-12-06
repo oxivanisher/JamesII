@@ -19,12 +19,12 @@ class MpdPlugin(Plugin):
 		self.mpc_bin = '/usr/bin/mpc'
 
 		self.connection_string = self.mpc_bin
-		if self.core.config.values['mpd']['host'] != "":
-			self.connection_string += " --host=" + self.core.config.values['mpd']['host']
-		if self.core.config.values['mpd']['port'] != "":
-			self.connection_string += " --port=" + self.core.config.values['mpd']['port']
-		if self.core.config.values['mpd']['password'] != "":
-			self.connection_string += " --password=" + self.core.config.values['mpd']['password']		
+		if self.core.config['mpd']['host']:
+			self.connection_string += " --host=" + self.core.config['mpd']['host']
+		if self.core.config['mpd']['port']:
+			self.connection_string += " --port=" + self.core.config['mpd']['port']
+		if self.core.config['mpd']['password']:
+			self.connection_string += " --password=" + self.core.config['mpd']['password']		
 
 	def terminate(self):
 		pass
@@ -37,30 +37,30 @@ class MpdPlugin(Plugin):
 		self.exec_mpc(['clear'])
 
 	# radio (online url) methods
-#if self.core.config.values['mpd']['url'] != "":
+#if self.core.config['mpd']['url'] != "":
 	def cmd_radio_on(self, args):
-		self.load_online_playlist(self.core.config.values['mpd']['radio_url'])
+		self.load_online_playlist(self.core.config['mpd']['radio_url'])
 		self.exec_mpc(['play'])		
 
 	def cmd_mpd_sleep(self, args):
-		self.load_online_playlist(self.core.config.values['mpd']['sleep_url'])
+		self.load_online_playlist(self.core.config['mpd']['sleep_url'])
 		self.exec_mpc(['play'])
 		minutes = 1
 		try:
 			minutes = args[0]
 		except IndexError:
 			pass
-		subprocess.Popen(['/usr/bin/mpfade', str(minutes), "0", self.core.config.values['mpd']['host']])
+		subprocess.Popen(['/usr/bin/mpfade', str(minutes), "0", self.core.config['mpd']['host']])
 
 	def cmd_mpd_wakeup(self, args):
 		self.exec_mpc(['clear'])
-		self.load_online_playlist(self.core.config.values['mpd']['wakeup_url'])
+		self.load_online_playlist(self.core.config['mpd']['wakeup_url'])
 		minutes = 1
 		try:
 			minutes = args[0]
 		except IndexError:
 			pass
-		subprocess.Popen(['/usr/bin/mpfade', str(minutes), "100", self.core.config.values['mpd']['host']])
+		subprocess.Popen(['/usr/bin/mpfade', str(minutes), "100", self.core.config['mpd']['host']])
 
 	# Helper Methods
 	def exec_mpc(self, args):

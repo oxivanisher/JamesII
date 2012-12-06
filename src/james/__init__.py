@@ -171,7 +171,7 @@ class Core(object):
 	def config_listener(self, msg):
 		if not self.config:
 			print("Received config");
-			self.config = config.YamlConfig().set_values(msg)
+			self.config = msg
 			print("msg: %s; cfg: %s" % (msg, self.config))
 			#self.config.set_values(msg)
 #		for p in self.plugins:

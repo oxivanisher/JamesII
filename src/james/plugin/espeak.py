@@ -20,6 +20,8 @@ class EspeakPlugin(Plugin):
 	def speak(self, msg):
 		subprocess.call(['/usr/bin/espeak', msg])
 
+	def process_message(self, message):
+		print("espeak is processing a message! :DD")
 
 descriptor = {
 	'name' : 'espeak',

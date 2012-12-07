@@ -35,6 +35,7 @@ class Plugin(object):
 	def terminate(self):
 		pass
 
+	# command methods
 	def add_command(self, command):
 		self.cmds[command.name] = command
 
@@ -87,6 +88,7 @@ class Plugin(object):
 					args = [args]
 				self.process_command_response(args)
 
+	# default commands
 	def cmd_help(self, args):
 		res = []
 		for cmd in self.cmds.values():
@@ -96,6 +98,10 @@ class Plugin(object):
 
 	def cmd_avail(self, args):
 		return os.uname()[1] + ' ' + self.name
+
+	# message methods
+	def process_message(self, message):
+		pass
 
 
 class PluginNotAvailable(Exception):

@@ -186,13 +186,8 @@ class Core(object):
 	def message_listener(self, msg):
 		message = jamesmessage.JamesMessage(self, "recieved message")
 		message.set(msg)
-		
-		# currently just ignore my own messages
-		if message.sender_uuid != self.uuid:
-			# FIXME: do something meaningful with this message and not just print it :)
-			#        (how can we deliver the message to multiple plugins? plugin class method?)
-			print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
-			print("Header: '%s'; Body: '%s'" % (message.header, message.body))
+		for p in self.plugins:
+			p.process_message(message)
 
 	# base methods
 	def run(self):

@@ -107,6 +107,7 @@ class Core(object):
 		path = os.path.join(os.path.dirname(__file__), 'plugin')
 		plugin.Factory.find_plugins(path)
 
+	# plugin methods
 	def load_plugin(self, name):
 		try:
 			print("Loading plugin '%s'" % (name))
@@ -144,6 +145,7 @@ class Core(object):
 
 		sys.stdout.write("\n")
 
+	# command channel methods
 	def send_request(self, uuid, name, body):
 		"""Sends a request."""
 		self.request_channel.send({'uuid': uuid, 'name': name, 'body': body})
@@ -159,6 +161,7 @@ class Core(object):
 		for p in self.plugins:
 			p.handle_response(msg['uuid'], msg['name'], msg['body'])
 
+	# configuration & config channel methods
 	def discovery_listener(self, msg):
 		if msg[0] == 'hello':
 			print("Discovered new host '%s'" % (msg[1]))
@@ -171,12 +174,22 @@ class Core(object):
 			print("Received config");
 			self.config = msg
 
+	# message channel methods
 	def send_message(self, msg):
 		self.message_channel.send(msg)
 
-	def message_listener(self, msg):
-		print("Recieved Message '%s'" % (msg))
+	def new_message(self, name = "uninitialized_message"):
+		return jamesmessage.JamesMessage(self, name)
 
+	def message_listener(self, msg):
+		message = jamesmessage.JamesMessage(self, "recieved message")
+		message.set(msg)
+		# FIXME: do something meaningful with this message and not just print it :)
+		#        (how can we deliver the message to multiple plugins? plugin class method?)
+		print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
+		print("Header: '%s'; Body: '%s'" % (message.header, message.body))
+
+	# base methods
 	def run(self):
 		while not self.terminated:
 			try:

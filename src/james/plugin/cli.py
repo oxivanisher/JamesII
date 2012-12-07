@@ -25,6 +25,12 @@ class ConsoleThread(threading.Thread):
 			elif (line == 'dump_config'):
 				print("Dumping config:")
 				print(yaml.dump(self.plugin.core.config))
+			elif (line == 'message'):
+				print("Sending test message")
+				message = self.plugin.core.new_message("cli_test")
+				message.body = "message body"
+				message.head = "message head"
+				message.send()
 
 			args = line.split(' ')
 			self.plugin.send_command(args)
@@ -43,7 +49,7 @@ class CliPlugin(Plugin):
 		sys.stdout.write('Interactive cli interface to james online. server: ')
 		sys.stdout.write(self.core.brokerconfig['host'] + ':')
 		sys.stdout.write('%s\n' % (self.core.brokerconfig['port']))
-		sys.stdout.write('basic commands are help, dump_config and exit.' + '\n')
+		sys.stdout.write('basic commands are help, message, dump_config and exit.' + '\n')
 
 		self.console_thread.start()
 

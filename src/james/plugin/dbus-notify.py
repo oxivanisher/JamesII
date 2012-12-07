@@ -5,6 +5,8 @@ from dbus.mainloop.glib import DBusGMainLoop
 
 from james.plugin import *
 
+# this plugin is based on http://code.google.com/p/spotify-notify/
+
 class DbusNotifyPlugin(Plugin):
 
     def __init__(self, core):
@@ -12,9 +14,6 @@ class DbusNotifyPlugin(Plugin):
 
         self.bus = dbus.Bus(dbus.Bus.TYPE_SESSION)
         self.notifyid = 0
-
-    def terminate(self):
-        pass
 
     def process_message(self, message):
         if message.level > 0:

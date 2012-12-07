@@ -1,7 +1,8 @@
 # core settings
 core:
  timezone   : Europe/Zurich
-
+ debug      : False
+ 
 # plugin configurations
 xmpp:
  destination: your@jid

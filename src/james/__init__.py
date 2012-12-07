@@ -207,4 +207,5 @@ class Core(object):
     def terminate(self):
         for p in self.plugins:
             p.terminate()
+        print("I shall die now.")
         self.terminated = True

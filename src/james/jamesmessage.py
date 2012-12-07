@@ -10,7 +10,7 @@ class JamesMessage (object):
 		self.timestamp = time.time()
 
 		self.sender_host = core.hostname
-		self.sender_uuid = str(uuid.uuid1())
+		self.sender_uuid = core.uuid
 		self.sender_name = name
 
 		self.reciever_host = None

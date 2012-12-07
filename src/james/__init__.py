@@ -5,6 +5,7 @@ import pika
 import socket
 import time
 import sys
+import uuid
 
 import plugin
 import config
@@ -55,6 +56,7 @@ class Core(object):
 		self.startup_timestamp = time.time()
 		self.utils = jamesutils.JamesUtils(self)
 		self.master = False
+		self.uuid = str(uuid.uuid1())
 
 		# Load broker configuration
 		try:
@@ -184,10 +186,13 @@ class Core(object):
 	def message_listener(self, msg):
 		message = jamesmessage.JamesMessage(self, "recieved message")
 		message.set(msg)
-		# FIXME: do something meaningful with this message and not just print it :)
-		#        (how can we deliver the message to multiple plugins? plugin class method?)
-		print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
-		print("Header: '%s'; Body: '%s'" % (message.header, message.body))
+		
+		# currently just ignore my own messages
+		if message.sender_uuid != self.uuid:
+			# FIXME: do something meaningful with this message and not just print it :)
+			#        (how can we deliver the message to multiple plugins? plugin class method?)
+			print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
+			print("Header: '%s'; Body: '%s'" % (message.header, message.body))
 
 	# base methods
 	def run(self):

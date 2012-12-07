@@ -45,6 +45,25 @@ class BroadcastChannel(object):
     def add_listener(self, handler):
         self.listeners.append(handler)
 
+class ProximityStatus(object):
+    def __init__(self, core):
+        self.status = {}
+        self.status['home'] = False
+        self.core = core
+
+    def set_status_here(self, value):
+        print("Setting local (%s) status to: %s" % (self.core.location, value))
+        self.status[self.core.location] = value
+        self.core.proximity_event(self.status)
+    
+    def update_all_status(self, newstatus):
+        self.status = newstatus
+
+    def get_all_status(self):
+        return self.status
+
+    def get_status_here(self):
+        return self.status[self.core.location]
 
 class Core(object):
     def __init__(self):
@@ -57,6 +76,8 @@ class Core(object):
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
         self.uuid = str(uuid.uuid1())
+        self.proximity_status = ProximityStatus(self)
+        self.location = 'home'
 
         # Load broker configuration
         try:
@@ -94,6 +115,13 @@ class Core(object):
             print("Waiting for config")
             while not self.config:
                 self.connection.process_data_events()
+        # set some stuff that would be triggered by getting config.
+        # this is probably not nicely done.
+        else:
+            try:
+                self.location = self.config['locations'][self.hostname]
+            except Exception as e:
+                pass
 
         # Create request & response channels
         self.request_channel = BroadcastChannel(self, 'request')
@@ -104,6 +132,10 @@ class Core(object):
         # Create messaging channels
         self.message_channel = BroadcastChannel(self, 'message')
         self.message_channel.add_listener(self.message_listener)
+
+        # proximity stuff
+        self.proximity_channel = BroadcastChannel(self, 'proximity')
+        self.proximity_channel.add_listener(self.proximity_listener)
 
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
@@ -175,6 +207,11 @@ class Core(object):
         if not self.config:
             print("Received config");
             self.config = msg
+
+            try:
+                self.location = self.config['locations'][self.hostname]
+            except Exception as e:
+                self.location = 'home'
         else:
             if self.config != msg:
                 print("The configuration file has changed. Exiting!")
@@ -193,6 +230,16 @@ class Core(object):
         
         for p in self.plugins:
             p.process_message(message)
+
+    # proximity channel methods
+    def proximity_listener(self, status):
+        self.proximity_status.update_all_status(status)
+        for p in self.plugins:
+            p.process_proximity_event(status[self.location])
+
+    def proximity_event(self, status):
+        if self.proximity_status != status:
+            self.proximity_channel.send(status)
 
 
     # base methods

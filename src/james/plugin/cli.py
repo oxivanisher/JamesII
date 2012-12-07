@@ -32,6 +32,13 @@ class ConsoleThread(threading.Thread):
                 message.header = "Test Head"
                 message.level = 1
                 message.send()
+            elif (line == 'prx'):
+                print("proximity_status : %s" % (self.plugin.core.proximity_status.get_all_status()))
+                print("self.location : %s" % (self.plugin.core.location))
+            elif (line == 'prx_home'):
+                self.plugin.core.proximity_status.set_status_here(True)
+            elif (line == 'prx_away'):
+                self.plugin.core.proximity_status.set_status_here(False)
 
             args = line.split(' ')
             self.plugin.send_command(args)
@@ -62,10 +69,12 @@ class CliPlugin(Plugin):
 
     def process_message(self, message):
         if message.sender_uuid != self.core.uuid:
-            # FIXME: do something meaningful with this message and not just print it :)
-            #        (how can we deliver the message to multiple plugins? plugin class method?)
             print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
             print("Header: '%s'; Body: '%s'" % (message.header, message.body))      
+
+    # proximity methods
+    def process_proximity_event(self, newstatus):
+        print("proximity event fired! '%s'" % (newstatus))
 
 
 

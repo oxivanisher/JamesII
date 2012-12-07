@@ -1,5 +1,6 @@
 
 import bluetooth
+import sys
 
 from james.plugin import *
 
@@ -16,24 +17,36 @@ class ProximityPlugin(Plugin):
     def cmd_scan(self, args):
         print("kk")
 
-        if sys.platform == "linux2":
-            bluetooth._checkaddr(address)
-            sock = bluetooth._gethcisock(device)
-            timeoutms = int(timeout * 1000)
-            try:
-                name = bluetooth._bt.hci_read_remote_name( sock, address, timeoutms )
-            except bluetooth._bt.error, e:
-                print e
-                logger.debug("Lookup Failed")
-                # name lookup failed.  either a timeout, or I/O error
-                name = None
-            sock.close()
-            return name
-        elif sys.platform == "win32":
-            if not bluetooth.is_valid_address(address):
-                raise ValueError("Invalid Bluetooth address")
+        address = self.core.config['proximity']['watch_mac']
+
+        print "performing inquiry..."
+
+        nearby_devices = bluetooth.discover_devices(lookup_names = True)
+
+        print "found %d devices" % len(nearby_devices)
+
+        for addr, name in nearby_devices:
+            print "  %s - %s" % (addr, name)
+
+        # if sys.platform == "linux2":
+        #     print(bluetooth)
+        #     bluetooth._checkaddr(address)
+        #     sock = bluetooth._gethcisock(device)
+        #     timeoutms = int(timeout * 1000)
+        #     try:
+        #         name = bluetooth._bt.hci_read_remote_name( sock, address, timeoutms )
+        #     except bluetooth._bt.error, e:
+        #         print e
+        #         logger.debug("Lookup Failed")
+        #         # name lookup failed.  either a timeout, or I/O error
+        #         name = None
+        #     sock.close()
+        #     return name
+        # elif sys.platform == "win32":
+        #     if not bluetooth.is_valid_address(address):
+        #         raise ValueError("Invalid Bluetooth address")
                 
-            return bluetooth.bt.lookup_name( address )
+        #     return bluetooth.bt.lookup_name( address )
 
         
 

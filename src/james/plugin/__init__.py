@@ -103,6 +103,9 @@ class Plugin(object):
     def process_message(self, message):
         pass
 
+    # proximity methods
+    def process_proximity_event(self, newstatus):
+        pass
 
 class PluginNotAvailable(Exception):
     pass

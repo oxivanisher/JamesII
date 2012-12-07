@@ -48,7 +48,6 @@ class JamesMessage (object):
 		return message
 		
 	def set(self, message):
-		print("::%s" % message)
 		self.timestamp = message['timestamp']
 
 		self.sender_host = message['sender_host']

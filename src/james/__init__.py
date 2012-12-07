@@ -186,8 +186,10 @@ class Core(object):
 	def message_listener(self, msg):
 		message = jamesmessage.JamesMessage(self, "recieved message")
 		message.set(msg)
+		
 		for p in self.plugins:
 			p.process_message(message)
+
 
 	# base methods
 	def run(self):

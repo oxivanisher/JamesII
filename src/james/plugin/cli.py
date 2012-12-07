@@ -28,8 +28,9 @@ class ConsoleThread(threading.Thread):
 			elif (line == 'message'):
 				print("Sending test message")
 				message = self.plugin.core.new_message("cli_test")
-				message.body = "message body"
-				message.head = "message head"
+				message.body = "Test Body"
+				message.header = "Test Head"
+				message.level = 1
 				message.send()
 
 			args = line.split(' ')
@@ -59,7 +60,12 @@ class CliPlugin(Plugin):
 	def process_command_response(self, args):
 		print '\n'.join(args)
 
-
+	def process_message(self, message):
+		if message.sender_uuid != self.core.uuid:
+			# FIXME: do something meaningful with this message and not just print it :)
+			#        (how can we deliver the message to multiple plugins? plugin class method?)
+			print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
+			print("Header: '%s'; Body: '%s'" % (message.header, message.body))		
 
 
 

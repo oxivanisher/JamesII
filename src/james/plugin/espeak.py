@@ -21,7 +21,12 @@ class EspeakPlugin(Plugin):
 		subprocess.call(['/usr/bin/espeak', msg])
 
 	def process_message(self, message):
-		print("espeak is processing a message! :DD")
+		if message.level > 0:
+			print("Espeak is speaking a message from %s@%s:\n%s:%s" % (message.sender_name,
+																	message.sender_host,
+																	message.header,
+																	message.body))
+			self.speak(message.header + message.body)
 
 descriptor = {
 	'name' : 'espeak',

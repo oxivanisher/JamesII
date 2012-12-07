@@ -2,7 +2,8 @@
 core:
  timezone   : Europe/Zurich
 
-xmpp_alert:
+# plugin configurations
+xmpp:
  destination: your@jid
  jid        : botJid/resource
  password   : password

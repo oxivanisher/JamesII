@@ -175,6 +175,10 @@ class Core(object):
 		if not self.config:
 			print("Received config");
 			self.config = msg
+		else:
+			if self.config != msg:
+				print("The configuration file has changed. Exiting!")
+				self.terminate()
 
 	# message channel methods
 	def send_message(self, msg):

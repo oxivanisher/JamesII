@@ -69,18 +69,18 @@ class Plugin(object):
         self.send_request(self.uuid, 'cmd', args)
 
     def send_request(self, uuid, name, body):
-        self.core.send_request(uuid, name, body)
+        self.core.send_request(uuid, name, body, self.core.hostname)
 
     def send_response(self, uuid, name, body):
-        self.core.send_response(uuid, name, body)
+        self.core.send_response(uuid, name, body, self.core.hostname)
 
-    def handle_request(self, uuid, name, body):
+    def handle_request(self, uuid, name, body, host):
         if name == 'cmd':
             res = self.process_command(body)
             if res:
                 self.send_response(uuid, name, res)
 
-    def handle_response(self, uuid, name, body):
+    def handle_response(self, uuid, name, body, host):
         if uuid == self.uuid:
             if name == 'cmd':
                 args = body
@@ -109,6 +109,13 @@ class Plugin(object):
 
     # discovery event method
     def process_discovery_event(self, msg):
+        pass
+
+    # command event methods
+    def process_command_request_event(self, msg):
+        pass
+
+    def process_command_response_event(self, msg):
         pass
 
 class PluginNotAvailable(Exception):

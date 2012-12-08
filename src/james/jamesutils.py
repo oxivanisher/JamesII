@@ -41,7 +41,7 @@ class JamesUtils(object):
         newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
                                                               microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
         if age == 0:
-            return 'infinite'
+            return 'just now'
         elif age < 60:
             return '%s seconds ago' % (age)
         elif age < 3600:

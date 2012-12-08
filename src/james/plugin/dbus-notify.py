@@ -16,32 +16,32 @@ class DbusNotifyPlugin(Plugin):
         self.notifyid = 0
 
     def process_message(self, message):
-        if message.level > 0:
+        #if message.level > 0:
 
-            # Connect to notification interface on DBUS.
-            self.notifyservice = self.bus.get_object(
-                'org.freedesktop.Notifications',
-                '/org/freedesktop/Notifications'
-            )
-            self.notifyservice = dbus.Interface(
-                self.notifyservice,
-                "org.freedesktop.Notifications"
-            )
+        # Connect to notification interface on DBUS.
+        self.notifyservice = self.bus.get_object(
+            'org.freedesktop.Notifications',
+            '/org/freedesktop/Notifications'
+        )
+        self.notifyservice = dbus.Interface(
+            self.notifyservice,
+            "org.freedesktop.Notifications"
+        )
 
-            # The second param is the replace id, so get the notify id back,
-            # store it, and send it as the replacement on the next call.
-            self.notifyid = self.notifyservice.Notify(
-                "JamesII Message",
-                self.notifyid,
-                '',
-                ("%s (%s@%s)\n" % (message.header,
-                                 message.sender_name,
-                                 message.sender_host)),
-                ("%s" % (message.body)),
-                [],
-                {},
-                2
-            )
+        # The second param is the replace id, so get the notify id back,
+        # store it, and send it as the replacement on the next call.
+        self.notifyid = self.notifyservice.Notify(
+            "JamesII Message",
+            self.notifyid,
+            '',
+            ("%s (%s@%s)\n" % (message.header,
+                             message.sender_name,
+                             message.sender_host)),
+            ("%s" % (message.body)),
+            [],
+            {},
+            2
+        )
 
 descriptor = {
     'name' : 'dbus-notify',

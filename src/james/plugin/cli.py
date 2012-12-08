@@ -36,9 +36,9 @@ class ConsoleThread(threading.Thread):
                 print("proximity_status : %s" % (self.plugin.core.proximity_status.get_all_status()))
                 print("self.location : %s" % (self.plugin.core.location))
             elif (line == 'prx_home'):
-                self.plugin.core.proximity_status.set_status_here(True)
+                self.plugin.core.proximity_status.set_status_here(True, 'cli')
             elif (line == 'prx_away'):
-                self.plugin.core.proximity_status.set_status_here(False)
+                self.plugin.core.proximity_status.set_status_here(False, 'cli')
 
             args = line.split(' ')
             self.plugin.send_command(args)

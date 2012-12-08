@@ -60,7 +60,7 @@ class ProximityPlugin(Plugin):
             client_socket.close()
 
         if self.status != self.oldstatus:
-            self.core.proximity_status.set_status_here(self.status)
+            self.core.proximity_status.set_status_here(self.status, 'btproximity')
 
 
         # if sys.platform == "linux2":

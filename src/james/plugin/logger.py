@@ -23,6 +23,7 @@ class LoggerPlugin(Plugin):
         pass
 
     def process_message(self, message):
+        print("process message event: %s" % (message))
         pass
         # if message.level > 0:
         #     if self.unmuted:
@@ -35,23 +36,29 @@ class LoggerPlugin(Plugin):
         #         self.archived[message.timestamp] = message.header
 
     def process_proximity_event(self, newstatus):
+        print("process proximity event: %s - %s" % (self.core.location, newstatus)) #ok
         pass
         # self.unmuted = newstatus
         # if newstatus:
         #     self.greet_homecomer()
 
-    def process_command_event(self, command):
+    def process_command_request_event(self, command):
+        print("process command request event: %s" % (command))
+        pass
+
+    def process_command_response_event(self, command):
+        print("process command response event: %s" % (command))
         pass
 
     def process_discovery_event(self, msg):
+        print("process discovery event: %s" % (msg)) #ok
         pass
 
-
-    # command methods
-    def handle_request(self, uuid, name, body):
+    def process_config_event(self, config):
+        print("process config event: %s" % (config)) #ok
         pass
 
-    def handle_response(self, uuid, name, body):
+    def format_output(self, ):
         pass
 
 

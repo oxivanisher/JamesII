@@ -13,7 +13,8 @@ class EspeakPlugin(Plugin):
         self.core = core
         self.unmuted = self.core.proximity_status.get_status_here()
 
-        self.create_command('say', self.cmd_say, 'say something')
+        self.create_command('espeak_say', self.cmd_say, 'say something')
+        self.create_command('espeak_showarchive', self.cmd_showarchive, 'shows the message archive')
         self.archived = {}
 
     def terminate(self):
@@ -21,6 +22,17 @@ class EspeakPlugin(Plugin):
 
     def cmd_say(self, args):
         self.speak(' '.join(args))
+
+    def cmd_showarchive(self, args):
+        ret = ""
+        if len(self.archived):
+        # reading the log
+            for timestamp in self.archived.keys():
+                ret += ("%-20s %s\n" % (self.core.utils.get_nice_age(int(timestamp)), self.archived[timestamp]))
+        else:
+            ret = "No Messages waiting"
+
+        return ret
 
     def speak(self, msg):
         subprocess.call(['/usr/bin/espeak', msg])
@@ -48,10 +60,13 @@ class EspeakPlugin(Plugin):
                 self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived[timestamp])
             self.archived = {}
             self.speak('End of Log')
+        else:
+            self.speak('Nothing happend while we where apart.')
 
     def process_proximity_event(self, newstatus):
-        self.unmuted = newstatus
-        if newstatus:
+        print newstatus['status'][self.core.location]
+        self.unmuted = newstatus['status'][self.core.location]
+        if newstatus['status'][self.core.location]:
             self.greet_homecomer()
 
 descriptor = {

@@ -51,13 +51,21 @@ class ProximityStatus(object):
         self.status['home'] = False
         self.core = core
 
-    def set_status_here(self, value):
-        print("Setting local (%s) status to: %s" % (self.core.location, value))
-        self.status[self.core.location] = value
-        self.core.proximity_event(self.status)
+    def set_status_here(self, value, plugin):
+        if self.status[self.core.location] != value:
+            self.core.proximity_event(value, plugin)
     
-    def update_all_status(self, newstatus):
+    def update_all_status(self, newstatus, plugin):
+        if self.status != newstatus:
+            fire_event = True
+        else:
+            fire_event = False
+
         self.status = newstatus
+
+        if fire_event:
+            self.core.proximity_event(newstatus[self.core.location], plugin)
+
 
     def get_all_status(self):
         return self.status
@@ -180,20 +188,22 @@ class Core(object):
         sys.stdout.write("\n")
 
     # command channel methods
-    def send_request(self, uuid, name, body):
+    def send_request(self, uuid, name, body, host):
         """Sends a request."""
-        self.request_channel.send({'uuid': uuid, 'name': name, 'body': body})
+        self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host})
 
-    def send_response(self, uuid, name, body):
-        self.response_channel.send({'uuid': uuid, 'name': name, 'body': body})
+    def send_response(self, uuid, name, body, host):
+        self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host})
 
     def request_listener(self, msg):
         for p in self.plugins:
-            p.handle_request(msg['uuid'], msg['name'], msg['body'])
+            p.process_command_request_event(msg)
+            p.handle_request(msg['uuid'], msg['name'], msg['body'], msg['host'])
 
     def response_listener(self, msg):
         for p in self.plugins:
-            p.handle_response(msg['uuid'], msg['name'], msg['body'])
+            p.process_command_response_event(msg)
+            p.handle_response(msg['uuid'], msg['name'], msg['body'], msg['host'])
 
     # configuration & config channel methods
     def discovery_listener(self, msg):
@@ -234,21 +244,37 @@ class Core(object):
             p.process_message(message)
 
     # proximity channel methods
-    def proximity_listener(self, status):
-        self.proximity_status.update_all_status(status)
-        for p in self.plugins:
-            p.process_proximity_event(status[self.location])
+    def proximity_listener(self, msg):
+        if self.proximity_status.get_status_here() != msg['status'][self.location]:
+            for p in self.plugins:
+                p.process_proximity_event(msg)
+        self.proximity_status.update_all_status(msg['status'], msg['plugin'])
 
-    def proximity_event(self, status):
-        if self.proximity_status != status:
+    def proximity_event(self, changedstatus, pluginname):
+        newstatus = {}
+        oldstatus = self.proximity_status.get_all_status()
+
+        if oldstatus[self.location] != changedstatus:
             message = jamesmessage.JamesMessage(self, "Proximity Message")
+            message.body = ("From %s" % (pluginname))
             message.level = 0
-            if status[self.location]:
-                message.header = "Welcome home."
+            if changedstatus:
+                message.header = "You came back."
             else:
                 message.header = "You left."
             message.send()
-            self.proximity_channel.send(status)
+
+            for location in oldstatus:
+                if location == self.location:
+                    newstatus[location] = changedstatus
+                else:
+                    newstatus[location] = oldstatus[location]
+
+            self.proximity_channel.send({'status' : newstatus,
+                                         'host' : self.hostname,
+                                         'plugin' : pluginname,
+                                         'location' : self.location })
+
 
 
 
@@ -262,6 +288,7 @@ class Core(object):
                 self.terminate()
         
     def terminate(self):
+        self.discovery_channel.send(['byebye', self.hostname])
         for p in self.plugins:
             p.terminate()
         print("I shall die now.")

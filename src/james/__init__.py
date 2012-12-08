@@ -71,7 +71,7 @@ class Core(object):
 
         self.plugins = []
         self.terminated = False
-        self.hostname = socket.getfqdn(socket.gethostname())
+        self.hostname = socket.gethostname()
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
@@ -202,6 +202,8 @@ class Core(object):
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)
+        for p in self.plugins:
+            p.process_discovery_event(msg)
 
     def config_listener(self, msg):
         if not self.config:

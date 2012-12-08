@@ -103,8 +103,12 @@ class Plugin(object):
     def process_message(self, message):
         pass
 
-    # proximity methods
+    # proximity event method
     def process_proximity_event(self, newstatus):
+        pass
+
+    # discovery event method
+    def process_discovery_event(self, msg):
         pass
 
 class PluginNotAvailable(Exception):

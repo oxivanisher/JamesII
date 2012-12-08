@@ -17,8 +17,8 @@ class JamesMessage (object):
         self.reciever_uuid = None
         self.reciever_name = None
 
-        self.body = None
-        self.header = None
+        self.body = ""
+        self.header = ""
         self.level = 0 #0: Debug, 1: Info, 2: Warn, 3: Error
 
         self.payload = None

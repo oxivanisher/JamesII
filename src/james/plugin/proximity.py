@@ -1,6 +1,7 @@
 
-import bluetooth
+from bluetooth import *
 import sys
+import re
 
 from james.plugin import *
 
@@ -9,24 +10,58 @@ class ProximityPlugin(Plugin):
     def __init__(self, core):
         super(ProximityPlugin, self).__init__(core, ProximityPlugin.name)
 
-        self.create_command('scan', self.cmd_scan, 'proximity scan')
+        self.create_command('bt_scan', self.cmd_scan, 'scan for visible bluetooth devices')
+        self.create_command('prx_scan', self.cmd_proximity_check, 'proximity scan')
+
+        self.status = False
 
     def terminate(self):
         pass
 
     def cmd_scan(self, args):
-        print("kk")
+        print("Scanning for visible bluetooth devices...")
 
-        address = self.core.config['proximity']['watch_mac']
-
-        print "performing inquiry..."
-
-        nearby_devices = bluetooth.discover_devices(lookup_names = True)
+        nearby_devices = DeviceDiscoverer().discover_devices(lookup_names = True)
 
         print "found %d devices" % len(nearby_devices)
 
         for addr, name in nearby_devices:
             print "  %s - %s" % (addr, name)
+
+    def cmd_proximity_check(self, args):
+        self.oldstatus = self.status
+        self.status = False
+
+        # so mach man es richtig:
+        # http://code.google.com/p/pybluez/source/browse/trunk/examples/advanced/inquiry-with-rssi.py?r=12
+
+        for name in self.core.config['proximity']['watch_bt'].keys():
+            client_socket=BluetoothSocket( RFCOMM ) # L2CAP
+
+            mac = self.core.config['proximity']['watch_bt'][name]
+            print("Scanning for %s (%s)" % (name, mac))
+
+            try:
+                client_socket.connect((mac, 3))
+                self.status = True
+            except bluetooth._bt.error, e:
+                print e
+                print("Result: %s" % (e[0]))
+                errnum = re.search('^\(([:num:]).*$', str(e))
+                print errnum
+                for t in e:
+                    print ("::%s" % (t))
+                if e[0] == 112: #Host is not reachable
+                    print("Host is away")
+                else:
+                    print("Host is home")
+                    self.status = True
+
+            client_socket.close()
+
+        if self.status != self.oldstatus:
+            self.core.proximity_status.set_status_here(self.status)
+
 
         # if sys.platform == "linux2":
         #     print(bluetooth)

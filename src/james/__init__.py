@@ -240,11 +240,11 @@ class Core(object):
     def proximity_event(self, status):
         if self.proximity_status != status:
             message = jamesmessage.JamesMessage(self, "Proximity Message")
-            message.level = 2
+            message.level = 0
             if status[self.location]:
-                message.header = "Welcome home"
+                message.header = "Welcome home."
             else:
-                message.header = "Bye bye"
+                message.header = "You left."
             message.send()
             self.proximity_channel.send(status)
 

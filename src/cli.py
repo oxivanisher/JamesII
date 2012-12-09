@@ -3,6 +3,6 @@
 import sys
 import james
 
-core = james.Core()
+core = james.Core(True)
 core.load_plugin('cli')
 core.run()

@@ -75,7 +75,7 @@ class ProximityStatus(object):
 
 class Core(object):
     def __init__(self):
-        sys.stdout.write('JamesII starting up')
+        output = 'JamesII starting up'
 
         self.plugins = []
         self.terminated = False
@@ -99,9 +99,12 @@ class Core(object):
         try:
             self.config = config.YamlConfig("../config/config.yaml").get_values()
             self.master = True
-            sys.stdout.write(" (master mode)\n")
+            output += " (master mode)"
         except Exception as e:
-            sys.stdout.write(" (client mode)\n")
+            output += " (client mode)"
+
+        # Show welcome header
+        print output
 
         # Create global connection
         try:
@@ -130,6 +133,10 @@ class Core(object):
                 self.location = self.config['locations'][self.hostname]
             except Exception as e:
                 pass
+
+        # Show if we are in debug mode
+        if self.config['core']['debug']:
+            print("Debug mode activated")
 
         # Create request & response channels
         self.request_channel = BroadcastChannel(self, 'request')
@@ -160,18 +167,20 @@ class Core(object):
 
     def autoload_plugins(self):
 
-        sys.stdout.write("Ignoring manual plugins:")
+        output = "Ignoring manual plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
-            sys.stdout.write(" %s" % (c.name))
-        sys.stdout.write("\n")
+            output += (" %s" % (c.name))
+        if self.config['core']['debug']:
+            print(output)
 
-        sys.stdout.write("Autoloading plugins:")
+        output = "Autoloading plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
-            sys.stdout.write(" %s" % (c.name))
+            output += (" %s" % (c.name))
             self.plugins.append(c(self))
-        sys.stdout.write("\n")
+        if self.config['core']['debug']:
+            print(output)
 
-        sys.stdout.write("Loading managed plugins:")
+        output = "Loading managed plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
             load_plugin = False
 
@@ -180,35 +189,37 @@ class Core(object):
                     load_plugin = True
 
             if load_plugin:
-                sys.stdout.write(" +%s" % (c.name))
+                output += (" +%s" % (c.name))
                 self.plugins.append(c(self))
             else:
-                sys.stdout.write(" -%s" % (c.name))
+                output += (" -%s" % (c.name))
 
-        sys.stdout.write("\n")
+        if self.config['core']['debug']:
+            print(output)
 
     # command channel methods
-    def send_request(self, uuid, name, body, host):
+    def send_request(self, uuid, name, body, host, plugin):
         """Sends a request."""
-        self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host})
+        self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
-    def send_response(self, uuid, name, body, host):
-        self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host})
+    def send_response(self, uuid, name, body, host, plugin):
+        self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def request_listener(self, msg):
         for p in self.plugins:
             p.process_command_request_event(msg)
-            p.handle_request(msg['uuid'], msg['name'], msg['body'], msg['host'])
+            p.handle_request(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
 
     def response_listener(self, msg):
         for p in self.plugins:
             p.process_command_response_event(msg)
-            p.handle_response(msg['uuid'], msg['name'], msg['body'], msg['host'])
+            p.handle_response(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
 
     # configuration & config channel methods
     def discovery_listener(self, msg):
         if msg[0] == 'hello':
-            print("Discovered new host '%s'" % (msg[1]))
+            if self.config['core']['debug']:
+                print("Discovered new host '%s'" % (msg[1]))
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)
@@ -217,7 +228,8 @@ class Core(object):
 
     def config_listener(self, msg):
         if not self.config:
-            print("Received config");
+            if self.config['debug']:
+                print("Received config")
             self.config = msg
 
             try:
@@ -255,7 +267,7 @@ class Core(object):
         oldstatus = self.proximity_status.get_all_status()
 
         if oldstatus[self.location] != changedstatus:
-            message = jamesmessage.JamesMessage(self, "Proximity Message")
+            message = jamesmessage.JamesMessage(self, "core")
             message.body = ("From %s" % (pluginname))
             message.level = 0
             if changedstatus:

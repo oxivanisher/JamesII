@@ -15,7 +15,7 @@ class ConsoleThread(threading.Thread):
     def run(self):
         while (not self.terminated):
             try:
-                sys.stdout.write('# ')
+                #sys.stdout.write('# ')
                 line = sys.stdin.readline()
             except KeyboardInterrupt:
                 self.plugin.core.terminate()
@@ -23,10 +23,10 @@ class ConsoleThread(threading.Thread):
             if (line == 'exit'):
                 self.plugin.core.terminate()
             elif (line == 'dump_config'):
-                print("Dumping config:")
+                print("dumping config:")
                 print(yaml.dump(self.plugin.core.config))
             elif (line == 'message'):
-                print("Sending test message")
+                print("sending test message")
                 message = self.plugin.core.new_message("cli_test")
                 message.body = "Test Body"
                 message.header = "Test Head"
@@ -40,8 +40,11 @@ class ConsoleThread(threading.Thread):
             elif (line == 'prx_away'):
                 self.plugin.core.proximity_status.set_status_here(False, 'cli')
 
-            args = line.split(' ')
-            self.plugin.send_command(args)
+            if len(line.rstrip()) > 0:
+                args = line.split(' ')
+                self.plugin.send_command(args)
+            else:
+                print("enter 'help' for a list of available commands.")
 
     def terminate(self):
         self.terminated = True

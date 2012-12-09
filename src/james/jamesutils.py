@@ -69,7 +69,7 @@ class JamesUtils(object):
                 return '%.1f%s' % (value, s)
         return "%sB" % n
 
-    def wake_on_lan(macaddress):
+    def wake_on_lan(self, macaddress):
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """
 

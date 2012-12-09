@@ -13,6 +13,12 @@ class ConsoleThread(threading.Thread):
         self.terminated = False
 
     def run(self):
+
+        sys.stdout.write('Interactive cli interface to james online. server: ')
+        sys.stdout.write(self.plugin.core.brokerconfig['host'] + ':')
+        sys.stdout.write('%s\n' % (self.plugin.core.brokerconfig['port']))
+        sys.stdout.write('basic commands are help, message, dump_config and exit.' + '\n')
+
         while (not self.terminated):
             try:
                 #sys.stdout.write('# ')
@@ -55,21 +61,27 @@ class CliPlugin(Plugin):
     def __init__(self, core):
         super(CliPlugin, self).__init__(core, CliPlugin.name)
 
-        self.console_thread = ConsoleThread(self)
+        self.console_thread = None
+        self.cmd_line_mode = len(sys.argv) > 1
 
-        sys.stdout.write('Interactive cli interface to james online. server: ')
-        sys.stdout.write(self.core.brokerconfig['host'] + ':')
-        sys.stdout.write('%s\n' % (self.core.brokerconfig['port']))
-        sys.stdout.write('basic commands are help, message, dump_config and exit.' + '\n')
-
-        self.console_thread.start()
+    def start(self):
+        if self.cmd_line_mode:
+            self.send_command(sys.argv[1:])
+            self.core.add_timeout(2, self.timeout_handler)
+        else:
+            self.console_thread = ConsoleThread(self)
+            self.console_thread.start()
 
     def terminate(self):
-        self.console_thread.terminate()
+        if self.console_thread:
+            self.console_thread.terminate()
 
     def process_command_response(self, args, host, plugin):
         for line in args:
             print ("%10s@%-10s > %s" % (plugin, host, line))
+
+    def timeout_handler(self):
+        self.core.terminate()
 
 descriptor = {
     'name' : 'cli',

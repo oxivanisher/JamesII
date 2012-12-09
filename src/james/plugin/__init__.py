@@ -69,18 +69,18 @@ class Plugin(object):
         self.send_request(self.uuid, 'cmd', args)
 
     def send_request(self, uuid, name, body):
-        self.core.send_request(uuid, name, body, self.core.hostname)
+        self.core.send_request(uuid, name, body, self.core.hostname, self.name)
 
     def send_response(self, uuid, name, body):
-        self.core.send_response(uuid, name, body, self.core.hostname)
+        self.core.send_response(uuid, name, body, self.core.hostname, self.name)
 
-    def handle_request(self, uuid, name, body, host):
+    def handle_request(self, uuid, name, body, host, plugin):
         if name == 'cmd':
             res = self.process_command(body)
             if res:
                 self.send_response(uuid, name, res)
 
-    def handle_response(self, uuid, name, body, host):
+    def handle_response(self, uuid, name, body, host, plugin):
         if uuid == self.uuid:
             if name == 'cmd':
                 args = body
@@ -158,7 +158,8 @@ class Factory(object):
         files = os.listdir(path)
         plugin_load_error = []
 
-        sys.stdout.write("Discovering plugins:")
+        output = "Discovering plugins:"
+        #sys.stdout.write("Discovering plugins:")
         for f in files:
             # Get module filename and extension
             (name, ext) = os.path.splitext(os.path.basename(f))
@@ -166,7 +167,7 @@ class Factory(object):
             if ext != '.py' or name == '__init__':
                 continue
             # Load plugin
-            sys.stdout.write(" %s" % (name))
+            output += (" %s" % (name))
             plugin = None
             info = imp.find_module(name, [path])
             try:
@@ -182,7 +183,9 @@ class Factory(object):
                 plugin_load_error.append("Plugin '%s' has no valid descriptor" % (name))
                 continue
 
-        sys.stdout.write("\n")
+        print(output)
+        # FIXME: wie mache ich hier core.config['core']['debug'] ?
+
         for e in plugin_load_error:
             print(e)
 

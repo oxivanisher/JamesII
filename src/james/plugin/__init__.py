@@ -188,6 +188,7 @@ class Factory(object):
 
         print(output)
         # FIXME: wie mache ich hier core.config['core']['debug'] ?
+        # -->> logger package
 
         for e in plugin_load_error:
             print(e)

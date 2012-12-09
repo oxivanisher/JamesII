@@ -14,7 +14,8 @@ class SystemPlugin(Plugin):
 
     def cmd_sys(self, args):
         sub_commands = {'ip' : self.get_ip,
-                        'quit' : self.cmd_quit}
+                        'quit' : self.cmd_quit,
+                        'ping' : self.cmd_ping}
         if os.path.isfile('/usr/bin/git'):
             sub_commands['version'] = self.version
         output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
@@ -45,6 +46,9 @@ class SystemPlugin(Plugin):
     def get_ip(self, args):
         return commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'")
+
+    def cmd_ping(self, args):
+        self.core.discovery_channel.send(['ping', self.core.hostname, self.core.uuid])
 
 descriptor = {
     'name' : 'system',

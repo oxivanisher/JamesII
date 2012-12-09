@@ -119,7 +119,7 @@ class Core(object):
         self.config_channel.add_listener(self.config_listener)
 
         # Send hello
-        self.discovery_channel.send(['hello', self.hostname])
+        self.discovery_channel.send(['hello', self.hostname, self.uuid])
 
         # Wait for configuration if not master
         if not self.master:
@@ -218,7 +218,6 @@ class Core(object):
     # configuration & config channel methods
     def discovery_listener(self, msg):
         if msg[0] == 'hello':
-
             show_message = True
             try:
                 if not self.config['core']['debug']:
@@ -226,12 +225,16 @@ class Core(object):
             except TypeError as e:
                 pass
 
-            if show_message and msg[1] != self.hostname:
-                print("Discovered new host '%s'" % (msg[1]))
+            if show_message and msg[2] != self.uuid:
+                print("Discovered new host or instance '%s' (%s)" % (msg[1], msg[2]))
 
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)
+
+        elif msg[0] == 'ping':
+            self.discovery_channel.send(['pong', self.hostname, self.uuid])
+
         for p in self.plugins:
             p.process_discovery_event(msg)
 
@@ -317,7 +320,7 @@ class Core(object):
                 self.terminate()
         
     def terminate(self):
-        self.discovery_channel.send(['byebye', self.hostname])
+        self.discovery_channel.send(['byebye', self.hostname, self.uuid])
         for p in self.plugins:
             p.terminate()
         print("I shall die now.")

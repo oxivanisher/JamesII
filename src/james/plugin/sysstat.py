@@ -11,18 +11,27 @@ class SysstatPlugin(Plugin):
     def __init__(self, core):
         super(SysstatPlugin, self).__init__(core, SysstatPlugin.name)
 
-        #FIXME: insert hierarchical commands here .... plx
-        self.create_command('sysstat_mount', self.cmd_sysstat_mount, 'show mounted partitions')
-        self.create_command('sysstat_uptime', self.cmd_sysstat_uptime, 'show system uptime')
-        self.create_command('sysstat_net', self.cmd_sysstat_net, 'show system network informations')
-        self.create_command('sysstat_who', self.cmd_sysstat_who, 'shows logged in users')
-        self.create_command('sysstat_cpu', self.cmd_sysstat_cpu, 'shows cpu load info')
-        self.create_command('sysstat_memory', self.cmd_sysstat_memory, 'shows memory information')
+        self.create_command('sysstat', self.cmd_sysstat, 'psutil system stats')
 
-    def terminate(self):
-        pass
+    def cmd_sysstat(self, args):
+        sub_commands = {'mount' : self.sysstat_mount,
+                        'uptime' : self.sysstat_uptime,
+                        'net' : self.sysstat_net,
+                        'who' : self.sysstat_who,
+                        'cpu' : self.sysstat_cpu,
+                        'mem' : self.sysstat_mem}
 
-    def cmd_sysstat_mount(self, args):
+        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
+        try:
+            user_command = args[0]
+        except Exception as e:
+            return (output)
+        for command in sub_commands.keys():
+            if command == user_command:
+                return sub_commands[command](args[1:])
+        return (output)        
+
+    def sysstat_mount(self, args):
         partitions = psutil.disk_partitions()
         return_str = []
         for partition in partitions:
@@ -31,12 +40,12 @@ class SysstatPlugin(Plugin):
                     (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free))
         return return_str
 
-    def cmd_sysstat_uptime(self, args):
+    def sysstat_uptime(self, args):
         return 'The System started %s, JamesII %s.' % \
                 (self.core.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))), 
                 self.core.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))
 
-    def cmd_sysstat_net(self, args):
+    def sysstat_net(self, args):
         interfaces = psutil.network_io_counters(pernic=True)
         return_str = []
         for interface in interfaces:
@@ -48,7 +57,7 @@ class SysstatPlugin(Plugin):
                                     self.core.utils.bytes2human(netif.bytes_recv)))
         return return_str
 
-    def cmd_sysstat_who(self, args):
+    def sysstat_who(self, args):
         users = psutil.get_users()
         return_str = []
         for user in users:
@@ -61,7 +70,7 @@ class SysstatPlugin(Plugin):
             )
         return return_str
 
-    def cmd_sysstat_cpu(self, args):
+    def sysstat_cpu(self, args):
         return_str = []
         total = float()
         ret_str = ""
@@ -72,7 +81,7 @@ class SysstatPlugin(Plugin):
         return_str.append("load avg %3s%%; threads %s" % (int(total / psutil.NUM_CPUS), ret_str))
         return return_str
 
-    def cmd_sysstat_memory(self, args):
+    def sysstat_mem(self, args):
         mem_avail = True
         try:
             mem = psutil.virtual_memory()
@@ -104,7 +113,6 @@ class SysstatPlugin(Plugin):
                                 self.core.utils.bytes2human(swap.free)))
 
         return return_str
-
 
 descriptor = {
     'name' : 'sysstat',

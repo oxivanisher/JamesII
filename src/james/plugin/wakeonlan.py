@@ -13,19 +13,18 @@ class WakeOnLanPlugin(Plugin):
         self.create_command('wol', self.cmd_wol, 'wake on lan')
 
     def cmd_wol(self, args):
-        sub_commands = "list, wake"
+        sub_commands = {'list' : self.wol_list,
+                        'wake' : self.wol_wake}
 
+        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
         try:
-            sub_command = args[0]
+            user_command = args[0]
         except Exception as e:
-            return ("subcommands are: %s" % (sub_commands))
-
-        if sub_command == "list":
-            return self.wol_list(args[1:])
-        elif sub_command == "wake":
-            return self.wol_wake(args[1:])
-        else:
-            return ("invalid subcommand: %s" % (sub_command))
+            return (output)
+        for command in sub_commands.keys():
+            if command == user_command:
+                return sub_commands[command](args[1:])
+        return (output)
 
     def wol_list(self, args):
         return ', '.join(self.core.config['wake_on_lan'].keys())
@@ -35,14 +34,14 @@ class WakeOnLanPlugin(Plugin):
         try:
             host = self.core.config['wake_on_lan'][args[0]]
         except Exception as e:
-            return "No valid hostname given"
+            return "no valid hostname given"
 
         if host:
             self.core.utils.wake_on_lan(host)
-            output = ("Waking up %s (%s)" % (args[0], host))
+            output = ("waking %s (%s)" % (args[0], host))
             
             message = self.core.new_message(self.name)
-            message.header = "Wake on lan"
+            message.header = "Wake on Lan"
             message.body = output
             message.send()
 

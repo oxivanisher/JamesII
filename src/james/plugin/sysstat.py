@@ -11,7 +11,7 @@ class SysstatPlugin(Plugin):
     def __init__(self, core):
         super(SysstatPlugin, self).__init__(core, SysstatPlugin.name)
 
-        self.create_command('sysstat', self.cmd_sysstat, 'psutil system stats')
+        self.create_command('stat', self.cmd_sysstat, 'psutil system stats')
 
     def cmd_sysstat(self, args):
         sub_commands = {'mount' : self.sysstat_mount,

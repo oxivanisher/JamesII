@@ -226,7 +226,7 @@ class Core(object):
             except TypeError as e:
                 pass
 
-            if show_message:
+            if show_message and msg[1] =! self.hostname:
                 print("Discovered new host '%s'" % (msg[1]))
 
             # Broadcast configuration if master
@@ -246,7 +246,7 @@ class Core(object):
 
             if show_message:
                 print("Received config")
-                
+
             self.config = msg
 
             try:

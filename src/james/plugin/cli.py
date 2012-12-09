@@ -67,16 +67,6 @@ class CliPlugin(Plugin):
     def process_command_response(self, args):
         print '\n'.join(args)
 
-    def process_message(self, message):
-        if message.sender_uuid != self.core.uuid:
-            print("Recieved Message from '%s@%s'" % (message.sender_name, message.sender_host))
-            print("Header: '%s'; Body: '%s'" % (message.header, message.body))      
-
-    # proximity methods
-    def process_proximity_event(self, newstatus):
-        print("proximity event fired! '%s'" % (newstatus))
-
-
 
 descriptor = {
     'name' : 'cli',

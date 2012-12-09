@@ -218,8 +218,17 @@ class Core(object):
     # configuration & config channel methods
     def discovery_listener(self, msg):
         if msg[0] == 'hello':
-            if self.config['core']['debug']:
+
+            show_message = True
+            try:
+                if not self.config['core']['debug']:
+                    show_message = False
+            except TypeError as e:
+                pass
+
+            if show_message:
                 print("Discovered new host '%s'" % (msg[1]))
+                
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)

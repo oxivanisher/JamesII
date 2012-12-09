@@ -32,6 +32,9 @@ class Plugin(object):
         self.create_command('help', self.cmd_help, "Show information about plugins commands", True)
         self.create_command('avail', self.cmd_avail, "Show available plugins", True)
 
+    def start(self):
+        pass
+
     def terminate(self):
         pass
 

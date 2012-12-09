@@ -10,15 +10,28 @@ class ProximityPlugin(Plugin):
     def __init__(self, core):
         super(ProximityPlugin, self).__init__(core, ProximityPlugin.name)
 
-        self.create_command('bt_scan', self.cmd_scan, 'scan for visible bluetooth devices')
-        self.create_command('prx_scan', self.cmd_proximity_check, 'proximity scan')
+        self.create_command('prx', self.cmd_prx, 'proximity with bluetooth')
 
         self.status = False
 
     def terminate(self):
         pass
 
-    def cmd_scan(self, args):
+    def cmd_prx(self, args):
+        sub_commands = {'scan' : self.scan,
+                        'proximity' : self.proximity_check}
+
+        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
+        try:
+            user_command = args[0]
+        except Exception as e:
+            return (output)
+        for command in sub_commands.keys():
+            if command == user_command:
+                return sub_commands[command](args[1:])
+        return (output)        
+
+    def scan(self, args):
         print("Scanning for visible bluetooth devices...")
 
         nearby_devices = DeviceDiscoverer().discover_devices(lookup_names = True)
@@ -28,7 +41,7 @@ class ProximityPlugin(Plugin):
         for addr, name in nearby_devices:
             print "  %s - %s" % (addr, name)
 
-    def cmd_proximity_check(self, args):
+    def proximity_check(self, args):
         self.oldstatus = self.status
         self.status = False
 

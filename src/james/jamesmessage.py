@@ -24,7 +24,12 @@ class JamesMessage (object):
         self.payload = None
 
     def send(self):
-        self.core.send_message(self.get())
+        if self.level == 0:
+            if self.core.config['core']['debug']:
+                self.core.send_message(self.get())
+        else:
+            self.core.send_message(self.get())
+
 
     def get(self):
         message = {}

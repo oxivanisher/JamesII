@@ -16,8 +16,6 @@ class DbusNotifyPlugin(Plugin):
         self.notifyid = 0
 
     def process_message(self, message):
-        #if message.level > 0:
-
         # Connect to notification interface on DBUS.
         self.notifyservice = self.bus.get_object(
             'org.freedesktop.Notifications',

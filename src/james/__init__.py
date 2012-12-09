@@ -12,6 +12,17 @@ import config
 import jamesutils
 import jamesmessage
 
+
+# Pika SUPER HACK
+try:
+    pika.adapters.blocking_connection.log
+except AttributeError:
+    class PikaLogDummy(object):
+        def debug(*args):
+            pass
+    pika.adapters.blocking_connection.log = PikaLogDummy()
+
+
 class PluginNotFound(Exception):
     pass
 class ConfigNotLoaded(Exception):
@@ -66,7 +77,6 @@ class ProximityStatus(object):
         if fire_event:
             self.core.proximity_event(newstatus[self.core.location], plugin)
 
-
     def get_all_status(self):
         return self.status
 
@@ -74,7 +84,7 @@ class ProximityStatus(object):
         return self.status[self.core.location]
 
 class Core(object):
-    def __init__(self):
+    def __init__(self, passive = False):
         output = 'JamesII starting up'
 
         self.plugins = []
@@ -86,6 +96,7 @@ class Core(object):
         self.uuid = str(uuid.uuid1())
         self.proximity_status = ProximityStatus(self)
         self.location = 'home'
+
 
         # Load broker configuration
         try:
@@ -99,12 +110,18 @@ class Core(object):
         try:
             self.config = config.YamlConfig("../config/config.yaml").get_values()
             self.master = True
-            output += " (master mode)"
+            mode_output = "master"
         except Exception as e:
-            output += " (client mode)"
+            mode_output = "client"
+
+        # check for passive mode
+        if passive:
+            self.master = False
+            self.config = None
+            mode_output = "passive"
 
         # Show welcome header
-        print output
+        print ("%s (%s mode)" % (output, mode_output))
 
         # Create global connection
         try:
@@ -296,6 +313,7 @@ class Core(object):
                 message.header = "You left."
             message.send()
 
+            # FIXME!!
             for location in oldstatus:
                 if location == self.location:
                     newstatus[location] = changedstatus
@@ -309,9 +327,10 @@ class Core(object):
 
 
 
-
     # base methods
     def run(self):
+        for p in self.plugins:
+            p.start()
         while not self.terminated:
             try:
                 self.connection.process_data_events()
@@ -325,3 +344,6 @@ class Core(object):
             p.terminate()
         print("I shall die now.")
         self.terminated = True
+
+    def add_timeout(self, seconds, handler):
+        self.connection.add_timeout(seconds, handler)

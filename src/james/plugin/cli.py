@@ -64,9 +64,9 @@ class CliPlugin(Plugin):
     def terminate(self):
         self.console_thread.terminate()
 
-    def process_command_response(self, args):
-        print '\n'.join(args)
-
+    def process_command_response(self, args, host, plugin):
+        for line in args:
+            print ("%-10s > %s (%s)" % (host, line, plugin))
 
 descriptor = {
     'name' : 'cli',

@@ -97,7 +97,6 @@ class Core(object):
         self.proximity_status = ProximityStatus(self)
         self.location = 'home'
 
-
         # Load broker configuration
         try:
             self.brokerconfig = config.YamlConfig("../config/broker.yaml").get_values()

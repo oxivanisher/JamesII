@@ -228,7 +228,7 @@ class Core(object):
 
             if show_message:
                 print("Discovered new host '%s'" % (msg[1]))
-                
+
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)
@@ -237,8 +237,16 @@ class Core(object):
 
     def config_listener(self, msg):
         if not self.config:
-            if self.config['debug']:
+            show_message = True
+            try:
+                if not self.config['core']['debug']:
+                    show_message = False
+            except TypeError as e:
+                pass
+
+            if show_message:
                 print("Received config")
+                
             self.config = msg
 
             try:

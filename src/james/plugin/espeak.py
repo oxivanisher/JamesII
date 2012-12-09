@@ -13,24 +13,40 @@ class EspeakPlugin(Plugin):
         self.core = core
         self.unmuted = self.core.proximity_status.get_status_here()
 
-        self.create_command('espeak_say', self.cmd_say, 'say something')
-        self.create_command('espeak_showarchive', self.cmd_showarchive, 'shows the message archive')
-        self.archived = {}
+        self.create_command('espeak', self.cmd_espeak, 'espeak api')
 
-    def terminate(self):
-        pass
+        self.archived_messages = {}
 
-    def cmd_say(self, args):
-        self.speak(' '.join(args))
+    def cmd_espeak(self, args):
+        sub_commands = {'say' : self.espeak_say,
+                        'archive' : self.espeak_archive}
 
-    def cmd_showarchive(self, args):
-        ret = ""
-        if len(self.archived):
+        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
+        try:
+            user_command = args[0]
+        except Exception as e:
+            return (output)
+        for command in sub_commands.keys():
+            if command == user_command:
+                return sub_commands[command](args[1:])
+        return (output)
+
+    def espeak_say(self, args):
+        text = ' '.join(args)
+        if text != '':
+            self.speak(text)
+            return("spoke: '%s'" % (text))
+        return "no text entered"
+
+    def espeak_archive(self, args):
+        ret = []
+        if len(self.archived_messages):
         # reading the log
-            for timestamp in self.archived.keys():
-                ret += ("%-20s %s\n" % (self.core.utils.get_nice_age(int(timestamp)), self.archived[timestamp]))
+            for timestamp in self.archived_messages.keys():
+                ret.append("%-20s %s" % (self.core.utils.get_nice_age(int(timestamp)),
+                                           self.archived_messages[timestamp]))
         else:
-            ret = "No Messages waiting"
+            ret.append("no messages waiting")
 
         return ret
 
@@ -44,29 +60,24 @@ class EspeakPlugin(Plugin):
             message.body = msg
             message.send()
 
-
     def process_message(self, message):
-        if message.level > 0:
+        if message.level > 0: # we really do not want espeak to speak all debug messages
             if self.unmuted:
-                print("Espeak is speaking a message from %s@%s:\n%s:%s" % (message.sender_name,
-                                                                        message.sender_host,
-                                                                        message.header,
-                                                                        message.body))
                 self.speak(message.header)
             else:
-                self.archived[message.timestamp] = message.header
+                self.archived_messages[message.timestamp] = message.header
 
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())
 
         self.speak('Welcome home. It is now %s.' % (nicetime))
 
-        if len(self.archived):
+        if len(self.archived_messages):
         # reading the log
             self.speak('While we where apart, the following things happend:')
-            for timestamp in self.archived.keys():
-                self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived[timestamp])
-            self.archived = {}
+            for timestamp in self.archived_messages.keys():
+                self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived_messages[timestamp])
+            self.archived_messages = {}
             self.speak('End of Log')
         else:
             self.speak('Nothing happend while we where apart.')

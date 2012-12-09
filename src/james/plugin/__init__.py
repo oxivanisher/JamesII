@@ -61,7 +61,7 @@ class Plugin(object):
         except KeyError:
             return None
 
-    def process_command_response(self, args):
+    def process_command_response(self, args, host, plugin):
         pass
 
     def send_command(self, args):
@@ -86,7 +86,7 @@ class Plugin(object):
                 args = body
                 if not isinstance(args, list):
                     args = [args]
-                self.process_command_response(args)
+                self.process_command_response(args, host, plugin)
 
     # default commands
     def cmd_help(self, args):

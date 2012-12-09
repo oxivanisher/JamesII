@@ -66,7 +66,7 @@ class CliPlugin(Plugin):
 
     def process_command_response(self, args, host, plugin):
         for line in args:
-            print ("%-10s > %s (%s)" % (host, line, plugin))
+            print ("%10s@%-10s > %s" % (plugin, host, line))
 
 descriptor = {
     'name' : 'cli',

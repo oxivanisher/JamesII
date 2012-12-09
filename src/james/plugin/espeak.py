@@ -35,7 +35,15 @@ class EspeakPlugin(Plugin):
         return ret
 
     def speak(self, msg):
-        subprocess.call(['/usr/bin/espeak', msg])
+        with open(os.devnull, "w") as fnull:
+            ret = subprocess.Popen(['/usr/bin/espeak', msg], \
+                  stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+
+            message = self.core.new_message(self.name)
+            message.header = "Espeak Spoke"
+            message.body = msg
+            message.send()
+
 
     def process_message(self, message):
         if message.level > 0:
@@ -64,7 +72,6 @@ class EspeakPlugin(Plugin):
             self.speak('Nothing happend while we where apart.')
 
     def process_proximity_event(self, newstatus):
-        print newstatus['status'][self.core.location]
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()

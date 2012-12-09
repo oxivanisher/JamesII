@@ -5,65 +5,45 @@ from time import localtime, strftime
 
 from james.plugin import *
 
-class LoggerPlugin(Plugin):
+class MonitorPlugin(Plugin):
 
     def __init__(self, core):
-        super(LoggerPlugin, self).__init__(core, LoggerPlugin.name)
-
-        self.core = core
-        self.unmuted = self.core.proximity_status.get_status_here()
-
-        self.create_command('logger_status', self.cmd_logger_status, 'say something')
-        self.archived = {}
+        super(MonitorPlugin, self).__init__(core, MonitorPlugin.name)
 
     def terminate(self):
         pass
 
-    def cmd_logger_status(self, args):
-        pass
-
     def process_message(self, message):
-        print("process message event: %s" % (message))
-        pass
-        # if message.level > 0:
-        #     if self.unmuted:
-        #         print("Espeak is speaking a message from %s@%s:\n%s:%s" % (message.sender_name,
-        #                                                                 message.sender_host,
-        #                                                                 message.header,
-        #                                                                 message.body))
-        #         self.speak(message.header)
-        #     else:
-        #         self.archived[message.timestamp] = message.header
+        self.format_output(("%s@%s" % (message.sender_name, message.sender_host)),
+                            "New Message",
+                            ("%s; %s" % (message.header, message.body)))
 
     def process_proximity_event(self, newstatus):
-        print("process proximity event: %s - %s" % (self.core.location, newstatus)) #ok
-        pass
-        # self.unmuted = newstatus
-        # if newstatus:
-        #     self.greet_homecomer()
+        self.format_output(("%s@%s" % (newstatus['plugin'], newstatus['host'])),
+                            "Proximity Event",
+                            ("%s: %s" % (newstatus['location'], newstatus['status'][newstatus['location']])))
 
     def process_command_request_event(self, command):
-        print("process command request event: %s" % (command))
-        pass
+        self.format_output(("%s@%s" % (command['plugin'], command['host'])),
+                            "Command Request",
+                            ("%s: %s" % (command['uuid'], command['body'])))
 
     def process_command_response_event(self, command):
-        print("process command response event: %s" % (command))
-        pass
+        self.format_output(("%s@%s" % (command['plugin'], command['host'])),
+                            "Command Response",
+                            ("%s: %s" % (command['uuid'], command['body'])))
 
     def process_discovery_event(self, msg):
-        print("process discovery event: %s" % (msg)) #ok
-        pass
+        self.format_output(("%s" % (msg[1])),
+                            "Discovery Event",
+                            ("%s" % (msg[0])))
 
-    def process_config_event(self, config):
-        print("process config event: %s" % (config)) #ok
-        pass
-
-    def format_output(self, ):
-        pass
-
+    def format_output(self, who, what, payload):
+        nicetime = strftime("%H:%M:%S", localtime())
+        print("%8s %-20s %-20s %s" % (nicetime, who, what, payload))
 
 descriptor = {
-    'name' : 'logger',
+    'name' : 'monitor',
     'mode' : PluginMode.MANAGED,
-    'class' : LoggerPlugin
+    'class' : MonitorPlugin
 }

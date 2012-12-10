@@ -6,6 +6,7 @@ import socket
 import time
 import sys
 import uuid
+import copy
 
 import plugin
 import config
@@ -79,6 +80,9 @@ class ProximityStatus(object):
 
     def get_all_status(self):
         return self.status
+
+    def get_all_status_copy(self):
+        return copy.deepcopy(self.status)
 
     def get_status_here(self):
         return self.status[self.core.location]
@@ -300,9 +304,11 @@ class Core(object):
 
     def proximity_event(self, changedstatus, pluginname):
         newstatus = {}
-        oldstatus = self.proximity_status.get_all_status()
+        oldstatus = self.proximity_status.get_all_status_copy()
 
         if oldstatus[self.location] != changedstatus:
+            newstatus[self.location] = changedstatus
+
             message = jamesmessage.JamesMessage(self, "core")
             message.body = ("From %s" % (pluginname))
             message.level = 0
@@ -312,19 +318,10 @@ class Core(object):
                 message.header = "You left."
             message.send()
 
-            # FIXME!!
-            for location in oldstatus:
-                if location == self.location:
-                    newstatus[location] = changedstatus
-                else:
-                    newstatus[location] = oldstatus[location]
-
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,
                                          'plugin' : pluginname,
                                          'location' : self.location })
-
-
 
     # base methods
     def run(self):

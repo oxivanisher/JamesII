@@ -95,7 +95,6 @@ class MpdPlugin(Plugin):
 
     # Helper Methods
     def exec_mpc(self, args):
-        print 'cmd mpc ' + self.connection_string + ' ' + ' '.join(args)
         mpc_pipe = os.popen(self.connection_string + ' ' + ' '.join(args),'r')
         mpc = mpc_pipe.read().strip()
         mpc_pipe.close()

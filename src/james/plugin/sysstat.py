@@ -83,12 +83,14 @@ class SysstatPlugin(Plugin):
 
     def sysstat_mem(self, args):
         mem_avail = True
+        mem = psutil.virtual_memory()
         try:
             mem = psutil.virtual_memory()
         except: #FIXME: das isch nid schoen hie
             mem_avail = False
 
         swap_avail = True
+        swap = psutil.swap_memory()
         try:
             swap = psutil.swap_memory()
         except: #FIXME: das isch nid schoen hie

@@ -6,3 +6,4 @@ data/whoisonline.new
 *.pyc
 nbproject/*
 *.sublime-*
+doc/

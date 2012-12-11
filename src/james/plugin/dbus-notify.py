@@ -43,6 +43,6 @@ class DbusNotifyPlugin(Plugin):
 
 descriptor = {
     'name' : 'dbus-notify',
-    'mode' : PluginMode.AUTOLOAD,
+    'mode' : PluginMode.MANAGED,
     'class' : DbusNotifyPlugin
 }

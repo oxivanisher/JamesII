@@ -22,7 +22,7 @@ class Command(object):
 	def process_args(self, args):
 		print('execute cmd ', self.name)
 
-		if self.handler:
+		if self.handler:6
 			self.handler()
 
 		if len(args) < 1:

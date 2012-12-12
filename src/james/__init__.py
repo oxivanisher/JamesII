@@ -204,9 +204,12 @@ class Core(object):
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
             load_plugin = False
 
-            for mp in self.config['managed_plugins']:
-                if mp['plugin'] == c.name and mp['hostname'] == self.hostname:
-                    load_plugin = True
+            try:
+                for mp in self.config[c.name]['nodes']:
+                    if mp == self.hostname:
+                        load_plugin = True
+            except KeyError:
+                pass
 
             if load_plugin:
                 output += (" +%s" % (c.name))

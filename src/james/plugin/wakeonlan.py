@@ -32,7 +32,7 @@ class WakeOnLanPlugin(Plugin):
     def wol_wake(self, args):
         host = None
         try:
-            host = self.core.config['wakeonlan'][args[0]]
+            host = self.core.config['wakeonlan']['targets'][args[0]]
         except Exception as e:
             return "no valid hostname given"
 

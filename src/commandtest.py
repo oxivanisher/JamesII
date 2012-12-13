@@ -1,6 +1,5 @@
 
 
-
 class Command(object):
 
 	def __init__(self, name, help, handler):
@@ -10,9 +9,11 @@ class Command(object):
 		self.subcommands = {}
 
 	def add_subcommand(self, subcommand):
-		# TODO check for duplicate
-		self.subcommands[subcommand.name] = subcommand
-		return subcommand
+		try:
+			return self.subcommands[subcommand.name]
+		except KeyError:
+			self.subcommands[subcommand.name] = subcommand
+			return subcommand
 
 	# creates a new subcommand and returns reference to it
 	def create_subcommand(self, name, help, handler):
@@ -22,7 +23,7 @@ class Command(object):
 	def process_args(self, args):
 		print('execute cmd ', self.name)
 
-		if self.handler:6
+		if self.handler:
 			self.handler()
 
 		if len(args) < 1:
@@ -34,10 +35,9 @@ class Command(object):
 			pass
 
 	def dump(self, indent = ''):
-		for child in self.childs:
-			child.dump(indent + '\t')
 		print indent + self.name
-
+		for subcommand in self.subcommands.keys():
+			self.subcommands[subcommand].dump(indent + '\t')
 
 
 def list_cmd_handler():
@@ -45,10 +45,11 @@ def list_cmd_handler():
 
 root_cmd = Command('root', '', None)
 
-
 xmpp_cmd = root_cmd.create_subcommand('xmpp', 'xmpp plugin', None)
 
 xmpp_cmd.create_subcommand('list', 'list files', list_cmd_handler)
+xmpp_cmd.create_subcommand('list2', 'list files', list_cmd_handler)
 
+root_cmd.dump()
 
 root_cmd.process_args(['xmpp', 'list1'])

@@ -162,7 +162,6 @@ class Factory(object):
         plugin_load_error = []
 
         output = "Discovering plugins:"
-        #sys.stdout.write("Discovering plugins:")
         for f in files:
             # Get module filename and extension
             (name, ext) = os.path.splitext(os.path.basename(f))

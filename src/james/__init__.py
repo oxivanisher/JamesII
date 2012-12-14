@@ -13,6 +13,8 @@ import config
 import jamesutils
 import jamesmessage
 
+from james_classes import BroadcastChannel, ProximityStatus, Command
+
 
 # Pika SUPER HACK
 try:
@@ -31,62 +33,6 @@ class ConfigNotLoaded(Exception):
 class ConnectionError(Exception):
     pass
 
-class BroadcastChannel(object):
-    def __init__(self, core, name):
-        self.core = core
-        self.name = name
-        self.listeners = []
-
-        self.channel = self.core.connection.channel()
-        self.channel.exchange_declare(exchange=self.name, type='fanout')
-        self.queue_name = self.channel.queue_declare(exclusive=True).method.queue
-
-        self.channel.queue_bind(exchange=self.name, queue=self.queue_name)
-
-        self.channel.basic_consume(self.recv, queue=self.queue_name, no_ack=True)
-
-    def send(self, msg):
-        body = json.dumps(msg)
-        self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
-
-    def recv(self, channel, method, properties, body):
-        msg = json.loads(body)
-        for listener in self.listeners:
-            listener(msg)
-
-    def add_listener(self, handler):
-        self.listeners.append(handler)
-
-class ProximityStatus(object):
-    def __init__(self, core):
-        self.status = {}
-        self.status['home'] = False
-        self.core = core
-
-    def set_status_here(self, value, plugin):
-        if self.status[self.core.location] != value:
-            self.core.proximity_event(value, plugin)
-    
-    def update_all_status(self, newstatus, plugin):
-        if self.status != newstatus:
-            fire_event = True
-        else:
-            fire_event = False
-
-        self.status = newstatus
-
-        if fire_event:
-            self.core.proximity_event(newstatus[self.core.location], plugin)
-
-    def get_all_status(self):
-        return self.status
-
-    def get_all_status_copy(self):
-        return copy.deepcopy(self.status)
-
-    def get_status_here(self):
-        return self.status[self.core.location]
-
 class Core(object):
     def __init__(self, passive = False):
         output = 'JamesII starting up'
@@ -100,6 +46,11 @@ class Core(object):
         self.uuid = str(uuid.uuid1())
         self.proximity_status = ProximityStatus(self)
         self.location = 'home'
+        self.commands = Command('root')
+        self.ghost_commands = Command('ghost')
+
+        #FIXME: include list for online nodes
+        #self.nodes_online = {}
 
         # Load broker configuration
         try:
@@ -181,7 +132,7 @@ class Core(object):
         try:
             print("Loading plugin '%s'" % (name))
             c = plugin.Factory.get_plugin_class(name)
-            self.plugins.append(c(self))
+            self.instantiate_plugin(c)
         except plugin.PluginNotAvailable, e:
             print e
 
@@ -196,7 +147,7 @@ class Core(object):
         output = "Autoloading plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
             output += (" %s" % (c.name))
-            self.plugins.append(c(self))
+            self.instantiate_plugin(c)
         if self.config['core']['debug']:
             print(output)
 
@@ -213,12 +164,16 @@ class Core(object):
 
             if load_plugin:
                 output += (" +%s" % (c.name))
-                self.plugins.append(c(self))
+                self.instantiate_plugin(c)
             else:
                 output += (" -%s" % (c.name))
 
         if self.config['core']['debug']:
             print(output)
+
+    def instantiate_plugin(self, cls):
+        p = cls(self, cls.descriptor)
+        self.plugins.append(p)
 
     # command channel methods
     def send_request(self, uuid, name, body, host, plugin):
@@ -254,9 +209,15 @@ class Core(object):
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)
+            # Broadcast command list
+            for p in self.plugins:
+                self.discovery_channel.send(['commands', p.commands.serialize()])
 
         elif msg[0] == 'ping':
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
+
+        elif msg[0] == 'commands':
+            self.ghost_commands.add_subcommand(Command.deserialize(msg[1]))
 
         for p in self.plugins:
             p.process_discovery_event(msg)
@@ -330,6 +291,12 @@ class Core(object):
     def run(self):
         for p in self.plugins:
             p.start()
+
+        # FIXME todo
+        # rawdata = self.commands.serialize()
+        # test_command = Command.deserialize(rawdata)
+        # print(test_command.list())
+
         while not self.terminated:
             try:
                 self.connection.process_data_events()

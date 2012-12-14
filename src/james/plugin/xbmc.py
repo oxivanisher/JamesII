@@ -5,10 +5,8 @@ from james.plugin import *
 
 class XbmcPlugin(Plugin):
 
-    def __init__(self, core):
-        super(XbmcPlugin, self).__init__(core, XbmcPlugin.name)
-
-        self.create_command('xbmc', self.cmd_xbmc, 'xbmc test module')
+    def __init__(self, core, descriptor):
+        super(XbmcPlugin, self).__init__(core, descriptor)
 
     def terminate(self):
         pass
@@ -19,6 +17,8 @@ class XbmcPlugin(Plugin):
 
 descriptor = {
     'name' : 'xbmc',
+    'help' : 'xbmc test module',
+    'command' : 'xbmc',
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin
 }

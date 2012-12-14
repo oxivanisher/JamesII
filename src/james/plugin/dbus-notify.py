@@ -9,8 +9,8 @@ from james.plugin import *
 
 class DbusNotifyPlugin(Plugin):
 
-    def __init__(self, core):
-        super(DbusNotifyPlugin, self).__init__(core, DbusNotifyPlugin.name)
+    def __init__(self, core, descriptor):
+        super(DbusNotifyPlugin, self).__init__(core, descriptor)
 
         self.bus = dbus.Bus(dbus.Bus.TYPE_SESSION)
         self.notifyid = 0
@@ -43,6 +43,8 @@ class DbusNotifyPlugin(Plugin):
 
 descriptor = {
     'name' : 'dbus-notify',
+    'help' : 'dbus notify plugin (desktop)',
+    'command' : 'dbus-notify',
     'mode' : PluginMode.MANAGED,
     'class' : DbusNotifyPlugin
 }

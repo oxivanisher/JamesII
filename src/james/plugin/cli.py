@@ -25,44 +25,40 @@ class ConsoleThread(threading.Thread):
                 line = sys.stdin.readline()
             except KeyboardInterrupt:
                 self.plugin.core.terminate()
+
             line = line.strip()
-            if (line == 'exit'):
-                self.plugin.core.terminate()
-            elif (line == 'dump_config'):
-                print("dumping config:")
-                print(yaml.dump(self.plugin.core.config))
-            elif (line == 'message'):
-                print("sending test message")
-                message = self.plugin.core.new_message("cli_test")
-                message.body = "Test Body"
-                message.header = "Test Head"
-                message.level = 1
-                message.send()
-            elif (line == 'prx'):
-                print("proximity_status : %s" % (self.plugin.core.proximity_status.get_all_status()))
-                print("self.location : %s" % (self.plugin.core.location))
-            elif (line == 'prx_home'):
-                self.plugin.core.proximity_status.set_status_here(True, 'cli')
-            elif (line == 'prx_away'):
-                self.plugin.core.proximity_status.set_status_here(False, 'cli')
+            #FIXME: add check if the command was run local (commands in this file here) else send over rabbitmq
+            #handle commands with the Command class!
 
             if len(line.rstrip()) > 0:
                 args = line.split(' ')
-                self.plugin.send_command(args)
+                if not self.plugin.commands.process_args(args):
+                    if not self.plugin.send_command(args):
+                        print("help for plugin")
+                        pass
             else:
                 print("enter 'help' for a list of available commands.")
 
     def terminate(self):
-        self.terminated = True
+       self.terminated = True
 
 
 class CliPlugin(Plugin):
 
-    def __init__(self, core):
-        super(CliPlugin, self).__init__(core, CliPlugin.name)
+    def __init__(self, core, descriptor):
+        super(CliPlugin, self).__init__(core, descriptor)
 
         self.console_thread = None
         self.cmd_line_mode = len(sys.argv) > 1
+
+        self.commands.hide = True
+        self.commands.create_subcommand('prx', 'show the local proximity variables', self.cmd_prx)
+        self.commands.create_subcommand('prx_home', 'set the proximity system for: at home', self.cmd_prx_home)
+        self.commands.create_subcommand('prx_away', 'set the proximity system for: away', self.cmd_prx_away)
+        self.commands.create_subcommand('exit', 'quits the console', self.cmd_exit)
+        self.commands.create_subcommand('dump_config', 'dumps the config', self.cmd_dump_config)
+        self.commands.create_subcommand('message', 'sends a test message', self.cmd_message)
+        self.commands.create_subcommand('help', 'list this help', self.cmd_help)
 
     def start(self):
         if self.cmd_line_mode:
@@ -83,8 +79,47 @@ class CliPlugin(Plugin):
     def timeout_handler(self):
         self.core.terminate()
 
+    # commands
+    def cmd_prx(self, args):
+        print("proximity_status : %s" % (self.core.proximity_status.get_all_status()))
+        print("self.location : %s" % (self.core.location))
+
+    def cmd_prx_home(self, args):
+        self.core.proximity_status.set_status_here(True, 'cli')
+
+    def cmd_prx_away(self, args):
+        self.core.proximity_status.set_status_here(False, 'cli')
+
+    def cmd_exit(self, args):
+        self.core.terminate()
+
+    def cmd_dump_config(self, args):
+        print("dumping config:")
+        print(yaml.dump(self.core.config))
+
+    def cmd_message(self, args):
+        print("sending test message")
+        message = self.plugin.core.new_message("cli_test")
+        message.body = "Test Body"
+        message.header = "Test Head"
+        message.level = 1
+        message.send()
+
+    def cmd_help(self, args):
+        print("local commands:")
+        for command in self.commands.list():
+            if not command['hide']:
+                print ("%-15s - %s" % (command['name'], command['help']))
+        print("remote commands:")
+        for command in self.core.ghost_commands.list():
+            if not command['hide']:
+                print ("%-15s - %s" % (command['name'], command['help']))
+
+
 descriptor = {
     'name' : 'cli',
+    'help' : 'command line interface plugin',
+    'command' : 'cli',
     'mode' : PluginMode.MANUAL,
     'class' : CliPlugin
 }

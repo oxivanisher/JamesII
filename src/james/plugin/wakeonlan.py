@@ -5,29 +5,17 @@ from james.plugin import *
 
 class WakeOnLanPlugin(Plugin):
 
-    def __init__(self, core):
-        super(WakeOnLanPlugin, self).__init__(core, WakeOnLanPlugin.name)
+    def __init__(self, core, descriptor):
+        super(WakeOnLanPlugin, self).__init__(core, descriptor)
 
         self.core = core
 
-        self.create_command('wol', self.cmd_wol, 'wake on lan')
-
-    def cmd_wol(self, args):
-        sub_commands = {'list' : self.wol_list,
-                        'wake' : self.wol_wake}
-
-        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
-        try:
-            user_command = args[0]
-        except Exception as e:
-            return (output)
-        for command in sub_commands.keys():
-            if command == user_command:
-                return sub_commands[command](args[1:])
-        return (output)
+        self.commands.create_subcommand('list', 'lists available wol target hosts', self.wol_list)
+        self.commands.create_subcommand('wake', 'wakes up a given host', self.wol_wake)
 
     def wol_list(self, args):
-        return ', '.join(self.core.config['wakeonlan'].keys())
+        print("yay!")
+        return ', '.join(self.core.config['wakeonlan']['targets'].keys())
 
     def wol_wake(self, args):
         host = None
@@ -49,6 +37,8 @@ class WakeOnLanPlugin(Plugin):
 
 descriptor = {
     'name' : 'wakeonlan',
+    'help' : 'wake on lan plugin',
+    'command' : 'wol',
     'mode' : PluginMode.MANAGED,
     'class' : WakeOnLanPlugin
 }

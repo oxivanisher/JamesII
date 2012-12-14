@@ -8,28 +8,15 @@ from james.plugin import *
 
 class SysstatPlugin(Plugin):
 
-    def __init__(self, core):
-        super(SysstatPlugin, self).__init__(core, SysstatPlugin.name)
+    def __init__(self, core, descriptor):
+        super(SysstatPlugin, self).__init__(core, descriptor)
 
-        self.create_command('stat', self.cmd_sysstat, 'psutil system stats')
-
-    def cmd_sysstat(self, args):
-        sub_commands = {'mount' : self.sysstat_mount,
-                        'uptime' : self.sysstat_uptime,
-                        'net' : self.sysstat_net,
-                        'who' : self.sysstat_who,
-                        'cpu' : self.sysstat_cpu,
-                        'mem' : self.sysstat_mem}
-
-        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
-        try:
-            user_command = args[0]
-        except Exception as e:
-            return (output)
-        for command in sub_commands.keys():
-            if command == user_command:
-                return sub_commands[command](args[1:])
-        return (output)        
+        self.commands.create_subcommand('mount', 'show mounted disks and the usage', self.sysstat_mount)
+        self.commands.create_subcommand('uptime', 'show the system uptime', self.sysstat_uptime)
+        self.commands.create_subcommand('net', 'show the network interfaces and their stats', self.sysstat_net)
+        self.commands.create_subcommand('who', 'show logged in users', self.sysstat_who)
+        self.commands.create_subcommand('cpu', 'show the current cpu usage for all cores', self.sysstat_cpu)
+        self.commands.create_subcommand('mem', 'show the free and used memory and swap', self.sysstat_mem)
 
     def sysstat_mount(self, args):
         partitions = psutil.disk_partitions()
@@ -116,6 +103,8 @@ class SysstatPlugin(Plugin):
 
 descriptor = {
     'name' : 'sysstat',
+    'help' : 'psutil system stats',
+    'command' : 'stat',
     'mode' : PluginMode.AUTOLOAD,
     'class' : SysstatPlugin
 }

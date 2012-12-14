@@ -52,4 +52,4 @@ xmpp_cmd.create_subcommand('list2', 'list files', list_cmd_handler)
 
 root_cmd.dump()
 
-root_cmd.process_args(['xmpp', 'list1'])
+root_cmd.process_args(['xmpp', 'list'])

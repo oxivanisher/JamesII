@@ -7,26 +7,12 @@ from james.plugin import *
 
 class SystemPlugin(Plugin):
 
-    def __init__(self, core):
-        super(SystemPlugin, self).__init__(core, SystemPlugin.name)
+    def __init__(self, core, descriptor):
+        super(SystemPlugin, self).__init__(core, descriptor)
 
-        self.create_command('sys', self.cmd_sys, 'system commands')
-
-    def cmd_sys(self, args):
-        sub_commands = {'ip' : self.get_ip,
-                        'quit' : self.cmd_quit,
-                        'ping' : self.cmd_ping}
-        if os.path.isfile('/usr/bin/git'):
-            sub_commands['version'] = self.version
-        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
-        try:
-            user_command = args[0]
-        except Exception as e:
-            return (output)
-        for command in sub_commands.keys():
-            if command == user_command:
-                return sub_commands[command](args[1:])
-        return (output)
+        self.commands.create_subcommand('ip', 'show the ip of this node', self.get_ip)
+        self.commands.create_subcommand('quit', 'quit the system', self.cmd_quit)
+        self.commands.create_subcommand('ping', 'ping all available nodes over rabbitmq', self.cmd_ping)
 
     def cmd_quit(self, args):
         message = self.core.new_message(self.name)
@@ -52,6 +38,8 @@ class SystemPlugin(Plugin):
 
 descriptor = {
     'name' : 'system',
+    'help' : 'system commands',
+    'command' : 'sys',
     'mode' : PluginMode.AUTOLOAD,
     'class' : SystemPlugin
 }

@@ -8,10 +8,8 @@ from james.plugin import *
 
 class MpdPlugin(Plugin):
 
-    def __init__(self, core):
-        super(MpdPlugin, self).__init__(core, MpdPlugin.name)
-
-        self.create_command('mpd', self.cmd_mpd, 'interface to mpd via mpc')
+    def __init__(self, core, descriptor):
+        super(MpdPlugin, self).__init__(core, descriptor)
 
         self.mpc_bin = '/usr/bin/mpc'
 
@@ -23,22 +21,11 @@ class MpdPlugin(Plugin):
         if self.core.config['mpd']['password']:
             self.connection_string += " --password=" + self.core.config['mpd']['password']
 
-    def cmd_mpd(self, args):
-        sub_commands = {'mpc' : self.mpc,
-                        'radio_on' : self.radio_on,
-                        'radio_off': self.radio_off,
-                        'mpd_sleep': self.mpd_sleep,
-                        'mpd_wakeup': self.mpd_wakeup}
-
-        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
-        try:
-            user_command = args[0]
-        except Exception as e:
-            return (output)
-        for command in sub_commands.keys():
-            if command == user_command:
-                return sub_commands[command](args[1:])
-        return (output)        
+        self.commands.create_subcommand('mpc', 'call mpc with given args', self.mpc)
+        self.commands.create_subcommand('radio_on', 'turn on the radio', self.radio_on)
+        self.commands.create_subcommand('radio_off', 'turn off the radio', self.radio_off)
+        self.commands.create_subcommand('mpd_sleep', 'run the mpd sleep script', self.mpd_sleep)
+        self.commands.create_subcommand('mpd_wakeup', 'run the mpd wakeup script', self.mpd_wakeup)
 
 #if os.path.isfile(self.mpc_bin): FIXME
     def mpc(self, args):
@@ -113,6 +100,8 @@ class MpdPlugin(Plugin):
 
 descriptor = {
     'name' : 'mpd',
+    'help' : 'interface to mpd via mpc',
+    'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
     'class' : MpdPlugin
 }

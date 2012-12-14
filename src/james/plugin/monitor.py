@@ -7,13 +7,13 @@ from james.plugin import *
 
 class MonitorPlugin(Plugin):
 
-    def __init__(self, core):
-        super(MonitorPlugin, self).__init__(core, MonitorPlugin.name)
-
-        self.create_command('log', self.cmd_showlog, 'show the log of the monitor')
+    def __init__(self, core, descriptor):
+        super(MonitorPlugin, self).__init__(core, descriptor)
 
         self.archive = []
         self.max_archived_messages = 1000
+
+        self.commands.create_subcommand('log', ('shows the last %s messages' % self.max_archived_messages), self.cmd_showlog)
 
     def terminate(self):
         pass
@@ -39,9 +39,10 @@ class MonitorPlugin(Plugin):
                             ("%s (%s)" % (command['body'], command['uuid'])))
 
     def process_discovery_event(self, msg):
-        self.process_event(("%s" % (msg[1])),
-                            "Discovery Event",
-                            ("%s (%s)" % (msg[0], msg[2])))
+        pass
+#        self.process_event(("%s" % (msg[1])),
+#                            "Discovery Event",
+#                            ("%s (%s)" % (msg[0], msg[2])))
 
     def process_event(self, who, what, payload):
         message = {}
@@ -72,6 +73,8 @@ class MonitorPlugin(Plugin):
 
 descriptor = {
     'name' : 'monitor',
+    'help' : 'show the log of the monitor',
+    'command' : 'mon',
     'mode' : PluginMode.MANAGED,
     'class' : MonitorPlugin
 }

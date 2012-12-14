@@ -7,29 +7,16 @@ from james.plugin import *
 
 class ProximityPlugin(Plugin):
 
-    def __init__(self, core):
-        super(ProximityPlugin, self).__init__(core, ProximityPlugin.name)
-
-        self.create_command('prx', self.cmd_prx, 'proximity with bluetooth')
+    def __init__(self, core, descriptor):
+        super(ProximityPlugin, self).__init__(core, descriptor)
 
         self.status = False
 
+        self.commands.create_subcommand('scan', 'scan for visible bluetooth devices', self.scan)
+        self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
+
     def terminate(self):
         pass
-
-    def cmd_prx(self, args):
-        sub_commands = {'scan' : self.scan,
-                        'proximity' : self.proximity_check}
-
-        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
-        try:
-            user_command = args[0]
-        except Exception as e:
-            return (output)
-        for command in sub_commands.keys():
-            if command == user_command:
-                return sub_commands[command](args[1:])
-        return (output)        
 
     def scan(self, args):
         print("Scanning for visible bluetooth devices...")
@@ -114,6 +101,8 @@ class ProximityPlugin(Plugin):
 
 descriptor = {
     'name' : 'proximity',
+    'help' : 'proximity with bluetooth',
+    'command' : 'prox',
     'mode' : PluginMode.MANAGED,
     'class' : ProximityPlugin
 }

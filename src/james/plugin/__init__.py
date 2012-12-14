@@ -7,15 +7,6 @@ import sys
 class CommandNotFound(Exception):
     pass
 
-class Command(object):
-
-    def __init__(self, name, handler, help="", hide=False):
-        self.name = name
-        self.handler = handler
-        self.help = help
-        self.hide = hide
-
-
 class PluginMode:
     AUTOLOAD = 0
     MANAGED = 1
@@ -23,46 +14,26 @@ class PluginMode:
 
 class Plugin(object):
 
-    def __init__(self, core, name):
-        self.uuid = str(uuid.uuid1())
-        self.name = name
+    def __init__(self, core, descriptor):
+        self.uuid = str(uuid.uuid1()) 
+        self.name = descriptor['name']
         self.core = core
-        self.cmds = {}
+        # self.command = command
+        self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
 
-        self.create_command('help', self.cmd_help, "Show information about plugins commands", True)
-        self.create_command('avail', self.cmd_avail, "Show available plugins", True)
+        #FIXME: include me special
+        #self.commands.create_subcommand('help', "Show information about plugins commands", self.cmd_help, True)
+
+        self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
+
+        # self.create_command('help', self.cmd_help, "Show information about plugins commands", True)
+        # self.create_command('avail', self.cmd_avail, "Show available plugins", True)
 
     def start(self):
         pass
 
     def terminate(self):
         pass
-
-    # command methods
-    def add_command(self, command):
-        self.cmds[command.name] = command
-
-    def create_command(self, name, handler, help="", hide=False):
-        self.add_command(Command(name, handler, help, hide))
-
-    def process_command(self, args):
-        args = [s.encode('utf-8').strip() for s in args]
-        args = filter(lambda s: s != '', args)
-        if len(args) < 1:
-            return None
-
-        if args[0][0] == '@':
-            if args[0][1:] != self.name:
-                return None
-            args = args[1:]
-
-        if len(args) < 1:
-            return None
-
-        try:
-            return self.cmds[args[0]].handler(args[1:])
-        except KeyError:
-            return None
 
     def process_command_response(self, args, host, plugin):
         pass
@@ -79,7 +50,7 @@ class Plugin(object):
 
     def handle_request(self, uuid, name, body, host, plugin):
         if name == 'cmd':
-            res = self.process_command(body)
+            res = self.core.commands.process_args(body)
             if res:
                 self.send_response(uuid, name, res)
 
@@ -92,12 +63,14 @@ class Plugin(object):
                 self.process_command_response(args, host, plugin)
 
     # default commands
-    def cmd_help(self, args):
-        res = []
-        for cmd in self.cmds.values():
-            if not cmd.hide:
-                res.append("%-15s - %s" % (cmd.name, cmd.help))
-        return res
+    # def cmd_help(self, args):
+    #     res = []
+    #     for cmd in self.commands.list():
+    #         print cmd
+    #         #if not cmd.hide: #need this
+    #         #res.append("%-15s - %s" % (cmd['name'], cmd['help']))
+    #         pass
+    #     return res
 
     def cmd_avail(self, args):
         return os.uname()[1] + ' ' + self.name
@@ -132,6 +105,10 @@ class Factory(object):
     def register_plugin(cls, descriptor):
         if not 'name' in descriptor.keys():
             raise Exception("Plugin descriptor has no name field")
+        if not 'help' in descriptor.keys():
+            raise Exception("Plugin descriptor has no help field")
+        if not 'command' in descriptor.keys():
+            raise Exception("Plugin descriptor has no command field")
         if not 'mode' in descriptor.keys():
             raise Exception("Plugin descriptor has no mode field")
         if not 'class' in descriptor.keys():
@@ -139,9 +116,8 @@ class Factory(object):
 
         cls.descriptors[descriptor['name']] = descriptor
 
-        # Set a name and mode fields in the plugin class
         descriptor['class'].name = descriptor['name']
-        descriptor['class'].mode = descriptor['mode']
+        descriptor['class'].descriptor = descriptor
 
     @classmethod
     def get_plugin_class(cls, name):

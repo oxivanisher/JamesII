@@ -7,29 +7,16 @@ from james.plugin import *
 
 class EspeakPlugin(Plugin):
 
-    def __init__(self, core):
-        super(EspeakPlugin, self).__init__(core, EspeakPlugin.name)
+    def __init__(self, core, descriptor):
+        super(EspeakPlugin, self).__init__(core, descriptor)
 
         self.core = core
         self.unmuted = self.core.proximity_status.get_status_here()
 
-        self.create_command('espeak', self.cmd_espeak, 'espeak api')
-
         self.archived_messages = {}
 
-    def cmd_espeak(self, args):
-        sub_commands = {'say' : self.espeak_say,
-                        'archive' : self.espeak_archive}
-
-        output = ("subcommands are: %s" % (', '.join(sub_commands.keys())))
-        try:
-            user_command = args[0]
-        except Exception as e:
-            return (output)
-        for command in sub_commands.keys():
-            if command == user_command:
-                return sub_commands[command](args[1:])
-        return (output)
+        self.commands.create_subcommand('say', 'speak some text via espeak', self.espeak_say)
+        self.commands.create_subcommand('archive', 'show the messages in the cache', self.espeak_archive)
 
     def espeak_say(self, args):
         text = ' '.join(args)
@@ -89,6 +76,8 @@ class EspeakPlugin(Plugin):
 
 descriptor = {
     'name' : 'espeak',
+    'help' : 'espeak api',
+    'command' : 'espeak',
     'mode' : PluginMode.MANAGED,
     'class' : EspeakPlugin
 }

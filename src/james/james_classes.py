@@ -132,5 +132,5 @@ class Command(object):
     def show_help(self, args):
         try:
             return self.subcommands[args[0]].show_help(args[1:])
-        except KeyError:
+        except Exception as e:
             return self.help

@@ -35,6 +35,7 @@ class ConsoleThread(threading.Thread):
                 if not self.plugin.commands.process_args(args):
                     if not self.plugin.send_command(args):
                         print("help for plugin")
+                        self.plugin.core.ghost_commands.show_help(args)
                         pass
             else:
                 print("enter 'help' for a list of available commands.")

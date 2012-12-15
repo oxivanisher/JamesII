@@ -1,62 +1,25 @@
-import json
+
 import pickle
-import copy
 
-class BroadcastChannel(object):
-    def __init__(self, core, name):
-        self.core = core
-        self.name = name
-        self.listeners = []
-
-        self.channel = self.core.connection.channel()
-        self.channel.exchange_declare(exchange=self.name, type='fanout')
-        self.queue_name = self.channel.queue_declare(exclusive=True).method.queue
-
-        self.channel.queue_bind(exchange=self.name, queue=self.queue_name)
-
-        self.channel.basic_consume(self.recv, queue=self.queue_name, no_ack=True)
-
-    def send(self, msg):
-        body = json.dumps(msg)
-        self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
-
-    def recv(self, channel, method, properties, body):
-        msg = json.loads(body)
-        for listener in self.listeners:
-            listener(msg)
-
-    def add_listener(self, handler):
-        self.listeners.append(handler)
-
-class ProximityStatus(object):
-    def __init__(self, core):
-        self.status = {}
-        self.status['home'] = False
-        self.core = core
-
-    def set_status_here(self, value, plugin):
-        if self.status[self.core.location] != value:
-            self.core.proximity_event(value, plugin)
-    
-    def update_all_status(self, newstatus, plugin):
-        if self.status != newstatus:
-            fire_event = True
-        else:
-            fire_event = False
-
-        self.status = newstatus
-
-        if fire_event:
-            self.core.proximity_event(newstatus[self.core.location], plugin)
-
-    def get_all_status(self):
-        return self.status
-
-    def get_all_status_copy(self):
-        return copy.deepcopy(self.status)
-
-    def get_status_here(self):
-        return self.status[self.core.location]
+# [12:27:13 AM] simon kallweit: ig wuerd eher help wol mache
+# [12:27:17 AM] oxi: kk
+# [12:27:20 AM] oxi: das waer ou eifacher ^^
+# [12:27:39 AM] simon kallweit: jo und irgendwie logischer
+# [12:27:49 AM] oxi: jo
+# [12:27:56 AM] oxi: guette plan. maches mou so
+# [12:28:03 AM] simon kallweit: aus erschts mueestisch ir Command klass e funktion mache wo e string chasch uebergae und dae giter s'command zruegg fauses existiert
+# [12:28:13 AM] oxi: de geits naemlech d plugin base class garnuet aa
+# [12:28:22 AM] simon kallweit: aso z.b. find_by_name(self, name)
+# [12:28:26 AM] oxi: ah kk
+# [12:28:27 AM] simon kallweit: isch natuerlech naer rekursiv
+# [12:28:50 AM] simon kallweit: nimmsch s'erschte wort waeg, checksch oeb im subcommand dictionary dae waert fingsch, faus jo rueefsch ufem subcommend mitem raescht vom string uf
+# [12:28:51 AM] oxi: muesi de es dict zruegg gaeh?
+# [12:29:06 AM] simon kallweit: nei eigentlech nur e referaenz ufs command wo referenziert wird vom name
+# [12:29:14 AM] oxi: ah ok
+# [12:29:26 AM] oxi: das soet kes ding si
+# [12:29:34 AM] oxi: (saegi do so blauoeigig :D)
+# [12:29:36 AM] simon kallweit: jo isch raecht aehnlech wi process_args oder wisi heisst
+# [12:30:57 AM] oxi: jop
 
 class Command(object):
 
@@ -97,13 +60,15 @@ class Command(object):
         args = [s.encode('utf-8').strip() for s in args]
         args = filter(lambda s: s != '', args)
         if len(args) < 1:
-            return False
+            # no args and so no command at all.
+            return #False
 
         try:
             return self.subcommands[args[0]].process_args(args[1:])
         except KeyError:
-            #pass
-            return False
+            # the command does not exist
+            pass
+            #return False
             #was pass
 
     # def dump(self, indent = ''):

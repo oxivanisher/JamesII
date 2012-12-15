@@ -10,10 +10,13 @@ import copy
 
 import plugin
 import config
+import command
+import broadcastchannel
+import proximitystatus
 import jamesutils
 import jamesmessage
 
-from james_classes import BroadcastChannel, ProximityStatus, Command
+#from james_classes import BroadcastChannel, ProximityStatus, Command
 
 
 # Pika SUPER HACK
@@ -44,10 +47,10 @@ class Core(object):
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
         self.uuid = str(uuid.uuid1())
-        self.proximity_status = ProximityStatus(self)
+        self.proximity_status = proximitystatus.ProximityStatus(self)
         self.location = 'home'
-        self.commands = Command('root')
-        self.ghost_commands = Command('ghost')
+        self.commands = command.Command('root')
+        self.ghost_commands = command.Command('ghost')
 
         #FIXME: include list for online nodes
         #self.nodes_online = {}
@@ -84,9 +87,9 @@ class Core(object):
             raise ConnectionError()
 
         # Create discovery & configuration channels
-        self.discovery_channel = BroadcastChannel(self, 'discovery')
+        self.discovery_channel = broadcastchannel.BroadcastChannel(self, 'discovery')
         self.discovery_channel.add_listener(self.discovery_listener)
-        self.config_channel = BroadcastChannel(self, 'config')
+        self.config_channel = broadcastchannel.BroadcastChannel(self, 'config')
         self.config_channel.add_listener(self.config_listener)
 
         # Send hello
@@ -110,17 +113,17 @@ class Core(object):
             print("Debug mode activated")
 
         # Create request & response channels
-        self.request_channel = BroadcastChannel(self, 'request')
+        self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')
         self.request_channel.add_listener(self.request_listener)
-        self.response_channel = BroadcastChannel(self, 'response')
+        self.response_channel = broadcastchannel.BroadcastChannel(self, 'response')
         self.response_channel.add_listener(self.response_listener)
 
         # Create messaging channels
-        self.message_channel = BroadcastChannel(self, 'message')
+        self.message_channel = broadcastchannel.BroadcastChannel(self, 'message')
         self.message_channel.add_listener(self.message_listener)
 
         # proximity stuff
-        self.proximity_channel = BroadcastChannel(self, 'proximity')
+        self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
 
         # Load plugins
@@ -217,7 +220,7 @@ class Core(object):
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
         elif msg[0] == 'commands':
-            self.ghost_commands.add_subcommand(Command.deserialize(msg[1]))
+            self.ghost_commands.add_subcommand(command.Command.deserialize(msg[1]))
 
         for p in self.plugins:
             p.process_discovery_event(msg)

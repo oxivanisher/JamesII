@@ -12,10 +12,9 @@ ATTENTION: This project is under heavy dev and this readme is probably outdated.
 ToDo:
 ------
 Main:
-* centralized config management (config over rabbitmq)
 * add process monitor / events
-* add "discovery channel"
-* add messaging channel with message types (warn, info, error)
+* discover new nodes and save them locally
+* include "at" and "in" functionality, this should be done in the master so that he could safe the list for restarts.
 
 Plugins:
 * plugin requirement checks before load

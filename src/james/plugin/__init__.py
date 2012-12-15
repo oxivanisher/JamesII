@@ -21,7 +21,7 @@ class Plugin(object):
         # self.command = command
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
 
-        #FIXME: include me special
+        ##FIXME: include me special
         #self.commands.create_subcommand('help', "Show information about plugins commands", self.cmd_help, True)
 
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
@@ -73,7 +73,7 @@ class Plugin(object):
     #     return res
 
     def cmd_avail(self, args):
-        return os.uname()[1] + ' ' + self.name
+        return self.core.hostname + ' ' + self.name
 
     # message methods
     def process_message(self, message):

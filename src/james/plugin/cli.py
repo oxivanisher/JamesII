@@ -32,9 +32,12 @@ class ConsoleThread(threading.Thread):
 
             if len(line.rstrip()) > 0:
                 args = line.split(' ')
+
+                # print ("%s::%s" % (self.plugin.commands.process_args(args), args))
+
                 if not self.plugin.commands.process_args(args):
                     if not self.plugin.send_command(args):
-                        print("help for plugin")
+                        print("help for plugin: %s" % (args))
                         self.plugin.core.ghost_commands.show_help(args)
                         pass
             else:
@@ -111,6 +114,7 @@ class CliPlugin(Plugin):
         for command in self.commands.list():
             if not command['hide']:
                 print ("%-15s - %s" % (command['name'], command['help']))
+
         print("remote commands:")
         for command in self.core.ghost_commands.list():
             if not command['hide']:

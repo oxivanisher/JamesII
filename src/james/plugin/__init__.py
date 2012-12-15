@@ -18,16 +18,8 @@ class Plugin(object):
         self.uuid = str(uuid.uuid1()) 
         self.name = descriptor['name']
         self.core = core
-        # self.command = command
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
-
-        ##FIXME: include me special
-        #self.commands.create_subcommand('help', "Show information about plugins commands", self.cmd_help, True)
-
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
-
-        # self.create_command('help', self.cmd_help, "Show information about plugins commands", True)
-        # self.create_command('avail', self.cmd_avail, "Show available plugins", True)
 
     def start(self):
         pass
@@ -61,16 +53,6 @@ class Plugin(object):
                 if not isinstance(args, list):
                     args = [args]
                 self.process_command_response(args, host, plugin)
-
-    # default commands
-    # def cmd_help(self, args):
-    #     res = []
-    #     for cmd in self.commands.list():
-    #         print cmd
-    #         #if not cmd.hide: #need this
-    #         #res.append("%-15s - %s" % (cmd['name'], cmd['help']))
-    #         pass
-    #     return res
 
     def cmd_avail(self, args):
         return self.core.hostname + ' ' + self.name

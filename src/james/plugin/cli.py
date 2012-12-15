@@ -21,25 +21,17 @@ class ConsoleThread(threading.Thread):
 
         while (not self.terminated):
             try:
-                #sys.stdout.write('# ')
                 line = sys.stdin.readline()
             except KeyboardInterrupt:
                 self.plugin.core.terminate()
 
             line = line.strip()
-            #FIXME: add check if the command was run local (commands in this file here) else send over rabbitmq
-            #handle commands with the Command class!
 
             if len(line.rstrip()) > 0:
                 args = line.split(' ')
 
-                # print ("%s::%s" % (self.plugin.commands.process_args(args), args))
-
                 if not self.plugin.commands.process_args(args):
-                    if not self.plugin.send_command(args):
-                        print("help for plugin: %s" % (args))
-                        self.plugin.core.ghost_commands.show_help(args)
-                        pass
+                    self.plugin.send_command(args)
             else:
                 print("enter 'help' for a list of available commands.")
 

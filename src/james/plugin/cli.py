@@ -110,19 +110,31 @@ class CliPlugin(Plugin):
         return True
 
     def cmd_help(self, args):
-        print("local commands:")
-        for command in self.commands.list():
-            if not command['hide']:
-                print ("%-15s - %s" % (command['name'], command['help']))
 
-        print("remote commands:")
-        for command in self.core.ghost_commands.list():
-            if not command['hide']:
-                print ("%-15s - %s" % (command['name'], command['help']))
+        if len(args) > 0:    
+            command = self.core.ghost_commands.find_by_name(args)
+            if command:
+                print("%s:" % (command.help))
+                for subcommand in command.list():
+                    self.print_help_line(subcommand)
+            else:
+                print ("command not found")
+
+        else:
+            print("local commands:")
+            for command in self.commands.list():
+                if not command['hide']:
+                    self.print_help_line(command)
+
+            print("remote commands:")
+            for command in self.core.ghost_commands.list():
+                if not command['hide']:
+                    self.print_help_line(command)
 
         return True
 
-
+    def print_help_line(self, command):
+        print ("%-15s - %s" % (command['name'], command['help']))
 
 descriptor = {
     'name' : 'cli',

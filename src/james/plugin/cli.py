@@ -67,7 +67,6 @@ class ConsoleThread(threading.Thread):
             args = line.split(' ')
 
             if state == 0:
-        return self.status[self.core.location]
                 self.keywords = []
 
                 cmd = None

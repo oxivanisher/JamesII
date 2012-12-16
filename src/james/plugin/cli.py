@@ -31,7 +31,6 @@ class ConsoleThread(threading.Thread):
                 args = line.split(' ')
 
                 if not self.plugin.commands.process_args(args):
-                    print("running command remote")
                     self.plugin.send_command(args)
             else:
                 print("enter 'help' for a list of available commands.")

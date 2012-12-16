@@ -34,7 +34,8 @@ class SystemPlugin(Plugin):
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'")
 
     def cmd_ping(self, args):
-        self.core.discovery_channel.send(['ping', self.core.hostname, self.core.uuid])
+        if self.core.master:
+            self.core.discovery_channel.send(['ping', self.core.hostname, self.core.uuid])
 
 descriptor = {
     'name' : 'system',

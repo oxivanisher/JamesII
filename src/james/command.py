@@ -1,10 +1,13 @@
 
 import pickle
 
+class CommandNotFound(Exception):
+    pass
 
 class Command(object):
 
     def __init__(self, name, help='', handler=None, hide=False):
+        self.parent = None
         self.name = name
         self.help = help
         self.handler = handler
@@ -20,10 +23,15 @@ class Command(object):
         self.__dict__ = dict
         self.handler = None
 
+        # repair parent links
+        for cmd in self.subcommands.values():
+            cmd.parent = self
+
     def add_subcommand(self, subcommand):
         try:
             return self.subcommands[subcommand.name]
         except KeyError:
+            subcommand.parent = self
             self.subcommands[subcommand.name] = subcommand
             return subcommand
 
@@ -45,9 +53,10 @@ class Command(object):
         try:
             return self.subcommands[args[0]].process_args(args[1:])
         except KeyError:
-            pass
+            return None
 
-    def find_by_name(self, args):
+    # return best matching command (or self)
+    def get_best_match(self, args):
         args = [s.encode('utf-8').strip() for s in args]
         args = filter(lambda s: s != '', args)
 
@@ -55,14 +64,28 @@ class Command(object):
             return self
 
         try:
-            return self.subcommands[args[0]].find_by_name(args[1:])
+            return self.subcommands[args[0]].get_best_match(args[1:])
         except KeyError:
-            pass
+            return self
+
+    def get_depth(self):
+        # return self.parent.get_depth() + 1 if self.parent else 0
+        if not self.parent:
+            return 0
+        else:
+            return self.parent.get_depth() + 1
+
+    # FIXME option to discard hidden commands
+    def get_subcommand_names(self):
+        return self.subcommands.keys()
 
     # def dump(self, indent = ''):
     #     print indent + self.name
     #     for subcommand in self.subcommands.keys():
     #         self.subcommands[subcommand].dump(indent + '\t')
+
+    def __str__(self):
+        return "[Command] %s" % (self.name)
 
     def serialize(self):
         return pickle.dumps(self)
@@ -80,25 +103,3 @@ class Command(object):
                 'hide' : self.subcommands[subcommand].hide
                 })
         return return_list
-
-# not me: ig wuerd eher help wol mache
-# me: kk
-# me: das waer ou eifacher ^^
-# not me: jo und irgendwie logischer
-# me: jo
-# me: guette plan. maches mou so
-# not me: aus erschts mueestisch ir Command klass e funktion mache wo e string chasch
-#         uebergae und dae giter s'command zruegg fauses existiert
-# me: de geits naemlech d plugin base class garnuet aa
-# not me: aso z.b. find_by_name(self, name)
-# me: ah kk
-# not me: isch natuerlech naer rekursiv
-# not me: nimmsch s'erschte wort waeg, checksch oeb im subcommand dictionary dae waert
-#         fingsch, faus jo rueefsch ufem subcommend mitem raescht vom string uf
-# me: muesi de es dict zruegg gaeh?
-# not me: nei eigentlech nur e referaenz ufs command wo referenziert wird vom name
-# me: ah ok
-# me: das soet kes ding si
-# me: (saegi do so blauoeigig :D)
-# not me: jo isch raecht aehnlech wi process_args oder wisi heisst
-# me: jop

@@ -2,6 +2,12 @@
 import threading
 import sys
 import yaml
+import readline
+import os
+import atexit
+
+import james.command
+
 
 from james.plugin import *
 
@@ -12,16 +18,32 @@ class ConsoleThread(threading.Thread):
         self.plugin = plugin
         self.terminated = False
 
+        self.keywords = []
+
+        if sys.platform == 'darwin':
+            readline.parse_and_bind ("bind ^I rl_complete")
+        else:
+            readline.parse_and_bind("tab: complete")
+            
+        readline.set_completer(self.complete)
+
+        histfile = os.path.join(os.path.expanduser("~"), ".james_cli_history")
+        try:
+            readline.read_history_file(histfile)
+        except IOError:
+            pass
+
+        atexit.register(readline.write_history_file, histfile)        
+
     def run(self):
 
-        sys.stdout.write('Interactive cli interface to james online. server: ')
-        sys.stdout.write(self.plugin.core.brokerconfig['host'] + ':')
-        sys.stdout.write('%s\n' % (self.plugin.core.brokerconfig['port']))
-        sys.stdout.write('basic commands are help, message, dump_config and exit.' + '\n')
+        print("Interactive cli interface to JamesII (%s:%s) online." % (
+                        self.plugin.core.brokerconfig['host'],
+                        self.plugin.core.brokerconfig['port']))
 
         while (not self.terminated):
             try:
-                line = sys.stdin.readline()
+                line = raw_input()
             except KeyboardInterrupt:
                 self.plugin.core.terminate()
 
@@ -37,6 +59,44 @@ class ConsoleThread(threading.Thread):
 
     def terminate(self):
        self.terminated = True
+
+    def complete(self, text, state):
+        # catch exceptions
+        try:
+            line = readline.get_line_buffer()
+            args = line.split(' ')
+
+            if state == 0:
+        return self.status[self.core.location]
+                self.keywords = []
+
+                cmd = None
+                cmd = self.plugin.commands.get_best_match(args)
+                if cmd == self.plugin.commands:
+                    cmd = self.plugin.core.ghost_commands.get_best_match(args)
+                    if cmd == self.plugin.core.ghost_commands:
+                        cmd = None
+
+                if cmd:
+                    args = args[cmd.get_depth():]
+                    self.keywords = cmd.get_subcommand_names()
+                else:
+                    self.keywords = self.plugin.commands.get_subcommand_names()
+                    self.keywords += self.plugin.core.ghost_commands.get_subcommand_names()
+
+                # keep keywords that start with correct text
+                args.append('')
+                self.keywords = filter(lambda name: name.startswith(args[0]), self.keywords)
+                self.keywords = map(lambda name: name + " ", self.keywords)
+
+                return self.keywords[0] if len(self.keywords) > 0 else None
+            else:
+                return self.keywords[state] if len(self.keywords) > state else None
+
+        except Exception, e:
+            print e.__repr__()
+
+
 
 
 class CliPlugin(Plugin):
@@ -101,7 +161,7 @@ class CliPlugin(Plugin):
 
     def cmd_message(self, args):
         print("sending test message")
-        message = self.plugin.core.new_message("cli_test")
+        message = self.core.new_message("cli_test")
         message.body = "Test Body"
         message.header = "Test Head"
         message.level = 1
@@ -111,29 +171,26 @@ class CliPlugin(Plugin):
     def cmd_help(self, args):
 
         if len(args) > 0:    
-            command = self.core.ghost_commands.find_by_name(args)
+            command = self.core.ghost_commands.get_best_match(args)
             if command:
                 print("%s:" % (command.help))
-                for subcommand in command.list():
-                    self.print_help_line(subcommand)
+                self.print_command_help_lines(command)
             else:
                 print ("command not found")
 
         else:
             print("local commands:")
-            for command in self.commands.list():
-                if not command['hide']:
-                    self.print_help_line(command)
+            self.print_command_help_lines(self.commands)
 
             print("remote commands:")
-            for command in self.core.ghost_commands.list():
-                if not command['hide']:
-                    self.print_help_line(command)
+            self.print_command_help_lines(self.core.ghost_commands)
 
         return True
 
-    def print_help_line(self, command):
-        print ("%-15s - %s" % (command['name'], command['help']))
+    def print_command_help_lines(self, command_obj):
+        for command in command_obj.list():
+            if not command['hide']:
+                print ("%-15s - %s" % (command['name'], command['help']))
 
 descriptor = {
     'name' : 'cli',

@@ -25,6 +25,7 @@ Plugins:
 * transmission remote plugin
 * xmpp service plugin
 * at/timer countdown
+* HTTP monitor/plugin
 
 
 You Need (outdated!):

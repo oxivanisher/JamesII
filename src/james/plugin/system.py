@@ -17,7 +17,7 @@ class SystemPlugin(Plugin):
     def cmd_quit(self, args):
         message = self.core.new_message(self.name)
         message.header = ("JamesII shutting down (%s@%s)" % (self.name, self.core.hostname))
-        message.leve = 2
+        message.level = 2
         message.send()
 
         self.core.terminate()

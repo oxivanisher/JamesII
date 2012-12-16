@@ -18,6 +18,7 @@ class Plugin(object):
         self.uuid = str(uuid.uuid1()) 
         self.name = descriptor['name']
         self.core = core
+        self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
 
@@ -42,9 +43,16 @@ class Plugin(object):
 
     def handle_request(self, uuid, name, body, host, plugin):
         if name == 'cmd':
-            res = self.core.commands.process_args(body)
-            if res:
-                self.send_response(uuid, name, res)
+            args = [s.encode('utf-8').strip() for s in body]
+            args = filter(lambda s: s != '', args)
+
+            try:
+                if self.command == args[0]:
+                    res = self.core.commands.process_args(args)
+                    if res:
+                        self.send_response(uuid, name, res)
+            except KeyError:
+                pass
 
     def handle_response(self, uuid, name, body, host, plugin):
         if uuid == self.uuid:

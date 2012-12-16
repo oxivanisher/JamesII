@@ -31,6 +31,7 @@ class ConsoleThread(threading.Thread):
                 args = line.split(' ')
 
                 if not self.plugin.commands.process_args(args):
+                    print("running command remote")
                     self.plugin.send_command(args)
             else:
                 print("enter 'help' for a list of available commands.")
@@ -79,19 +80,25 @@ class CliPlugin(Plugin):
     def cmd_prx(self, args):
         print("proximity_status : %s" % (self.core.proximity_status.get_all_status()))
         print("self.location : %s" % (self.core.location))
+        return True
 
     def cmd_prx_home(self, args):
         self.core.proximity_status.set_status_here(True, 'cli')
+        return True
 
     def cmd_prx_away(self, args):
         self.core.proximity_status.set_status_here(False, 'cli')
+        return True
 
     def cmd_exit(self, args):
         self.core.terminate()
+        return True
 
     def cmd_dump_config(self, args):
         print("dumping config:")
         print(yaml.dump(self.core.config))
+
+        return True
 
     def cmd_message(self, args):
         print("sending test message")
@@ -100,6 +107,7 @@ class CliPlugin(Plugin):
         message.header = "Test Head"
         message.level = 1
         message.send()
+        return True
 
     def cmd_help(self, args):
         print("local commands:")
@@ -111,6 +119,9 @@ class CliPlugin(Plugin):
         for command in self.core.ghost_commands.list():
             if not command['hide']:
                 print ("%-15s - %s" % (command['name'], command['help']))
+
+        return True
+
 
 
 descriptor = {

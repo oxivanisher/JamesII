@@ -1,25 +1,6 @@
 
 import pickle
 
-# not me: ig wuerd eher help wol mache
-# me: kk
-# me: das waer ou eifacher ^^
-# not me: jo und irgendwie logischer
-# me: jo
-# me: guette plan. maches mou so
-# not me: aus erschts mueestisch ir Command klass e funktion mache wo e string chasch uebergae und dae giter s'command zruegg fauses existiert
-# me: de geits naemlech d plugin base class garnuet aa
-# not me: aso z.b. find_by_name(self, name)
-# me: ah kk
-# not me: isch natuerlech naer rekursiv
-# not me: nimmsch s'erschte wort waeg, checksch oeb im subcommand dictionary dae waert fingsch, faus jo rueefsch ufem subcommend mitem raescht vom string uf
-# me: muesi de es dict zruegg gaeh?
-# not me: nei eigentlech nur e referaenz ufs command wo referenziert wird vom name
-# me: ah ok
-# me: das soet kes ding si
-# me: (saegi do so blauoeigig :D)
-# not me: jo isch raecht aehnlech wi process_args oder wisi heisst
-# me: jop
 
 class Command(object):
 
@@ -52,13 +33,13 @@ class Command(object):
         return self.add_subcommand(cmd)
 
     def process_args(self, args):
-        # print('execute cmd ', self.name)
+        args = [s.encode('utf-8').strip() for s in args]
+        args = filter(lambda s: s != '', args)
 
         if self.handler:
             return self.handler(args)
+            pass
 
-        args = [s.encode('utf-8').strip() for s in args]
-        args = filter(lambda s: s != '', args)
         if len(args) < 1:
             return
 
@@ -66,6 +47,44 @@ class Command(object):
             return self.subcommands[args[0]].process_args(args[1:])
         except KeyError:
             pass
+
+# not me: ig wuerd eher help wol mache
+# me: kk
+# me: das waer ou eifacher ^^
+# not me: jo und irgendwie logischer
+# me: jo
+# me: guette plan. maches mou so
+# not me: aus erschts mueestisch ir Command klass e funktion mache wo e string chasch
+#         uebergae und dae giter s'command zruegg fauses existiert
+# me: de geits naemlech d plugin base class garnuet aa
+# not me: aso z.b. find_by_name(self, name)
+# me: ah kk
+# not me: isch natuerlech naer rekursiv
+# not me: nimmsch s'erschte wort waeg, checksch oeb im subcommand dictionary dae waert
+#         fingsch, faus jo rueefsch ufem subcommend mitem raescht vom string uf
+# me: muesi de es dict zruegg gaeh?
+# not me: nei eigentlech nur e referaenz ufs command wo referenziert wird vom name
+# me: ah ok
+# me: das soet kes ding si
+# me: (saegi do so blauoeigig :D)
+# not me: jo isch raecht aehnlech wi process_args oder wisi heisst
+# me: jop
+
+    def find_by_name(self, args):
+        print("find by name: %s" % (args))
+
+        args = [s.encode('utf-8').strip() for s in args]
+        args = filter(lambda s: s != '', args)
+        if len(args) < 1:
+            return
+
+        if self.name == args[0]:
+            return self
+        else:
+            try:
+                self.subcommands[args[0]].find_by_name(args[1:])
+            except KeyError:
+                return False
 
     # def dump(self, indent = ''):
     #     print indent + self.name

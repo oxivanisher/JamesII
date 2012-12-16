@@ -14,7 +14,6 @@ class WakeOnLanPlugin(Plugin):
         self.commands.create_subcommand('wake', 'wakes up a given host', self.wol_wake)
 
     def wol_list(self, args):
-        print("yay!")
         return ', '.join(self.core.config['wakeonlan']['targets'].keys())
 
     def wol_wake(self, args):

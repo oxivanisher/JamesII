@@ -52,6 +52,7 @@ class Core(object):
         self.commands = command.Command('root')
         self.ghost_commands = command.Command('ghost')
         self.nodes_online = {}
+        self.master_node = ''
 
         # Load broker configuration
         try:
@@ -66,6 +67,7 @@ class Core(object):
             self.config = config.YamlConfig("../config/config.yaml").get_values()
             self.master = True
             mode_output = "master"
+            self.master_node = self.uuid
         except Exception as e:
             mode_output = "client"
 
@@ -226,10 +228,11 @@ class Core(object):
         elif msg[0] == 'commands':
             self.ghost_commands.add_subcommand(command.Command.deserialize(msg[1]))
 
-        # FIXME nodes_online does nothing at the moment
         elif msg[0] == 'nodes_online':
             if not self.master:
-                self.nodes_online = self.utils.convert_from_unicode(msg[1])
+                args = self.utils.convert_from_unicode(msg)
+                self.master_node = args[2]
+                self.nodes_online = args[1]
 
         elif msg[0] == 'pong':
             args = [s.encode('utf-8').strip() for s in msg]

@@ -137,7 +137,14 @@ class CliPlugin(Plugin):
 
     # commands
     def cmd_nodes_online(self, args):
-        print self.core.nodes_online
+        for node in self.core.nodes_online:
+            if self.core.uuid == node:
+                temp_str = "(cli)"
+            elif self.core.master_node == node:
+                temp_str = "(core)"
+            else:
+                temp_str = ""
+            print("%-10s %-6s %s" % (self.core.nodes_online[node], temp_str, node))
         return True
 
     def cmd_prx(self, args):

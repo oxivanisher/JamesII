@@ -245,8 +245,6 @@ class Core(object):
             except KeyError:
                 pass
 
-            self.ping_nodes()
-
         elif msg[0] == 'shutdown':
             self.terminate()
 

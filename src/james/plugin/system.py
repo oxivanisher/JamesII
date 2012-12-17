@@ -11,10 +11,10 @@ class SystemPlugin(Plugin):
         super(SystemPlugin, self).__init__(core, descriptor)
 
         self.commands.create_subcommand('ip', 'show the ip of this node', self.get_ip)
-        self.commands.create_subcommand('quit', 'quit the system', self.cmd_quit)
         if os.path.isfile('/usr/bin/git'):
             self.commands.create_subcommand('version', 'shows the git checkout HEAD', self.cmd_version)
         if self.core.master:
+            self.commands.create_subcommand('quit', 'quit the system', self.cmd_quit)
             self.commands.create_subcommand('ping', 'ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('at', 'execute command at given time', self.cmd_at)
             self.commands.create_subcommand('in', 'execute command in given time', self.cmd_in)
@@ -26,7 +26,7 @@ class SystemPlugin(Plugin):
         message.level = 2
         message.send()
 
-        self.core.terminate()
+        self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
 
     def cmd_version(self, args):
         version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')

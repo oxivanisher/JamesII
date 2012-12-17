@@ -247,6 +247,9 @@ class Core(object):
 
             self.ping_nodes()
 
+        elif msg[0] == 'shutdown':
+            self.terminate()
+
         for p in self.plugins:
             p.process_discovery_event(msg)
 

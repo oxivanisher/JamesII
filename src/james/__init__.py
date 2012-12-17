@@ -128,9 +128,6 @@ class Core(object):
         path = os.path.join(os.path.dirname(__file__), 'plugin')
         plugin.Factory.find_plugins(path)
 
-        # start ping loop (will only do something as master)
-        self.master_ping_nodes()
-
     # plugin methods
     def load_plugin(self, name):
         try:

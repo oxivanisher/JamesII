@@ -39,10 +39,11 @@ class MonitorPlugin(Plugin):
                             ("%s (%s)" % (command['body'], command['uuid'])))
 
     def process_discovery_event(self, msg):
-        pass
-#        self.process_event(("%s" % (msg[1])),
-#                            "Discovery Event",
-#                            ("%s (%s)" % (msg[0], msg[2])))
+        events = ['ping', 'pong', 'hello', 'byebye']
+        if msg[0] in events:
+           self.process_event(("%s" % (msg[1])),
+                               "Discovery Event",
+                               ("%s (%s)" % (msg[0], msg[2])))
 
     def process_event(self, who, what, payload):
         message = {}

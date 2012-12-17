@@ -51,9 +51,7 @@ class Core(object):
         self.location = 'home'
         self.commands = command.Command('root')
         self.ghost_commands = command.Command('ghost')
-
-        #FIXME: include list for online nodes
-        #self.nodes_online = {}
+        self.nodes_online = {}
 
         # Load broker configuration
         try:
@@ -129,6 +127,9 @@ class Core(object):
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
         plugin.Factory.find_plugins(path)
+
+        # start ping loop (will only do something as master)
+        self.master_ping_nodes()
 
     # plugin methods
     def load_plugin(self, name):
@@ -209,9 +210,15 @@ class Core(object):
             if show_message and msg[2] != self.uuid:
                 print("Discovered new host or instance '%s' (%s)" % (msg[1], msg[2]))
 
+            # register node in nodes_online
+            args = [s.encode('utf-8').strip() for s in msg]
+            args = filter(lambda s: s != '', args)
+            self.nodes_online[args[2]] = args[1]
+
             # Broadcast configuration if master
             if self.master:
                 self.config_channel.send(self.config)
+                self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             # Broadcast command list
             for p in self.plugins:
                 self.discovery_channel.send(['commands', p.commands.serialize()])
@@ -221,6 +228,24 @@ class Core(object):
 
         elif msg[0] == 'commands':
             self.ghost_commands.add_subcommand(command.Command.deserialize(msg[1]))
+
+        # FIXME nodes_online does nothing at the moment
+        elif msg[0] == 'nodes_online':
+            if not self.master:
+                self.nodes_online = self.utils.convert_from_unicode(msg[1])
+
+        elif msg[0] == 'pong':
+            args = [s.encode('utf-8').strip() for s in msg]
+            args = filter(lambda s: s != '', args)
+            self.nodes_online[args[2]] = args[1]
+
+        elif msg[0] == 'byebye':
+            try:
+                self.nodes_online.pop(msg[2])
+            except KeyError:
+                pass
+
+            self.ping_nodes()
 
         for p in self.plugins:
             p.process_discovery_event(msg)
@@ -316,3 +341,18 @@ class Core(object):
 
     def add_timeout(self, seconds, handler):
         self.connection.add_timeout(seconds, handler)
+
+    def ping_nodes(self):
+        if self.master:
+            self.discovery_channel.send(['ping', self.hostname, self.uuid])
+
+    def master_send_nodes_online(self):
+        if self.master:
+            self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+            self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
+
+    def master_ping_nodes(self):
+        if self.master:
+            self.nodes_online = {}
+            self.ping_nodes()
+            self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)

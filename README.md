@@ -13,7 +13,6 @@ ToDo:
 ------
 Main:
 * add process monitor / events
-* discover new nodes and save them locally
 * include "at" and "in" functionality, this should be done in the master so that he could safe the list for restarts.
 * log class
 

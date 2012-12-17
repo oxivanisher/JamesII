@@ -2,7 +2,9 @@
 core:
  timezone   : Europe/Zurich
  debug      : False
- 
+ pingtimeout : 10
+ sleeptimeout: 90
+
 # plugin configurations
 xmpp:
  destination: your@jid
@@ -17,13 +19,6 @@ mpd:
  password   : 
  port       : 
 
-# configure managed plugins
-managed_plugins:
- - plugin   : espeak
-   hostname : hostname
-
- - plugin   : mpd
-   hostname : hostname
-
- - plugin   : espeak
-   hostname : hostname
+# configure locations (the system will default to 'home')
+locations:
+ # hostname : location

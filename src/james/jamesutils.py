@@ -4,6 +4,7 @@ import datetime
 import pytz
 import socket
 import struct
+import collections
 
 class JamesUtils(object):
 
@@ -95,3 +96,13 @@ class JamesUtils(object):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.sendto(send_data, ('<broadcast>', 7))
+
+    def convert_from_unicode(self, data):
+        if isinstance(data, unicode):
+            return str(data)
+        elif isinstance(data, collections.Mapping):
+            return dict(map(self.convert_from_unicode, data.iteritems()))
+        elif isinstance(data, collections.Iterable):
+            return type(data)(map(self.convert_from_unicode, data))
+        else:
+            return data

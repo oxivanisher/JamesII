@@ -107,6 +107,7 @@ class CliPlugin(Plugin):
         self.cmd_line_mode = len(sys.argv) > 1
 
         self.commands.hide = True
+        self.commands.create_subcommand('nodes_online', 'show the local nodes_online variables', self.cmd_nodes_online)
         self.commands.create_subcommand('prx', 'show the local proximity variables', self.cmd_prx)
         self.commands.create_subcommand('prx_home', 'set the proximity system for: at home', self.cmd_prx_home)
         self.commands.create_subcommand('prx_away', 'set the proximity system for: away', self.cmd_prx_away)
@@ -135,6 +136,10 @@ class CliPlugin(Plugin):
         self.core.terminate()
 
     # commands
+    def cmd_nodes_online(self, args):
+        print self.core.nodes_online
+        return True
+
     def cmd_prx(self, args):
         print("proximity_status : %s" % (self.core.proximity_status.get_all_status()))
         print("self.location : %s" % (self.core.location))

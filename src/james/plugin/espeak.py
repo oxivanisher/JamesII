@@ -1,5 +1,4 @@
 
-import subprocess
 import sys
 from time import localtime, strftime
 
@@ -39,8 +38,7 @@ class EspeakPlugin(Plugin):
 
     def speak(self, msg):
         with open(os.devnull, "w") as fnull:
-            ret = subprocess.Popen(['/usr/bin/espeak', msg], \
-                  stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+            self.core.popenAndWait(['/usr/bin/espeak', msg])
 
             message = self.core.new_message(self.name)
             message.header = "Espeak Spoke"

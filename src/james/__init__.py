@@ -418,34 +418,24 @@ class Core(object):
         """
         self.connection.add_timeout(seconds, handler)
 
-    def popenAndCall(self, onExit, popenArgs, identifier = None):
-        """
-        Runs the given args in a subprocess.Popen, and then calls the method
-        onExit() when the subprocess completes.
-        onExit() is a callable object, and popenArgs is a list/tuple of args that 
-        would give to subprocess.Popen.
-        """
-        def runInThread(onExit, popenArgs, identifier = None):
-            try:
-                sub_process_pipe = os.popen(' '.join(popenArgs), 'r')
-                sub_process_return = sub_process_pipe.read().strip().split("\n")
-                sub_process_pipe.close()
-                onExit(sub_process_return, identifier)
-            except Exception as e:
-                pass
-
-            return
-        thread = threading.Thread(target=runInThread, args=(onExit, popenArgs, identifier))
-        thread.start()
-        # returns immediately after the thread starts
-        return thread
-
     def popenAndWait(self, command):
         """
         Runs the given command in a subprocess but will not spawn a subprocess.
         """
-        print("Core.Thread: Node locked while running: <%s>" % (command))
-        return_pipe = os.popen(command,'r')
-        return_list = return_pipe.read().strip().split("\n")
-        return_pipe.close()
-        return return_list
+        ret = subprocess.Popen(command, \
+                  stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+        args = [s.encode('utf-8').strip() for s in ret.split("\n")]
+        args = filter(lambda s: s != '', args)
+        return args
+
+    def spawnSubprocess(self, target, onExit):
+        """
+        Spawns a subprocess with call target and calls onExit with the return
+        when finished
+        """
+        def runInThread(target, onExit):
+            onExit(target())
+
+        thread = threading.Thread(target=runInThread, args=(target, onExit))
+        thread.start()
+        return thread

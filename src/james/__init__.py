@@ -237,7 +237,6 @@ class Core(object):
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
                 self.nodes_online = args[1]
-                print("(slave) recieved %s online nodes" % (len(self.nodes_online)))
 
         elif msg[0] == 'pong':
             args = [s.encode('utf-8').strip() for s in msg]
@@ -342,7 +341,7 @@ class Core(object):
         self.discovery_channel.send(['byebye', self.hostname, self.uuid])
         for p in self.plugins:
             p.terminate()
-        print("I shall die now.")
+        print("Core.terminate() called. I shall die now.")
         self.terminated = True
 
     def add_timeout(self, seconds, handler):

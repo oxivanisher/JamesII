@@ -53,6 +53,11 @@ class Core(object):
         self.ghost_commands = command.Command('ghost')
         self.nodes_online = {}
         self.master_node = ''
+        try:
+            self.os_username = os.system("whoami")
+        except Exception as e:
+            self.os_username = None
+            pass
 
         # Load broker configuration
         try:

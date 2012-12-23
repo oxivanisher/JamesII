@@ -210,7 +210,9 @@ class Core(object):
 
     # configuration & config channel methods
     def discovery_listener(self, msg):
+        """Manages the discovery channel messages."""
         if msg[0] == 'hello':
+            """This host just joined us."""
             show_message = True
             try:
                 if not self.config['core']['debug']:
@@ -235,35 +237,46 @@ class Core(object):
                 self.discovery_channel.send(['commands', p.commands.serialize()])
 
         elif msg[0] == 'ping':
+            """We recieved a ping request. Be a good boy and send a pong."""
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
         elif msg[0] == 'commands':
+            """We recieved new commands. Save them locally."""
             self.ghost_commands.add_subcommand(command.Command.deserialize(msg[1]))
 
         elif msg[0] == 'nodes_online':
+            """We recieved a new nodes_online list. Replace our current one."""
             if not self.master:
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
                 self.nodes_online = args[1]
 
         elif msg[0] == 'pong':
+            """We recieved a pong. We will save this host in nodes_online."""
             args = [s.encode('utf-8').strip() for s in msg]
             args = filter(lambda s: s != '', args)
             self.nodes_online[args[2]] = args[1]
 
         elif msg[0] == 'byebye':
+            """This host is shutting down. Remove him from nodes_online."""
             try:
                 self.nodes_online.pop(msg[2])
             except KeyError:
                 pass
 
         elif msg[0] == 'shutdown':
+            """We recieved a systemwide shutdown signal. So STFU and RAGEQUIT!"""
             self.terminate()
 
         for p in self.plugins:
+            """Call process_discovery_event() on each started plugin."""
             p.process_discovery_event(msg)
 
     def config_listener(self, msg):
+        """
+        Listens for configurations on the configuration channel. If we get a
+        changed version of the config (= new config on master node) we will exit.
+        """
         if not self.config:
             show_message = True
             try:
@@ -288,12 +301,21 @@ class Core(object):
 
     # message channel methods
     def send_message(self, msg):
+        """
+        Sends a message over the message channel.
+        """
         self.message_channel.send(msg)
 
     def new_message(self, name = "uninitialized_message"):
+        """
+        Returns a new instance of JamesMessage.
+        """
         return jamesmessage.JamesMessage(self, name)
 
     def message_listener(self, msg):
+        """
+        Listener for messages. Calls process_message() on each started plugin.
+        """
         message = jamesmessage.JamesMessage(self, "recieved message")
         message.set(msg)
         
@@ -302,12 +324,21 @@ class Core(object):
 
     # proximity channel methods
     def proximity_listener(self, msg):
+        """
+        Listens to proximity status changes on the proximity channel and
+        update the local storage. Calls process_proximity_event() on all
+        started plugins.
+        """
         if self.proximity_status.get_status_here() != msg['status'][self.location]:
             for p in self.plugins:
                 p.process_proximity_event(msg)
         self.proximity_status.update_all_status(msg['status'], msg['plugin'])
 
     def proximity_event(self, changedstatus, pluginname):
+        """
+        If the local proximity state has changed, send a message and publish the
+        change over the proximity channel.
+        """
         newstatus = {}
         oldstatus = self.proximity_status.get_all_status_copy()
 
@@ -330,15 +361,26 @@ class Core(object):
 
     # discovery methods
     def ping_nodes(self):
+        """
+        If master, ping send the ping command to the discovery channel
+        """
         if self.master:
             self.discovery_channel.send(['ping', self.hostname, self.uuid])
 
     def master_send_nodes_online(self):
+        """
+        If master, sends the nodes_online over the discovery channel. Registers
+        master_ping_nodes() callback after given sleeptimeout in config.
+        """
         if self.master:
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
     def master_ping_nodes(self):
+        """
+        If master, calls the ping_nodes() method and registers master_send_nodes_online()
+        after given pingtimeout in config.
+        """
         if self.master:
             self.nodes_online = {}
             self.ping_nodes()
@@ -346,13 +388,12 @@ class Core(object):
 
     # base methods
     def run(self):
+        """
+        This method is called right at the beginning of normal operations. (after initialisation)
+        Calls start() on all started plugins.
+        """
         for p in self.plugins:
             p.start()
-
-        # FIXME todo
-        # rawdata = self.commands.serialize()
-        # test_command = Command.deserialize(rawdata)
-        # print(test_command.list())
 
         while not self.terminated:
             try:
@@ -362,6 +403,9 @@ class Core(object):
                 self.terminate()
         
     def terminate(self):
+        """
+        Terminate the core. This method will first call the terminate() on each plugin.
+        """
         self.discovery_channel.send(['byebye', self.hostname, self.uuid])
         for p in self.plugins:
             p.terminate()
@@ -369,19 +413,22 @@ class Core(object):
         self.terminated = True
 
     def add_timeout(self, seconds, handler):
+        """
+        Sets a timeout callback with pika callbacks. Resolution 1 second.
+        """
         self.connection.add_timeout(seconds, handler)
 
     def popenAndCall(self, onExit, popenArgs, identifier = None):
         """
-        Runs the given args in a subprocess.Popen, and then calls the function
-        onExit when the subprocess completes.
-        onExit is a callable object, and popenArgs is a list/tuple of args that 
+        Runs the given args in a subprocess.Popen, and then calls the method
+        onExit() when the subprocess completes.
+        onExit() is a callable object, and popenArgs is a list/tuple of args that 
         would give to subprocess.Popen.
         """
         def runInThread(onExit, popenArgs, identifier = None):
             try:
                 sub_process_pipe = os.popen(' '.join(popenArgs), 'r')
-                sub_process_return = sub_process_pipe.read().strip()
+                sub_process_return = sub_process_pipe.read().strip().split("\n")
                 sub_process_pipe.close()
                 onExit(sub_process_return, identifier)
             except Exception as e:
@@ -392,3 +439,13 @@ class Core(object):
         thread.start()
         # returns immediately after the thread starts
         return thread
+
+    def popenAndWait(self, command):
+        """
+        Runs the given command in a subprocess but will not spawn a subprocess.
+        """
+        print("Core.Thread: Node locked while running: <%s>" % (command))
+        return_pipe = os.popen(command,'r')
+        return_list = return_pipe.read().strip().split("\n")
+        return_pipe.close()
+        return return_list

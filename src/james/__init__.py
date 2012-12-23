@@ -7,6 +7,9 @@ import time
 import sys
 import uuid
 import copy
+import getpass
+import threading
+import subprocess
 
 import plugin
 import config
@@ -54,7 +57,7 @@ class Core(object):
         self.nodes_online = {}
         self.master_node = ''
         try:
-            self.os_username = os.system("whoami")
+            self.os_username = getpass.getuser()
         except Exception as e:
             self.os_username = None
             pass
@@ -325,6 +328,22 @@ class Core(object):
                                          'plugin' : pluginname,
                                          'location' : self.location })
 
+    # discovery methods
+    def ping_nodes(self):
+        if self.master:
+            self.discovery_channel.send(['ping', self.hostname, self.uuid])
+
+    def master_send_nodes_online(self):
+        if self.master:
+            self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+            self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
+
+    def master_ping_nodes(self):
+        if self.master:
+            self.nodes_online = {}
+            self.ping_nodes()
+            self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)
+
     # base methods
     def run(self):
         for p in self.plugins:
@@ -352,17 +371,39 @@ class Core(object):
     def add_timeout(self, seconds, handler):
         self.connection.add_timeout(seconds, handler)
 
-    def ping_nodes(self):
-        if self.master:
-            self.discovery_channel.send(['ping', self.hostname, self.uuid])
+    def popenAndCall(self, onExit, popenArgs):
+        """
+        Runs the given args in a subprocess.Popen, and then calls the function
+        onExit when the subprocess completes.
+        onExit is a callable object, and popenArgs is a list/tuple of args that 
+        would give to subprocess.Popen.
+        """
+        def runInThread(onExit, popenArgs):
+            return_value = None
+            print ("args %s" % popenArgs)
+            try:
+        # bt_pipe = os.popen('hcitool ' + command,'r')
+        # bt = bt_pipe.read().strip()
+        # bt_pipe.close()
 
-    def master_send_nodes_online(self):
-        if self.master:
-            self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-            self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
-    def master_ping_nodes(self):
-        if self.master:
-            self.nodes_online = {}
-            self.ping_nodes()
-            self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)
+                sub_process_pipe = os.popen(' '.join(popenArgs), 'r')
+                sub_process_return = sub_process_pipe.read().strip()
+                sub_process_pipe.close()
+                print("sp ret: %s" % sub_process_return)
+                onExit(sub_process_return)
+
+                # proc = subprocess.Popen(*popenArgs)
+                # proc.wait()
+                # return_value = proc.read().strip()
+                # proc.close()
+                # onExit(return_value)
+            except Exception as e:
+                print("Error in thread: %s" % e)
+                pass
+
+            return
+        thread = threading.Thread(target=runInThread, args=(onExit, popenArgs))
+        thread.start()
+        # returns immediately after the thread starts
+        return thread

@@ -127,12 +127,12 @@ class Core(object):
         self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
 
+        # publish our nodes_online list and start the loop
+        self.master_send_nodes_online()
+
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
         plugin.Factory.find_plugins(path)
-
-        # publish our nodes_online list and start the loop
-        self.master_send_nodes_online()
 
     # plugin methods
     def load_plugin(self, name):
@@ -237,7 +237,7 @@ class Core(object):
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
                 self.nodes_online = args[1]
-                print("(slave) revieved online nodes %s" % self.nodes_online)
+                print("(slave) recieved online nodes %s" % self.nodes_online)
 
         elif msg[0] == 'pong':
             args = [s.encode('utf-8').strip() for s in msg]
@@ -360,7 +360,7 @@ class Core(object):
 
     def master_ping_nodes(self):
         if self.master:
-            print("(master) pinging nodes")
+            print("(master) pinging nodes. timeout: %s" % (self.config['core']['pingtimeout']))
             self.nodes_online = {}
             self.ping_nodes()
             self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)

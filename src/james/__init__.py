@@ -100,12 +100,10 @@ class Core(object):
             print("Waiting for config")
             while not self.config:
                 self.connection.process_data_events()
-        else:
-            self.ping_nodes()
-
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
         else:
+            self.ping_nodes()
             try:
                 self.location = self.config['locations'][self.hostname]
             except Exception as e:

@@ -17,29 +17,32 @@ class DbusNotifyPlugin(Plugin):
 
     def process_message(self, message):
         # Connect to notification interface on DBUS.
-        self.notifyservice = self.bus.get_object(
-            'org.freedesktop.Notifications',
-            '/org/freedesktop/Notifications'
-        )
-        self.notifyservice = dbus.Interface(
-            self.notifyservice,
-            "org.freedesktop.Notifications"
-        )
+        try:
+            self.notifyservice = self.bus.get_object(
+                'org.freedesktop.Notifications',
+                '/org/freedesktop/Notifications'
+            )
+            self.notifyservice = dbus.Interface(
+                self.notifyservice,
+                "org.freedesktop.Notifications"
+            )
 
-        # The second param is the replace id, so get the notify id back,
-        # store it, and send it as the replacement on the next call.
-        self.notifyid = self.notifyservice.Notify(
-            "JamesII Message",
-            self.notifyid,
-            '',
-            ("%s (%s@%s)\n" % (message.header,
-                             message.sender_name,
-                             message.sender_host)),
-            ("%s" % (message.body)),
-            [],
-            {},
-            2
-        )
+            # The second param is the replace id, so get the notify id back,
+            # store it, and send it as the replacement on the next call.
+            self.notifyid = self.notifyservice.Notify(
+                "JamesII Message",
+                self.notifyid,
+                '',
+                ("%s (%s@%s)\n" % (message.header,
+                                 message.sender_name,
+                                 message.sender_host)),
+                ("%s" % (message.body)),
+                [],
+                {},
+                2
+            )
+        except Exception as e:
+            pass
 
 descriptor = {
     'name' : 'dbus-notify',

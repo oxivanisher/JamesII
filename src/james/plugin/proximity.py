@@ -1,7 +1,8 @@
-
-from bluetooth import *
 import sys
-import re
+import os
+import subprocess
+import getpass
+import time
 
 from james.plugin import *
 
@@ -11,93 +12,73 @@ class ProximityPlugin(Plugin):
         super(ProximityPlugin, self).__init__(core, descriptor)
 
         self.status = False
+        self.hosts_online = []
 
-        self.commands.create_subcommand('scan', 'scan for visible bluetooth devices', self.scan)
-        self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
+        if os.path.isfile('/usr/bin/hcitool'):
+            self.commands.create_subcommand('scan', 'scan for visible bluetooth devices', self.scan)
+            self.commands.create_subcommand('test', 'test for local bluetooth devices', self.test)
+            if core.os_username == 'root':
+                self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
+                self.proximity_check_daemon()
 
     def terminate(self):
+        # FIXME save out actual state to file?
         pass
 
+    def test(self, args):
+        devices = {}
+        lines = self.core.popenAndWait(['hcitool', 'dev'])
+        if len(lines) > 1:
+            for line in lines[1:]:
+                values = line.split()
+                devices[values[1]] = values[0]
+        return(devices)
+
     def scan(self, args):
-        print("Scanning for visible bluetooth devices...")
+        lines = self.core.popenAndWait(['hcitool', 'scan'])
+        hosts = {}
+        if len(lines) > 1:
+            for line in lines[1:]:
+                values = line.split()
+                hosts[values[0]] = values[1]
+        if len(hosts) > 0:
+            return(hosts)
+        else:
+            return("bluetooth scan: no devices found")
 
-        nearby_devices = DeviceDiscoverer().discover_devices(lookup_names = True)
-
-        print "found %d devices" % len(nearby_devices)
-
-        for addr, name in nearby_devices:
-            print "  %s - %s" % (addr, name)
+    def proximity_check_daemon(self):
+        self.proximity_check(None)
+        sleep = self.core.config['proximity']['sleep_short']
+        if self.status:
+            sleep = self.core.config['proximity']['sleep_long']
+        self.core.add_timeout(sleep, self.proximity_check_daemon)
 
     def proximity_check(self, args):
+        self.core.spawnSubprocess(self.proximity_check_worker,
+                                  self.proximity_check_callback)
+
+    def proximity_check_worker(self):
+        hosts = []
+        for person in self.core.config['persons'].keys():
+            for name in self.core.config['persons'][person]['devices'].keys():
+                mac = self.core.config['persons'][person]['devices'][name]
+                ret = self.core.popenAndWait(['/usr/bin/hcitool', 'info', mac])
+                if len(ret) > 1:
+                    hosts.append(mac)
+        return hosts
+
+    def proximity_check_callback(self, values):
+        # FIXME we should consider, that the device may loose 1 connection attempt due RL
         self.oldstatus = self.status
         self.status = False
+        if len(values) > 0:
+            self.status = True
 
-        # so mach man es richtig:
-        # http://code.google.com/p/pybluez/source/browse/trunk/examples/advanced/inquiry-with-rssi.py?r=12
-
-        for name in self.core.config['proximity']['watch_bt'].keys():
-            client_socket=BluetoothSocket( RFCOMM ) # L2CAP
-
-            mac = self.core.config['proximity']['watch_bt'][name]
-            print("Scanning for %s (%s)" % (name, mac))
-
-            try:
-                client_socket.connect((mac, 3))
-                self.status = True
-            except bluetooth._bt.error, e:
-                print e
-                print("Result: %s" % (e[0]))
-                errnum = re.search('^\(([:num:]).*$', str(e))
-                print errnum
-                for t in e:
-                    print ("::%s" % (t))
-                if e[0] == 112: #Host is not reachable
-                    print("Host is away")
-                else:
-                    print("Host is home")
-                    self.status = True
-
-            client_socket.close()
+        self.hosts_online = self.core.utils.convert_from_unicode(values)
 
         if self.status != self.oldstatus:
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
-
-
-        # if sys.platform == "linux2":
-        #     print(bluetooth)
-        #     bluetooth._checkaddr(address)
-        #     sock = bluetooth._gethcisock(device)
-        #     timeoutms = int(timeout * 1000)
-        #     try:
-        #         name = bluetooth._bt.hci_read_remote_name( sock, address, timeoutms )
-        #     except bluetooth._bt.error, e:
-        #         print e
-        #         logger.debug("Lookup Failed")
-        #         # name lookup failed.  either a timeout, or I/O error
-        #         name = None
-        #     sock.close()
-        #     return name
-        # elif sys.platform == "win32":
-        #     if not bluetooth.is_valid_address(address):
-        #         raise ValueError("Invalid Bluetooth address")
-                
-        #     return bluetooth.bt.lookup_name( address )
-
-        
-
-    # def cmd_say(self, args):
-    #   self.speak(' '.join(args))
-
-    # def speak(self, msg):
-    #   subprocess.call(['/usr/bin/espeak', msg])
-
-    # def process_message(self, message):
-    #   if message.level > 0:
-    #       print("Espeak is speaking a message from %s@%s:\n%s:%s" % (message.sender_name,
-    #                                                               message.sender_host,
-    #                                                               message.header,
-    #                                                               message.body))
-    #       self.speak(message.header + message.body)
+        print("(proximity) finished proximity check. %s host(s) online." % (len(values)))
 
 descriptor = {
     'name' : 'proximity',

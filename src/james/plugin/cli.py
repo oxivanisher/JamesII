@@ -141,10 +141,10 @@ class CliPlugin(Plugin):
             if self.core.uuid == node:
                 temp_str = "(cli)"
             elif self.core.master_node == node:
-                temp_str = "(core)"
+                temp_str = "(master)"
             else:
                 temp_str = ""
-            print("%-10s %-6s %s" % (self.core.nodes_online[node], temp_str, node))
+            print("%-10s %-8s %s" % (self.core.nodes_online[node], temp_str, node))
         return True
 
     def cmd_prx(self, args):

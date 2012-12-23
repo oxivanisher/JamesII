@@ -111,7 +111,7 @@ class Core(object):
 
         # Show if we are in debug mode
         if self.config['core']['debug']:
-            print("Debug mode activated")
+            print("UUID: %s" % (self.uuid))
 
         # Create request & response channels
         self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')
@@ -354,13 +354,11 @@ class Core(object):
 
     def master_send_nodes_online(self):
         if self.master:
-            print("(master) sending online nodes list (%s)" % (len(self.nodes_online)))
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
     def master_ping_nodes(self):
         if self.master:
-            print("(master) pinging nodes. timeout: %s" % (self.config['core']['pingtimeout']))
             self.nodes_online = {}
             self.ping_nodes()
             self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)

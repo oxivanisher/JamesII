@@ -237,7 +237,7 @@ class Core(object):
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
                 self.nodes_online = args[1]
-                print("(slave) recieved online nodes %s" % self.nodes_online)
+                print("(slave) recieved %s online nodes" % (len(self.nodes_online)))
 
         elif msg[0] == 'pong':
             args = [s.encode('utf-8').strip() for s in msg]
@@ -354,7 +354,7 @@ class Core(object):
 
     def master_send_nodes_online(self):
         if self.master:
-            print("(master) sending online nodes list: %s" % (self.nodes_online))
+            print("(master) sending online nodes list (%s)" % (len(self.nodes_online)))
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 

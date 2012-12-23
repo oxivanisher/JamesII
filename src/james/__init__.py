@@ -100,6 +100,9 @@ class Core(object):
             print("Waiting for config")
             while not self.config:
                 self.connection.process_data_events()
+        else:
+            self.ping_nodes()
+
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
         else:
@@ -129,6 +132,9 @@ class Core(object):
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
         plugin.Factory.find_plugins(path)
+
+        # publish our nodes_online list and start the loop
+        self.master_send_nodes_online()
 
     # plugin methods
     def load_plugin(self, name):

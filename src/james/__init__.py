@@ -371,39 +371,24 @@ class Core(object):
     def add_timeout(self, seconds, handler):
         self.connection.add_timeout(seconds, handler)
 
-    def popenAndCall(self, onExit, popenArgs):
+    def popenAndCall(self, onExit, popenArgs, identifier = None):
         """
         Runs the given args in a subprocess.Popen, and then calls the function
         onExit when the subprocess completes.
         onExit is a callable object, and popenArgs is a list/tuple of args that 
         would give to subprocess.Popen.
         """
-        def runInThread(onExit, popenArgs):
-            return_value = None
-            print ("args %s" % popenArgs)
+        def runInThread(onExit, popenArgs, identifier = None):
             try:
-        # bt_pipe = os.popen('hcitool ' + command,'r')
-        # bt = bt_pipe.read().strip()
-        # bt_pipe.close()
-
-
                 sub_process_pipe = os.popen(' '.join(popenArgs), 'r')
                 sub_process_return = sub_process_pipe.read().strip()
                 sub_process_pipe.close()
-                print("sp ret: %s" % sub_process_return)
-                onExit(sub_process_return)
-
-                # proc = subprocess.Popen(*popenArgs)
-                # proc.wait()
-                # return_value = proc.read().strip()
-                # proc.close()
-                # onExit(return_value)
+                onExit(sub_process_return, identifier)
             except Exception as e:
-                print("Error in thread: %s" % e)
                 pass
 
             return
-        thread = threading.Thread(target=runInThread, args=(onExit, popenArgs))
+        thread = threading.Thread(target=runInThread, args=(onExit, popenArgs, identifier))
         thread.start()
         # returns immediately after the thread starts
         return thread

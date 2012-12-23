@@ -13,13 +13,18 @@ class MpdPlugin(Plugin):
 
         self.mpc_bin = '/usr/bin/mpc'
 
-        self.connection_string = self.mpc_bin
+        self.connection_string = []
+        self.connection_string.append(self.mpc_bin)
+
         if self.core.config['mpd']['host']:
-            self.connection_string += " --host=" + self.core.config['mpd']['host']
+            self.connection_string.append(" --host=")
+            self.connection_string.append(self.core.config['mpd']['host'])
         if self.core.config['mpd']['port']:
-            self.connection_string += " --port=" + self.core.config['mpd']['port']
+            self.connection_string.append(" --port=")
+            self.connection_string.append(self.core.config['mpd']['port'])
         if self.core.config['mpd']['password']:
-            self.connection_string += " --password=" + self.core.config['mpd']['password']
+            self.connection_string.append(" --password=")
+            self.connection_string.append(self.core.config['mpd']['password'])
 
         self.commands.create_subcommand('mpc', 'call mpc with given args', self.mpc)
         self.commands.create_subcommand('radio_on', 'turn on the radio', self.radio_on)
@@ -63,7 +68,7 @@ class MpdPlugin(Plugin):
             minutes = args[0]
         except IndexError:
             pass
-        subprocess.Popen(['/usr/bin/mpfade', str(minutes), "0", self.core.config['mpd']['host']])
+        self.core.popenAndWait(['/usr/bin/mpfade', str(minutes), "0", self.core.config['mpd']['host']])
 
     def mpd_wakeup(self, args):
         message = self.core.new_message(self.name)
@@ -78,13 +83,11 @@ class MpdPlugin(Plugin):
             minutes = args[0]
         except IndexError:
             pass
-        subprocess.Popen(['/usr/bin/mpfade', str(minutes), "100", self.core.config['mpd']['host']])
+        self.core.popenAndWait(['/usr/bin/mpfade', str(minutes), "100", self.core.config['mpd']['host']])
 
     # Helper Methods
     def exec_mpc(self, args):
-        mpc_pipe = os.popen(self.connection_string + ' ' + ' '.join(args),'r')
-        mpc = mpc_pipe.read().strip()
-        mpc_pipe.close()
+        mpc = self.core.popenAndWait([self.connection_string + args])
 
         message = self.core.new_message(self.name)
         message.header = "MPC: " + ' '.join(args)

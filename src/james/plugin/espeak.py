@@ -60,13 +60,16 @@ class EspeakPlugin(Plugin):
                 pass
 
             self.talkover = True
-            #FIXME this is bad here! this should be "local" only
-            self.send_command(['mpd', 'talkover', 'on'])
+            self.core.commands.process_args(['mpd', 'talkover', 'on'])
             self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg)
         else:
             if self.talkover:
                 self.talkover = False
-                self.send_command(['mpd', 'talkover', 'off'])
+                self.core.commands.process_args(['mpd', 'talkover', 'off'])
+                try:
+                    self.core.commands.process_args(['mpd', 'talkover', 'off'])
+                except Exception:
+                    pass
             self.core.add_timeout(1, self.speak_hook)
 
         return

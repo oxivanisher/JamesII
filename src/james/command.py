@@ -1,5 +1,6 @@
 
 import pickle
+import jamesutils
 
 class CommandNotFound(Exception):
     pass
@@ -41,8 +42,7 @@ class Command(object):
         return self.add_subcommand(cmd)
 
     def process_args(self, args):
-        args = [s.encode('utf-8').strip() for s in args]
-        args = filter(lambda s: s != '', args)
+        args = jamesutils.JamesUtils(self).list_unicode_cleanup(args)
 
         if self.handler:
             return self.handler(args)
@@ -57,8 +57,7 @@ class Command(object):
 
     # return best matching command (or self)
     def get_best_match(self, args):
-        args = [s.encode('utf-8').strip() for s in args]
-        args = filter(lambda s: s != '', args)
+        args = jamesutils.JamesUtils(self).list_unicode_cleanup(args)
 
         if len(args) < 1:
             return self
@@ -69,6 +68,7 @@ class Command(object):
             return self
 
     def get_depth(self):
+        # this is the same as oneliner:
         # return self.parent.get_depth() + 1 if self.parent else 0
         if not self.parent:
             return 0
@@ -78,11 +78,6 @@ class Command(object):
     # FIXME option to discard hidden commands
     def get_subcommand_names(self):
         return self.subcommands.keys()
-
-    # def dump(self, indent = ''):
-    #     print indent + self.name
-    #     for subcommand in self.subcommands.keys():
-    #         self.subcommands[subcommand].dump(indent + '\t')
 
     def __str__(self):
         return "[Command] %s" % (self.name)

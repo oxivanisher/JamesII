@@ -78,7 +78,6 @@ class ProximityPlugin(Plugin):
 
         if self.status != self.oldstatus:
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
-        print("(proximity) finished proximity check. %s host(s) online." % (len(values)))
 
 descriptor = {
     'name' : 'proximity',

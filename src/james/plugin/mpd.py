@@ -111,7 +111,6 @@ class MpdPlugin(Plugin):
             message.send()
 
     def mpd_wakeup_worker(self):
-        self.exec_mpc(['clear'])
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
 
         command = ['/usr/bin/mpfade',

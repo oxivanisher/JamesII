@@ -102,7 +102,7 @@ class EspeakPlugin(Plugin):
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()
-$
+
 descriptor = {
     'name' : 'espeak',
     'help' : 'espeak api',

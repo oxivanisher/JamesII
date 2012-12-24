@@ -14,6 +14,7 @@ class EspeakPlugin(Plugin):
 
         self.archived_messages = {}
         self.message_cache = []
+        self.talkover = False
 
         self.commands.create_subcommand('say', 'speak some text via espeak', self.espeak_say)
         self.commands.create_subcommand('archive', 'show the messages in the cache', self.espeak_archive)
@@ -49,7 +50,6 @@ class EspeakPlugin(Plugin):
         message.body = msg
         message.send()
 
-
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:
             msg = self.message_cache[0]
@@ -59,8 +59,14 @@ class EspeakPlugin(Plugin):
                 self.message_cache = []
                 pass
 
+            self.talkover = True
+            #FIXME this is bad here! this should be "local" only
+            self.send_command(['mpd', 'talkover', 'on'])
             self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg)
         else:
+            if self.talkover:
+                self.talkover = False
+                self.send_command(['mpd', 'talkover', 'off'])
             self.core.add_timeout(1, self.speak_hook)
 
         return

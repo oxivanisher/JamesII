@@ -122,10 +122,7 @@ class MpdPlugin(Plugin):
 
     # Helper Methods
     def exec_mpc(self, args):
-        command = self.connection_string + args
-        args = [s.encode('utf-8').strip() for s in command]
-        args = filter(lambda s: s != '', args)        
-        print (args)
+        args = self.core.utils.list_unicode_cleanup(self.connection_string + args)
         mpc = self.core.popenAndWait(args)
 
         message = self.core.new_message(self.name)

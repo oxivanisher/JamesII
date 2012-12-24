@@ -125,13 +125,11 @@ class MpdPlugin(Plugin):
     def exec_mpc(self, args):
         args = self.core.utils.list_unicode_cleanup(self.connection_string + args)
         mpc = self.core.popenAndWait(args)
+        clean = self.core.utils.list_unicode_cleanup(mpc)
 
-        message = self.core.new_message(self.name)
-        message.header = "MPC: " + ' '.join(args)
-        message.body = mpc
-        message.send()
+        self.send_response(self.uuid, self.name, 'mpd status: ' + ';'.join(clean))
 
-        return self.core.utils.list_unicode_cleanup(mpc)
+        return clean
 
     def load_online_playlist(self, url):
         for source in urllib2.urlopen(url):

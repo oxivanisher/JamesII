@@ -19,7 +19,8 @@ class RaspberryPlugin(Plugin):
         #gpio.pinMode(1,gpio.OUTPUT)
         #gpio.digitalWrite(1,gpio.HIGH)
 
-        self.commands.create_subcommand('test', 'test command for raspberry. turns on the 2nd led', self.rasp_test)
+        if core.os_username == 'root':
+            self.commands.create_subcommand('test', 'test command for raspberry. turns on the 2nd led', self.rasp_test)
 
     def rasp_test(self, args):
         self.gpio.pinMode(1,self.gpio.OUTPUT)

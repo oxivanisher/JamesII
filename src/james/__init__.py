@@ -224,8 +224,7 @@ class Core(object):
                 print("Discovered new host or instance '%s' (%s)" % (msg[1], msg[2]))
 
             # register node in nodes_online
-            args = [s.encode('utf-8').strip() for s in msg]
-            args = filter(lambda s: s != '', args)
+            args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]
 
             # Broadcast configuration if master
@@ -253,8 +252,7 @@ class Core(object):
 
         elif msg[0] == 'pong':
             """We recieved a pong. We will save this host in nodes_online."""
-            args = [s.encode('utf-8').strip() for s in msg]
-            args = filter(lambda s: s != '', args)
+            args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]
 
         elif msg[0] == 'byebye':
@@ -424,9 +422,7 @@ class Core(object):
         """
         ret = subprocess.Popen(command, \
                   stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
-        args = [s.encode('utf-8').strip() for s in ret.split("\n")]
-        args = filter(lambda s: s != '', args)
-        return args
+        return self.utils.list_unicode_cleanup(ret.split("\n"))
 
     def spawnSubprocess(self, target, onExit, target_args = None):
         """

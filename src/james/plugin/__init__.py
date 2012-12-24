@@ -43,8 +43,7 @@ class Plugin(object):
 
     def handle_request(self, uuid, name, body, host, plugin):
         if name == 'cmd':
-            args = [s.encode('utf-8').strip() for s in body]
-            args = filter(lambda s: s != '', args)
+            args = self.core.utils.list_unicode_cleanup(body)
 
             try:
                 if self.command == args[0]:

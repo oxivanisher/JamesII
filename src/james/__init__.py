@@ -19,10 +19,7 @@ import proximitystatus
 import jamesutils
 import jamesmessage
 
-#from james_classes import BroadcastChannel, ProximityStatus, Command
-
-
-# Pika SUPER HACK
+# Pika SUPER HACK (c) westlicht
 try:
     pika.adapters.blocking_connection.log
 except AttributeError:

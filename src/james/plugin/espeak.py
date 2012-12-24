@@ -65,7 +65,6 @@ class EspeakPlugin(Plugin):
 
         return
 
-
     def process_message(self, message):
         if message.level > 0: # we really do not want espeak to speak all debug messages
             if self.unmuted:

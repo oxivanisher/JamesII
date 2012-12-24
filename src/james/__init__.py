@@ -421,7 +421,7 @@ class Core(object):
         """
         ret = subprocess.Popen(command, \
                   stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
-        return self.utils.list_unicode_cleanup(ret.split("\n"))
+        return ret.split("\n")
 
     def spawnSubprocess(self, target, onExit, target_args = None):
         """

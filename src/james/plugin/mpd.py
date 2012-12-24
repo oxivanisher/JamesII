@@ -85,6 +85,7 @@ class MpdPlugin(Plugin):
             message.send()
 
     def mpd_sleep_worker(self):
+        self.exec_mpc(['clear'])
         self.load_online_playlist(self.core.config['mpd']['sleep_url'])
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'] - 20)])
         self.exec_mpc(['play'])
@@ -111,6 +112,7 @@ class MpdPlugin(Plugin):
             message.send()
 
     def mpd_wakeup_worker(self):
+        self.exec_mpc(['clear'])
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
         self.exec_mpc(['volume', '0'])
         command = ['/usr/bin/mpfade',
@@ -139,7 +141,7 @@ class MpdPlugin(Plugin):
         message.body = mpc
         message.send()
 
-        return mpc
+        return self.core.utils.list_unicode_cleanup(mpc)
 
     def load_online_playlist(self, url):
         for source in urllib2.urlopen(url):

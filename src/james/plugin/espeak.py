@@ -60,12 +60,14 @@ class EspeakPlugin(Plugin):
                 pass
 
             self.talkover = True
-            self.core.commands.process_args(['mpd', 'talkover', 'on'])
+            try:
+                self.core.commands.process_args(['mpd', 'talkover', 'on'])
+            except Exception:
+                pass
             self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg)
         else:
             if self.talkover:
                 self.talkover = False
-                self.core.commands.process_args(['mpd', 'talkover', 'off'])
                 try:
                     self.core.commands.process_args(['mpd', 'talkover', 'off'])
                 except Exception:
@@ -100,7 +102,7 @@ class EspeakPlugin(Plugin):
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()
-
+$
 descriptor = {
     'name' : 'espeak',
     'help' : 'espeak api',

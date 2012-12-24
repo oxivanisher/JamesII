@@ -120,6 +120,12 @@ class MpdPlugin(Plugin):
     def mpd_callback(self, values):
         self.fade_in_progress = False
 
+    def process_proximity_event(self, newstatus):
+        if newstatus['status'][self.core.location]:
+            self.radio_on(None)
+        else:
+            self.radio_off(None)
+
     # Helper Methods
     def exec_mpc(self, args):
         args = self.core.utils.list_unicode_cleanup(self.connection_string + args)

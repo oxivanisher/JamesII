@@ -90,7 +90,7 @@ class MpdPlugin(Plugin):
         self.exec_mpc(['play'])
         command = ['/usr/bin/mpfade',
                    str(self.sleep_fade_time),
-                   "0",
+                   '0',
                    self.myhost]
         args = self.core.utils.list_unicode_cleanup(command)
         self.core.popenAndWait(args)
@@ -112,10 +112,10 @@ class MpdPlugin(Plugin):
 
     def mpd_wakeup_worker(self):
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
-
+        self.exec_mpc(['volume', '0'])
         command = ['/usr/bin/mpfade',
                    str(self.wakeup_fade_time),
-                   self.core.config['mpd']['radio_url'],
+                   str(self.core.config['mpd']['max_volume']),
                    self.myhost]
         args = self.core.utils.list_unicode_cleanup(command)
         self.core.popenAndWait(args)

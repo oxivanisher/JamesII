@@ -428,14 +428,17 @@ class Core(object):
         args = filter(lambda s: s != '', args)
         return args
 
-    def spawnSubprocess(self, target, onExit):
+    def spawnSubprocess(self, target, onExit, target_args = None):
         """
         Spawns a subprocess with call target and calls onExit with the return
         when finished
         """
-        def runInThread(target, onExit):
-            onExit(target())
+        def runInThread(target, onExit, target_args):
+            if target_args != None:
+                onExit(target(target_args))
+            else:
+                onExit(target())
 
-        thread = threading.Thread(target=runInThread, args=(target, onExit))
+        thread = threading.Thread(target=runInThread, args=(target, onExit, target_args))
         thread.start()
         return thread

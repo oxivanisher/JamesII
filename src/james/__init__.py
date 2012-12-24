@@ -173,6 +173,8 @@ class Core(object):
                         load_plugin = True
             except KeyError:
                 pass
+            except TypeError:
+                pass
 
             if load_plugin:
                 output += (" +%s" % (c.name))

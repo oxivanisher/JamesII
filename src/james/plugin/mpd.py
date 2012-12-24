@@ -18,15 +18,18 @@ class MpdPlugin(Plugin):
 
         self.connection_string = []
         self.connection_string.append(self.mpc_bin)
+        self.myhost = self.core.config['mpd']['nodes'][self.core.hostname]['host']
+        self.myport = self.core.config['mpd']['nodes'][self.core.hostname]['port']
+        self.mypassword = self.core.config['mpd']['nodes'][self.core.hostname]['password']
 
         self.fade_in_progress = False
 
-        if self.core.config['mpd']['host']:
-            self.connection_string.append('--host=' + self.core.config['mpd']['host'])
-        if self.core.config['mpd']['port']:
-            self.connection_string.append('--port=' + self.core.config['mpd']['port'])
-        if self.core.config['mpd']['password']:
-            self.connection_string.append('--password=' + self.core.config['mpd']['password'])
+        if self.myhost:
+            self.connection_string.append('--host=' + self.myhost)
+        if self.myport:
+            self.connection_string.append('--port=' + self.myport)
+        if self.mypassword:
+            self.connection_string.append('--password=' + self.mypassword)
 
         if os.path.isfile(self.mpc_bin):
             self.commands.create_subcommand('mpc', 'call mpc with given args', self.mpc)
@@ -83,11 +86,12 @@ class MpdPlugin(Plugin):
 
     def mpd_sleep_worker(self):
         self.load_online_playlist(self.core.config['mpd']['sleep_url'])
+        self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'] - 20)])
         self.exec_mpc(['play'])
         command = ['/usr/bin/mpfade',
                    str(self.sleep_fade_time),
                    "0",
-                   self.core.config['mpd']['host']]
+                   self.myhost]
         args = self.core.utils.list_unicode_cleanup(command)
         self.core.popenAndWait(args)
 
@@ -113,7 +117,7 @@ class MpdPlugin(Plugin):
         command = ['/usr/bin/mpfade',
                    str(self.wakeup_fade_time),
                    self.core.config['mpd']['radio_url'],
-                   self.core.config['mpd']['host']]
+                   self.myhost]
         args = self.core.utils.list_unicode_cleanup(command)
         self.core.popenAndWait(args)
 

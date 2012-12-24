@@ -1,6 +1,6 @@
 
 import sys
-from time import localtime, strftime
+from time import localtime, strftime, sleep
 
 from james.plugin import *
 
@@ -13,9 +13,11 @@ class EspeakPlugin(Plugin):
         self.unmuted = self.core.proximity_status.get_status_here()
 
         self.archived_messages = {}
+        self.message_cache = []
 
         self.commands.create_subcommand('say', 'speak some text via espeak', self.espeak_say)
         self.commands.create_subcommand('archive', 'show the messages in the cache', self.espeak_archive)
+        self.speak_hook()
 
     def espeak_say(self, args):
         text = ' '.join(args)
@@ -37,13 +39,32 @@ class EspeakPlugin(Plugin):
         return ret
 
     def speak(self, msg):
-        with open(os.devnull, "w") as fnull:
-            self.core.popenAndWait(['/usr/bin/espeak', msg])
+        self.message_cache.append(msg)
 
-            message = self.core.new_message(self.name)
-            message.header = "Espeak Spoke"
-            message.body = msg
-            message.send()
+    def speak_worker(self, msg):
+        self.core.popenAndWait(['/usr/bin/espeak', msg])
+
+        message = self.core.new_message(self.name)
+        message.header = "Espeak Spoke"
+        message.body = msg
+        message.send()
+
+
+    def speak_hook(self, args = None):
+        if len(self.message_cache) > 0:
+            msg = self.message_cache[0]
+            try:
+                self.message_cache = self.message_cache[1:]
+            except Exception as e:
+                self.message_cache = []
+                pass
+
+            self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg)
+        else:
+            self.core.add_timeout(1, self.speak_hook)
+
+        return
+
 
     def process_message(self, message):
         if message.level > 0: # we really do not want espeak to speak all debug messages
@@ -55,7 +76,7 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())
 
-        self.speak('Welcome home. It is now %s.' % (nicetime))
+        self.speak('Welcome. It is now %s.' % (nicetime))
 
         if len(self.archived_messages):
         # reading the log

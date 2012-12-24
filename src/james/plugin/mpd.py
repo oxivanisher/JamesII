@@ -47,24 +47,20 @@ class MpdPlugin(Plugin):
 
     def activate_talkover(self, args):
         self.exec_mpc(['volume', str(self.core.config['mpd']['talk_volume'])])
-        self.send_response(self.uuid, self.name, 'activate talkover')
         return ("activate talkover")
 
     def deactivate_talkover(self, args):
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
-        self.send_response(self.uuid, self.name, 'deactivate talkover')
         return ("deactivate talkover")
 
     def radio_off(self, args):
         self.exec_mpc(['clear'])
-        self.send_response(self.uuid, self.name, 'radio off')
         return ("radio off")
 
     def radio_on(self, args):
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
         self.exec_mpc(['play'])
-        self.send_response(self.uuid, self.name, 'radio on')
         return ("radio on")
 
 
@@ -72,10 +68,8 @@ class MpdPlugin(Plugin):
         if not self.fade_in_progress:
             self.fade_in_progress = True
             self.core.spawnSubprocess(self.mpd_sleep_worker, self.mpd_callback)
-            self.send_response(self.uuid, self.name, 'mpd sleep mode activated')
             return ("mpd sleep mode activated")
         else:
-            self.send_response(self.uuid, self.name, 'mpd sleepmode NOT activated due other fade in progress')
             return("mpd sleepmode NOT activated due other fade in progress")
 
     def mpd_sleep_worker(self):
@@ -94,10 +88,8 @@ class MpdPlugin(Plugin):
         if not self.fade_in_progress:
             self.fade_in_progress = True
             self.core.spawnSubprocess(self.mpd_wakeup_worker, self.mpd_callback)
-            self.send_response(self.uuid, self.name, 'mpd wakeup mode activated')
             return ("mpd wakeup mode activated")
         else:
-            self.send_response(self.uuid, self.name, 'mpd sleepmode NOT activated due other fade in progress')
             return("mpd sleepmode NOT activated due other fade in progress")
 
     def mpd_wakeup_worker(self):
@@ -125,11 +117,7 @@ class MpdPlugin(Plugin):
     def exec_mpc(self, args):
         args = self.core.utils.list_unicode_cleanup(self.connection_string + args)
         mpc = self.core.popenAndWait(args)
-        clean = self.core.utils.list_unicode_cleanup(mpc)
-
-        self.send_response(self.uuid, self.name, 'mpd status: ' + ';'.join(clean))
-
-        return clean
+        return self.core.utils.list_unicode_cleanup(mpc)
 
     def load_online_playlist(self, url):
         for source in urllib2.urlopen(url):

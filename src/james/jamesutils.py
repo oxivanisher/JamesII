@@ -108,6 +108,6 @@ class JamesUtils(object):
             return data
 
     def list_unicode_cleanup(Self, data):
-        args = [s.encode('utf-8').strip() for s in data]
+        args = [s.encode('utf-8', 'ignore').strip() for s in data]
         args = filter(lambda s: s != '', args)
         return args

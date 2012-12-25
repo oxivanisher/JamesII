@@ -3,6 +3,8 @@ import os
 import subprocess
 import getpass
 import time
+import atexit
+import json
 
 from james.plugin import *
 
@@ -21,9 +23,26 @@ class ProximityPlugin(Plugin):
                 self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
                 self.proximity_check_daemon()
 
-    def terminate(self):
-        # FIXME save out actual state to file?
+        atexit.register(self.save_state)
+        self.state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
+        self.load_saved_state()
+
+    def load_saved_state(self):
+        try:
+            file = open(self.state_file, 'r')
+            self.status = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            file.close()
+        except IOError:
+            pass
         pass
+
+    def save_state(self):
+        try:
+            file = open(self.state_file, 'w')
+            file.write(json.dumps(self.status))
+            file.close()
+        except IOError:
+            print("WARNING: Could not safe cached commands to file!")
 
     def test(self, args):
         devices = {}
@@ -68,13 +87,17 @@ class ProximityPlugin(Plugin):
         return hosts
 
     def proximity_check_callback(self, values):
-        # FIXME we should consider, that the device may loose 1 connection attempt due RL
         self.oldstatus = self.status
         self.status = False
 
         if len(values) > 0:
             self.status = True
+        else:
+            # compensating if the device is just for 1 aptempt not reachable
+            if len(self.hosts_online) > 0:
+                self.status = True
 
+        # save the actual online hosts to var
         self.hosts_online = self.core.utils.convert_from_unicode(values)
 
         if self.status != self.oldstatus:

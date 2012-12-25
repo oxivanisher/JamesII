@@ -36,8 +36,9 @@ class MpdPlugin(Plugin):
             talkover_command = self.commands.create_subcommand('talkover', 'on or off for talkover', None)
             talkover_command.create_subcommand('on', 'avtivate talkover', self.activate_talkover)
             talkover_command.create_subcommand('off', 'deavtivate talkover', self.deactivate_talkover)
-            self.commands.create_subcommand('on', 'turn on the radio', self.radio_on)
-            self.commands.create_subcommand('off', 'turn off the radio', self.radio_off)
+            radio_command =  self.commands.create_subcommand('radio', 'control the radio', None)
+            radio_command.create_subcommand('on', 'turn on the radio', self.radio_on)
+            radio_command.create_subcommand('off', 'turn off the radio', self.radio_off)
             if os.path.isfile('/usr/bin/mpfade'):
                 self.commands.create_subcommand('sleep', 'run the mpd sleep script', self.mpd_sleep)
                 self.commands.create_subcommand('wakeup', 'run the mpd wakeup script', self.mpd_wakeup)

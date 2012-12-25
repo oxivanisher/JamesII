@@ -409,6 +409,7 @@ class Core(object):
         print("Core.terminate() called. I shall die now.")
         self.terminated = True
 
+    # threading methods
     def add_timeout(self, seconds, handler):
         """
         Sets a timeout callback with pika callbacks. Resolution 1 second.

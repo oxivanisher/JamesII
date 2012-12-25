@@ -77,7 +77,7 @@ class JamesUtils(object):
         elif intime < 60 and intime >= 0:
             return 'in %s seconds' % (intime)
         elif intime < 3600 and intime >= 0:
-            return 'in %s minutes' % (int(intime / 60))
+            return 'in %s minutes and %s seconds' % (int(intime / 60), int(intime % 60))
         elif event_timestamp > next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
             return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
                                              event.strftime('%M'),

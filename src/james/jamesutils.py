@@ -33,7 +33,6 @@ class JamesUtils(object):
         else:
             return '%sy' % (int(age / 31449600))
 
-
     def get_nice_age(self, timestamp):
         age = int(time.time() - timestamp)
         intime = int(timestamp - time.time())
@@ -91,8 +90,6 @@ class JamesUtils(object):
         # else :D
         else:
             return event.strftime('at %A the %d %B %Y')
-
-
 
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019

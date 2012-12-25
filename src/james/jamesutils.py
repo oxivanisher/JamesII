@@ -37,7 +37,6 @@ class JamesUtils(object):
     def get_nice_age(self, timestamp):
         age = int(time.time() - timestamp)
         intime = int(timestamp - time.time())
-        print("intime: %s" % (intime))
 
         fmt = '%Y-%m-%d %H:%M:%S %Z%z'
         timezone = pytz.timezone(self.core.config['core']['timezone'])
@@ -63,26 +62,28 @@ class JamesUtils(object):
         elif age < 3600 and age >= 0:
             return '%s minutes ago' % (int(age / 60))
         elif event_timestamp > last_midnight_timestamp and event_timestamp < now_timestamp:
-            return 'today at %s:%s' % (event.strftime('%H'),
-                                       event.strftime('%M'))
+            return 'today at %s:%s:%s' % (event.strftime('%H'),
+                                          event.strftime('%M'),
+                                          event.strftime('%S'))
         elif event_timestamp > (last_midnight_timestamp - 86400) and event_timestamp < now_timestamp:
-            return 'yesterday at %s:%s' % (event.strftime('%H'),
-                                           event.strftime('%M'))
+            return 'yesterday at %s:%s:%s' % (event.strftime('%H'),
+                                              event.strftime('%M'),
+                                              event.strftime('%S'))
         elif age <= 604800 and age >= 0:
             return event.strftime('last %A')
         elif event_timestamp > past_newyear_timestamp and event_timestamp < now_timestamp:
             return event.strftime('this year at %A the %d of %B')
 
         # future
-        elif intime < 60:
+        elif intime < 60 and intime >= 0:
             return 'in %s seconds' % (intime)
-        elif intime < 3600:
+        elif intime < 3600 and intime >= 0:
             return 'in %s minutes' % (int(intime / 60))
         elif event_timestamp > next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
             return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
                                              event.strftime('%M'),
                                              event.strftime('%S'))
-        elif intime <= 604800:
+        elif intime <= 604800 and intime >= 0:
             return event.strftime('next %A at %H:%M:%S')
         elif event_timestamp > future_newyear_timestamp and event_timestamp < (future_newyear_timestamp + 31556952): #NOT leap year save!
             return event.strftime('next year at %A the %d of %B')

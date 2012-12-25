@@ -49,6 +49,6 @@ descriptor = {
     'name' : 'dbus-notify',
     'help' : 'dbus notify plugin (desktop)',
     'command' : 'dbus-notify',
-    'mode' : PluginMode.AUTOLOAD,
+    'mode' : PluginMode.MANUAL,
     'class' : DbusNotifyPlugin
 }

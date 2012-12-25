@@ -14,6 +14,10 @@ class JamesUtils(object):
 
     def get_short_age(self, timestamp):
         age = int(time.time() - timestamp)
+
+        if age < 0:
+            age = age * -1
+
         if age == 0:
             return ''
         elif age < 60:
@@ -29,35 +33,65 @@ class JamesUtils(object):
         else:
             return '%sy' % (int(age / 31449600))
 
+
     def get_nice_age(self, timestamp):
         age = int(time.time() - timestamp)
+        intime = int(timestamp - time.time())
+        print("intime: %s" % (intime))
 
         fmt = '%Y-%m-%d %H:%M:%S %Z%z'
         timezone = pytz.timezone(self.core.config['core']['timezone'])
 
         now = datetime.datetime.now(timezone)
+        now_timestamp = int(now.strftime('%s'))
         event = datetime.datetime.fromtimestamp(timestamp, timezone)
         event_timestamp = int(event.strftime('%s'))
-        midnight_timestamp = int(timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
+        last_midnight_timestamp = int(timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
                                                                tzinfo=None), is_dst=None).strftime('%s'))
-        newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
+        next_midnight_timestamp = last_midnight_timestamp + 604800
+        past_newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
                                                               microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
+        future_newyear_timestamp = int(timezone.localize(now.replace(day=31, month=12, hour=23, minute=59, second=59,
+                                                              microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
+        # present
         if age == 0:
             return 'just now'
-        elif age < 60:
+
+        # past
+        elif age < 60 and age >= 0:
             return '%s seconds ago' % (age)
-        elif age < 3600:
+        elif age < 3600 and age >= 0:
             return '%s minutes ago' % (int(age / 60))
-        elif event_timestamp > midnight_timestamp:
-            return 'today at %s:%s' % (event.strftime('%H'), event.strftime('%M'))
-        elif event_timestamp > (midnight_timestamp - 86400):
-            return 'yesterday at %s:%s' % (event.strftime('%H'), event.strftime('%M'))
-        elif age <= 604800:
+        elif event_timestamp > last_midnight_timestamp and event_timestamp < now_timestamp:
+            return 'today at %s:%s' % (event.strftime('%H'),
+                                       event.strftime('%M'))
+        elif event_timestamp > (last_midnight_timestamp - 86400) and event_timestamp < now_timestamp:
+            return 'yesterday at %s:%s' % (event.strftime('%H'),
+                                           event.strftime('%M'))
+        elif age <= 604800 and age >= 0:
             return event.strftime('last %A')
-        elif event_timestamp > newyear_timestamp:
-            return event.strftime('at the %d. of %B')
+        elif event_timestamp > past_newyear_timestamp and event_timestamp < now_timestamp:
+            return event.strftime('this year at %A the %d of %B')
+
+        # future
+        elif intime < 60:
+            return 'in %s seconds' % (intime)
+        elif intime < 3600:
+            return 'in %s minutes' % (int(intime / 60))
+        elif event_timestamp > next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
+            return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
+                                             event.strftime('%M'),
+                                             event.strftime('%S'))
+        elif intime <= 604800:
+            return event.strftime('next %A at %H:%M:%S')
+        elif event_timestamp > future_newyear_timestamp and event_timestamp < (future_newyear_timestamp + 31556952): #NOT leap year save!
+            return event.strftime('next year at %A the %d of %B')
+
+        # else :D
         else:
-            return event.strftime('at the %d. of %b. %Y')
+            return event.strftime('at %A the %d %B %Y')
+
+
 
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019

@@ -75,9 +75,12 @@ class Command(object):
         else:
             return self.parent.get_depth() + 1
 
-    # FIXME option to discard hidden commands
     def get_subcommand_names(self):
-        return self.subcommands.keys()
+        ret_keys = []
+        for subcommand in self.subcommands.keys():
+            if not self.subcommands[subcommand].hide:
+                ret_keys.append(subcommand)
+        return ret_keys
 
     def __str__(self):
         return "[Command] %s" % (self.name)

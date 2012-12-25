@@ -4,8 +4,6 @@ import sys
 import time
 import atexit
 import json
-# import psutil
-# import datetime
 
 from james.plugin import *
 
@@ -28,6 +26,7 @@ class TimerPlugin(Plugin):
         atexit.register(self.safe_requests)
 
         #FIXME add periodic commands. each mon, di and so on
+        # http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
         self.saved_commands = []
         self.periodic_commands = []
         self.load_saved_commands()
@@ -35,7 +34,6 @@ class TimerPlugin(Plugin):
         self.command_daemon_loop()
 
     def load_saved_commands(self):
-        #FIXME load saved commands from file and check for commands which should have been run
         try:
             file = open(self.command_cache_file, 'r')
             self.saved_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
@@ -53,7 +51,6 @@ class TimerPlugin(Plugin):
         pass
 
     def safe_requests(self):
-        #FIXME load saved commands from file and check for commands which should have been run
         try:
             file = open(self.command_cache_file, 'w')
             file.write(json.dumps(self.saved_commands))

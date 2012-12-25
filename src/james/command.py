@@ -41,6 +41,14 @@ class Command(object):
         cmd = Command(name, help, handler, hide)
         return self.add_subcommand(cmd)
 
+    # remove a subcommand so plugins can unregister their default commands
+    def remove_subcommand(self, name):
+        new_cmds = {}
+        for cmd in self.subcommands.keys():
+            if name != cmd:
+                new_cmds[cmd] = self.subcommands[cmd]
+        self.subcommands = new_cmds
+
     def process_args(self, args):
         args = jamesutils.JamesUtils(self).list_unicode_cleanup(args)
 

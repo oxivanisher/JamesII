@@ -18,7 +18,7 @@ class MpdPlugin(Plugin):
 
         self.connection_string = []
         self.connection_string.append(self.mpc_bin)
-        self.myhost = self.core.config['mpd']['nodes'][sPelf.core.hostname]['host']
+        self.myhost = self.core.config['mpd']['nodes'][self.core.hostname]['host']
         self.myport = self.core.config['mpd']['nodes'][self.core.hostname]['port']
         self.mypassword = self.core.config['mpd']['nodes'][self.core.hostname]['password']
 

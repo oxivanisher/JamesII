@@ -18,7 +18,7 @@ class MpdPlugin(Plugin):
 
         self.connection_string = []
         self.connection_string.append(self.mpc_bin)
-        self.myhost = self.core.config['mpd']['nodes'][self.core.hostname]['host']
+        self.myhost = self.core.config['mpd']['nodes'][sPelf.core.hostname]['host']
         self.myport = self.core.config['mpd']['nodes'][self.core.hostname]['port']
         self.mypassword = self.core.config['mpd']['nodes'][self.core.hostname]['password']
 
@@ -40,8 +40,8 @@ class MpdPlugin(Plugin):
             radio_command.create_subcommand('on', 'turn on the radio', self.radio_on)
             radio_command.create_subcommand('off', 'turn off the radio', self.radio_off)
             if os.path.isfile('/usr/bin/mpfade'):
-                self.commands.create_subcommand('sleep', 'run the mpd sleep script', self.mpd_sleep)
-                self.commands.create_subcommand('wakeup', 'run the mpd wakeup script', self.mpd_wakeup)
+                radio_command.create_subcommand('sleep', 'run the mpd sleep script', self.mpd_sleep)
+                radio_command.create_subcommand('wakeup', 'run the mpd wakeup script', self.mpd_wakeup)
 
     def mpc(self, args):
         return self.exec_mpc(args)

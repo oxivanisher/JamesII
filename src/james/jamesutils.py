@@ -5,6 +5,7 @@ import pytz
 import socket
 import struct
 import collections
+import subprocess
 
 class JamesUtils(object):
 
@@ -111,3 +112,11 @@ class JamesUtils(object):
         args = [s.encode('utf-8', 'ignore').strip() for s in data]
         args = filter(lambda s: s != '', args)
         return args
+
+    def popenAndWait(self, command):
+        """
+        Runs the given command in a subprocess but will not spawn a subprocess.
+        """
+        ret = subprocess.Popen(command, \
+                  stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+        return ret.split("\n")

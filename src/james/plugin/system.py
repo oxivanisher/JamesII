@@ -17,9 +17,6 @@ class SystemPlugin(Plugin):
             #FIXME not really me ... but my commands wont be shown in cli beacuse the cli probably overwrites the commands with his won :()
             self.commands.create_subcommand('quit', 'quit the system', self.cmd_quit)
             self.commands.create_subcommand('ping', 'ping all available nodes over rabbitmq', self.cmd_ping)
-            self.commands.create_subcommand('at', 'execute command at given time', self.cmd_at)
-            self.commands.create_subcommand('in', 'execute command in given time', self.cmd_in)
-
 
     def cmd_quit(self, args):
         message = self.core.new_message(self.name)
@@ -41,13 +38,6 @@ class SystemPlugin(Plugin):
 
     def cmd_ping(self, args):
         self.core.ping_nodes()
-
-    #FIXME: please make me
-    def cmd_in(self, args):
-        pass
-
-    def cmd_at(self, args):
-        pass
 
 descriptor = {
     'name' : 'system',

@@ -14,7 +14,7 @@ class DbusNotifyPlugin(Plugin):
 
         self.bus = dbus.Bus(dbus.Bus.TYPE_SESSION)
         self.notifyid = 0
-        self.core.commands.remove_subcommand(descriptor['command'])
+        self.commands = False
 
     def process_message(self, message):
         # Connect to notification interface on DBUS.
@@ -49,6 +49,6 @@ descriptor = {
     'name' : 'dbus-notify',
     'help' : 'dbus notify plugin (desktop)',
     'command' : 'dbus-notify',
-    'mode' : PluginMode.MANAGED,
+    'mode' : PluginMode.AUTOLOAD,
     'class' : DbusNotifyPlugin
 }

@@ -232,7 +232,8 @@ class Core(object):
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             # Broadcast command list
             for p in self.plugins:
-                self.discovery_channel.send(['commands', p.commands.serialize()])
+                if p.commands:
+                    self.discovery_channel.send(['commands', p.commands.serialize()])
 
         elif msg[0] == 'ping':
             """We recieved a ping request. Be a good boy and send a pong."""

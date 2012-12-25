@@ -63,7 +63,7 @@ class ProximityPlugin(Plugin):
             for name in self.core.config['persons'][person]['devices'].keys():
                 mac = self.core.config['persons'][person]['devices'][name]
                 ret = self.core.popenAndWait(['/usr/bin/hcitool', 'info', mac])
-                if len(ret) > 1:
+                if len(filter(lambda s: s != '', ret)) > 1:
                     hosts.append(mac)
         return hosts
 
@@ -71,6 +71,7 @@ class ProximityPlugin(Plugin):
         # FIXME we should consider, that the device may loose 1 connection attempt due RL
         self.oldstatus = self.status
         self.status = False
+
         if len(values) > 0:
             self.status = True
 

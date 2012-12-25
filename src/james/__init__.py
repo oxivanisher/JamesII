@@ -416,14 +416,6 @@ class Core(object):
         """
         self.connection.add_timeout(seconds, handler)
 
-    def popenAndWait(self, command):
-        """
-        Runs the given command in a subprocess but will not spawn a subprocess.
-        """
-        ret = subprocess.Popen(command, \
-                  stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
-        return ret.split("\n")
-
     def spawnSubprocess(self, target, onExit, target_args = None):
         """
         Spawns a subprocess with call target and calls onExit with the return

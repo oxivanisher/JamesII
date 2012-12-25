@@ -27,7 +27,7 @@ class ProximityPlugin(Plugin):
 
     def test(self, args):
         devices = {}
-        lines = self.core.popenAndWait(['hcitool', 'dev'])
+        lines = self.core.utils.popenAndWait(args)(['hcitool', 'dev'])
         if len(lines) > 1:
             for line in lines[1:]:
                 values = line.split()
@@ -35,7 +35,7 @@ class ProximityPlugin(Plugin):
         return(devices)
 
     def scan(self, args):
-        lines = self.core.popenAndWait(['hcitool', 'scan'])
+        lines = self.core.utils.popenAndWait(args)(['hcitool', 'scan'])
         hosts = {}
         if len(lines) > 1:
             for line in lines[1:]:
@@ -62,7 +62,7 @@ class ProximityPlugin(Plugin):
         for person in self.core.config['persons'].keys():
             for name in self.core.config['persons'][person]['devices'].keys():
                 mac = self.core.config['persons'][person]['devices'][name]
-                ret = self.core.popenAndWait(['/usr/bin/hcitool', 'info', mac])
+                ret = self.core.utils.popenAndWait(args)(['/usr/bin/hcitool', 'info', mac])
                 if len(filter(lambda s: s != '', ret)) > 1:
                     hosts.append(mac)
         return hosts

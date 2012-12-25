@@ -43,7 +43,7 @@ class EspeakPlugin(Plugin):
         self.message_cache.append(msg)
 
     def speak_worker(self, msg):
-        self.core.popenAndWait(['/usr/bin/espeak', msg])
+        self.core.utils.popenAndWait(args)(['/usr/bin/espeak', msg])
 
         message = self.core.new_message(self.name)
         message.header = "Espeak Spoke"

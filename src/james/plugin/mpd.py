@@ -82,7 +82,7 @@ class MpdPlugin(Plugin):
                    '0',
                    self.myhost]
         args = self.core.utils.list_unicode_cleanup(command)
-        self.core.popenAndWait(args)
+        self.core.utils.popenAndWait(args)
 
     def mpd_wakeup(self, args):
         if not self.fade_in_progress:
@@ -101,7 +101,7 @@ class MpdPlugin(Plugin):
                    str(self.core.config['mpd']['max_volume']),
                    self.myhost]
         args = self.core.utils.list_unicode_cleanup(command)
-        self.core.popenAndWait(args)
+        self.core.utils.popenAndWait(args)
 
     def mpd_callback(self, values):
         self.send_response(self.uuid, self.name, 'mpd fading ended')
@@ -116,7 +116,7 @@ class MpdPlugin(Plugin):
     # Helper Methods
     def exec_mpc(self, args):
         args = self.core.utils.list_unicode_cleanup(self.connection_string + args)
-        mpc = self.core.popenAndWait(args)
+        mpc = self.core.utils.popenAndWait(args)
         return self.core.utils.list_unicode_cleanup(mpc)
 
     def load_online_playlist(self, url):

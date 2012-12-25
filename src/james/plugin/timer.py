@@ -14,21 +14,13 @@ class TimerPlugin(Plugin):
 
         self.commands.create_subcommand('in', 'runs a command in given time', self.cmd_timer_in)
         self.commands.create_subcommand('at', 'runs a command at given time', self.cmd_timer_at)
-        periodic_command = self.commands.create_subcommand('periodic', 'manages periodic commands', None)
-        periodic_command.create_subcommand('add', 'adds a periodic command', self.cmd_periodic_add)
-        periodic_command.create_subcommand('show', 'shows the periodic commands', self.cmd_periodic_show)
-        periodic_command.create_subcommand('delete', 'delets a periodic command', self.cmd_periodic_delete)
         self.commands.create_subcommand('show', 'returns a list of commands', self.cmd_timer_show)
         self.commands.create_subcommand('delete', 'delets a command', self.cmd_timer_delete)
 
         self.command_cache_file = os.path.join(os.path.expanduser("~"), ".james_saved_commands")
-        self.command_periodic_file = os.path.join(os.path.expanduser("~"), ".james_periodic_commands")
-        atexit.register(self.safe_requests)
+        atexit.register(self.save_commands)
 
-        #FIXME add periodic commands. each mon, di and so on
-        # http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
         self.saved_commands = []
-        self.periodic_commands = []
         self.load_saved_commands()
 
         self.command_daemon_loop()
@@ -42,28 +34,13 @@ class TimerPlugin(Plugin):
             pass
         pass
 
-        try:
-            file = open(self.command_periodic_file, 'r')
-            self.periodic_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
-            file.close()
-        except IOError:
-            pass
-        pass
-
-    def safe_requests(self):
+    def save_commands(self):
         try:
             file = open(self.command_cache_file, 'w')
             file.write(json.dumps(self.saved_commands))
             file.close()
         except IOError:
-            print("WARNING: Could not safe cached commands to file!")
-
-        try:
-            file = open(self.command_periodic_file, 'w')
-            file.write(json.dumps(self.periodic_commands))
-            file.close()
-        except IOError:
-            print("WARNING: Could not safe periodic commands to file!")
+            print("WARNING: Could not save cached commands to file!")
 
     # command methods
     def cmd_timer_in(self, args):
@@ -77,6 +54,7 @@ class TimerPlugin(Plugin):
         return("please learn human for: %s" % (args[0]))
 
     def cmd_timer_at(self, args):
+        #FIXME i do not exist!
         return("please learn human for: %s" % (args[0]))
         pass
 
@@ -93,26 +71,12 @@ class TimerPlugin(Plugin):
         ret = "Command not found"
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
-            print("testing: %s=%s %s=%s" % (timestamp, args[0], command, args[1:]))
             if timestamp == int(args[0]) and command == args[1:]:
                 ret = ('Removed Command %s' % (' '.join(args)))
             else:
                 saved_commands_new.append((timestamp, command))
         self.saved_commands = saved_commands_new
         return ret
-
-    # periodic commands
-    def cmd_periodic_add(self, args):
-        return("please learn human for: %s" % (args[0]))
-        pass
-
-    def cmd_periodic_show(self, args):
-        return("please learn human for: %s" % (args[0]))
-        pass
-
-    def cmd_periodic_delete(self, args):
-        return("please learn human for: %s" % (args[0]))
-        pass
 
     # internal timer methods
     def timer_at(self, timestamp, command):
@@ -129,7 +93,7 @@ class TimerPlugin(Plugin):
                 self.send_command(command)
                 self.send_response(self.uuid,
                                    self.name,
-                                   ('Running Command (%s)' % (' '.join(command))))
+                                   ('Running timed command (%s)' % (' '.join(command))))
             else:
                 saved_commands_new.append((timestamp, command))
 
@@ -138,7 +102,7 @@ class TimerPlugin(Plugin):
 
 descriptor = {
     'name' : 'timer',
-    'help' : 'master control program for timed functions',
+    'help' : 'MASTER CONTROL PROGRAM for timed functions',
     'command' : 'mcp',
     'mode' : PluginMode.MANAGED,
     'class' : TimerPlugin

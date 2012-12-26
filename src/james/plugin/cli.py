@@ -130,7 +130,11 @@ class CliPlugin(Plugin):
 
     def process_command_response(self, args, host, plugin):
         for line in args:
-            print ("%10s@%-10s > %s" % (plugin, host, line))
+            print ("D%11s@%-10s > %s" % (plugin, host, line))
+
+    def process_broadcast_command_response(self, args, host, plugin):
+        for line in args:
+            print ("B%11s@%-10s > %s" % (plugin, host, line))
 
     def timeout_handler(self):
         self.core.terminate()

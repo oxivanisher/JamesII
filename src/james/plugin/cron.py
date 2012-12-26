@@ -5,6 +5,7 @@ import time
 import atexit
 import json
 import random
+import string
 from datetime import datetime, timedelta
 
 from james.plugin import *
@@ -50,6 +51,17 @@ class CronEvent(object):
         if self.matchtime(t):
             self.action(*self.args, **self.kwargs)
 
+    def show(self):
+        ret = {}
+        ret['mins'] = self.mins
+        ret['hours'] = self.hours
+        ret['days'] = self.days
+        ret['months'] = self.months
+        ret['dow'] = self.dow
+        ret['cmd'] = self.args
+
+        return ret
+
 # crontab class
 class CronTab(object):
     def __init__(self):
@@ -62,6 +74,30 @@ class CronTab(object):
 
     def add_event(self, event):
         self.events.append(event)
+
+    def show(self):
+        ret = []
+        ret_format = '%-3s %-7s %-7s %-7s %-7s %-7s %s'
+        ret.append(ret_format % ('id', 'mins', 'hours', 'days', 'months', 'dow', 'command'))
+        for e in self.events:
+            event_data = e.show()
+            for key in event_data.keys():
+                if event_data[key] == AllMatch():
+                    event_data[key] = "*"
+                elif len(event_data[key]) > 0:
+                    if key == 'cmd':
+                        event_data[key] = ' '.join(event_data[key])
+                    else:
+                        event_data[key] = ','.join(event_data[key])
+
+            ret.append(ret_format % (self.events.index(e),
+                                     event_data['mins'],
+                                     event_data['hours'],
+                                     event_data['days'],
+                                     event_data['months'],
+                                     event_data['dow'],
+                                     event_data['cmd']))
+        return ret
 
 class CronPlugin(Plugin):
 
@@ -102,45 +138,51 @@ class CronPlugin(Plugin):
     # cron commands
     def cmd_cron_add(self, args):
         try:
-            cron_string = args[0]
-            cmd = args[1:]
-            print("1: %s; 2: %s" % (cron_string, cmd))
+            (cron_string, cmd_string) = ' '.join(args).split(';')
+            cron_args = cron_string.split()
+            cmd_args = cmd_string.split()
 
-            newevent = CronEvent(self.run_crontab_command, args=cmd)
+            newevent = CronEvent(self.run_crontab_command, cron_args, args=cmd_args)
             self.crontab.add_event(newevent)
             return("Command saved")
-            # return("please learn human for: %s" % (args[0]))
         except IndexError:
+            return("Invalid syntax!")
+        except ValueError:
             return("Invalid syntax!")
 
     def cmd_cron_show(self, args):
-        return("please learn human for: %s" % (args[0]))
-        pass
+        return self.crontab.show()
 
     def cmd_cron_delete(self, args):
-        return("please learn human for: %s" % (args[0]))
-        pass
+        del_id = int(args[0])
+        return("Removing ID %s" % (del_id))
+        self.crontab.events.remove(del_id)
+        try:
+            del_id = int(args[0])
+            self.crontab.events.remove(del_id)
+        except Exception:
+            return("Invalid syntax!")
+        # ret = "Command not found"
+        # saved_commands_new = []
+        # for (timestamp, command) in self.saved_commands:
+        #     if timestamp == int(args[0]) and command == args[1:]:
+        #         ret = ('Removed Command %s' % (' '.join(args)))
+        #     else:
+        #         saved_commands_new.append((timestamp, command))
+        # self.saved_commands = saved_commands_new
+        # return ret
 
-    # internal timer methods
+    # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
         self.send_response(self.uuid,
                            self.name,
                            ('Running Command (%s)' % (' '.join(args))))
-        # self.send_command(command)
-        print("Crontab run_crontab_command (%s)" % (args))
+        self.send_command(args)
 
     def crontab_daemon_loop(self):
-        print("crontab run (%s)" % (int(time.time())))
-        # rnd = random.randint(0, 59)
-        # print("random sleep: %s" % (rnd))
-        # time.sleep(rnd)
-
         self.crontab.run()
         seconds = int(time.time() % 60)
-        # print("seconds sleep: %s (%s)" % (seconds, int(time.time())))
-
         self.core.add_timeout((60 - seconds), self.crontab_daemon_loop)
-        pass
 
 descriptor = {
     'name' : 'cron',

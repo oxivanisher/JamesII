@@ -7,6 +7,15 @@ import wiringpi
 
 from james.plugin import *
 
+# FIXME!
+class RasperryThread(Thread):
+    pass
+
+    def run(self):
+        while True:
+            # read pin
+
+
 
 class RaspberryPlugin(Plugin):
 

@@ -36,6 +36,13 @@ class Command(object):
             self.subcommands[subcommand.name] = subcommand
             return subcommand
 
+    def merge_subcommand(self, subcommand):
+        if subcommand.name in self.subcommands:
+            for s in subcommand.subcommands.values():
+                self.subcommands[subcommand.name].merge_subcommand(s)
+        else:
+            self.subcommands[subcommand.name] = subcommand
+
     # creates a new subcommand and returns reference to it
     def create_subcommand(self, name, help, handler, hide=False):
         cmd = Command(name, help, handler, hide)

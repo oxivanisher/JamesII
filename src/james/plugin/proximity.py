@@ -47,6 +47,7 @@ class ProximityPlugin(Plugin):
     def test(self, args):
         devices = {}
         lines = self.core.utils.popenAndWait(['hcitool', 'dev'])
+        lines = self.core.utils.list_unicode_cleanup(lines)
         if len(lines) > 1:
             for line in lines[1:]:
                 values = line.split()
@@ -55,15 +56,13 @@ class ProximityPlugin(Plugin):
 
     def scan(self, args):
         lines = self.core.utils.popenAndWait(['hcitool', 'scan'])
+        lines = self.core.utils.list_unicode_cleanup(lines)
         hosts = {}
         if len(lines) > 1:
             for line in lines[1:]:
                 values = line.split()
                 hosts[values[0]] = values[1]
-        if len(hosts) > 0:
-            return(hosts)
-        else:
-            return("bluetooth scan: no devices found")
+        return(hosts)
 
     def proximity_check_daemon(self):
         self.proximity_check(None)

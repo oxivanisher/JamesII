@@ -8,13 +8,13 @@ import wiringpi
 from james.plugin import *
 
 # FIXME!
-class RasperryThread(Thread):
-    pass
+# class RasperryThread(Thread):
+#     pass
 
-    def run(self):
-        while True:
-            # read pin
-            pass
+#     def run(self):
+#         while True:
+#             # read pin
+#             pass
 
 
 

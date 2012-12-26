@@ -24,7 +24,7 @@ class EspeakPlugin(Plugin):
         text = ' '.join(args)
         if text != '':
             self.speak(text)
-            return("Espeak spoke: '%s'" % (text))
+            return("Espeak will speak: '%s'" % (text))
         return "No text entered for espeak"
 
     def espeak_archive(self, args):
@@ -44,9 +44,9 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         self.core.utils.popenAndWait(['/usr/bin/espeak', msg])
-        self.send_response(self.uuid,
+        self.send_response('',
                            self.name,
-                           ('Espeak spoke: %s' % (' '.join(msg))))
+                           ('Espeak spoke: %s' % (msg)))
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:

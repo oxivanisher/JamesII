@@ -3,6 +3,7 @@ import uuid
 import os
 import imp
 import sys
+import threading
 
 class CommandNotFound(Exception):
     pass
@@ -82,6 +83,27 @@ class Plugin(object):
 
     def process_command_response_event(self, msg):
         pass
+
+
+# FIXME ThreadBaseClass
+class PluginThread(threading.Thread):
+
+    def __init__(self, plugin):
+        self.plugin = plugin
+
+    def start(self):
+        pass
+
+    def work(self):
+        pass
+
+    def run(self):
+        ret = self.work()
+        self.plugin.core.add_timeout(0, self.on_exit, ret)
+
+    def on_exit(self, result):
+        pass
+
 
 class PluginNotAvailable(Exception):
     pass

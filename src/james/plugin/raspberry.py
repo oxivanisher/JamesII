@@ -14,6 +14,7 @@ class RasperryThread(Thread):
     def run(self):
         while True:
             # read pin
+            pass
 
 
 

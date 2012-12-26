@@ -6,6 +6,23 @@ import subprocess
 
 from james.plugin import *
 
+# FIXME invent me plz
+class FadeThread(PluginThread):
+
+    def work(self):
+        self.plugin.exec_mpc(['clear'])
+        self.plugin.load_online_playlist(self.plugin.core.config['mpd']['radio_url'])
+        self.plugin.exec_mpc(['volume', '0'])
+        command = ['/usr/bin/mpfade',
+                   str(self.wakeup_fade_time),
+                   str(self.core.config['mpd']['max_volume']),
+                   self.myhost]
+        args = self.core.utils.list_unicode_cleanup(command)
+        self.core.utils.popenAndWait(args)
+
+    def on_exit(self):
+        pass
+
 class MpdPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -88,6 +105,10 @@ class MpdPlugin(Plugin):
     def mpd_wakeup(self, args):
         if not self.fade_in_progress:
             self.fade_in_progress = True
+
+            self.fade_thread = FadeThread()
+            self.fade_thread.start()
+
             self.core.spawnSubprocess(self.mpd_wakeup_worker, self.mpd_callback)
             return ("mpd wakeup mode activated")
         else:

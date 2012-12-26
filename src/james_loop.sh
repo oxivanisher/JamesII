@@ -8,7 +8,7 @@ do
 	sleep 1
 
 	clear
-	sudo ./james.py || sleep 5
+	sudo ./james.py || sleep 30
 	sleep 1
 
 done

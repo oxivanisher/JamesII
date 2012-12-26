@@ -6,22 +6,34 @@ import subprocess
 
 from james.plugin import *
 
-# FIXME invent me plz
 class FadeThread(PluginThread):
+
+    def __init__(self, plugin, host, volume1, volume2, fade_time, url):
+        super(FadeThread, self).__init__(plugin)
+        self.host = host
+        self.volume1 = str(volume1)
+        self.volume2 = str(volume2)
+        self.fade_time = str(fade_time)
+        self.url = url
 
     def work(self):
         self.plugin.exec_mpc(['clear'])
-        self.plugin.load_online_playlist(self.plugin.core.config['mpd']['radio_url'])
-        self.plugin.exec_mpc(['volume', '0'])
+        self.plugin.load_online_playlist(self.url)
+        if self.volume1 > self.volume2:
+            # sleep mode
+            self.plugin.exec_mpc(['volume', self.volume1])
+            self.plugin.exec_mpc(['play'])
+        self.plugin.exec_mpc(['volume', self.volume1])
         command = ['/usr/bin/mpfade',
-                   str(self.wakeup_fade_time),
-                   str(self.core.config['mpd']['max_volume']),
-                   self.myhost]
-        args = self.core.utils.list_unicode_cleanup(command)
-        self.core.utils.popenAndWait(args)
+                   str(self.fade_time),
+                   str(self.volume2),
+                   self.host]
+        args = self.plugin.core.utils.list_unicode_cleanup(command)
+        self.plugin.core.utils.popenAndWait(args)
+        return("MPD Fade ended")
 
-    def on_exit(self):
-        pass
+    def on_exit(self, result):
+        self.plugin.mpd_callback(result)
 
 class MpdPlugin(Plugin):
 
@@ -29,9 +41,6 @@ class MpdPlugin(Plugin):
         super(MpdPlugin, self).__init__(core, descriptor)
 
         self.mpc_bin = '/usr/bin/mpc'
-
-        self.wakeup_fade_time = self.core.config['mpd']['wakeup_fade']
-        self.sleep_fade_time = self.core.config['mpd']['sleep_fade']
 
         self.connection_string = []
         self.connection_string.append(self.mpc_bin)
@@ -76,58 +85,45 @@ class MpdPlugin(Plugin):
         return ("radio off")
 
     def radio_on(self, args):
+        self.exec_mpc(['clear'])
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
         self.exec_mpc(['play'])
         return ("radio on")
 
-
     def mpd_sleep(self, args):
         if not self.fade_in_progress:
             self.fade_in_progress = True
-            self.core.spawnSubprocess(self.mpd_sleep_worker, self.mpd_callback)
+
+            self.fade_thread = FadeThread(self,
+                                          self.core.config['mpd']['nodes'][self.core.hostname]['host'],
+                                          (self.core.config['mpd']['max_volume'] - 20),
+                                          0,
+                                          self.core.config['mpd']['sleep_fade'],
+                                          self.core.config['mpd']['sleep_url'])
+            self.fade_thread.run()
             return ("mpd sleep mode activated")
         else:
-            return("mpd sleepmode NOT activated due other fade in progress")
-
-    def mpd_sleep_worker(self):
-        self.exec_mpc(['clear'])
-        self.load_online_playlist(self.core.config['mpd']['sleep_url'])
-        self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'] - 20)])
-        self.exec_mpc(['play'])
-        command = ['/usr/bin/mpfade',
-                   str(self.sleep_fade_time),
-                   '0',
-                   self.myhost]
-        args = self.core.utils.list_unicode_cleanup(command)
-        self.core.utils.popenAndWait(args)
+            return ("mpd sleep mode NOT activated due other fade in progress")
 
     def mpd_wakeup(self, args):
         if not self.fade_in_progress:
             self.fade_in_progress = True
 
-            self.fade_thread = FadeThread()
-            self.fade_thread.start()
-
-            self.core.spawnSubprocess(self.mpd_wakeup_worker, self.mpd_callback)
+            self.fade_thread = FadeThread(self,
+                                          self.core.config['mpd']['nodes'][self.core.hostname]['host'],
+                                          0,
+                                          self.core.config['mpd']['max_volume'],
+                                          self.core.config['mpd']['wakeup_fade'],
+                                          self.core.config['mpd']['wakeup_url'])
+            self.fade_thread.run()
             return ("mpd wakeup mode activated")
         else:
-            return("mpd sleepmode NOT activated due other fade in progress")
-
-    def mpd_wakeup_worker(self):
-        self.exec_mpc(['clear'])
-        self.load_online_playlist(self.core.config['mpd']['radio_url'])
-        self.exec_mpc(['volume', '0'])
-        command = ['/usr/bin/mpfade',
-                   str(self.wakeup_fade_time),
-                   str(self.core.config['mpd']['max_volume']),
-                   self.myhost]
-        args = self.core.utils.list_unicode_cleanup(command)
-        self.core.utils.popenAndWait(args)
+            return ("mpd wakeup mode NOT activated due other fade in progress")
 
     def mpd_callback(self, values):
-        self.send_response(self.uuid, self.name, 'mpd fading ended')
         self.fade_in_progress = False
+        self.send_response(self.uuid, self.name, 'mpd fading ended')
 
     def process_proximity_event(self, newstatus):
         if newstatus['status'][self.core.location]:

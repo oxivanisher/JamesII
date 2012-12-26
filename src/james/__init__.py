@@ -229,9 +229,6 @@ class Core(object):
             except TypeError as e:
                 pass
 
-            if show_message and msg[2] != self.uuid:
-                print("Discovered new host or instance '%s' (%s)" % (msg[1], msg[2]))
-
             # register node in nodes_online
             args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]

@@ -61,7 +61,7 @@ class JamesUtils(object):
             return '%s seconds ago' % (age)
         elif age < 3600 and age >= 0:
             return '%s minutes ago' % (int(age / 60))
-        elif event_timestamp > last_midnight_timestamp and event_timestamp < now_timestamp:
+        elif event_timestamp > last_midnight_timestamp and event_timestamp < (last_midnight_timestamp + 86400):
             return 'today at %s:%s:%s' % (event.strftime('%H'),
                                           event.strftime('%M'),
                                           event.strftime('%S'))

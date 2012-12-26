@@ -123,7 +123,7 @@ class MpdPlugin(Plugin):
 
     def mpd_callback(self, values):
         self.fade_in_progress = False
-        self.send_response(self.uuid, self.name, 'mpd fading ended')
+        self.send_response('', self.name, values)
 
     def process_proximity_event(self, newstatus):
         if newstatus['status'][self.core.location]:

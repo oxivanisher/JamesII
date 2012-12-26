@@ -10,6 +10,8 @@ import copy
 import getpass
 import threading
 import subprocess
+import Queue
+import time
 
 import plugin
 import config
@@ -28,7 +30,6 @@ except AttributeError:
             pass
     pika.adapters.blocking_connection.log = PikaLogDummy()
 
-
 class PluginNotFound(Exception):
     pass
 class ConfigNotLoaded(Exception):
@@ -37,10 +38,16 @@ class ConnectionError(Exception):
     pass
 
 class Core(object):
+
+    def test_handler(self, *args, **kwargs):
+        print "test_handler", args, kwargs
+
     def __init__(self, passive = False):
         output = 'JamesII starting up'
 
         self.plugins = []
+        self.timeouts = []
+        self.timeout_queue = Queue.Queue()
         self.terminated = False
         self.hostname = socket.gethostname()
         self.startup_timestamp = time.time()
@@ -53,6 +60,9 @@ class Core(object):
         self.ghost_commands = command.Command('ghost')
         self.nodes_online = {}
         self.master_node = ''
+
+        # self.add_timeout(15, self.test_handler, 'test1', 'test2', test3='test', test4='test')
+
         try:
             self.os_username = getpass.getuser()
         except Exception as e:
@@ -241,7 +251,7 @@ class Core(object):
 
         elif msg[0] == 'commands':
             """We recieved new commands. Save them locally."""
-            self.ghost_commands.add_subcommand(command.Command.deserialize(msg[1]))
+            self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
 
         elif msg[0] == 'nodes_online':
             """We recieved a new nodes_online list. Replace our current one."""
@@ -396,6 +406,7 @@ class Core(object):
         while not self.terminated:
             try:
                 self.connection.process_data_events()
+                self.process_timeouts()
                 #print("process events")
             except KeyboardInterrupt:
                 self.terminate()
@@ -411,11 +422,39 @@ class Core(object):
         self.terminated = True
 
     # threading methods
-    def add_timeout(self, seconds, handler):
+    def add_timeout2(self, seconds, handler):
+        #FIXME add args
         """
         Sets a timeout callback with pika callbacks. Resolution 1 second.
         """
         self.connection.add_timeout(seconds, handler)
+
+    class Timeout(object):
+        def __init__(self, seconds, handler, args, kwargs):
+            self.seconds = seconds
+            self.deadline = time.time() + seconds
+            self.handler = handler
+            self.args = args
+            self.kwargs = kwargs
+
+    def add_timeout(self, seconds, handler, *args, **kwargs):
+        self.timeout_queue.put(Core.Timeout(seconds, handler, args, kwargs))
+
+    def process_timeouts(self):
+        # Copy timeouts from queue to local list
+        while True:
+            try:
+                timeout = self.timeout_queue.get_nowait()
+                self.timeouts.append(timeout)
+            except Queue.Empty:
+                break
+
+        # Process events
+        now = time.time()
+        for timeout in self.timeouts:
+            if timeout.deadline <= now:
+                timeout.handler(*timeout.args, **timeout.kwargs)
+        self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
 
     def spawnSubprocess(self, target, onExit, target_args = None):
         """
@@ -423,6 +462,7 @@ class Core(object):
         when finished
         """
         def runInThread(target, onExit, target_args):
+            #FIXME make me thread safe (call onExit tith add_timeout)
             if target_args != None:
                 onExit(target(target_args))
             else:

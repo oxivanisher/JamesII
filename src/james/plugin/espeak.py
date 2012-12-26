@@ -24,8 +24,8 @@ class EspeakPlugin(Plugin):
         text = ' '.join(args)
         if text != '':
             self.speak(text)
-            return("spoke: '%s'" % (text))
-        return "no text entered"
+            return("Espeak spoke: '%s'" % (text))
+        return "No text entered for espeak"
 
     def espeak_archive(self, args):
         ret = []
@@ -44,11 +44,9 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         self.core.utils.popenAndWait(['/usr/bin/espeak', msg])
-
-        message = self.core.new_message(self.name)
-        message.header = "Espeak Spoke"
-        message.body = msg
-        message.send()
+        self.send_response(self.uuid,
+                           self.name,
+                           ('Espeak spoke: %s' % (' '.join(msg))))
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:
@@ -84,6 +82,7 @@ class EspeakPlugin(Plugin):
                 self.archived_messages[message.timestamp] = message.header
 
     def greet_homecomer(self):
+        print("greet homecomer!")
         nicetime = strftime("%H:%M", localtime())
 
         self.speak('Welcome. It is now %s.' % (nicetime))
@@ -99,6 +98,7 @@ class EspeakPlugin(Plugin):
             self.speak('Nothing happend while we where apart.')
 
     def process_proximity_event(self, newstatus):
+        print("processing prox event")
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()

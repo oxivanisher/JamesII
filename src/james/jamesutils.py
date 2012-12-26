@@ -56,6 +56,7 @@ class JamesUtils(object):
             return 'just now'
 
         # past
+        #FIXME 2 if bloecke fuer zukunft und vergangenheit
         elif age < 60 and age >= 0:
             return '%s seconds ago' % (age)
         elif age < 3600 and age >= 0:

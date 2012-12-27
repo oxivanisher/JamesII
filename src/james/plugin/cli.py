@@ -112,8 +112,7 @@ class CliPlugin(Plugin):
         self.commands.create_subcommand('prx_home', 'set the proximity system for: at home', self.cmd_prx_home)
         self.commands.create_subcommand('prx_away', 'set the proximity system for: away', self.cmd_prx_away)
         self.commands.create_subcommand('exit', 'quits the console', self.cmd_exit)
-        self.commands.create_subcommand('dump_config', 'dumps the config', self.cmd_dump_config)
-        self.commands.create_subcommand('message', 'sends a test message', self.cmd_message)
+        self.commands.create_subcommand('msg', 'sends a message', self.cmd_message)
         self.commands.create_subcommand('help', 'list this help', self.cmd_help)
 
     def start(self):
@@ -168,20 +167,23 @@ class CliPlugin(Plugin):
         self.core.terminate()
         return True
 
-    def cmd_dump_config(self, args):
-        print("dumping config:")
-        print(yaml.dump(self.core.config))
-
-        return True
-
     def cmd_message(self, args):
-        print("sending test message")
-        message = self.core.new_message("cli_test")
-        message.body = "Test Body"
-        message.header = "Test Head"
+        message_string = ' '.join(args)
+        message_list = message_string.split(';')
+
+        message = self.core.new_message("cli_message")
         message.level = 1
-        message.send()
-        return True
+        try:
+            message.body = message_list[1].strip()
+        except IndexError:
+            message.body = None
+
+        try:
+            message.header = message_list[0].strip()
+            message.send()
+            return ("Message header: %s; body: %s" % (msg.header, msg.body))
+        except Exception as e:
+            return ("Message could not me sent (%s)" % (e))
 
     def cmd_help(self, args):
 

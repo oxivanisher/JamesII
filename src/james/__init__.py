@@ -353,7 +353,7 @@ class Core(object):
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,
                                          'plugin' : pluginname,
-                                         'location' : self.location 
+                                         'location' : self.location})
 
     # discovery methods
     def ping_nodes(self):

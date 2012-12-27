@@ -6,11 +6,8 @@ import atexit
 import json
 import random
 import string
+import ast
 from datetime import datetime, timedelta
-
-
-import pprint
-
 
 from james.plugin import *
 
@@ -74,6 +71,7 @@ class CronTab(object):
     def run(self):
         t=datetime(*datetime.now().timetuple()[:5])
         for e in self.events:
+            print("yay!")
             e.check(t)
 
     def add_event(self, event):
@@ -92,7 +90,7 @@ class CronTab(object):
                     if key == 'cmd':
                         event_data[key] = ' '.join(event_data[key])
                     else:
-                        event_data[key] = ','.join(event_data[key])
+                        event_data[key] = ','.join(str(x) for x in event_data[key])
 
             ret.append(ret_format % (self.events.index(e),
                                      event_data['mins'],
@@ -155,13 +153,31 @@ class CronPlugin(Plugin):
                     cmd_string = cron_data[1].strip()
 
                     cron_args = []
-                    for arg in cron_string.split():
-                        cron_args.append(int(arg))
+                    for arg in cron_string.split(' '):
+                        print ("arg %s" % arg)
+                        if arg.isdigit():
+                            cron_args.append(int(arg))
+                        elif arg == '*':
+                            cron_args.append([])
+                        elif ',' in arg:
+                            # cron_args.append(int(arg.split(',')))
+                            tmp_list = []
+                            tmp_args = arg.split(',')
+                            for tmp_arg in tmp_args:
+                                tmp_list.append(int(tmp_arg))
+                            cron_args.append(tmp_list)    
+                        elif '-' in arg:
+                            tmp_list = []
+                            tmp_args = arg.split('-')
+                            for tmp_num in range(int(tmp_args[0]), int(tmp_args[1])):
+                                tmp_list.append(tmp_num)
+                            cron_args.append(tmp_list)
 
+                    print("ca: %s" % (cron_args))
                     cmd_args = cmd_string.split()
 
                     new_cron_list.append(cron_entry)
-                    print cron_args
+
                     self.add_cron_job(cron_args, cmd_args)
                 else:
                     ret = False
@@ -173,7 +189,7 @@ class CronPlugin(Plugin):
 
     def add_cron_job(self, cron_args, cmd_args):
         try:
-            newevent = CronEvent(self.run_crontab_command, cron_args, args=cmd_args)
+            newevent = CronEvent(self.run_crontab_command, *cron_args, args=cmd_args)
             self.crontab.add_event(newevent)
         except Exception as e:
             print ("Error on adding cron command: %s" % (e))
@@ -207,7 +223,6 @@ class CronPlugin(Plugin):
 
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
-        print("running command... finally!")
         self.send_response(self.uuid,
                            'broadcast',
                            ('Running Command (%s)' % (' '.join(args))))

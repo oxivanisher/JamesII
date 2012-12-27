@@ -110,7 +110,7 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())
 
-        if (time() - self.core.startup_timestamp) < 10:
+        if (time() - self.core.startup_timestamp) > 10:
             self.speak('Welcome. It is now %s.' % (nicetime))
 
         if len(self.archived_messages):

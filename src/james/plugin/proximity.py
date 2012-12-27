@@ -34,8 +34,14 @@ class ProximityPlugin(Plugin):
             file.close()
             if self.core.config['core']['debug']:
                 print("Loading proximity status from %s" % (self.state_file))
-            if self.status != loaded_status:
-                self.core.proximity_status.set_status_here(loaded_status, 'btproximity')
+            self.status = loaded_status
+            if self.status:
+                self.core.proximity_status.status[self.core.location] = False
+            else:
+                self.core.proximity_status.status[self.core.location] = True
+            # if self.status != loaded_status:
+            self.core.proximity_status.set_status_here(loaded_status, 'btproximity')
+
         except IOError:
             pass
         pass
@@ -110,17 +116,25 @@ class ProximityPlugin(Plugin):
             if len(self.hosts_online) > 0:
                 self.status = True
 
-        # save the actual online hosts to var
         for (mac, name) in values:
+            notfound = True
             new_hosts_online.append((mac, name))
-            if not mac in old_hosts_online:
+            for (test_mac, test_name) in old_hosts_online:
+                if test_mac == mac:
+                    notfound = False
+            if notfound:
                 self.send_response(self.uuid, 'broadcast', ('Proximity found %s' % (name)))
 
         for (mac, name) in old_hosts_online:
-            if not mac in new_hosts_online:
-                self.send_response(self.uuid, 'broadcast', ('Proximity lost %s' % (old_host)))
+            notfound = True
+            for (test_mac, test_name) in new_hosts_online:
+                if test_mac == mac:
+                    notfound = False
+            if notfound:
+                self.send_response(self.uuid, 'broadcast', ('Proximity lost %s' % (name)))
 
-        self.hosts_online = self.core.utils.convert_from_unicode(new_hosts_online)
+        # save the actual online hosts to var
+        self.hosts_online = new_hosts_online
 
         if self.status != self.oldstatus:
             if self.status:

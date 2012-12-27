@@ -30,6 +30,8 @@ class TimerPlugin(Plugin):
             file = open(self.command_cache_file, 'r')
             self.saved_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
+            if self.core.config['core']['debug']:
+                print("Loading timed commands from %s" % (self.command_cache_file))
         except IOError:
             pass
         pass
@@ -39,6 +41,8 @@ class TimerPlugin(Plugin):
             file = open(self.command_cache_file, 'w')
             file.write(json.dumps(self.saved_commands))
             file.close()
+            if self.core.config['core']['debug']:
+                print("Saving timed commands to %s" % (self.command_cache_file))
         except IOError:
             print("WARNING: Could not save cached commands to file!")
 
@@ -48,12 +52,11 @@ class TimerPlugin(Plugin):
             now = int(time.time())
             target_time = now + int(args[0])
             return self.timer_at(target_time, args[1:])
-        except ValueError:
-            pass
-
-        return("please learn human for: %s" % (args[0]))
+        except ValueError: 
+            return("Invalid syntax. Use  %s" % (args[0]))
 
     def cmd_timer_at(self, args):
+
         #FIXME i do not exist!
         return("please learn human for: %s" % (args[0]))
         pass
@@ -63,8 +66,8 @@ class TimerPlugin(Plugin):
         print("show timer (%s)" % (self.saved_commands))
         for (timestamp, command) in self.saved_commands:
             ret.append("%10s %-25s %s" % (timestamp,
-                                           ' '.join(command),
-                                           self.core.utils.get_nice_age(timestamp)))
+                                          ' '.join(command),
+                                          self.core.utils.get_nice_age(timestamp)))
         return ret
 
     def cmd_timer_delete(self, args):
@@ -90,10 +93,10 @@ class TimerPlugin(Plugin):
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
             if timestamp <= now:
-                self.send_command(command)
                 self.send_response(self.uuid,
-                                   self.name,
+                                   'broadcast',
                                    ('Running timed command (%s)' % (' '.join(command))))
+                self.send_command(command)
             else:
                 saved_commands_new.append((timestamp, command))
 

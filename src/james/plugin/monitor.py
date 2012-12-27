@@ -41,7 +41,7 @@ class MonitorPlugin(Plugin):
     def process_discovery_event(self, msg):
         events = ['hello', 'byebye', 'shutdown'] #'ping', 'pong'
         if msg[0] in events:
-           self.process_event(("%s" % (msg[1])),
+           self.process_event(("core@%s" % (msg[1])),
                                "Discovery Event",
                                ("%s (%s)" % (msg[0], msg[2])))
 

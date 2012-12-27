@@ -127,6 +127,9 @@ class EspeakPlugin(Plugin):
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()
 
+    def terminate(self):
+        self.speak("I will be back")
+
 descriptor = {
     'name' : 'espeak',
     'help' : 'espeak api',

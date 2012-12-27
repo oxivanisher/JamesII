@@ -126,10 +126,11 @@ class MpdPlugin(Plugin):
         self.send_response(self.uuid, 'broadcast', values)
 
     def process_proximity_event(self, newstatus):
-        if newstatus['status'][self.core.location]:
-            self.radio_on(None)
-        else:
-            self.radio_off(None)
+        if (time() - self.core.startup_timestamp) > 5:
+            if newstatus['status'][self.core.location]:
+                self.radio_on(None)
+            else:
+                self.radio_off(None)
 
     # Helper Methods
     def exec_mpc(self, args):

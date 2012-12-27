@@ -17,7 +17,7 @@ class ProximityPlugin(Plugin):
         self.hosts_online = []
 
         if os.path.isfile('/usr/bin/hcitool'):
-            self.commands.create_subcommand('scan', 'scan for visible bluetooth devices', self.scan)
+            self.commands.create_subcommand('discover', 'scan for visible bluetooth devices', self.discover)
             self.commands.create_subcommand('test', 'test for local bluetooth devices', self.test)
             if core.os_username == 'root':
                 self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
@@ -65,7 +65,7 @@ class ProximityPlugin(Plugin):
                 devices[values[1]] = values[0]
         return(devices)
 
-    def scan(self, args):
+    def discover(self, args):
         lines = self.core.utils.popenAndWait(['hcitool', 'scan'])
         lines = self.core.utils.list_unicode_cleanup(lines)
         hosts = {}

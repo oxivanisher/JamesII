@@ -32,6 +32,9 @@ class Plugin(object):
     def process_command_response(self, args, host, plugin):
         pass
 
+    def process_broadcast_command_response(self, args, host, plugin):
+        pass
+
     def send_command(self, args):
         """ Sends a command to the queue. """
         self.send_request(self.uuid, 'cmd', args)
@@ -55,12 +58,13 @@ class Plugin(object):
                 pass
 
     def handle_response(self, uuid, name, body, host, plugin):
-        if uuid == self.uuid:
-            if name == 'cmd':
-                args = body
-                if not isinstance(args, list):
-                    args = [args]
+        args = body
+        if not isinstance(args, list):
+            args = [args]
+            if name == 'cmd' and uuid == self.uuid:
                 self.process_command_response(args, host, plugin)
+            elif name == 'broadcast':
+                self.process_broadcast_command_response(args, host, plugin)
 
     def cmd_avail(self, args):
         return self.core.hostname + ' ' + self.name
@@ -84,22 +88,24 @@ class Plugin(object):
     def process_command_response_event(self, msg):
         pass
 
-
 # FIXME ThreadBaseClass
 class PluginThread(threading.Thread):
 
     def __init__(self, plugin):
+        #FIXME dieser thread funktioniert nicht so wie er sollte -.-
+        # threading.Thread.__init__(self)
         self.plugin = plugin
 
-    def start(self):
+    def worked(self):
+        ret = self.work()
+        self.plugin.core.add_timeout(0, self.on_exit, ret)
         pass
 
     def work(self):
         pass
 
     def run(self):
-        ret = self.work()
-        self.plugin.core.add_timeout(0, self.on_exit, ret)
+        self.plugin.core.spawnSubprocess(self.work, self.on_exit)
 
     def on_exit(self, result):
         pass

@@ -3,6 +3,7 @@ import os
 import sys
 import urllib2
 import subprocess
+import time
 
 from james.plugin import *
 
@@ -126,7 +127,7 @@ class MpdPlugin(Plugin):
         self.send_response(self.uuid, 'broadcast', values)
 
     def process_proximity_event(self, newstatus):
-        if (time() - self.core.startup_timestamp) > 5:
+        if (time.time() - self.core.startup_timestamp) > 5:
             if newstatus['status'][self.core.location]:
                 self.radio_on(None)
             else:

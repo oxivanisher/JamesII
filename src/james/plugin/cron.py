@@ -123,6 +123,8 @@ class CronPlugin(Plugin):
             file = open(self.command_cron_file, 'r')
             # self.crontab = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
+            # if self.core.config['core']['debug']:
+            #     print("Loading timed commands from %s" % (self.command_cache_file))
         except IOError:
             pass
         pass
@@ -132,6 +134,8 @@ class CronPlugin(Plugin):
             file = open(self.command_cron_file, 'w')
             # file.write(json.dumps(self.crontab))
             file.close()
+            # if self.core.config['core']['debug']:
+            #     print("Loading timed commands from %s" % (self.command_cache_file))
         except IOError:
             print("WARNING: Could not safe cron commands to file!")
 
@@ -154,8 +158,9 @@ class CronPlugin(Plugin):
         return self.crontab.show()
 
     def cmd_cron_delete(self, args):
+        #FIXME i do not work
         del_id = int(args[0])
-        return("Removing ID %s" % (del_id))
+        print("Removing ID %s" % (del_id))
         self.crontab.events.remove(del_id)
         try:
             del_id = int(args[0])
@@ -175,7 +180,7 @@ class CronPlugin(Plugin):
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
         self.send_response(self.uuid,
-                           self.name,
+                           'broadcast',
                            ('Running Command (%s)' % (' '.join(args))))
         self.send_command(args)
 

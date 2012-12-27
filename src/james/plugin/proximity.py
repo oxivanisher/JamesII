@@ -30,8 +30,12 @@ class ProximityPlugin(Plugin):
     def load_saved_state(self):
         try:
             file = open(self.state_file, 'r')
-            self.status = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            loaded_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
+            if self.core.config['core']['debug']:
+                print("Loading proximity status from %s" % (self.state_file))
+            if self.status != loaded_status:
+                self.core.proximity_status.set_status_here(loaded_status, 'btproximity')
         except IOError:
             pass
         pass
@@ -41,6 +45,8 @@ class ProximityPlugin(Plugin):
             file = open(self.state_file, 'w')
             file.write(json.dumps(self.status))
             file.close()
+            if self.core.config['core']['debug']:
+                print("Saving proximity status to %s" % (self.state_file))
         except IOError:
             print("WARNING: Could not safe cached commands to file!")
 
@@ -81,13 +87,20 @@ class ProximityPlugin(Plugin):
             for name in self.core.config['persons'][person]['devices'].keys():
                 mac = self.core.config['persons'][person]['devices'][name]
                 ret = self.core.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
-                if len(filter(lambda s: s != '', ret)) > 1:
-                    hosts.append(mac)
+                clear_list = filter(lambda s: s != '', ret)
+                try:
+                    for line in clear_list:
+                        if "Device Name:" in line:
+                            args = line.split(':')
+                            hosts.append((mac, args[1].strip()))
+                except Exception:
+                    pass
         return hosts
 
     def proximity_check_callback(self, values):
         self.oldstatus = self.status
         self.status = False
+        old_hosts = self.hosts_online
 
         if len(values) > 0:
             self.status = True
@@ -97,9 +110,23 @@ class ProximityPlugin(Plugin):
                 self.status = True
 
         # save the actual online hosts to var
-        self.hosts_online = self.core.utils.convert_from_unicode(values)
+        new_hosts_online = []
+        for (mac, name) in values:
+            new_hosts_online.append(mac)
+            if not mac in old_hosts:
+                self.send_response(self.uuid, 'broadcast', ('Bluetooth Proximity found %s (%s)' % (name, mac)))
+        self.hosts_online = self.core.utils.convert_from_unicode(new_hosts_online)
+
+        for old_host in old_hosts:
+            if not old_host in self.hosts_online:
+                self.send_response(self.uuid, 'broadcast', ('Bluetooth Proximity lost %s' % (old_host)))
 
         if self.status != self.oldstatus:
+            if self.status:
+                self.send_response(self.uuid, 'broadcast', 'You are now at home')
+            else:
+                self.send_response(self.uuid, 'broadcast', 'You are now away')
+
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
 
 descriptor = {

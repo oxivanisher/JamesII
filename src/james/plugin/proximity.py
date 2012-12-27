@@ -100,7 +100,8 @@ class ProximityPlugin(Plugin):
     def proximity_check_callback(self, values):
         self.oldstatus = self.status
         self.status = False
-        old_hosts = self.hosts_online
+        old_hosts_online = self.hosts_online
+        new_hosts_online = []
 
         if len(values) > 0:
             self.status = True
@@ -110,16 +111,16 @@ class ProximityPlugin(Plugin):
                 self.status = True
 
         # save the actual online hosts to var
-        new_hosts_online = []
         for (mac, name) in values:
-            new_hosts_online.append(mac)
-            if not mac in old_hosts:
-                self.send_response(self.uuid, 'broadcast', ('Bluetooth Proximity found %s (%s)' % (name, mac)))
-        self.hosts_online = self.core.utils.convert_from_unicode(new_hosts_online)
+            new_hosts_online.append((mac, name))
+            if not mac in old_hosts_online:
+                self.send_response(self.uuid, 'broadcast', ('Proximity found %s' % (name)))
 
-        for old_host in old_hosts:
-            if not old_host in self.hosts_online:
-                self.send_response(self.uuid, 'broadcast', ('Bluetooth Proximity lost %s' % (old_host)))
+        for (mac, name) in old_hosts_online:
+            if not mac in new_hosts_online:
+                self.send_response(self.uuid, 'broadcast', ('Proximity lost %s' % (old_host)))
+
+        self.hosts_online = self.core.utils.convert_from_unicode(new_hosts_online)
 
         if self.status != self.oldstatus:
             if self.status:

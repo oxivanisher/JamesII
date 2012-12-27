@@ -125,7 +125,7 @@ class EspeakPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
-            if (time() - self.core.startup_timestamp) < 5)):
+            if (time() - self.core.startup_timestamp) < 5:
                 self.greet_homecomer()
             else:
                 self.speak("I am back")

@@ -12,8 +12,8 @@ class EspeakPlugin(Plugin):
         super(EspeakPlugin, self).__init__(core, descriptor)
 
         self.core = core
-        self.unmuted = self.core.proximity_status.get_status_here()
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_message_archive")
+        self.unmuted = self.core.proximity_status.get_status_here()
 
         self.archived_messages = {}
         self.message_cache = []
@@ -74,6 +74,7 @@ class EspeakPlugin(Plugin):
                            ('Espeak spoke: %s' % (msg)))
 
     def speak_hook(self, args = None):
+        self.unmuted = self.core.proximity_status.get_status_here()
         if len(self.message_cache) > 0:
             msg = self.message_cache[0]
             try:

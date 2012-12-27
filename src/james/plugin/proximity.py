@@ -25,6 +25,7 @@ class ProximityPlugin(Plugin):
 
         atexit.register(self.save_state)
         self.state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
+        self.proxy_send_lock = False
         self.load_saved_state()
 
     def load_saved_state(self):
@@ -144,8 +145,14 @@ class ProximityPlugin(Plugin):
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):
-        if msg[0] == 'hello':
-            self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
+        if not self.proxy_send_lock:
+            if msg[0] == 'hello':
+                self.proxy_send_lock = True
+                self.core.add_timeout(5, self.process_discovery_event_callback)
+
+    def process_discovery_event_callback(self):
+        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
+        self.proxy_send_lock = False
 
 descriptor = {
     'name' : 'proximity',

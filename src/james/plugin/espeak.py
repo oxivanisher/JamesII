@@ -128,10 +128,7 @@ class EspeakPlugin(Plugin):
             if (time() - self.core.startup_timestamp) < 10:
                 self.greet_homecomer()
             else:
-                self.speak("I am back")
-
-    def terminate(self):
-        self.speak_worker("I will be back")
+                self.speak("I am back online")
 
 descriptor = {
     'name' : 'espeak',

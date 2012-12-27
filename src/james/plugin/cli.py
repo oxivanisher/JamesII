@@ -107,10 +107,8 @@ class CliPlugin(Plugin):
         self.cmd_line_mode = len(sys.argv) > 1
 
         self.commands.hide = True
-        self.commands.create_subcommand('nodes_online', 'show the local nodes_online variables', self.cmd_nodes_online)
+        self.commands.create_subcommand('nodes', 'show the local nodes_online variables', self.cmd_nodes_online)
         self.commands.create_subcommand('prx', 'show the local proximity variables', self.cmd_prx)
-        self.commands.create_subcommand('prx_home', 'set the proximity system for: at home', self.cmd_prx_home)
-        self.commands.create_subcommand('prx_away', 'set the proximity system for: away', self.cmd_prx_away)
         self.commands.create_subcommand('exit', 'quits the console', self.cmd_exit)
         self.commands.create_subcommand('msg', 'sends a message', self.cmd_message)
         self.commands.create_subcommand('help', 'list this help', self.cmd_help)
@@ -153,14 +151,6 @@ class CliPlugin(Plugin):
     def cmd_prx(self, args):
         print("proximity_status : %s" % (self.core.proximity_status.get_all_status()))
         print("self.location : %s" % (self.core.location))
-        return True
-
-    def cmd_prx_home(self, args):
-        self.core.proximity_status.set_status_here(True, 'cli')
-        return True
-
-    def cmd_prx_away(self, args):
-        self.core.proximity_status.set_status_here(False, 'cli')
         return True
 
     def cmd_exit(self, args):

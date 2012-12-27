@@ -34,13 +34,12 @@ class ProximityPlugin(Plugin):
             file.close()
             if self.core.config['core']['debug']:
                 print("Loading proximity status from %s" % (self.state_file))
-            self.status = loaded_status
+            # force proximity update
             if self.status:
                 self.core.proximity_status.status[self.core.location] = False
             else:
                 self.core.proximity_status.status[self.core.location] = True
-            # if self.status != loaded_status:
-            self.core.proximity_status.set_status_here(loaded_status, 'btproximity')
+            self.core.proximity_event(loaded_status, 'btproximity')
 
         except IOError:
             pass

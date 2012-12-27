@@ -8,6 +8,10 @@ import random
 import string
 from datetime import datetime, timedelta
 
+
+import pprint
+
+
 from james.plugin import *
 
 # from: http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
@@ -41,9 +45,6 @@ class CronEvent(object):
 
     def matchtime(self, t):
         """Return True if this event should trigger at the specified datetime"""
-        print("%s :: %s" % (t.minute, self.mins))
-        if t.minute in self.mins:
-            print "yay"
         return ((t.minute     in self.mins) and
                 (t.hour       in self.hours) and
                 (t.day        in self.days) and
@@ -52,7 +53,6 @@ class CronEvent(object):
 
     def check(self, t):
         if self.matchtime(t):
-            print("match!")
             self.action(*self.args, **self.kwargs)
 
     def show(self):
@@ -154,10 +154,14 @@ class CronPlugin(Plugin):
                     cron_string = cron_data[0].strip()
                     cmd_string = cron_data[1].strip()
 
-                    cron_args = cron_string.split()
+                    cron_args = []
+                    for arg in cron_string.split():
+                        cron_args.append(int(arg))
+
                     cmd_args = cmd_string.split()
 
                     new_cron_list.append(cron_entry)
+                    print cron_args
                     self.add_cron_job(cron_args, cmd_args)
                 else:
                     ret = False

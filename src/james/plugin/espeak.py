@@ -44,8 +44,8 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         self.core.utils.popenAndWait(['/usr/bin/espeak', msg])
-        self.send_response('',
-                           self.name,
+        self.send_response(self.uuid,
+                           'broadcast',
                            ('Espeak spoke: %s' % (msg)))
 
     def speak_hook(self, args = None):

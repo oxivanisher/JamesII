@@ -31,7 +31,7 @@ class MonitorPlugin(Plugin):
     def process_command_request_event(self, command):
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                             "Command Request",
-                            ("%s (%s)" % (command['body'], command['uuid'])))
+                            ("%s (%s)" % (' '.join(command['body']), command['uuid'])))
 
     def process_command_response_event(self, command):
         bytes = 0

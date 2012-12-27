@@ -350,6 +350,11 @@ class Core(object):
         if oldstatus[self.location] != changedstatus:
             newstatus[self.location] = changedstatus
 
+            self.proximity_channel.send({'status' : newstatus,
+                                         'host' : self.hostname,
+                                         'plugin' : pluginname,
+                                         'location' : self.location 
+
     # discovery methods
     def ping_nodes(self):
         """

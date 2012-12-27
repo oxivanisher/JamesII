@@ -237,8 +237,6 @@ class Core(object):
             if self.master:
                 self.config_channel.send(self.config)
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-                # Send actual proximity state
-                self.publish_proximity_status(self.proximity_status.get_all_status_copy(), 'core')
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
@@ -362,9 +360,8 @@ class Core(object):
                                          'host' : self.hostname,
                                          'plugin' : pluginname,
                                          'location' : self.location})
-            print("sending proxi")
         except Exception as e:
-            pass
+            print("Warning! Could not send proximity status (%s)" % (e))
 
     # discovery methods
     def ping_nodes(self):

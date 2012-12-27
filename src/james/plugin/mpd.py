@@ -102,9 +102,9 @@ class MpdPlugin(Plugin):
                                           self.core.config['mpd']['sleep_fade'],
                                           self.core.config['mpd']['sleep_url'])
             self.fade_thread.run()
-            return ("mpd sleep mode activated")
+            return ("MPD Sleep mode activated")
         else:
-            return ("mpd sleep mode NOT activated due other fade in progress")
+            return ("MPD Sleep mode NOT activated due other fade in progress")
 
     def mpd_wakeup(self, args):
         if not self.fade_in_progress:
@@ -117,9 +117,9 @@ class MpdPlugin(Plugin):
                                           self.core.config['mpd']['wakeup_fade'],
                                           self.core.config['mpd']['wakeup_url'])
             self.fade_thread.run()
-            return ("mpd wakeup mode activated")
+            return ("MPD Wakeup mode activated")
         else:
-            return ("mpd wakeup mode NOT activated due other fade in progress")
+            return ("MPD Wakeup mode NOT activated due other fade in progress")
 
     def mpd_callback(self, values):
         self.fade_in_progress = False

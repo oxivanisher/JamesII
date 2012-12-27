@@ -237,6 +237,8 @@ class Core(object):
             if self.master:
                 self.config_channel.send(self.config)
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+                # Send actual proximity state
+                self.publish_proximity_status(self.proximity_status.get_all_status_copy(), 'core')
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
@@ -341,8 +343,7 @@ class Core(object):
 
     def proximity_event(self, changedstatus, pluginname):
         """
-        If the local proximity state has changed, send a message and publish the
-        change over the proximity channel.
+        If the local proximity state has changed, call the publish method
         """
         newstatus = {}
         oldstatus = self.proximity_status.get_all_status_copy()
@@ -350,10 +351,20 @@ class Core(object):
         if oldstatus[self.location] != changedstatus:
             newstatus[self.location] = changedstatus
 
+            self.publish_proximity_status(newstatus, pluginname)
+
+    def publish_proximity_status(self, newstatus, pluginname):
+        """
+        send the newstatus proximity status over the proximity channel.
+        """
+        try:
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,
                                          'plugin' : pluginname,
                                          'location' : self.location})
+            print("sending proxi")
+        except Exception as e:
+            pass
 
     # discovery methods
     def ping_nodes(self):

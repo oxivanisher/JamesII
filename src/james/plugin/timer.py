@@ -83,7 +83,6 @@ class TimerPlugin(Plugin):
 
     # internal timer methods
     def timer_at(self, timestamp, command):
-        print("0: %s, 1+: %s" % (timestamp, command))
         self.saved_commands.append(( timestamp, self.core.utils.list_unicode_cleanup(command) ))
         return("Saved Command (%s) %s" % (' '.join(command),
                                           self.core.utils.get_nice_age(timestamp)))

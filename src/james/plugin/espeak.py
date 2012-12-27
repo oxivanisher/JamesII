@@ -2,7 +2,7 @@
 import sys
 import atexit
 import json
-from time import localtime, strftime, sleep
+from time import localtime, strftime, sleep, time
 
 from james.plugin import *
 
@@ -125,10 +125,13 @@ class EspeakPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
-            self.greet_homecomer()
+            if time() > (self.core.startup_timestamp + 10):
+                self.greet_homecomer()
+            else:
+                self.speak("I am back")
 
     def terminate(self):
-        self.speak("I will be back")
+        self.speak_worker("I will be back")
 
 descriptor = {
     'name' : 'espeak',

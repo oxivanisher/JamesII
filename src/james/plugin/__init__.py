@@ -61,10 +61,10 @@ class Plugin(object):
         args = body
         if not isinstance(args, list):
             args = [args]
-            if name == 'cmd' and uuid == self.uuid:
-                self.process_command_response(args, host, plugin)
-            elif name == 'broadcast':
-                self.process_broadcast_command_response(args, host, plugin)
+        if name == 'cmd' and uuid == self.uuid:
+            self.process_command_response(args, host, plugin)
+        elif name == 'broadcast':
+            self.process_broadcast_command_response(args, host, plugin)
 
     def cmd_avail(self, args):
         return self.core.hostname + ' ' + self.name

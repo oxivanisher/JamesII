@@ -74,7 +74,6 @@ class EspeakPlugin(Plugin):
                            ('Espeak spoke: %s' % (msg)))
 
     def speak_hook(self, args = None):
-        self.unmuted = self.core.proximity_status.get_status_here()
         if len(self.message_cache) > 0:
             msg = self.message_cache[0]
             try:
@@ -101,6 +100,7 @@ class EspeakPlugin(Plugin):
         return
 
     def process_message(self, message):
+        self.unmuted = self.core.proximity_status.get_status_here()
         if message.level > 0: # we really do not want espeak to speak all debug messages
             if self.unmuted:
                 self.speak(message.header)

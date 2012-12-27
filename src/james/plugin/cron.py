@@ -41,6 +41,9 @@ class CronEvent(object):
 
     def matchtime(self, t):
         """Return True if this event should trigger at the specified datetime"""
+        print("%s :: %s" % (t.minute, self.mins))
+        if t.minute in self.mins:
+            print "yay"
         return ((t.minute     in self.mins) and
                 (t.hour       in self.hours) and
                 (t.day        in self.days) and
@@ -49,6 +52,7 @@ class CronEvent(object):
 
     def check(self, t):
         if self.matchtime(t):
+            print("match!")
             self.action(*self.args, **self.kwargs)
 
     def show(self):
@@ -83,7 +87,7 @@ class CronTab(object):
             event_data = e.show()
             for key in event_data.keys():
                 if event_data[key] == AllMatch():
-                    event_data[key] = "*"
+                    event_data[key] = "-"
                 elif len(event_data[key]) > 0:
                     if key == 'cmd':
                         event_data[key] = ' '.join(event_data[key])
@@ -99,6 +103,7 @@ class CronTab(object):
                                      event_data['cmd']))
         return ret
 
+# http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
 class CronPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -108,77 +113,97 @@ class CronPlugin(Plugin):
         self.commands.create_subcommand('show', 'shows the cron commands', self.cmd_cron_show)
         self.commands.create_subcommand('delete', 'delets a cron command', self.cmd_cron_delete)
 
+        self.crontab = CronTab()
         self.command_cron_file = os.path.join(os.path.expanduser("~"), ".james_crontab")
+        self.cron_list = []
+        self.load_saved_commands()
         atexit.register(self.save_commands)
 
-        #FIXME add cron commands. each mon, di and so on
-        # http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
-        self.load_saved_commands()
-        self.crontab = CronTab()
-
         self.crontab_daemon_loop()
-
-    def load_saved_commands(self):
-        try:
-            file = open(self.command_cron_file, 'r')
-            # self.crontab = self.core.utils.convert_from_unicode(json.loads(file.read()))
-            file.close()
-            # if self.core.config['core']['debug']:
-            #     print("Loading timed commands from %s" % (self.command_cache_file))
-        except IOError:
-            pass
-        pass
 
     def save_commands(self):
         try:
             file = open(self.command_cron_file, 'w')
-            # file.write(json.dumps(self.crontab))
+            file.write(json.dumps(self.cron_list))
             file.close()
-            # if self.core.config['core']['debug']:
-            #     print("Loading timed commands from %s" % (self.command_cache_file))
+            if self.core.config['core']['debug']:
+                print("Saving crontab to %s" % (self.command_cron_file))
         except IOError:
-            print("WARNING: Could not safe cron commands to file!")
+            print("WARNING: Could not safe cron tab to file!")
+
+    def load_saved_commands(self):
+        try:
+            file = open(self.command_cron_file, 'r')
+            self.cron_list = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            file.close()
+            if self.core.config['core']['debug']:
+                print("Loading crontab from %s" % (self.command_cron_file))
+            self.load_commands_from_cron_list()
+        except IOError:
+            pass
+        pass
+
+    def load_commands_from_cron_list(self):
+        self.crontab = CronTab()
+        new_cron_list = []
+        ret = True
+        for cron_entry in self.core.utils.list_unicode_cleanup(self.cron_list):
+            try:
+                cron_data = cron_entry.split(';')
+                if len(cron_data) > 1:
+                    cron_string = cron_data[0].strip()
+                    cmd_string = cron_data[1].strip()
+
+                    cron_args = cron_string.split()
+                    cmd_args = cmd_string.split()
+
+                    new_cron_list.append(cron_entry)
+                    self.add_cron_job(cron_args, cmd_args)
+                else:
+                    ret = False
+            except Exception as e:
+                ret = False
+                pass
+        self.cron_list = new_cron_list
+        return ret
+
+    def add_cron_job(self, cron_args, cmd_args):
+        try:
+            newevent = CronEvent(self.run_crontab_command, cron_args, args=cmd_args)
+            self.crontab.add_event(newevent)
+        except Exception as e:
+            print ("Error on adding cron command: %s" % (e))
+            pass
 
     # cron commands
     def cmd_cron_add(self, args):
-        try:
-            (cron_string, cmd_string) = ' '.join(args).split(';')
-            cron_args = cron_string.split()
-            cmd_args = cmd_string.split()
-
-            newevent = CronEvent(self.run_crontab_command, cron_args, args=cmd_args)
-            self.crontab.add_event(newevent)
-            return("Command saved")
-        except IndexError:
-            return("Invalid syntax!")
-        except ValueError:
-            return("Invalid syntax!")
+        if len(args) > 0:
+            self.cron_list.append(' '.join(args))
+            if self.load_commands_from_cron_list():
+                return("Command saved")
+            else:
+                return("Error adding: %s" % (' '.join(args)))
+        else:
+            return("No command submitted")
 
     def cmd_cron_show(self, args):
         return self.crontab.show()
 
     def cmd_cron_delete(self, args):
-        #FIXME i do not work
-        del_id = int(args[0])
-        print("Removing ID %s" % (del_id))
-        self.crontab.events.remove(del_id)
         try:
             del_id = int(args[0])
-            self.crontab.events.remove(del_id)
-        except Exception:
-            return("Invalid syntax!")
-        # ret = "Command not found"
-        # saved_commands_new = []
-        # for (timestamp, command) in self.saved_commands:
-        #     if timestamp == int(args[0]) and command == args[1:]:
-        #         ret = ('Removed Command %s' % (' '.join(args)))
-        #     else:
-        #         saved_commands_new.append((timestamp, command))
-        # self.saved_commands = saved_commands_new
-        # return ret
+            num_of_jobs = len(self.cron_list)
+            print self.cron_list[del_id]
+            del_data = self.cron_list[del_id]
+            self.cron_list.remove(del_data)
+            self.load_commands_from_cron_list()
+            return("Removed job: %s" % (del_data))
+        except Exception as e:
+            return("Invalid syntax (%s)" % (e))
 
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
+        print("running command... finally!")
         self.send_response(self.uuid,
                            'broadcast',
                            ('Running Command (%s)' % (' '.join(args))))

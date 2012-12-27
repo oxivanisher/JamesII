@@ -171,7 +171,7 @@ class CliPlugin(Plugin):
         try:
             message.header = message_list[0].strip()
             message.send()
-            return ("Message header: %s; body: %s" % (msg.header, msg.body))
+            return ("Message header: %s; body: %s" % (message.header, message.body))
         except Exception as e:
             return ("Message could not me sent (%s)" % (e))
 

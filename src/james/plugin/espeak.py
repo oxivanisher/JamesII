@@ -1,5 +1,7 @@
 
 import sys
+import atexit
+import json
 from time import localtime, strftime, sleep
 
 from james.plugin import *
@@ -11,6 +13,7 @@ class EspeakPlugin(Plugin):
 
         self.core = core
         self.unmuted = self.core.proximity_status.get_status_here()
+        self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_message_archive")
 
         self.archived_messages = {}
         self.message_cache = []
@@ -18,7 +21,29 @@ class EspeakPlugin(Plugin):
 
         self.commands.create_subcommand('say', 'speak some text via espeak', self.espeak_say)
         self.commands.create_subcommand('archive', 'show the messages in the cache', self.espeak_archive)
+        atexit.register(self.save_archived_messages)
+        self.load_archived_messages()
         self.speak_hook()
+
+    def load_archived_messages(self):
+        try:
+            file = open(self.message_archive_file, 'r')
+            self.archived_messages = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            file.close()
+
+        except IOError:
+            pass
+        pass
+
+    def save_archived_messages(self):
+        try:
+            file = open(self.message_archive_file, 'w')
+            file.write(json.dumps(self.archived_messages))
+            file.close()
+            if self.core.config['core']['debug']:
+                print("Saving archived messages to %s" % (self.message_archive_file))
+        except IOError:
+            print("WARNING: Could not safe archived messages to file!")
 
     def espeak_say(self, args):
         text = ' '.join(args)
@@ -49,6 +74,7 @@ class EspeakPlugin(Plugin):
                            ('Espeak spoke: %s' % (msg)))
 
     def speak_hook(self, args = None):
+        print("speak hook")
         if len(self.message_cache) > 0:
             msg = self.message_cache[0]
             try:
@@ -79,7 +105,7 @@ class EspeakPlugin(Plugin):
             if self.unmuted:
                 self.speak(message.header)
             else:
-                self.archived_messages[message.timestamp] = message.header
+                self.archived_messages[int(message.timestamp)] = message.header
 
     def greet_homecomer(self):
         print("greet homecomer!")

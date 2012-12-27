@@ -74,7 +74,6 @@ class EspeakPlugin(Plugin):
                            ('Espeak spoke: %s' % (msg)))
 
     def speak_hook(self, args = None):
-        print("speak hook")
         if len(self.message_cache) > 0:
             msg = self.message_cache[0]
             try:
@@ -108,7 +107,6 @@ class EspeakPlugin(Plugin):
                 self.archived_messages[int(message.timestamp)] = message.header
 
     def greet_homecomer(self):
-        print("greet homecomer!")
         nicetime = strftime("%H:%M", localtime())
 
         self.speak('Welcome. It is now %s.' % (nicetime))
@@ -124,7 +122,6 @@ class EspeakPlugin(Plugin):
             self.speak('Nothing happend while we where apart.')
 
     def process_proximity_event(self, newstatus):
-        print("processing prox event")
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()

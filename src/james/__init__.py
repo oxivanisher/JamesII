@@ -350,20 +350,6 @@ class Core(object):
         if oldstatus[self.location] != changedstatus:
             newstatus[self.location] = changedstatus
 
-            message = jamesmessage.JamesMessage(self, "core")
-            message.body = ("From %s" % (pluginname))
-            message.level = 0
-            if changedstatus:
-                message.header = "You came back."
-            else:
-                message.header = "You left."
-            message.send()
-
-            self.proximity_channel.send({'status' : newstatus,
-                                         'host' : self.hostname,
-                                         'plugin' : pluginname,
-                                         'location' : self.location })
-
     # discovery methods
     def ping_nodes(self):
         """

@@ -143,6 +143,10 @@ class ProximityPlugin(Plugin):
 
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
 
+    def process_discovery_event(self, msg):
+        if msg[0] == 'hello':
+            self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
+
 descriptor = {
     'name' : 'proximity',
     'help' : 'proximity with bluetooth',

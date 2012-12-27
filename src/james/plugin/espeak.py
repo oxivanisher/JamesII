@@ -110,7 +110,8 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())
 
-        self.speak('Welcome. It is now %s.' % (nicetime))
+        if (time() - self.core.startup_timestamp) < 10:
+            self.speak('Welcome. It is now %s.' % (nicetime))
 
         if len(self.archived_messages):
         # reading the log
@@ -125,10 +126,7 @@ class EspeakPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
-            if (time() - self.core.startup_timestamp) < 10:
-                self.greet_homecomer()
-            else:
-                self.speak("I am back online")
+            self.greet_homecomer()
 
 descriptor = {
     'name' : 'espeak',

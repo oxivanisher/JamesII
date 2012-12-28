@@ -128,6 +128,8 @@ class MpdPlugin(Plugin):
 
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:
+            if self.core.config['core']['debug']:
+                print("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
                 self.radio_on(None)
             else:

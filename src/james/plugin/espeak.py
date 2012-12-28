@@ -124,6 +124,8 @@ class EspeakPlugin(Plugin):
             self.speak('Nothing happend while we where apart.')
 
     def process_proximity_event(self, newstatus):
+        if self.core.config['core']['debug']:
+            print("Espeak Processing proximity event")
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()

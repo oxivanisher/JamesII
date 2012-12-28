@@ -182,7 +182,7 @@ class ProximityPlugin(Plugin):
         # saving the actual persons detected
         self.persons_status = new_persons_status
 
-        if self.status != self.oldstatus:
+        if self.status != self.core.proximity_status.get_status_here():
             if self.status:
                 self.send_broadcast(['You are now at home'])
             else:

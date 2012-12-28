@@ -220,11 +220,11 @@ class ProximityPlugin(Plugin):
         if not self.proxy_send_lock:
             if msg[0] == 'hello':
                 self.proxy_send_lock = True
-                self.core.add_timeout(1, self.process_discovery_event_callback)
+                self.core.add_timeout(3, self.process_discovery_event_callback)
 
     def process_discovery_event_callback(self):
-        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
         self.proxy_send_lock = False
+        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
 
 descriptor = {
     'name' : 'proximity',

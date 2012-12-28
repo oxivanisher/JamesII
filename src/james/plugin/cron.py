@@ -198,11 +198,11 @@ class CronPlugin(Plugin):
         if len(args) > 0:
             self.cron_list.append(' '.join(args))
             if self.load_commands_from_cron_list():
-                return("Command saved")
+                return(["Command saved"])
             else:
-                return("Error adding: %s" % (' '.join(args)))
+                return(["Error adding: %s" % (' '.join(args))])
         else:
-            return("No command submitted")
+            return(["No command submitted"])
 
     def cmd_cron_show(self, args):
         return self.crontab.show()
@@ -215,9 +215,9 @@ class CronPlugin(Plugin):
             del_data = self.cron_list[del_id]
             self.cron_list.remove(del_data)
             self.load_commands_from_cron_list()
-            return("Removed job: %s" % (del_data))
+            return(["Removed job: %s" % (del_data)])
         except Exception as e:
-            return("Invalid syntax (%s)" % (e))
+            return(["Invalid syntax (%s)" % (e)])
 
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):

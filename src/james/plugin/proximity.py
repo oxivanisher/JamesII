@@ -182,6 +182,9 @@ class ProximityPlugin(Plugin):
                         persons_detected.append(person)
                         new_persons_status[person] = True
 
+        # save the actual online hosts to var
+        self.hosts_online = new_hosts_online
+
         # checking for newly detected persons
         for person in new_persons_status.keys():
             try:
@@ -189,7 +192,6 @@ class ProximityPlugin(Plugin):
             except KeyError:
                 # compensating for config changes
                 self.persons_status[person] = False
-
             if new_persons_status[person] != self.persons_status[person]:
                 message = self.core.new_message(self.name)
                 message.level = 1
@@ -199,9 +201,6 @@ class ProximityPlugin(Plugin):
                     message.header = ("%s left" % person)
                 message.body = ("Location: %s" % self.core.location)
                 message.send()
-
-        # save the actual online hosts to var
-        self.hosts_online = new_hosts_online
         # saving the actual persons detected
         self.persons_status = new_persons_status
 
@@ -210,7 +209,6 @@ class ProximityPlugin(Plugin):
                 self.send_response(self.uuid, 'broadcast', ['You are now at home'])
             else:
                 self.send_response(self.uuid, 'broadcast', ['You are now away'])
-
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):

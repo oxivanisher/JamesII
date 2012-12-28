@@ -31,7 +31,7 @@ class FadeThread(PluginThread):
                    self.host]
         args = self.plugin.core.utils.list_unicode_cleanup(command)
         self.plugin.core.utils.popenAndWait(args)
-        return("MPD Fade ended")
+        return(["MPD Fade ended"])
 
     def on_exit(self, result):
         self.plugin.mpd_callback(result)
@@ -75,22 +75,22 @@ class MpdPlugin(Plugin):
 
     def activate_talkover(self, args):
         self.exec_mpc(['volume', str(self.core.config['mpd']['talk_volume'])])
-        return ("activate talkover")
+        return (["Activate talkover"])
 
     def deactivate_talkover(self, args):
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
-        return ("deactivate talkover")
+        return (["Deactivate talkover"])
 
     def radio_off(self, args):
         self.exec_mpc(['clear'])
-        return ("radio off")
+        return (["Radio off"])
 
     def radio_on(self, args):
         self.exec_mpc(['clear'])
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
         self.exec_mpc(['play'])
-        return ("radio on")
+        return (["Radio on"])
 
     def mpd_sleep(self, args):
         if not self.fade_in_progress:
@@ -103,9 +103,9 @@ class MpdPlugin(Plugin):
                                           self.core.config['mpd']['sleep_fade'],
                                           self.core.config['mpd']['sleep_url'])
             self.fade_thread.run()
-            return ("MPD Sleep mode activated")
+            return (["MPD Sleep mode activated"])
         else:
-            return ("MPD Sleep mode NOT activated due other fade in progress")
+            return (["MPD Sleep mode NOT activated due other fade in progress"])
 
     def mpd_wakeup(self, args):
         if not self.fade_in_progress:
@@ -118,9 +118,9 @@ class MpdPlugin(Plugin):
                                           self.core.config['mpd']['wakeup_fade'],
                                           self.core.config['mpd']['wakeup_url'])
             self.fade_thread.run()
-            return ("MPD Wakeup mode activated")
+            return (["MPD Wakeup mode activated"])
         else:
-            return ("MPD Wakeup mode NOT activated due other fade in progress")
+            return (["MPD Wakeup mode NOT activated due other fade in progress"])
 
     def mpd_callback(self, values):
         self.fade_in_progress = False

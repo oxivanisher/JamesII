@@ -14,6 +14,7 @@ class EspeakPlugin(Plugin):
         self.core = core
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_message_archive")
         self.unmuted = self.core.proximity_status.get_status_here()
+        self.espeak_command = self.core.config['espeak']['espeak_command'].split()
 
         self.archived_messages = {}
         self.message_cache = []
@@ -68,10 +69,11 @@ class EspeakPlugin(Plugin):
         return ret
 
     def speak(self, msg):
+        print msg
         self.message_cache.append(msg)
 
     def speak_worker(self, msg):
-        self.core.utils.popenAndWait(['/usr/bin/espeak', msg])
+        self.core.utils.popenAndWait(self.espeak_command + [msg])
         self.send_broadcast(['Espeak spoke: %s' % (msg)])
 
     def speak_hook(self, args = None):

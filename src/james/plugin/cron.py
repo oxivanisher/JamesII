@@ -154,7 +154,6 @@ class CronPlugin(Plugin):
 
                     cron_args = []
                     for arg in cron_string.split(' '):
-                        print ("arg %s" % arg)
                         if arg.isdigit():
                             cron_args.append(int(arg))
                         elif arg == '*':
@@ -173,7 +172,6 @@ class CronPlugin(Plugin):
                                 tmp_list.append(tmp_num)
                             cron_args.append(tmp_list)
 
-                    print("ca: %s" % (cron_args))
                     cmd_args = cmd_string.split()
 
                     new_cron_list.append(cron_entry)

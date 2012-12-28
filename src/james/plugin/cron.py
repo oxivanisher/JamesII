@@ -100,7 +100,6 @@ class CronTab(object):
                                      event_data['cmd']))
         return ret
 
-# http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
 class CronPlugin(Plugin):
 
     def __init__(self, core, descriptor):

@@ -124,7 +124,7 @@ class MpdPlugin(Plugin):
 
     def mpd_callback(self, values):
         self.fade_in_progress = False
-        self.core.add_timeout(0, self.send_broadcast, values)
+        self.send_broadcast(values)
 
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:

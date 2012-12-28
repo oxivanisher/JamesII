@@ -97,7 +97,7 @@ class TimerPlugin(Plugin):
         for (timestamp, command) in self.saved_commands:
             if timestamp <= now:
                 self.send_command(command)
-                self.core.add_timeout(0, self.send_broadcast, ['Running timed command (%s)' % (' '.join(command))])
+                self.send_broadcast(['Running timed command (%s)' % (' '.join(command))])
             else:
                 saved_commands_new.append((timestamp, command))
 

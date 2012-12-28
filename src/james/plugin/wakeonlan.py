@@ -45,9 +45,7 @@ class WakeOnLanPlugin(Plugin):
                     print("WOL Processing proximity event")
                 for (name, mac) in self.wol_devices:
                     self.core.utils.wake_on_lan(mac)
-                    self.send_response(self.uuid,
-                                       'broadcast',
-                                       (['WOL Woke host %s (%s)' % (name, mac)]))
+                    self.core.add_timeout(1, self.send_broadcast(['WOL Woke host %s (%s)' % (name, mac)]))
 
 descriptor = {
     'name' : 'wakeonlan',

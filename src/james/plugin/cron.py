@@ -223,9 +223,7 @@ class CronPlugin(Plugin):
 
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
-        self.send_response(self.uuid,
-                           'broadcast',
-                           ('Running Command (%s)' % (' '.join(args))))
+        self.core.add_timeout(1, self.send_broadcast(['Running Command (%s)' % (' '.join(args))]))
         self.send_command(args)
 
     def crontab_daemon_loop(self):

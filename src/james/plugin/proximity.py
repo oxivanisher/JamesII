@@ -211,9 +211,9 @@ class ProximityPlugin(Plugin):
 
         if self.status != self.oldstatus:
             if self.status:
-                self.send_response(self.uuid, 'broadcast', ['You are now at home'])
+                self.core.add_timeout(1, self.send_broadcast(['You are now at home']))
             else:
-                self.send_response(self.uuid, 'broadcast', ['You are now away'])
+                self.core.add_timeout(1, self.send_broadcast(['You are now away']))
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):

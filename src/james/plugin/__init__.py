@@ -90,7 +90,7 @@ class Plugin(object):
 
     # send broadcast message
     def send_broadcast(self, message):
-        self.send_response(self.uuid, 'broadcast',message)
+        self.send_response(self.uuid, 'broadcast', message)
 
 # FIXME ThreadBaseClass
 class PluginThread(threading.Thread):

@@ -23,7 +23,6 @@ class ProximityPlugin(Plugin):
             self.commands.create_subcommand('test', 'test for local bluetooth devices', self.test)
             if core.os_username == 'root':
                 self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
-                self.core.add_timeout(1, self.proximity_check_daemon)
 
         for person in self.core.config['persons'].keys():
             self.persons_status[person] = False
@@ -33,6 +32,10 @@ class ProximityPlugin(Plugin):
         self.persons_status_file = os.path.join(os.path.expanduser("~"), ".james_persons_status")
         self.proxy_send_lock = False
         self.load_saved_state()
+
+    def start(self):
+        if core.os_username == 'root':
+            self.proximity_check_daemon()
 
     def load_saved_state(self):
         try:
@@ -201,7 +204,7 @@ class ProximityPlugin(Plugin):
                 else:
                     message.header = ("%s left" % person)
                 message.body = ("Location: %s" % self.core.location)
-                # message.send()
+                message.send()
         # saving the actual persons detected
         self.persons_status = new_persons_status
 

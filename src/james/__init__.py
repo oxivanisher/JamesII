@@ -12,6 +12,7 @@ import threading
 import subprocess
 import Queue
 import time
+import atexit
 
 import plugin
 import config
@@ -60,6 +61,7 @@ class Core(object):
         self.ghost_commands = command.Command('ghost')
         self.nodes_online = {}
         self.master_node = ''
+        self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
 
         # self.add_timeout(15, self.test_handler, 'test1', 'test2', test3='test', test4='test')
 
@@ -141,6 +143,14 @@ class Core(object):
         # proximity stuff
         self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
+        try:
+            file = open(self.proximity_state_file, 'r')
+            self.proximity_status.status[self.location] = self.utils.convert_from_unicode(json.loads(file.read()))
+            file.close()
+            if self.config['core']['debug']:
+                print("Loading proximity status from %s" % (self.proximity_state_file))
+        except IOError:
+            pass
 
         # publish our nodes_online list and start the loop
         self.master_send_nodes_online()
@@ -420,6 +430,14 @@ class Core(object):
         for p in self.plugins:
             p.terminate()
         print("Core.terminate() called. I shall die now.")
+        try:
+            file = open(self.proximity_state_file, 'w')
+            file.write(json.dumps(self.proximity_status.status[self.location]))
+            file.close()
+            if self.config['core']['debug']:
+                print("Saving proximity status to %s" % (self.proximity_state_file))
+        except IOError:
+            print("WARNING: Could not safe proximity status to file!")
         self.terminated = True
 
     # threading methods

@@ -137,9 +137,12 @@ class MpdPlugin(Plugin):
 
     # Helper Methods
     def exec_mpc(self, args):
-        args = self.core.utils.list_unicode_cleanup(self.connection_string + args)
-        mpc = self.core.utils.popenAndWait(args)
-        return self.core.utils.list_unicode_cleanup(mpc)
+        try:
+            args = self.core.utils.list_unicode_cleanup(self.connection_string + args)
+            mpc = self.core.utils.popenAndWait(args)
+            return self.core.utils.list_unicode_cleanup(mpc)
+        except UnicodeDecodeError:
+            return ["Invalid command"]
 
     def load_online_playlist(self, url):
         for source in urllib2.urlopen(url):

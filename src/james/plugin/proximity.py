@@ -23,7 +23,7 @@ class ProximityPlugin(Plugin):
             self.commands.create_subcommand('test', 'test for local bluetooth devices', self.test)
             if core.os_username == 'root':
                 self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
-                self.proximity_check_daemon()
+                self.core.add_timeout(2, self.proximity_check_daemon)
 
         for person in self.core.config['persons'].keys():
             self.persons_status[person] = False
@@ -55,6 +55,8 @@ class ProximityPlugin(Plugin):
             file = open(self.persons_status_file, 'r')
             self.persons_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
+            if self.core.config['core']['debug']:
+                print("Loading persons status from %s" % (self.persons_status_file))
         except IOError:
             pass
         pass

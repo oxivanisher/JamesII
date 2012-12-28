@@ -102,7 +102,6 @@ class ProximityPlugin(Plugin):
 
     def show_persons(self, args):
         ret = []
-        print self.persons_status
         for person in self.persons_status.keys():
             if self.persons_status[person]:
                 ret.append("%10s is here" % (person))

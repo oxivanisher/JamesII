@@ -108,7 +108,6 @@ class CliPlugin(Plugin):
 
         self.commands.hide = True
         self.commands.create_subcommand('nodes', 'show the local nodes_online variables', self.cmd_nodes_online)
-        self.commands.create_subcommand('prx', 'show the local proximity variables', self.cmd_prx)
         self.commands.create_subcommand('exit', 'quits the console', self.cmd_exit)
         self.commands.create_subcommand('msg', 'sends a message', self.cmd_message)
         self.commands.create_subcommand('help', 'list this help', self.cmd_help)
@@ -146,11 +145,6 @@ class CliPlugin(Plugin):
             else:
                 temp_str = ""
             print("%-10s %-8s %s" % (self.core.nodes_online[node], temp_str, node))
-        return True
-
-    def cmd_prx(self, args):
-        print("proximity_status : %s" % (self.core.proximity_status.get_all_status()))
-        print("self.location : %s" % (self.core.location))
         return True
 
     def cmd_exit(self, args):

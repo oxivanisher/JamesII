@@ -71,7 +71,7 @@ class EspeakPlugin(Plugin):
         self.core.utils.popenAndWait(['/usr/bin/espeak', msg])
         self.send_response(self.uuid,
                            'broadcast',
-                           ('Espeak spoke: %s' % (msg)))
+                           (['Espeak spoke: %s' % (msg)]))
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:

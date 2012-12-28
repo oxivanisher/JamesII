@@ -164,7 +164,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.send_response(self.uuid, 'broadcast', ('Proximity found %s' % (name)))
+                self.send_response(self.uuid, 'broadcast', (['Proximity found %s' % (name)]))
 
         for (mac, name) in old_hosts_online:
             notfound = True
@@ -172,7 +172,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.send_response(self.uuid, 'broadcast', ('Proximity lost %s' % (name)))
+                self.send_response(self.uuid, 'broadcast', (['Proximity lost %s' % (name)]))
 
         # registering the person for this device as detected
         for (mac, name) in values:
@@ -207,9 +207,9 @@ class ProximityPlugin(Plugin):
 
         if self.status != self.oldstatus:
             if self.status:
-                self.send_response(self.uuid, 'broadcast', 'You are now at home')
+                self.send_response(self.uuid, 'broadcast', ['You are now at home'])
             else:
-                self.send_response(self.uuid, 'broadcast', 'You are now away')
+                self.send_response(self.uuid, 'broadcast', ['You are now away'])
 
             self.core.proximity_status.set_status_here(self.status, 'btproximity')
 

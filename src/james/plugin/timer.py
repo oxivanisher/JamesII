@@ -53,29 +53,31 @@ class TimerPlugin(Plugin):
             target_time = now + int(args[0])
             return self.timer_at(target_time, args[1:])
         except ValueError: 
-            return("Invalid syntax. Use  %s" % (args[0]))
+            return(["Invalid syntax. Use  %s" % (args[0])])
 
     def cmd_timer_at(self, args):
 
         #FIXME i do not exist!
-        return("please learn human for: %s" % (args[0]))
+        return(["please learn human for: %s" % (args[0])])
         pass
 
     def cmd_timer_show(self, args):
         ret = []
-        print("show timer (%s)" % (self.saved_commands))
         for (timestamp, command) in self.saved_commands:
             ret.append("%10s %-25s %s" % (timestamp,
                                           ' '.join(command),
                                           self.core.utils.get_nice_age(timestamp)))
-        return ret
+        if len(ret) > 0:
+            return ret
+        else:
+            return ["No commands found"]
 
     def cmd_timer_delete(self, args):
         ret = "Command not found"
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
             if timestamp == int(args[0]) and command == args[1:]:
-                ret = ('Removed Command %s' % (' '.join(args)))
+                ret = (['Removed Command %s' % (' '.join(args))])
             else:
                 saved_commands_new.append((timestamp, command))
         self.saved_commands = saved_commands_new

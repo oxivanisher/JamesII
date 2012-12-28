@@ -23,7 +23,9 @@ class TimerPlugin(Plugin):
         self.saved_commands = []
         self.load_saved_commands()
 
-        self.command_daemon_loop()
+    def start(self):
+        # wait 3 seconds befor working
+        self.core.add_timeout(3, self.crontab_daemon_loop)
 
     def load_saved_commands(self):
         try:

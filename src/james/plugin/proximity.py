@@ -28,7 +28,6 @@ class ProximityPlugin(Plugin):
             self.persons_status[person] = False
 
         atexit.register(self.save_state)
-        self.state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.persons_status_file = os.path.join(os.path.expanduser("~"), ".james_persons_status")
         self.proxy_send_lock = False
         self.load_saved_state()
@@ -40,22 +39,6 @@ class ProximityPlugin(Plugin):
 
     def load_saved_state(self):
         try:
-            file = open(self.state_file, 'r')
-            loaded_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
-            file.close()
-            if self.core.config['core']['debug']:
-                print("Loading proximity status from %s" % (self.state_file))
-            # force proximity update
-            if self.status:
-                self.core.proximity_status.status[self.core.location] = False
-            else:
-                self.core.proximity_status.status[self.core.location] = True
-            self.core.proximity_event(loaded_status, 'btproximity')
-        except IOError:
-            pass
-        pass
-
-        try:
             file = open(self.persons_status_file, 'r')
             self.persons_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
@@ -65,17 +48,7 @@ class ProximityPlugin(Plugin):
             pass
         pass
 
-
     def save_state(self):
-        try:
-            file = open(self.state_file, 'w')
-            file.write(json.dumps(self.status))
-            file.close()
-            if self.core.config['core']['debug']:
-                print("Saving proximity status to %s" % (self.state_file))
-        except IOError:
-            print("WARNING: Could not safe proximity status to file!")
-
         try:
             file = open(self.persons_status_file, 'w')
             file.write(json.dumps(self.persons_status))

@@ -71,7 +71,6 @@ class CronTab(object):
     def run(self):
         t=datetime(*datetime.now().timetuple()[:5])
         for e in self.events:
-            print("yay!")
             e.check(t)
 
     def add_event(self, event):
@@ -85,7 +84,7 @@ class CronTab(object):
             event_data = e.show()
             for key in event_data.keys():
                 if event_data[key] == AllMatch():
-                    event_data[key] = "-"
+                    event_data[key] = "*"
                 elif len(event_data[key]) > 0:
                     if key == 'cmd':
                         event_data[key] = ' '.join(event_data[key])
@@ -153,13 +152,15 @@ class CronPlugin(Plugin):
                     cmd_string = cron_data[1].strip()
 
                     cron_args = []
+                    # FIXME this can be done nicer ... im sure
                     for arg in cron_string.split(' '):
                         if arg.isdigit():
                             cron_args.append(int(arg))
                         elif arg == '*':
+                            cron_args.append(allMatch)
+                        elif arg == '-':
                             cron_args.append([])
                         elif ',' in arg:
-                            # cron_args.append(int(arg.split(',')))
                             tmp_list = []
                             tmp_args = arg.split(',')
                             for tmp_arg in tmp_args:

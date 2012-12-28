@@ -115,7 +115,9 @@ class CronPlugin(Plugin):
         self.load_saved_commands()
         atexit.register(self.save_commands)
 
-        self.crontab_daemon_loop()
+    def start(self):
+        # wait 3 seconds befor working
+        self.core.add_timeout(3, self.crontab_daemon_loop)
 
     def save_commands(self):
         try:

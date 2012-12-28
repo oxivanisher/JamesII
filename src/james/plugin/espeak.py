@@ -23,7 +23,10 @@ class EspeakPlugin(Plugin):
         self.commands.create_subcommand('archive', 'show the messages in the cache', self.espeak_archive)
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
-        self.speak_hook()
+
+    def start(self):
+        # wait 3 seconds befor working
+        self.core.add_timeout(3, self.speak_hook)
 
     def load_archived_messages(self):
         try:

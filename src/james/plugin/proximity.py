@@ -56,7 +56,7 @@ class ProximityPlugin(Plugin):
             if self.core.config['core']['debug']:
                 print("Saving persons status to %s" % (self.persons_status_file))
         except IOError:
-            print("WARNING: Could not safe persons status to file!")
+            print("WARNING: Could not save persons status to file!")
 
     # command methods
     def test(self, args):

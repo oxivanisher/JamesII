@@ -49,7 +49,7 @@ class EspeakPlugin(Plugin):
         text = ' '.join(args)
         if text != '':
             self.speak(text)
-            return("Espeak will speak: '%s'" % (text))
+            return(["Espeak will speak: '%s'" % (text)])
         return "No text entered for espeak"
 
     def espeak_archive(self, args):

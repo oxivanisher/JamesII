@@ -88,6 +88,10 @@ class Plugin(object):
     def process_command_response_event(self, msg):
         pass
 
+    # send broadcast message
+    def send_broadcast(self, message):
+        self.send_response(message)
+
 # FIXME ThreadBaseClass
 class PluginThread(threading.Thread):
 

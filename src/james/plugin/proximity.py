@@ -35,7 +35,8 @@ class ProximityPlugin(Plugin):
 
     def start(self):
         if self.core.os_username == 'root':
-            self.proximity_check_daemon()
+            # wait 3 seconds befor working
+            self.core.add_timeout(3, self.proximity_check_daemon)
 
     def load_saved_state(self):
         try:

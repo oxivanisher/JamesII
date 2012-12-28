@@ -354,6 +354,9 @@ class Core(object):
             self.publish_proximity_status(newstatus, pluginname)
 
     def publish_proximity_status(self, newstatus, pluginname):
+        self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
+
+    def publish_proximity_status_callback(self, newstatus, pluginname):
         """
         send the newstatus proximity status over the proximity channel.
         """

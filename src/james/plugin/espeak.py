@@ -21,7 +21,7 @@ class EspeakPlugin(Plugin):
         self.talkover = False
 
         self.commands.create_subcommand('archive', 'Show the messages in the cache', self.espeak_archive)
-        self.commands.create_subcommand('say', 'Speak some text via espeak', self.espeak_say)
+        self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
 

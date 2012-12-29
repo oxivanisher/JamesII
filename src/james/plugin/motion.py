@@ -15,9 +15,9 @@ class MotionPlugin(Plugin):
         self.log_max_entries = 100
         self.log = []
 
-        self.commands.create_subcommand('img', ('Will be called when motion has a new image file'), self.cmd_img, True)
+        self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
         self.commands.create_subcommand('log', ('Shows the last ' + self.log_max_entries + ' events'), self.cmd_show_log)
-        self.commands.create_subcommand('mov', ('Will be called when motion has a new video file'), self.cmd_mov, True)
+        self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
         if self.core.os_username == 'root' and os.path.isfile(self.motion_daemon):
 	        self.commands.create_subcommand('on', ('Activates the motion daemon'), self.cmd_on)
 	        self.commands.create_subcommand('off', ('Deactivates the motion daemon'), self.cmd_off)

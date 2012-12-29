@@ -12,7 +12,7 @@ class SystemPlugin(Plugin):
 
         self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:
-            self.commands.create_subcommand('msg', 'Sends a message', self.cmd_message)
+            self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
         self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.show_plugins)
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.show_proximity)

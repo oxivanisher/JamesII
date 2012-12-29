@@ -348,6 +348,7 @@ class Core(object):
 
     # proximity channel methods
     def proximity_listener(self, msg):
+        print("proximity_listener called")
         """
         Listens to proximity status changes on the proximity channel and
         update the local storage. Calls process_proximity_event() on all

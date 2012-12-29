@@ -55,6 +55,7 @@ class SystemPlugin(Plugin):
         plugin_names = []
         for p in self.core.plugins:
             plugin_names.append(p.name)
+        plugin_names.sort()
         return([', '.join(plugin_names)])
 
 

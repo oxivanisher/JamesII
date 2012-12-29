@@ -8,3 +8,4 @@ nbproject/*
 *.sublime-*
 doc/
 src/.james_crashed
+src/.james_console_log

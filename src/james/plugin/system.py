@@ -10,6 +10,8 @@ class SystemPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(SystemPlugin, self).__init__(core, descriptor)
 
+        self.crash_detection_file = os.path.join(os.path.expanduser("~"), ".james_crashed")
+
         self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
@@ -24,6 +26,26 @@ class SystemPlugin(Plugin):
     def get_ip(self, args):
         return commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'")
+
+    def start(self):
+        try:
+            file = open(self.crash_detection_file, 'r')
+            timestamp = int(file.read())
+            file.close()
+            if self.core.config['core']['debug']:
+                print("Checking for crash restart in %s" % (self.crash_detection_file))
+            os.remove(self.crash_detection_file)
+            self.send_broadcast(['JamesII started after crash %s' % (self.core.utils.get_nice_age(timestamp))])
+
+            message = self.core.new_message(self.name)
+            message.level = 2
+            message.header = ("James crash recovery detected on %s" % (self.core.hostname))
+            message.body = ('JamesII started after crash %s' % (self.core.utils.get_nice_age(timestamp)))
+            message.send()
+
+        except IOError:
+            pass
+        pass
 
     def show_proximity(self, args):
         return ("%-10s %-10s %s" % (self.core.hostname,

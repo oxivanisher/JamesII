@@ -7,10 +7,9 @@ do
 	clear
 	echo "Doing git pull:"
 	git pull
-	sleep 1
 
 	clear
-	sudo ./james.py || pause
+	sudo ./james.py || echo $(date +%s) > ./.james_crashed && sleep 10
 	sleep 1
 
 done

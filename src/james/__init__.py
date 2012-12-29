@@ -38,6 +38,8 @@ class ConfigNotLoaded(Exception):
     pass
 class ConnectionError(Exception):
     pass
+class AddTimeoutHandlerMissing(Exception):
+    pass
 
 class Core(object):
 
@@ -348,7 +350,6 @@ class Core(object):
 
     # proximity channel methods
     def proximity_listener(self, msg):
-        print("proximity_listener called")
         """
         Listens to proximity status changes on the proximity channel and
         update the local storage. Calls process_proximity_event() on all
@@ -357,11 +358,9 @@ class Core(object):
         if self.proximity_status.get_status_here() != msg['status'][self.location]:
             for p in self.plugins:
                 p.process_proximity_event(msg)
-        print("prox got %s" % msg['status'])
         self.proximity_status.update_all_status(msg['status'], msg['plugin'])
 
     def proximity_event(self, changedstatus, pluginname):
-        print("proximity_event called")
         """
         If the local proximity state has changed, call the publish method
         """
@@ -374,11 +373,9 @@ class Core(object):
             self.publish_proximity_status(newstatus, pluginname)
 
     def publish_proximity_status(self, newstatus, pluginname):
-        print("publish_proximity_status called (%s/%s)" % (newstatus, pluginname))
         self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
 
     def publish_proximity_status_callback(self, newstatus, pluginname):
-        print("publish_proximity_status_callback called")
         """
         send the newstatus proximity status over the proximity channel.
         """
@@ -441,9 +438,9 @@ class Core(object):
         Terminate the core. This method will first call the terminate() on each plugin.
         """
         self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+        print("Core.terminate() called. I shall die now.")
         for p in self.plugins:
             p.terminate()
-        print("Core.terminate() called. I shall die now.")
         try:
             file = open(self.proximity_state_file, 'w')
             file.write(json.dumps(self.proximity_status.status[self.location]))
@@ -455,13 +452,6 @@ class Core(object):
         self.terminated = True
 
     # threading methods
-    def add_timeout2(self, seconds, handler):
-        #FIXME add args
-        """
-        Sets a timeout callback with pika callbacks. Resolution 1 second.
-        """
-        self.connection.add_timeout(seconds, handler)
-
     class Timeout(object):
         def __init__(self, seconds, handler, args, kwargs):
             self.seconds = seconds
@@ -471,6 +461,9 @@ class Core(object):
             self.kwargs = kwargs
 
     def add_timeout(self, seconds, handler, *args, **kwargs):
+        if not handler:
+            raise AddTimeoutHandlerMissing()
+
         self.timeout_queue.put(Core.Timeout(seconds, handler, args, kwargs))
 
     def process_timeouts(self):

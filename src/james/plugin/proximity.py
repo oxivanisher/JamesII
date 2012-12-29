@@ -35,7 +35,7 @@ class ProximityPlugin(Plugin):
     def start(self):
         if self.core.os_username == 'root':
             # wait 3 seconds befor working
-            self.core.add_timeout(3, self.proximity_check_daemon)
+            self.core.add_timeout(0, self.proximity_check_daemon)
 
     def load_saved_state(self):
         try:
@@ -117,7 +117,6 @@ class ProximityPlugin(Plugin):
         return hosts
 
     def proximity_check_callback(self, values):
-        pass
         self.oldstatus = self.status
         self.status = False
         old_hosts_online = self.hosts_online

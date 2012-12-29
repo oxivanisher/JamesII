@@ -188,7 +188,7 @@ class ProximityPlugin(Plugin):
             else:
                 self.send_broadcast(['You are now away'])
             # self.core.proximity_status.set_status_here(self.status, 'btproximity')
-            self.core.proximity_event(self.status, 'btproximity')
+            # self.core.proximity_event(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):
         if not self.proxy_send_lock:

@@ -61,8 +61,8 @@ class MpdPlugin(Plugin):
         if os.path.isfile(self.mpc_bin):
             self.commands.create_subcommand('mpc', 'Call mpc with given args', self.mpc)
             radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
-            radio_command.create_subcommand('on', 'Turn on the radio', self.radio_on)
-            radio_command.create_subcommand('off', 'Turn off the radio', self.radio_off)
+            radio_command.create_subcommand('on', 'Turn the radio on', self.radio_on)
+            radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
             if os.path.isfile('/usr/bin/mpfade'):
                 radio_command.create_subcommand('sleep', 'Start mpd sleep mode', self.mpd_sleep)
                 radio_command.create_subcommand('wakeup', 'Start mpd wakup mode', self.mpd_wakeup)

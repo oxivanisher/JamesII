@@ -5,11 +5,12 @@ cd $DIR
 while true;
 do
 	clear
-	echo "Doing git pull:"
+	echo "..:: Doing git pull ::.."
 	git pull
 
 	clear
-	sudo ./james.py || echo $(date +%s) > ./.james_crashed && sleep 10
+	echo "..:: Starting james.py ::.."
+	sudo ./james.py || sudo echo $(date +%s) > ./.james_crashed && sleep 10
 	sleep 1
 
 done

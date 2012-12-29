@@ -4,15 +4,24 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 while true;
 do
+	CRASH=false
+
 	clear
-	echo "..:: Doing git pull ::.."
+	echo -e "..:: Doing git pull ::..\n"
 	git pull
 
 	clear
-	echo "..:: Starting james.py ::.."
-	sudo ./james.py || echo "JamesII quit detected with errorcode $?" && \
-		echo $(date +%s) > ./.james_crashed && \
-		chmod 666 ./.james_crashed && \
+	echo -e "..:: Starting james.py ($(date)) ::..\n"
+	sudo ./james.py
+	if [[ $? -gt 0 ]];
+	then
+		echo -e "\nJamesII crash detected\n"
+		echo $(date +%s) > ./.james_crashed
+		chmod 666 ./.james_crashed
 		sleep 5
-	sleep 1
+	else
+		echo -e "\nJamesII graceful shutdown detected\n"
+		sleep 1
+	fi
 done
+cd $INPWD

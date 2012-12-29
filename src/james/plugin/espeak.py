@@ -113,7 +113,7 @@ class EspeakPlugin(Plugin):
         if len(self.archived_messages):
         # reading the log
             self.speak('While we where apart, the following things happend:')
-            for timestamp in sort(self.archived_messages.keys()):
+            for timestamp in self.archived_messages.keys().sort():
                 self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived_messages[timestamp])
             self.archived_messages = {}
             self.speak('End of Log')

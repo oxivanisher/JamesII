@@ -44,7 +44,8 @@ class Command(object):
             self.subcommands[subcommand.name] = subcommand
 
     def sort_commands(self):
-        self.subcommands = jamesutils.JamesUtils(self).sortedDictByKeys(self.subcommands)
+        new_subcommands = jamesutils.JamesUtils(self).sortedDictByKeys(self.subcommands)
+        self.subcommands = new_subcommands
         return True
 
     # creates a new subcommand and returns reference to it

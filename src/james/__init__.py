@@ -381,6 +381,7 @@ class Core(object):
         self.add_timeout(0, self.publish_proximity_status_callback, args)
 
     def publish_proximity_status_callback(self, newstatus, pluginname):
+        print("publish_proximity_status_callback called")
         """
         send the newstatus proximity status over the proximity channel.
         """

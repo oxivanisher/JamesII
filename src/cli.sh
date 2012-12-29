@@ -5,4 +5,4 @@ cd $DIR
 
 ./cli.py $@
 
-cd $INPWD
+cd $INPWD >/dev/null 2>&1  

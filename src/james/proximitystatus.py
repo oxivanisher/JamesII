@@ -19,14 +19,14 @@ class ProximityStatus(object):
 
         self.status = newstatus
 
-        if fire_event:
-            print("1:%s" % newstatus[self.core.location])
-            print("2:%s" % plugin)
-            args = []
-            args.append(newstatus[self.core.location])
-            args.append(plugin)
-            print("args: %s" % args)
-            self.core.add_timeout(0, self.core.proximity_event, newstatus[self.core.location], plugin)
+        # if fire_event:
+        #     print("1:%s" % newstatus[self.core.location])
+        #     print("2:%s" % plugin)
+        #     args = []
+        #     args.append(newstatus[self.core.location])
+        #     args.append(plugin)
+        #     print("args: %s" % args)
+        #     self.core.add_timeout(0, self.core.proximity_event, newstatus[self.core.location], plugin)
 
     def get_all_status(self):
         return self.status

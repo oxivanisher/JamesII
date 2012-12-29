@@ -356,6 +356,7 @@ class Core(object):
         if self.proximity_status.get_status_here() != msg['status'][self.location]:
             for p in self.plugins:
                 p.process_proximity_event(msg)
+        print("prox got %s" % msg['status'])
         self.proximity_status.update_all_status(msg['status'], msg['plugin'])
 
     def proximity_event(self, changedstatus, pluginname):

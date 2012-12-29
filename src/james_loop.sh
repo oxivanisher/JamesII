@@ -15,10 +15,10 @@ do
 	sudo ./james.py
 	if [[ $? -gt 0 ]];
 	then
-		echo -e "\nJamesII crash detected\n"
+		echo -e "\nJamesII crash detected. Sleeping for 20 seconds\n"
 		echo $(date +%s) > ./.james_crashed
 		chmod 666 ./.james_crashed
-		sleep 5
+		sleep 20
 	else
 		echo -e "\nJamesII graceful shutdown detected\n"
 		sleep 1

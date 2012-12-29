@@ -34,7 +34,7 @@ except AttributeError:
 
 class PluginNotFound(Exception):
     pass
-class ConfigNotLoaded(Exception):
+class BrokerConfigNotLoaded(Exception):
     pass
 class ConnectionError(Exception):
     pass
@@ -78,7 +78,7 @@ class Core(object):
         try:
             self.brokerconfig = config.YamlConfig("../config/broker.yaml").get_values()
         except Exception as e:
-            raise ConfigNotLoaded()
+            raise BrokerConfigNotLoaded()
 
         # Load master configuration
         self.config = None
@@ -355,11 +355,15 @@ class Core(object):
         update the local storage. Calls process_proximity_event() on all
         started plugins.
         """
-        if self.proximity_status.get_status_here() != msg['status'][self.location]:
-            for p in self.plugins:
-                p.process_proximity_event(msg)
-        self.proximity_status.update_all_status(msg['status'], msg['plugin'])
-
+        try:
+            if self.proximity_status.get_status_here() != msg['status'][self.location]:
+                for p in self.plugins:
+                    p.process_proximity_event(msg)
+            self.proximity_status.update_all_status(msg['status'], msg['plugin'])
+        except KeyError:
+            # this proximity event is not for our location. just ignore it for now
+            pass
+            
     def proximity_event(self, changedstatus, pluginname):
         """
         If the local proximity state has changed, call the publish method

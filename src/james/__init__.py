@@ -356,9 +356,10 @@ class Core(object):
         if self.proximity_status.get_status_here() != msg['status'][self.location]:
             for p in self.plugins:
                 p.process_proximity_event(msg)
-        self.proximity_status.update_all_status(msg['status'], msg['plugin'])
+        # self.proximity_status.update_all_status(msg['status'], msg['plugin'])
 
     def proximity_event(self, changedstatus, pluginname):
+        print("proximity_event called")
         """
         If the local proximity state has changed, call the publish method
         """
@@ -371,6 +372,7 @@ class Core(object):
             self.publish_proximity_status(newstatus, pluginname)
 
     def publish_proximity_status(self, newstatus, pluginname):
+        print("publish_proximity_status called")
         self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
 
     def publish_proximity_status_callback(self, newstatus, pluginname):

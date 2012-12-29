@@ -126,6 +126,7 @@ class MpdPlugin(Plugin):
         self.fade_in_progress = False
         self.send_broadcast(values)
 
+    # react on proximity events
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:
             if self.core.config['core']['debug']:

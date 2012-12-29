@@ -1,5 +1,4 @@
-config/broker.yaml
-config/config.yaml
+config/*.yaml
 data/whoisonline.csv
 data/whoisonline.new
 *.swp

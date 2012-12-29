@@ -180,10 +180,12 @@ class CliPlugin(Plugin):
                 print ("Command not found")
 
         else:
-            print("Local commands:")
+            print ("%-20s %s" % ('Command:', 'Description:'))
+
+            print ("%-20s %s" % ('+', 'Local CLI Commands'))
             self.print_command_help_lines(self.commands, 1)
 
-            print("Remote commands:")
+            print ("%-20s %s" % ('+', 'Remote Commands'))
             self.print_command_help_lines(self.core.ghost_commands, 1)
 
         return True
@@ -192,7 +194,7 @@ class CliPlugin(Plugin):
         for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
-                print ("%-20s - %s" % (depth * "  " + c.name, c.help))
+                print ("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
             if len(c.subcommands.keys()) > 0:
                 self.print_command_help_lines(c, depth + 1)
         return True

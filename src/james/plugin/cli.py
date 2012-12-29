@@ -189,7 +189,7 @@ class CliPlugin(Plugin):
         return True
 
     def print_command_help_lines(self, command_obj, depth = 0):
-        for command in command_obj.subcommands.keys():
+        for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
                 print ("%-20s - %s" % (depth * "  " + c.name, c.help))

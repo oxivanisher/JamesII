@@ -298,7 +298,7 @@ class Core(object):
         if not self.config:
             show_message = True
             try:
-                if not self.config['core']['debug']:
+                if not msg['core']['debug']:
                     show_message = False
             except TypeError as e:
                 pass

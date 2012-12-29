@@ -2,6 +2,7 @@
 import atexit
 import os
 import time
+import json
 
 from james.plugin import *
 
@@ -16,13 +17,19 @@ class MotionPlugin(Plugin):
         self.log = []
 
         self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
-        self.commands.create_subcommand('log', ('Shows the last ' + self.log_max_entries + ' events'), self.cmd_show_log)
+        self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
         self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
+        self.commands.create_subcommand('cam_lost', ('Will be called when motion loses the camera'), self.cmd_cam_lost, True)
         if self.core.os_username == 'root' and os.path.isfile(self.motion_daemon):
 	        self.commands.create_subcommand('on', ('Activates the motion daemon'), self.cmd_on)
 	        self.commands.create_subcommand('off', ('Deactivates the motion daemon'), self.cmd_off)
 		
 		atexit.register(self.save_log)
+
+        if self.core.proximity_status.get_status_here():
+            self.core.add_timeout(0, self.cam_control, False)
+        else:
+            self.core.add_timeout(0, self.cam_control, True)
 
     def load_saved_state(self):
         try:
@@ -48,34 +55,71 @@ class MotionPlugin(Plugin):
     def terminate(self):
         pass
 
-    def log_event(self, timestamp, message, file_name):
-        self.log.insert(0, (timestamp, message, file_name))
+    def log_event(self, message, file_name):
+        self.log.insert(0, (int(time.time()), message, file_name))
         while len(self.log) > self.log_max_entries:
             self.log.pop()
 
-    def cmd_showlog(self, args):
+    def cmd_show_log(self, args):
+    	var = 0
+    	return var / var
         ret = []
         for (timestamp, message, file_name) in self.log:
-            ret.append("%-20s %s" % (timestamp, message))
+            ret.append("%-20s %s" % (self.core.utils.get_short_age(timestamp), message))
         return ret
 
+    def cmd_cam_lost(self, args):
+    	print("cam lost")
+    	pass
+
     def cmd_mov(self, args):
-    	# if at home, delete file. else, move file to data store
+    	print("mov")
+    	# if at home and not sleep mode ended, delete file.
+    	 # if sleep mode was enabled, delete file but send some response or broadcast?
+
+    	#else, move file to data store
     	pass
 
     def cmd_img(self, args):
-    	# copy file to dropbox dir
-    	# send message with image link
+    	if self.core.proximity_status.get_status_here():
+    		try:
+	    		os.remove(args[0])
+	    		self.core.send_broadcast('Image file for motion removed')
+	    	except Exception as e:
+	    		print("Motion was unable to remove image file (%s)" % (args[0]))
+    		pass
+    	else:
+    		self.send_broadcast(['Motion: New image file: %s' % args[0]])
+    		self.log_event("Image file created", args[0])
+	    	# copy file to dropbox dir
+	    	# send message with image link
     	pass
 
     def cmd_on(self, args):
-    	# /etc/init.d/motion start
-    	pass
+    	self.core.add_timeout(0, self.cam_control, True)
+    	return ["Motion will be started"]
 
     def cmd_off(self, args):
-    	# /etc/init.d/motion stop
-    	pass
+    	self.core.add_timeout(0, self.cam_control, False)
+    	return ["Motion will be stopped"]
 
+    def cam_control(self, switch_on):
+    	if switch_on:
+    		self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
+    	else:
+    		self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
+    	print ("switch: %s" % switch_on)
+
+    # react on proximity events
+    def process_proximity_event(self, newstatus):
+        if (time.time() - self.core.startup_timestamp) > 10:
+            if self.core.config['core']['debug']:
+                print("Motion processing proximity event")
+            if newstatus['status'][self.core.location]:
+                self.cmd_off(None)
+            else:
+                self.cmd_on(None)
+        return True
 
 descriptor = {
     'name' : 'motion',

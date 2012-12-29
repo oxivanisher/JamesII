@@ -375,10 +375,7 @@ class Core(object):
 
     def publish_proximity_status(self, newstatus, pluginname):
         print("publish_proximity_status called")
-        args = []
-        args.append(newstatus)
-        args.append(pluginname)
-        # self.add_timeout(0, self.publish_proximity_status_callback, args)
+        self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
 
     def publish_proximity_status_callback(self, newstatus, pluginname):
         print("publish_proximity_status_callback called")

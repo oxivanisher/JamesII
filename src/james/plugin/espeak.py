@@ -102,7 +102,7 @@ class EspeakPlugin(Plugin):
             if self.unmuted:
                 self.speak(message.header)
             else:
-                self.archived_messages[int(message.timestamp)] = message.header
+                self.archived_messages[time.time()] = message.header
 
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())
@@ -113,7 +113,7 @@ class EspeakPlugin(Plugin):
         if len(self.archived_messages):
         # reading the log
             self.speak('While we where apart, the following things happend:')
-            for timestamp in self.archived_messages.keys():
+            for timestamp in sort(self.archived_messages.keys()):
                 self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived_messages[timestamp])
             self.archived_messages = {}
             self.speak('End of Log')

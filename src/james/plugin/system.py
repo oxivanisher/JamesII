@@ -12,6 +12,7 @@ class SystemPlugin(Plugin):
 
         self.commands.create_subcommand('ip', 'show the ip of this node', self.get_ip)
         self.commands.create_subcommand('proximity', 'show proximity location and state', self.show_proximity)
+        self.commands.create_subcommand('plugins', 'show the running plugins on this node', self.show_plugins)
         if os.path.isfile('/usr/bin/git'):
             self.commands.create_subcommand('version', 'shows the git checkout HEAD', self.cmd_version)
         if self.core.master:
@@ -27,6 +28,13 @@ class SystemPlugin(Plugin):
         return ("%-10s %-10s %s" % (self.core.hostname,
                                   self.core.proximity_status.get_status_here(),
                                   self.core.location))
+
+    def show_plugins(self, args):
+        plugin_names = []
+        for p in self.core.plugins:
+            plugin_names.append(p.name)
+        return([', '.join(plugin_names)])
+
 
     def cmd_version(self, args):
         version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')

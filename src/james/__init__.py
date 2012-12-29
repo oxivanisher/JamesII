@@ -371,11 +371,11 @@ class Core(object):
         if oldstatus[self.location] != changedstatus:
             newstatus[self.location] = changedstatus
 
-            self.publish_proximity_status(newstatus, pluginname)
+            # self.publish_proximity_status(newstatus, pluginname)
 
     def publish_proximity_status(self, newstatus, pluginname):
         print("publish_proximity_status called (%s/%s)" % (newstatus, pluginname))
-        # self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
+        self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
 
     def publish_proximity_status_callback(self, newstatus, pluginname):
         print("publish_proximity_status_callback called")

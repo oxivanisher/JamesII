@@ -15,8 +15,8 @@ class WakeOnLanPlugin(Plugin):
             for name in self.core.config['persons'][person]['eth_devices'].keys():
                 self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name]))
 
-        self.commands.create_subcommand('list', 'lists available wol target hosts', self.wol_list)
-        self.commands.create_subcommand('wake', 'wakes up a given host', self.wol_wake)
+        self.commands.create_subcommand('list', 'Lists available wol target hosts', self.wol_list)
+        self.commands.create_subcommand('wake', 'Wakes up a given host', self.wol_wake)
 
     def wol_list(self, args):
         ret = []
@@ -49,7 +49,7 @@ class WakeOnLanPlugin(Plugin):
 
 descriptor = {
     'name' : 'wakeonlan',
-    'help' : 'wake on lan plugin',
+    'help' : 'Wake on lan plugin',
     'command' : 'wol',
     'mode' : PluginMode.MANAGED,
     'class' : WakeOnLanPlugin

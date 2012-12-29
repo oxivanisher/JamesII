@@ -105,9 +105,9 @@ class CronPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(CronPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('add', 'adds a cron command', self.cmd_cron_add)
-        self.commands.create_subcommand('show', 'shows the cron commands', self.cmd_cron_show)
-        self.commands.create_subcommand('delete', 'delets a cron command', self.cmd_cron_delete)
+        self.commands.create_subcommand('add', 'Adds a cron command', self.cmd_cron_add)
+        self.commands.create_subcommand('delete', 'Delets a cron command', self.cmd_cron_delete)
+        self.commands.create_subcommand('show', 'Shows the cron commands', self.cmd_cron_show)
 
         self.crontab = CronTab()
         self.command_cron_file = os.path.join(os.path.expanduser("~"), ".james_crontab")
@@ -230,7 +230,7 @@ class CronPlugin(Plugin):
 
 descriptor = {
     'name' : 'cron',
-    'help' : 'cron daemon implementation',
+    'help' : 'Cron daemon implementation',
     'command' : 'cron',
     'mode' : PluginMode.MANAGED,
     'class' : CronPlugin

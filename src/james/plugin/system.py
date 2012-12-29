@@ -10,15 +10,16 @@ class SystemPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(SystemPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('ip', 'show the ip of this node', self.get_ip)
-        self.commands.create_subcommand('proximity', 'show proximity location and state', self.show_proximity)
-        self.commands.create_subcommand('plugins', 'show the running plugins on this node', self.show_plugins)
-        if os.path.isfile('/usr/bin/git'):
-            self.commands.create_subcommand('version', 'shows the git checkout HEAD', self.cmd_version)
+        self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:
-            self.commands.create_subcommand('msg', 'sends a message', self.cmd_message)
-            self.commands.create_subcommand('quit', 'quit the system', self.cmd_quit)
-            self.commands.create_subcommand('ping', 'ping all available nodes over rabbitmq', self.cmd_ping)
+            self.commands.create_subcommand('msg', 'Sends a message', self.cmd_message)
+            self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
+        self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.show_plugins)
+        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.show_proximity)
+        if self.core.master:
+            self.commands.create_subcommand('quit', 'Quit the system', self.cmd_quit)
+        if os.path.isfile('/usr/bin/git'):
+            self.commands.create_subcommand('version', 'Shows the git checkout HEAD', self.cmd_version)
 
     def get_ip(self, args):
         return commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -73,7 +74,7 @@ class SystemPlugin(Plugin):
 
 descriptor = {
     'name' : 'system',
-    'help' : 'system commands',
+    'help' : 'JamesII system commands',
     'command' : 'sys',
     'mode' : PluginMode.AUTOLOAD,
     'class' : SystemPlugin

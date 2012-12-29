@@ -17,12 +17,12 @@ class ProximityPlugin(Plugin):
         self.hosts_online = []
         self.persons_status = {}
 
-        self.commands.create_subcommand('persons', 'shows the persons currently detected', self.show_persons)
         if os.path.isfile('/usr/bin/hcitool'):
-            self.commands.create_subcommand('discover', 'scan for visible bluetooth devices', self.discover)
-            self.commands.create_subcommand('test', 'test for local bluetooth devices', self.test)
+            self.commands.create_subcommand('discover', 'Scan for visible bluetooth devices', self.discover)
+            self.commands.create_subcommand('test', 'Test for local bluetooth devices', self.test)
             if self.core.os_username == 'root':
-                self.commands.create_subcommand('proximity', 'run a manual proximity check', self.proximity_check)
+                self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
+                self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
 
         for person in self.core.config['persons'].keys():
             self.persons_status[person] = False
@@ -202,7 +202,7 @@ class ProximityPlugin(Plugin):
 
 descriptor = {
     'name' : 'proximity',
-    'help' : 'proximity with bluetooth',
+    'help' : 'Proximity detection plugin',
     'command' : 'prox',
     'mode' : PluginMode.MANAGED,
     'class' : ProximityPlugin

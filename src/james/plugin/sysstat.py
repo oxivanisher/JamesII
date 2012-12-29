@@ -11,12 +11,12 @@ class SysstatPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(SysstatPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('mount', 'show mounted disks and the usage', self.sysstat_mount)
-        self.commands.create_subcommand('uptime', 'show the system uptime', self.sysstat_uptime)
-        self.commands.create_subcommand('net', 'show the network interfaces and their stats', self.sysstat_net)
-        self.commands.create_subcommand('who', 'show logged in users', self.sysstat_who)
-        self.commands.create_subcommand('cpu', 'show the current cpu usage for all cores', self.sysstat_cpu)
-        self.commands.create_subcommand('mem', 'show the free and used memory and swap', self.sysstat_mem)
+        self.commands.create_subcommand('cpu', 'Show the current cpu usage for all cores', self.sysstat_cpu)
+        self.commands.create_subcommand('mount', 'Show mounted disks and the usage', self.sysstat_mount)
+        self.commands.create_subcommand('mem', 'Show the free and used memory and swap', self.sysstat_mem)
+        self.commands.create_subcommand('net', 'Show the network interfaces and their stats', self.sysstat_net)
+        self.commands.create_subcommand('uptime', 'Show the system uptime', self.sysstat_uptime)
+        self.commands.create_subcommand('who', 'Show logged in users', self.sysstat_who)
 
     def sysstat_mount(self, args):
         partitions = psutil.disk_partitions()
@@ -103,7 +103,7 @@ class SysstatPlugin(Plugin):
 
 descriptor = {
     'name' : 'sysstat',
-    'help' : 'psutil system stats',
+    'help' : 'Psutil system information',
     'command' : 'stat',
     'mode' : PluginMode.AUTOLOAD,
     'class' : SysstatPlugin

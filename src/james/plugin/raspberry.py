@@ -30,7 +30,7 @@ class RaspberryPlugin(Plugin):
         #gpio.digitalWrite(1,gpio.HIGH)
 
         if core.os_username == 'root':
-            self.commands.create_subcommand('test', 'test command for raspberry. turns on the 2nd led', self.rasp_test)
+            self.commands.create_subcommand('test', 'Test command for raspberry. turns on the 2nd led', self.rasp_test)
 
     def rasp_test(self, args):
         self.gpio.pinMode(1,self.gpio.OUTPUT)
@@ -42,7 +42,7 @@ class RaspberryPlugin(Plugin):
 
 descriptor = {
     'name' : 'raspberry',
-    'help' : 'raspberry api',
+    'help' : 'Interface to RaspberryPi',
     'command' : 'rasp',
     'mode' : PluginMode.MANAGED,
     'class' : RaspberryPlugin

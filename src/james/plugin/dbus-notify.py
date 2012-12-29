@@ -47,7 +47,7 @@ class DbusNotifyPlugin(Plugin):
 
 descriptor = {
     'name' : 'dbus-notify',
-    'help' : 'dbus notify plugin (desktop)',
+    'help' : 'Dbus notification plugin (desktop only)',
     'command' : 'dbus-notify',
     'mode' : PluginMode.MANUAL,
     'class' : DbusNotifyPlugin

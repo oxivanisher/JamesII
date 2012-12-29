@@ -59,16 +59,16 @@ class MpdPlugin(Plugin):
             self.connection_string.append('--password=' + self.mypassword)
 
         if os.path.isfile(self.mpc_bin):
-            self.commands.create_subcommand('mpc', 'call mpc with given args', self.mpc)
-            talkover_command = self.commands.create_subcommand('talkover', 'on or off for talkover', None)
-            talkover_command.create_subcommand('on', 'avtivate talkover', self.activate_talkover)
-            talkover_command.create_subcommand('off', 'deavtivate talkover', self.deactivate_talkover)
-            radio_command =  self.commands.create_subcommand('radio', 'control the radio', None)
-            radio_command.create_subcommand('on', 'turn on the radio', self.radio_on)
-            radio_command.create_subcommand('off', 'turn off the radio', self.radio_off)
+            self.commands.create_subcommand('mpc', 'Call mpc with given args', self.mpc)
+            radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
+            radio_command.create_subcommand('on', 'Turn on the radio', self.radio_on)
+            radio_command.create_subcommand('off', 'Turn off the radio', self.radio_off)
             if os.path.isfile('/usr/bin/mpfade'):
-                radio_command.create_subcommand('sleep', 'run the mpd sleep script', self.mpd_sleep)
-                radio_command.create_subcommand('wakeup', 'run the mpd wakeup script', self.mpd_wakeup)
+                radio_command.create_subcommand('sleep', 'Start mpd sleep mode', self.mpd_sleep)
+                radio_command.create_subcommand('wakeup', 'Start mpd wakup mode', self.mpd_wakeup)
+            talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
+            talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
+            talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
 
     def mpc(self, args):
         return self.exec_mpc(args)
@@ -151,7 +151,7 @@ class MpdPlugin(Plugin):
 
 descriptor = {
     'name' : 'mpd',
-    'help' : 'interface to mpd via mpc',
+    'help' : 'Interface to mpd via mpc',
     'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
     'class' : MpdPlugin

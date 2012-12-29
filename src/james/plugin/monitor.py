@@ -13,7 +13,7 @@ class MonitorPlugin(Plugin):
         self.archive = []
         self.max_archived_messages = 1000
 
-        self.commands.create_subcommand('log', ('shows the last %s messages' % self.max_archived_messages), self.cmd_showlog)
+        self.commands.create_subcommand('log', ('Shows the last %s messages' % self.max_archived_messages), self.cmd_showlog)
 
     def terminate(self):
         pass
@@ -77,7 +77,7 @@ class MonitorPlugin(Plugin):
 
 descriptor = {
     'name' : 'monitor',
-    'help' : 'show the log of the monitor',
+    'help' : 'Console monitor plugin',
     'command' : 'mon',
     'mode' : PluginMode.MANAGED,
     'class' : MonitorPlugin

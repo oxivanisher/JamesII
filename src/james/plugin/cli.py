@@ -55,7 +55,7 @@ class ConsoleThread(threading.Thread):
                 if not self.plugin.commands.process_args(args):
                     self.plugin.send_command(args)
             else:
-                print("enter 'help' for a list of available commands.")
+                print("Enter 'help' for a list of available commands.")
 
     def terminate(self):
        self.terminated = True
@@ -107,10 +107,10 @@ class CliPlugin(Plugin):
         self.cmd_line_mode = len(sys.argv) > 1
 
         self.commands.hide = True
-        self.commands.create_subcommand('nodes', 'show the local nodes_online variables', self.cmd_nodes_online)
-        self.commands.create_subcommand('exit', 'quits the console', self.cmd_exit)
-        self.commands.create_subcommand('msg', 'sends a message', self.cmd_message)
-        self.commands.create_subcommand('help', 'list this help', self.cmd_help)
+        self.commands.create_subcommand('exit', 'Quits the console', self.cmd_exit)
+        self.commands.create_subcommand('help', 'List this help', self.cmd_help)
+        self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
+        self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
 
     def start(self):
         if self.cmd_line_mode:
@@ -175,27 +175,31 @@ class CliPlugin(Plugin):
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 print("%s:" % (command.help))
-                self.print_command_help_lines(command)
+                print self.print_command_help_lines(command)
             else:
-                print ("command not found")
+                print ("Command not found")
 
         else:
-            print("local commands:")
-            self.print_command_help_lines(self.commands)
+            print("Local commands:")
+            print self.print_command_help_lines(self.commands, 1)
 
-            print("remote commands:")
-            self.print_command_help_lines(self.core.ghost_commands)
+            print("Remote commands:")
+            print self.print_command_help_lines(self.core.ghost_commands, 1)
 
         return True
 
-    def print_command_help_lines(self, command_obj):
-        for command in command_obj.list():
-            if not command['hide']:
-                print ("%-15s - %s" % (command['name'], command['help']))
+    def print_command_help_lines(self, command_obj, depth = 0):
+        for command in command_obj.subcommands.keys():
+            c = command_obj.subcommands[command]
+            if not c.hide:
+                print ("%-20s - %s" % (depth * "  " + c.name, c.help))
+            if len(c.subcommands.keys()) > 0:
+                self.print_command_help_lines(c, depth + 1)
+        return
 
 descriptor = {
     'name' : 'cli',
-    'help' : 'command line interface plugin',
+    'help' : 'Command line interface plugin',
     'command' : 'cli',
     'mode' : PluginMode.MANUAL,
     'class' : CliPlugin

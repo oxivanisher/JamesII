@@ -17,7 +17,7 @@ class XbmcPlugin(Plugin):
 
 descriptor = {
     'name' : 'xbmc',
-    'help' : 'xbmc test module',
+    'help' : 'Xbmc test module',
     'command' : 'xbmc',
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin

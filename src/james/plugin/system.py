@@ -10,7 +10,7 @@ class SystemPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(SystemPlugin, self).__init__(core, descriptor)
 
-        self.crash_detection_file = os.path.join(os.path.expanduser("~"), ".james_crashed")
+        self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
 
         self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:

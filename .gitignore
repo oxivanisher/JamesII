@@ -7,3 +7,4 @@ data/whoisonline.new
 nbproject/*
 *.sublime-*
 doc/
+src/.james_crashed

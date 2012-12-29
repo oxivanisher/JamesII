@@ -11,8 +11,8 @@ do
 	clear
 	echo "..:: Starting james.py ::.."
 	sudo ./james.py || echo "JamesII quit detected with errorcode $?" && \
-		echo $(date +%s) > /tmp/.james_crashed && \
-		sudo mv /tmp/.james_crashed /root && \
+		echo $(date +%s) > ./.james_crashed && \
+		chmod 666 ./.james_crashed && \
 		sleep 5
 	sleep 1
 done

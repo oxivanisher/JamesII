@@ -43,6 +43,10 @@ class Command(object):
         else:
             self.subcommands[subcommand.name] = subcommand
 
+    def sort_commands(self):
+        self.subcommands = jamesutils.JamesUtils(self).sortedDictByKeys(self.subcommands)
+        return True
+
     # creates a new subcommand and returns reference to it
     def create_subcommand(self, name, help, handler, hide=False):
         cmd = Command(name, help, handler, hide)
@@ -55,6 +59,7 @@ class Command(object):
             if name != cmd:
                 new_cmds[cmd] = self.subcommands[cmd]
         self.subcommands = new_cmds
+        return True
 
     def process_args(self, args):
         args = jamesutils.JamesUtils(self).list_unicode_cleanup(args)

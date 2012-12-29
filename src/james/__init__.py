@@ -268,6 +268,7 @@ class Core(object):
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
             self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
+            self.ghost_commands.sort_commands()
 
         elif msg[0] == 'nodes_online':
             """We received a new nodes_online list. Replace our current one."""
@@ -418,6 +419,7 @@ class Core(object):
         This method is called right at the beginning of normal operations. (after initialisation)
         Calls start() on all started plugins.
         """
+        self.commands.sort_commands()
         if self.config['core']['debug']:
             print(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
         for p in self.plugins:

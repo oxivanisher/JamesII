@@ -141,6 +141,16 @@ class JamesUtils(object):
         except Exception as e:
             return False
 
+    def sortedDictByKeys(self, d):
+        # http://code.activestate.com/recipes/52306-to-sort-a-dictionary/
+        """ returns a dictionary sorted by keys """
+        our_list = d.items()
+        our_list.sort()
+        k = {}
+        for item in our_list:
+            k[item[0]] = item[1]
+        return k
+
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019
         symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')

@@ -175,16 +175,16 @@ class CliPlugin(Plugin):
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 print("%s:" % (command.help))
-                print self.print_command_help_lines(command)
+                self.print_command_help_lines(command)
             else:
                 print ("Command not found")
 
         else:
             print("Local commands:")
-            print self.print_command_help_lines(self.commands, 1)
+            self.print_command_help_lines(self.commands, 1)
 
             print("Remote commands:")
-            print self.print_command_help_lines(self.core.ghost_commands, 1)
+            self.print_command_help_lines(self.core.ghost_commands, 1)
 
         return True
 
@@ -195,7 +195,7 @@ class CliPlugin(Plugin):
                 print ("%-20s - %s" % (depth * "  " + c.name, c.help))
             if len(c.subcommands.keys()) > 0:
                 self.print_command_help_lines(c, depth + 1)
-        return
+        return True
 
 descriptor = {
     'name' : 'cli',

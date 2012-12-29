@@ -10,7 +10,7 @@ do
 
 	clear
 	echo "..:: Starting james.py ::.."
-	sudo ./james.py || echo $(date +%s) > $HOME/.james_crashed && sleep 10
+	sudo ./james.py || sudo echo $(date +%s) > /root/.james_crashed && sleep 10
 	sleep 1
 
 done

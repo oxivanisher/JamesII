@@ -17,7 +17,7 @@ class SystemPlugin(Plugin):
         self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.show_plugins)
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.show_proximity)
         if self.core.master:
-            self.commands.create_subcommand('quit', 'Quit the system', self.cmd_quit)
+            self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
         if os.path.isfile('/usr/bin/git'):
             self.commands.create_subcommand('version', 'Shows the git checkout HEAD', self.cmd_version)
 

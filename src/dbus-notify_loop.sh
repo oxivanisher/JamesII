@@ -5,7 +5,7 @@ cd $DIR
 while true;
 do
 	clear
-	./dbus-notify.py || sleep 30
+	./dbus-notify.py || read
 	sleep 1
 
 done

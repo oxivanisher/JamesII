@@ -69,7 +69,6 @@ class EspeakPlugin(Plugin):
         return ret
 
     def speak(self, msg):
-        print msg
         self.message_cache.append(msg)
 
     def speak_worker(self, msg):
@@ -79,12 +78,7 @@ class EspeakPlugin(Plugin):
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:
             msg = self.message_cache[0]
-            try:
-                self.message_cache = self.message_cache[1:]
-            except Exception as e:
-                self.message_cache = []
-                pass
-
+            self.message.pop(0)
             self.talkover = True
             try:
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])

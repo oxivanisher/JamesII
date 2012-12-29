@@ -188,17 +188,17 @@ class ProximityPlugin(Plugin):
             else:
                 self.send_broadcast(['You are now away'])
             # self.core.proximity_status.set_status_here(self.status, 'btproximity')
-            # self.core.proximity_event(self.status, 'btproximity')
+            self.core.proximity_event(self.status, 'btproximity')
 
-    def process_discovery_event(self, msg):
-        if not self.proxy_send_lock:
-            if msg[0] == 'hello':
-                self.proxy_send_lock = True
-                self.core.add_timeout(3, self.process_discovery_event_callback)
+    # def process_discovery_event(self, msg):
+    #     if not self.proxy_send_lock:
+    #         if msg[0] == 'hello':
+    #             self.proxy_send_lock = True
+    #             self.core.add_timeout(3, self.process_discovery_event_callback)
 
-    def process_discovery_event_callback(self):
-        self.proxy_send_lock = False
-        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
+    # def process_discovery_event_callback(self):
+    #     self.proxy_send_lock = False
+    #     self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
 
 descriptor = {
     'name' : 'proximity',

@@ -24,7 +24,7 @@ class ProximityStatus(object):
             args.append(newstatus[self.core.location])
             args.append(plugin)
             print("args: %s" % args)
-            self.core.add_timeout(0, self.core.proximity_event, newstatus[self.core.location], plugin)
+            # self.core.add_timeout(0, self.core.proximity_event, newstatus[self.core.location], plugin)
 
     def get_all_status(self):
         return self.status

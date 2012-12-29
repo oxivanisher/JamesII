@@ -201,10 +201,7 @@ class CronPlugin(Plugin):
             self.cron_list.append(' '.join(args))
             if self.load_commands_from_cron_list():
                 return(["Command saved"])
-            else:
-                return(["Error adding: %s" % (' '.join(args))])
-        else:
-            return(["No command submitted"])
+        return(["Invalid Syntax. Use Unix style like: 30 12 * * *; sys plugins"])
 
     def cmd_cron_show(self, args):
         return self.crontab.show()

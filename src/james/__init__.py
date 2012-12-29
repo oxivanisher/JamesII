@@ -13,6 +13,7 @@ import subprocess
 import Queue
 import time
 import atexit
+# import datetime
 
 import plugin
 import config
@@ -411,6 +412,8 @@ class Core(object):
         This method is called right at the beginning of normal operations. (after initialisation)
         Calls start() on all started plugins.
         """
+        if self.config['core']['debug']:
+            print(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
         for p in self.plugins:
             p.start()
 

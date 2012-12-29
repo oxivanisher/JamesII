@@ -4,6 +4,9 @@ import sys
 import time
 import atexit
 import json
+import re
+import pytz
+import datetime
 
 from james.plugin import *
 
@@ -50,18 +53,45 @@ class TimerPlugin(Plugin):
 
     # command methods
     def cmd_timer_in(self, args):
-        try:
-            now = int(time.time())
-            target_time = now + int(args[0])
-            return self.timer_at(target_time, args[1:])
-        except ValueError: 
-            return(["Invalid syntax. Use  %s" % (args[0])])
+        seconds = self.core.utils.duration_string2seconds(args)
+        if seconds > 0:
+            target_time = int(time.time()) + seconds
+            return [self.timer_at(target_time, args[1:])]
+        else:
+            return ["Invalid syntax. Use seconds or: 3d4h3m2s"]
 
     def cmd_timer_at(self, args):
+        timezone = pytz.timezone(self.core.config['core']['timezone'])
+        target_time = datetime.datetime.now(timezone)
+        day = 0
+        month = 0
+        year = 0
+        try:
+            time_sec = self.core.utils.time_string2seconds(args[0])
+            hour = int(time_sec / 3600)
+            minute = int((time_sec - hour * 3600) / 60)
+            second = int(time_sec % 60)
+            target_time = target_time.replace(hour   = hour)
+            target_time = target_time.replace(minute = minute)
+            target_time = target_time.replace(second = second)
+            args = args[1:]
+        except Exception as e:
+            pass
 
-        #FIXME i do not exist!
-        return(["please learn human for: %s" % (args[0])])
-        pass
+        try:
+            time_date = self.core.utils.date_string2values(args[0])
+            target_time = target_time.replace(year  = time_date[0])
+            target_time = target_time.replace(month = time_date[1])
+            target_time = target_time.replace(day   = time_date[2])
+            args = args[1:]
+        except Exception as e:
+            pass
+
+        target_timestamp = int(target_time.strftime('%s'))
+        if target_timestamp > 0 and len(args) > 0:
+            return [self.timer_at(target_timestamp, args)]
+        else:
+            return ["Invalid syntax. Use hh:mm[:ss] [dd-mm-yyyy]"]
 
     def cmd_timer_show(self, args):
         ret = []

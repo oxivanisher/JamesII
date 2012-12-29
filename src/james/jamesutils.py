@@ -6,6 +6,7 @@ import socket
 import struct
 import collections
 import subprocess
+import re
 
 class JamesUtils(object):
 
@@ -55,12 +56,15 @@ class JamesUtils(object):
         if age == 0:
             return 'just now'
 
-        # past
         #FIXME 2 if bloecke fuer zukunft und vergangenheit
         elif age < 60 and age >= 0:
             return '%s seconds ago' % (age)
         elif age < 3600 and age >= 0:
             return '%s minutes ago' % (int(age / 60))
+        elif intime < 60 and intime >= 0:
+            return 'in %s seconds' % (intime)
+        elif intime < 3600 and intime >= 0:
+            return 'in %s minutes and %s seconds' % (int(intime / 60), int(intime % 60))
         elif event_timestamp > last_midnight_timestamp and event_timestamp < (last_midnight_timestamp + 86400):
             return 'today at %s:%s:%s' % (event.strftime('%H'),
                                           event.strftime('%M'),
@@ -72,13 +76,7 @@ class JamesUtils(object):
         elif age <= 604800 and age >= 0:
             return event.strftime('last %A')
         elif event_timestamp > past_newyear_timestamp and event_timestamp < now_timestamp:
-            return event.strftime('this year at %A the %d of %B')
-
-        # future
-        elif intime < 60 and intime >= 0:
-            return 'in %s seconds' % (intime)
-        elif intime < 3600 and intime >= 0:
-            return 'in %s minutes and %s seconds' % (int(intime / 60), int(intime % 60))
+            return event.strftime('this year at %A the %d of %B at %H:%M:%S')
         elif event_timestamp > next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
             return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
                                              event.strftime('%M'),
@@ -86,11 +84,62 @@ class JamesUtils(object):
         elif intime <= 604800 and intime >= 0:
             return event.strftime('next %A at %H:%M:%S')
         elif event_timestamp > future_newyear_timestamp and event_timestamp < (future_newyear_timestamp + 31556952): #NOT leap year save!
-            return event.strftime('next year at %A the %d of %B')
+            return event.strftime('next year on %A the %d of %B at %H:%M:%S')
 
-        # else :D
         else:
             return event.strftime('at %A the %d %B %Y')
+
+    def duration_string2seconds(self, args):
+        wait_seconds = 0
+        try:
+            wait_seconds = int(args[0])
+        except IndexError:
+            return False
+        except ValueError: 
+            for arg in args:
+                matched = re.findall(r'(\d+)([smhdw])', arg)
+                for (digit, multiplier_id) in matched:
+                    if multiplier_id == 's':
+                        wait_seconds += int(digit)
+                    elif multiplier_id == 'm':
+                        wait_seconds += int(digit) * 60
+                    elif multiplier_id == 'h':
+                        wait_seconds += int(digit) * 3600
+                    elif multiplier_id == 'd':
+                        wait_seconds += int(digit) * 86400
+                    elif multiplier_id == 'w':
+                        wait_seconds += int(digit) * 604800
+        return wait_seconds
+
+    def time_string2seconds(self, arg):
+        # converts 12:22 and 12:22:33 into seconds
+        seconds = 0
+        minutes = 0
+        hours = 0
+        try:
+            if arg.count(':') == 2:
+                data = arg.split(':')
+                seconds = int(data[2])
+                minutes = int(data[1])
+                hours = int(data[0])
+            elif arg.count(':') == 1:
+                data = arg.split(':')
+                minutes = int(data[1])
+                hours = int(data[0])
+        except Exception as e:
+            pass
+        return (hours * 3600 + minutes * 60 + int(seconds))
+
+    def date_string2values(self, arg):
+        # converts dd-mm-yyyy into [yyyy, mm, dd]
+        try:
+            data = arg.split('-')
+            if data[0] > 0 and data[0] < 13:
+                if data[1] > 0 and data[1] < 32:
+                    if data[2] > 2011:
+                        return [data[2], data[1], data[0]]
+        except Exception as e:
+            return False
 
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019

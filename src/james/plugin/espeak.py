@@ -2,6 +2,7 @@
 import sys
 import atexit
 import json
+import sort
 from time import localtime, strftime, sleep, time
 
 from james.plugin import *
@@ -113,7 +114,7 @@ class EspeakPlugin(Plugin):
         if len(self.archived_messages):
         # reading the log
             self.speak('While we where apart, the following things happend:')
-            for timestamp in self.archived_messages.keys().sort():
+            for timestamp in sort(self.archived_messages.keys())
                 self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived_messages[timestamp])
             self.archived_messages = {}
             self.speak('End of Log')

@@ -129,7 +129,13 @@ class Core(object):
 
         # Show if we are in debug mode
         if self.config['core']['debug']:
-            print("UUID: %s" % (self.uuid))
+            print("Hostname:      %s" % (self.hostname))
+            print("UUID:          %s" % (self.uuid))
+            print("Location:      %s" % (self.location))
+            print("OS Username:   %s" % (self.os_username))
+            print("Master:        %s" % (self.master))
+            print("RabbitMQ Host: %s:%s" % (self.brokerconfig['host'], self.brokerconfig['port']))
+
 
         # Create request & response channels
         self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')
@@ -256,22 +262,22 @@ class Core(object):
                     self.discovery_channel.send(['commands', p.commands.serialize()])
 
         elif msg[0] == 'ping':
-            """We recieved a ping request. Be a good boy and send a pong."""
+            """We received a ping request. Be a good boy and send a pong."""
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
         elif msg[0] == 'commands':
-            """We recieved new commands. Save them locally."""
+            """We received new commands. Save them locally."""
             self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
 
         elif msg[0] == 'nodes_online':
-            """We recieved a new nodes_online list. Replace our current one."""
+            """We received a new nodes_online list. Replace our current one."""
             if not self.master:
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
                 self.nodes_online = args[1]
 
         elif msg[0] == 'pong':
-            """We recieved a pong. We will save this host in nodes_online."""
+            """We received a pong. We will save this host in nodes_online."""
             args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]
 
@@ -283,7 +289,7 @@ class Core(object):
                 pass
 
         elif msg[0] == 'shutdown':
-            """We recieved a systemwide shutdown signal. So STFU and RAGEQUIT!"""
+            """We received a systemwide shutdown signal. So STFU and RAGEQUIT!"""
             self.terminate()
 
         for p in self.plugins:
@@ -304,7 +310,7 @@ class Core(object):
                 pass
 
             if show_message:
-                print("Received config")
+                print("Received config, debug mode activated:")
 
             self.config = msg
 
@@ -334,7 +340,7 @@ class Core(object):
         """
         Listener for messages. Calls process_message() on each started plugin.
         """
-        message = jamesmessage.JamesMessage(self, "recieved message")
+        message = jamesmessage.JamesMessage(self, "received message")
         message.set(msg)
         
         for p in self.plugins:

@@ -10,10 +10,9 @@ do
 
 	clear
 	echo "..:: Starting james.py ::.."
-	sudo ./james.py || \$
-		echo "JamesII crash detected!" && \
-		sudo echo $(date +%s) > /root/.james_crashed && \
-		sleep 10
+	sudo ./james.py || echo "JamesII quit detected with errorcode $?" && \
+		echo $(date +%s) > /tmp/.james_crashed && \
+		sudo mv /tmp/.james_crashed /root && \
+		sleep 5
 	sleep 1
-
 done

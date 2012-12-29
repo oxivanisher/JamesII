@@ -39,8 +39,7 @@ class SystemPlugin(Plugin):
 
             message = self.core.new_message(self.name)
             message.level = 2
-            message.header = ("James crash recovery detected on %s" % (self.core.hostname))
-            message.body = ('JamesII started after crash %s' % (self.core.utils.get_nice_age(timestamp)))
+            message.header = ("James crash recovery detected on %s %s" % (self.core.hostname, self.core.utils.get_nice_age(timestamp)))
             message.send()
 
         except IOError:

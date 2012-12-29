@@ -102,7 +102,7 @@ class EspeakPlugin(Plugin):
             if self.unmuted:
                 self.speak(message.header)
             else:
-                self.archived_messages[time()] = message.header
+                self.archived_messages[int(time())] = message.header
 
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())

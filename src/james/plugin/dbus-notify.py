@@ -18,6 +18,7 @@ class DbusNotifyPlugin(Plugin):
 
     def process_message(self, message):
         # Connect to notification interface on DBUS.
+        # http://www.galago-project.org/specs/notification/0.9/x408.html#command-notify
         try:
             self.notifyservice = self.bus.get_object(
                 'org.freedesktop.Notifications',
@@ -28,19 +29,28 @@ class DbusNotifyPlugin(Plugin):
                 "org.freedesktop.Notifications"
             )
 
+            if not message.body:
+                message.body = ""
+            else:
+                message.body += "\n\n"
+
+            brief_msg = ("%s: %s" % (message.sender_host,
+                                     message.header))
+            long_msg = ("%sPlugin: %s Host: %s" % (message.body,
+                                           message.sender_name,
+                                           message.sender_host))
+
             # The second param is the replace id, so get the notify id back,
             # store it, and send it as the replacement on the next call.
             self.notifyid = self.notifyservice.Notify(
                 "JamesII Message",
                 self.notifyid,
                 '',
-                ("%s (%s@%s)\n" % (message.header,
-                                 message.sender_name,
-                                 message.sender_host)),
-                ("%s" % (message.body)),
+                brief_msg,
+                long_msg,
                 [],
                 {},
-                2
+                -1
             )
         except Exception as e:
             pass

@@ -20,14 +20,14 @@ class EspeakPlugin(Plugin):
         self.message_cache = []
         self.talkover = False
 
-        self.commands.create_subcommand('archive', 'Show the messages in the cache', self.espeak_archive)
         self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
+        self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
 
     def start(self):
-        # wait 3 seconds befor working
-        self.core.add_timeout(3, self.speak_hook)
+        # wait 1 seconds befor working
+        self.core.add_timeout(1, self.speak_hook)
 
     def load_archived_messages(self):
         try:
@@ -56,16 +56,14 @@ class EspeakPlugin(Plugin):
             return(["Espeak will speak: '%s'" % (text)])
         return "No text entered for espeak"
 
-    def espeak_archive(self, args):
+    def cmd_waiting(self, args):
+        # listing waiting messages
         ret = []
-        # if len(self.archived_messages):
-        # # reading the log
-        #     for timestamp in self.archived_messages.keys():
-        #         ret.append("%-20s %s" % (self.core.utils.get_nice_age(int(timestamp)),
-        #                                    self.archived_messages[timestamp]))
-        # else:
-        #     ret.append("no messages waiting")
-
+        for (timestamp, message) in self.archived_messages:
+            ret.append("%-20s %s" % (self.core.utils.get_nice_age(int(timestamp)),
+                                     message))
+        if not ret:
+            ret.append("no messages waiting")
         return ret
 
     def speak(self, msg):

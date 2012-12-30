@@ -174,7 +174,7 @@ class ProximityPlugin(Plugin):
                 message = self.core.new_message(self.name)
                 message.level = 1
                 if new_persons_status[person]:
-                    message.header = ("%s is now here" % person)
+                    message.header = ("%s is here" % person)
                 else:
                     message.header = ("%s left" % person)
                 message.body = ("Location: %s" % self.core.location)

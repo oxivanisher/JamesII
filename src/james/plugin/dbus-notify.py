@@ -19,6 +19,7 @@ class DbusNotifyPlugin(Plugin):
     def process_message(self, message):
         # Connect to notification interface on DBUS.
         # http://www.galago-project.org/specs/notification/0.9/x408.html#command-notify
+        # icon from http://www.iconfinder.com/search/?q=alert
         try:
             self.notifyservice = self.bus.get_object(
                 'org.freedesktop.Notifications',
@@ -34,6 +35,20 @@ class DbusNotifyPlugin(Plugin):
             else:
                 message.body += "\n\n"
 
+            icon_name = ""
+            if int(message.level) == 0:
+                icon_name = 'debug.png'
+            elif int(message.level) == 1:
+                icon_name = 'info.png'
+            elif int(message.level) == 2:
+                icon_name = 'warn.png'
+            elif int(message.level) == 3:
+                icon_name = 'error.png'
+            try:
+                icon_path = os.path.join(os.getcwd(), '../media/', icon_name)
+            except Exception:
+                icon_path = ''
+
             brief_msg = ("%s: %s" % (message.sender_host,
                                      message.header))
             long_msg = ("%sPlugin: %s Host: %s" % (message.body,
@@ -45,7 +60,7 @@ class DbusNotifyPlugin(Plugin):
             self.notifyid = self.notifyservice.Notify(
                 "JamesII Message",
                 self.notifyid,
-                '',
+                icon_path,
                 brief_msg,
                 long_msg,
                 [],

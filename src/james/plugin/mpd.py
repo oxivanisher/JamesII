@@ -9,13 +9,14 @@ from james.plugin import *
 
 class FadeThread(PluginThread):
 
-    def __init__(self, plugin, host, volume1, volume2, fade_time, url):
+    def __init__(self, plugin, host, volume1, volume2, fade_time, url, commands = []):
         super(FadeThread, self).__init__(plugin)
         self.host = host
         self.volume1 = str(volume1)
         self.volume2 = str(volume2)
         self.fade_time = str(fade_time)
         self.url = url
+        self.commands = commands
 
     def work(self):
         self.plugin.exec_mpc(['clear'])
@@ -34,7 +35,7 @@ class FadeThread(PluginThread):
         return(["MPD Fade ended"])
 
     def on_exit(self, result):
-        self.plugin.mpd_callback(result)
+        self.plugin.mpd_callback(result, self.commands)
 
 class MpdPlugin(Plugin):
 
@@ -98,10 +99,11 @@ class MpdPlugin(Plugin):
 
             self.fade_thread = FadeThread(self,
                                           self.core.config['mpd']['nodes'][self.core.hostname]['host'],
-                                          (self.core.config['mpd']['max_volume'] - 20),
+                                          (self.core.config['mpd']['max_volume'] - 25),
                                           0,
                                           self.core.config['mpd']['sleep_fade'],
-                                          self.core.config['mpd']['sleep_url'])
+                                          self.core.config['mpd']['sleep_url'],
+                                          [['motion', 'on']])
             self.fade_thread.run()
             return (["MPD Sleep mode activated"])
         else:
@@ -122,9 +124,12 @@ class MpdPlugin(Plugin):
         else:
             return (["MPD Wakeup mode NOT activated due other fade in progress"])
 
-    def mpd_callback(self, values):
+    def mpd_callback(self, text, commands = []):
         self.fade_in_progress = False
-        self.send_broadcast(values)
+        self.send_broadcast(text)
+        print("c: %s" % commands)
+        for command in commands:
+            self.send_command(command)
 
     # react on proximity events
     def process_proximity_event(self, newstatus):

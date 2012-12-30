@@ -13,19 +13,15 @@ ToDo:
 ------
 Main:
 * add process monitor / events
-* include "at" and "in" functionality, this should be done in the master so that he could safe the list for restarts.
 * log class
 
 Plugins:
 * plugin requirement checks before load
 * scripting plugin
-* psutils plugin for system informations - somewhat implemented
 * xbmc remote plugin
 * transmission remote plugin
 * xmpp service plugin
-* at/timer countdown
 * HTTP monitor/plugin
-
 
 You Need (outdated!):
 ---------
@@ -34,6 +30,7 @@ You Need (outdated!):
 * python-psutil (http://code.google.com/p/psutil/)
 * python-tz
 * python-yaml
+* python-requests (http://docs.python-requests.org/en/latest/index.html)
 
 
 Old stuff

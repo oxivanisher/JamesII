@@ -8,6 +8,9 @@ import json
 
 from james.plugin import *
 
+# FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
+# where do we keep the store of mac adresses? objects, objects, objects
+
 class ProximityPlugin(Plugin):
 
     def __init__(self, core, descriptor):

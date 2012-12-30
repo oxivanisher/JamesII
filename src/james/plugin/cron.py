@@ -117,7 +117,7 @@ class CronPlugin(Plugin):
 
     def start(self):
         # wait 3 seconds befor working
-        self.core.add_timeout(3, self.crontab_daemon_loop)
+        self.core.add_timeout(1, self.crontab_daemon_loop)
 
     def save_commands(self):
         try:
@@ -153,7 +153,6 @@ class CronPlugin(Plugin):
                     cmd_string = cron_data[1].strip()
 
                     cron_args = []
-                    # FIXME this can be done nicer ... im sure
                     for arg in cron_string.split(' '):
                         if arg.isdigit():
                             cron_args.append(int(arg))

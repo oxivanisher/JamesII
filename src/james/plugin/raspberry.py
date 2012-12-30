@@ -8,14 +8,35 @@ import wiringpi
 from james.plugin import *
 
 # FIXME!
-# class RasperryThread(Thread):
-#     pass
+# class RaspberryThread(PluginThread):
 
-#     def run(self):
-#         while True:
-#             # read pin
-#             pass
+#     def __init__(self, plugin, host, volume1, volume2, fade_time, url, commands = []):
+#         super(RaspberryThread, self).__init__(plugin)
+#         self.host = host
+#         self.volume1 = str(volume1)
+#         self.volume2 = str(volume2)
+#         self.fade_time = str(fade_time)
+#         self.url = url
+#         self.commands = commands
 
+#     def work(self):
+#         self.plugin.exec_mpc(['clear'])
+#         self.plugin.load_online_playlist(self.url)
+#         if self.volume1 > self.volume2:
+#             # sleep mode
+#             self.plugin.exec_mpc(['volume', self.volume1])
+#             self.plugin.exec_mpc(['play'])
+#         self.plugin.exec_mpc(['volume', self.volume1])
+#         command = ['/usr/bin/mpfade',
+#                    str(self.fade_time),
+#                    str(self.volume2),
+#                    self.host]
+#         args = self.plugin.core.utils.list_unicode_cleanup(command)
+#         self.plugin.core.utils.popenAndWait(args)
+#         return(["MPD Fade ended"])
+
+#     def on_exit(self, result):
+#         self.plugin.mpd_callback(result, self.commands)
 
 
 class RaspberryPlugin(Plugin):
@@ -39,6 +60,9 @@ class RaspberryPlugin(Plugin):
         message = self.core.new_message(self.name)
         message.header = "Testing RaspberryPi"
         message.send()
+
+    def rasp_button_callback(self, args):
+        pass
 
 descriptor = {
     'name' : 'raspberry',

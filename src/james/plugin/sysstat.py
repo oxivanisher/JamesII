@@ -28,9 +28,9 @@ class SysstatPlugin(Plugin):
         return return_str
 
     def sysstat_uptime(self, args):
-        return 'The System started %s, JamesII %s.' % \
+        return (['The System started %s, JamesII %s.' % \
                 (self.core.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))), 
-                self.core.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))
+                self.core.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))])
 
     def sysstat_net(self, args):
         interfaces = psutil.network_io_counters(pernic=True)

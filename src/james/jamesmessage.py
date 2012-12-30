@@ -28,8 +28,7 @@ class JamesMessage (object):
             if self.core.config['core']['debug']:
                 self.core.send_message(self.get())
         else:
-            self.core.send_message(self.get())
-
+            self.core.add_timeout(0, self.core.send_message, self.get())
 
     def get(self):
         message = {}

@@ -2,7 +2,6 @@
 import sys
 import atexit
 import json
-import sort
 from time import localtime, strftime, sleep, time
 
 from james.plugin import *
@@ -17,7 +16,7 @@ class EspeakPlugin(Plugin):
         self.unmuted = self.core.proximity_status.get_status_here()
         self.espeak_command = self.core.config['espeak']['espeak_command'].split()
 
-        self.archived_messages = {}
+        self.archived_messages = []
         self.message_cache = []
         self.talkover = False
 
@@ -59,13 +58,13 @@ class EspeakPlugin(Plugin):
 
     def espeak_archive(self, args):
         ret = []
-        if len(self.archived_messages):
-        # reading the log
-            for timestamp in self.archived_messages.keys():
-                ret.append("%-20s %s" % (self.core.utils.get_nice_age(int(timestamp)),
-                                           self.archived_messages[timestamp]))
-        else:
-            ret.append("no messages waiting")
+        # if len(self.archived_messages):
+        # # reading the log
+        #     for timestamp in self.archived_messages.keys():
+        #         ret.append("%-20s %s" % (self.core.utils.get_nice_age(int(timestamp)),
+        #                                    self.archived_messages[timestamp]))
+        # else:
+        #     ret.append("no messages waiting")
 
         return ret
 
@@ -103,7 +102,7 @@ class EspeakPlugin(Plugin):
             if self.unmuted:
                 self.speak(message.header)
             else:
-                self.archived_messages[int(time())] = message.header
+                self.archived_messages.append((time(), message.header))
 
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())
@@ -111,12 +110,13 @@ class EspeakPlugin(Plugin):
         if (time() - self.core.startup_timestamp) > 10:
             self.speak('Welcome. It is now %s.' % (nicetime))
 
-        if len(self.archived_messages):
+        if len(self.archived_messages) > 0:
         # reading the log
             self.speak('While we where apart, the following things happend:')
-            for timestamp in sort(self.archived_messages.keys())
-                self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + self.archived_messages[timestamp])
-            self.archived_messages = {}
+            work_archived_messages = self.archived_messages
+            self.archived_messages = []
+            for (timestamp, message) in work_archived_messages:
+                self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + message)
             self.speak('End of Log')
         else:
             self.speak('Nothing happend while we where apart.')

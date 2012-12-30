@@ -127,7 +127,6 @@ class MpdPlugin(Plugin):
     def mpd_callback(self, text, commands = []):
         self.fade_in_progress = False
         self.send_broadcast(text)
-        print("c: %s" % commands)
         for command in commands:
             self.send_command(command)
 

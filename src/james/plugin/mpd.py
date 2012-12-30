@@ -103,7 +103,7 @@ class MpdPlugin(Plugin):
                                           0,
                                           self.core.config['mpd']['sleep_fade'],
                                           self.core.config['mpd']['sleep_url'],
-                                          [['motion', 'on']])
+                                          [['motion', 'watch']])
             self.fade_thread.run()
             return (["MPD Sleep mode activated"])
         else:

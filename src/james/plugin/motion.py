@@ -134,6 +134,9 @@ class MotionPlugin(Plugin):
                 message.body = ("%s/%s" % (self.core.config['motion']['dropbox-url'], file_name))
             message.send()
 
+            if self.move_file(file_path, self.core.config['motion']['target-dir']):
+                self.send_broadcast(['Motion: New Image file %s' % file_name])
+
     def move_file(self, src_file, dst_path):
         try:
             file_name = ntpath.basename(src_file)

@@ -23,8 +23,8 @@ class MotionPlugin(Plugin):
         self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
         self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
         watch_cmd = self.commands.create_subcommand('watch', ('Motion watches over you and starts the radio when movement is detected'), None)
-        watch_cmd = create_subcommand('on', ('Starts watching'), self.cmd_watch_on, False)
-        watch_cmd = create_subcommand('off', ('stopps watching'), self.cmd_watch_off, False)
+        watch_cmd.create_subcommand('on', ('Starts watching'), self.cmd_watch_on, False)
+        watch_cmd.create_subcommand('off', ('stopps watching'), self.cmd_watch_off, False)
         self.commands.create_subcommand('cam_lost', ('Will be called when motion loses the camera'), self.cmd_cam_lost, True)
         if self.core.os_username == 'root' and os.path.isfile(self.motion_daemon):
             self.commands.create_subcommand('on', ('Activates the motion daemon'), self.cmd_on)

@@ -20,12 +20,10 @@ class MotionPlugin(Plugin):
         self.watch_mode = False
 
         self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
-        self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
         self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
-        watch_cmd = self.commands.create_subcommand('watch', ('Motion watches over you and starts the radio when movement is detected'), None)
-        watch_cmd.create_subcommand('on', ('Starts watching'), self.cmd_watch_on, False)
-        watch_cmd.create_subcommand('off', ('stopps watching'), self.cmd_watch_off, False)
         self.commands.create_subcommand('cam_lost', ('Will be called when motion loses the camera'), self.cmd_cam_lost, True)
+        self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
+        self.commands.create_subcommand('watch', ('Motion watches over you and starts the radio when movement is detected'), self.cmd_watch_on)
         if self.core.os_username == 'root' and os.path.isfile(self.motion_daemon):
             self.commands.create_subcommand('on', ('Activates the motion daemon'), self.cmd_on)
             self.commands.create_subcommand('off', ('Deactivates the motion daemon'), self.cmd_off)
@@ -68,14 +66,8 @@ class MotionPlugin(Plugin):
         return True
 
     def cmd_watch_on(self, args):
-        self.send_broadcast(['Motion is now watching'])
         self.watch_mode = True
         self.cam_control(True)
-
-    def cmd_watch_off(self, args):
-        self.send_broadcast(['Motion is not watching anymore'])
-        self.watch_mode = False
-        self.cam_control(False)
 
     def cmd_show_log(self, args):
         var = 0
@@ -160,10 +152,10 @@ class MotionPlugin(Plugin):
 
     def cam_control(self, switch_on):
         if switch_on:
-            self.send_broadcast(['Motion starting up'])
+            self.send_broadcast(['Motion is now watching'])
             self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
         else:
-            self.send_broadcast(['Motion shutting down'])
+            self.send_broadcast(['Motion is not watching anymore'])
             self.watch_mode = False
             self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
 

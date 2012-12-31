@@ -160,8 +160,10 @@ class MotionPlugin(Plugin):
 
     def cam_control(self, switch_on):
         if switch_on:
+            self.send_broadcast(['Motion shutting down'])
             self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
         else:
+            self.send_broadcast(['Motion starting up'])
             self.watch_mode = False
             self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
 

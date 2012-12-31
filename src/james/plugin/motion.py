@@ -22,7 +22,9 @@ class MotionPlugin(Plugin):
         self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
         self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
         self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
-        self.commands.create_subcommand('watch', ('Motion watches over you and starts the radio when movement is detected'), self.cmd_watch, False)
+        watch_cmd = self.commands.create_subcommand('watch', ('Motion watches over you and starts the radio when movement is detected'), None)
+        watch_cmdcreate_subcommand('on', ('Starts watching'), self.cmd_watch_on, False)
+        watch_cmdcreate_subcommand('off', ('stopps watching'), self.cmd_watch_off, False)
         self.commands.create_subcommand('cam_lost', ('Will be called when motion loses the camera'), self.cmd_cam_lost, True)
         if self.core.os_username == 'root' and os.path.isfile(self.motion_daemon):
             self.commands.create_subcommand('on', ('Activates the motion daemon'), self.cmd_on)
@@ -65,10 +67,15 @@ class MotionPlugin(Plugin):
             self.log.pop(0)
         return True
 
-    def cmd_watch(self, args):
+    def cmd_watch_on(self, args):
         self.send_broadcast(['Motion is now watching'])
         self.watch_mode = True
         self.cam_control(True)
+
+    def cmd_watch_on(self, args):
+        self.send_broadcast(['Motion is not watching anymore'])
+        self.watch_mode = False
+        self.cam_control(False)
 
     def cmd_show_log(self, args):
         var = 0
@@ -155,8 +162,8 @@ class MotionPlugin(Plugin):
         if switch_on:
             self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
         else:
-            self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
             self.watch_mode = False
+            self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
 
     # react on proximity events
     def process_proximity_event(self, newstatus):

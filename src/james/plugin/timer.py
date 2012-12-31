@@ -70,8 +70,7 @@ class TimerPlugin(Plugin):
             target_timestamp = int(args[0])
             args = args[1:]
         except Exception as e:
-            print(e)
-            return
+            pass
 
         if not target_timestamp:
             try:

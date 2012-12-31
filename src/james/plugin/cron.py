@@ -106,7 +106,7 @@ class CronPlugin(Plugin):
         super(CronPlugin, self).__init__(core, descriptor)
 
         self.commands.create_subcommand('add', 'Adds a cron command (*[*][*][*][*];cmd)', self.cmd_cron_add)
-        self.commands.create_subcommand('delete', 'Delets a cron command (id)', self.cmd_cron_delete)
+        self.commands.create_subcommand('remove', 'Removes a cron command (id)', self.cmd_cron_remove)
         self.commands.create_subcommand('show', 'Shows the cron commands', self.cmd_cron_show)
 
         self.crontab = CronTab()
@@ -205,7 +205,7 @@ class CronPlugin(Plugin):
     def cmd_cron_show(self, args):
         return self.crontab.show()
 
-    def cmd_cron_delete(self, args):
+    def cmd_cron_remove(self, args):
         try:
             del_id = int(args[0])
             num_of_jobs = len(self.cron_list)

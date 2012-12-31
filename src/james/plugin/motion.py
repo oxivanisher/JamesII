@@ -72,7 +72,7 @@ class MotionPlugin(Plugin):
         self.watch_mode = True
         self.cam_control(True)
 
-    def cmd_watch_on(self, args):
+    def cmd_watch_off(self, args):
         self.send_broadcast(['Motion is not watching anymore'])
         self.watch_mode = False
         self.cam_control(False)

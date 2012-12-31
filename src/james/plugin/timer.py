@@ -66,6 +66,7 @@ class TimerPlugin(Plugin):
         day = 0
         month = 0
         year = 0
+        target_timestamp = None
         try:
             target_timestamp = int(args[0])
             args = args[1:]

@@ -13,6 +13,8 @@ class MotionPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(MotionPlugin, self).__init__(core, descriptor)
 
+        # FIXME (motion) copy files to folders for left events and bring order to the motion chaos :)
+
         self.motion_daemon = '/etc/init.d/motion'
         self.log_file = os.path.join(os.path.expanduser("~"), ".james_motion_log")
         self.log_max_entries = 100

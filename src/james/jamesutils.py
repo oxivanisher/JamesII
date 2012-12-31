@@ -47,12 +47,11 @@ class JamesUtils(object):
         event_timestamp = int(event.strftime('%s'))
         last_midnight_timestamp = int(timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
                                                                tzinfo=None), is_dst=None).strftime('%s'))
-        next_midnight_timestamp = last_midnight_timestamp + 604800
+        next_midnight_timestamp = last_midnight_timestamp + 86400
         past_newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
                                                               microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
         future_newyear_timestamp = int(timezone.localize(now.replace(day=31, month=12, hour=23, minute=59, second=59,
                                                               microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
-        # present
         if age == 0:
             return 'just now'
 
@@ -77,7 +76,7 @@ class JamesUtils(object):
             return event.strftime('last %A')
         elif event_timestamp > past_newyear_timestamp and event_timestamp < now_timestamp:
             return event.strftime('this year at %A the %d of %B at %H:%M:%S')
-        elif event_timestamp > next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
+        elif event_timestamp >= next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
             return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
                                              event.strftime('%M'),
                                              event.strftime('%S'))
@@ -134,10 +133,10 @@ class JamesUtils(object):
         # converts dd-mm-yyyy into [yyyy, mm, dd]
         try:
             data = arg.split('-')
-            if data[0] > 0 and data[0] < 13:
-                if data[1] > 0 and data[1] < 32:
-                    if data[2] > 2011:
-                        return [data[2], data[1], data[0]]
+            if int(data[0]) > 0 and int(data[0]) < 13:
+                if int(data[1]) > 0 and int(data[1]) < 32:
+                    if int(data[2]) > 2012:
+                        return [int(data[2]), int(data[1]), int(data[0])]
         except Exception as e:
             return False
 

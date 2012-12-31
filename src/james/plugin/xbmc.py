@@ -30,9 +30,9 @@ from james.plugin import *
 #     }
 # }
 # # system functions
-# function query ($host, $command, $arguments = null) {
+# function query ($host, $command, $agruments = null) {
 #     if ($arguments) {
-#         $data_string = json_encode(array("jsonrpc" => "2.0", "id" => 1, "method" => $command, "params" => $arguments));
+#         $data_string = json_encode(array("josnrpc" => "2.0", "id" => 1, "method" => $command, "params" => $arguments));
 #     } else {
 #         $data_string = json_encode(array("jsonrpc" => "2.0", "id" => 1, "method" => $command));
 #     }
@@ -95,10 +95,11 @@ class XbmcPlugin(Plugin):
         return 'args: ' + ' '.join(args)
 
     def cmd_test(self, args):
-        github_url = self.core."https://api.github.com/user/repos"
-        data = json.dumps({'name':'test', 'description':'some test repo'}) 
-        r = requests.post(github_url, data, auth=('user', '*****'))
-        print r.json
+        # github_url = self.core."https://api.github.com/user/repos"
+        # data = json.dumps({'name':'test', 'description':'some test repo'}) 
+        # r = requests.post(github_url, data, auth=('user', '*****'))
+        # print r.json
+        pass
 
 
 

@@ -20,7 +20,7 @@ class MonitorPlugin(Plugin):
         self.commands.create_subcommand('save', ('Saves all cached messages to the log file.'), self.cmd_save_to_logfile)
 
     def terminate(self):
-        self.file_cache.append("%s JamesII is shuttind down." % (strftime("%Y-%m-%d %H:%M:%S", int(time.time()))))
+        self.file_cache.append("%s JamesII is shuttind down." % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         self.save_log_to_disk()
 
     def start(self):

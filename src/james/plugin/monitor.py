@@ -10,13 +10,61 @@ class MonitorPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(MonitorPlugin, self).__init__(core, descriptor)
 
-        self.archive = []
-        self.max_archived_messages = 1000
+        self.message_cache = []
+        self.max_message_cache = 50
+        self.file_cache = []
+        self.max_file_cache = 20
+        self.file_cache_name = os.path.join(os.path.expanduser("~"), ".james_monitor_log")
 
-        self.commands.create_subcommand('log', ('Shows the last %s messages' % self.max_archived_messages), self.cmd_showlog)
+        self.commands.create_subcommand('show', ('Shows the last %s messages' % self.max_message_cache), self.cmd_showlog)
+        self.commands.create_subcommand('save', ('Saves all cached messages to the log file.'), self.cmd_save_to_logfile)
 
     def terminate(self):
-        pass
+        self.file_cache.append("%s JamesII is shuttind down." % (strftime("%Y-%m-%d %H:%M:%S", int(time.time()))))
+        self.save_log_to_disk()
+
+    def start(self):
+        self.file_cache.append("%s JamesII started with (UUID %s)" % (strftime("%H:%M:%S %d.%m.%Y", localtime()), self.core.uuid))
+        self.save_log_to_disk()
+
+    def cmd_showlog(self, args):
+        ret = []
+        for message in self.message_cache:
+            ret.append(message)
+        return ret
+
+    def cmd_save_to_logfile(self, args):
+        return self.save_log_to_disk()
+
+    def format_output(self, message):
+        return ("%8s %-20s %-20s %s" % (strftime("%H:%M:%S", message['timestamp']),
+                                        message['who'],
+                                        message['what'],
+                                        message['payload']))
+
+    def process_log_message(self, message):
+        self.message_cache.insert(0, message)
+        while len(self.message_cache) > self.max_message_cache:
+            self.message_cache.pop()
+
+        self.file_cache.append(message)
+        if len(self.file_cache) >= self.max_file_cache:
+            self.save_log_to_disk()
+
+        return message
+
+    def save_log_to_disk(self):
+        try:
+            file = open(self.file_cache_name, 'a')
+            file.write('\n'.join(self.file_cache) + '\n')
+            file.close()
+            if self.core.config['core']['debug']:
+                print("Saving monitor log to %s" % (self.file_cache_name))
+            self.file_cache = []
+            self.send_broadcast(['Monitor logfile saved'])
+        except IOError:
+            print("WARNING: Could not save monitor log to file!")
+        return True
 
     def process_message(self, message):
         self.process_event(("%s@%s" % (message.sender_name, message.sender_host)),
@@ -55,25 +103,10 @@ class MonitorPlugin(Plugin):
         message['payload'] = payload
         message['timestamp'] = localtime()
 
-        self.log_message(message)
-        print self.format_output(message)
-
-    def format_output(self, message):
-        return ("%8s %-20s %-20s %s" % (strftime("%H:%M:%S", message['timestamp']),
-                                      message['who'],
-                                      message['what'],
-                                      message['payload']))
-
-    def log_message(self, message):
-        self.archive.insert(0, message)
-        while len(self.archive) > self.max_archived_messages:
-            self.archive.pop()
-
-    def cmd_showlog(self, args):
-        ret = []
-        for message in self.archive:
-            ret.append(self.format_output(message))
-        return ret
+        formated_output = self.format_output(message)
+        print self.process_log_message(formated_output)
+        return True
+        
 
 descriptor = {
     'name' : 'monitor',

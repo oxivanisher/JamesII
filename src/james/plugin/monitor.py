@@ -64,7 +64,6 @@ class MonitorPlugin(Plugin):
             self.send_broadcast(['Monitor logfile saved'])
         except IOError:
             print("WARNING: Could not save monitor log to file!")
-        return True
 
     def process_message(self, message):
         self.process_event(("%s@%s" % (message.sender_name, message.sender_host)),
@@ -105,8 +104,6 @@ class MonitorPlugin(Plugin):
 
         formated_output = self.format_output(message)
         print self.process_log_message(formated_output)
-        return True
-        
 
 descriptor = {
     'name' : 'monitor',

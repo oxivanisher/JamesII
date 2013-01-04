@@ -19,6 +19,7 @@ class FadeThread(PluginThread):
         self.commands = commands
 
     def work(self):
+        print("start fading")
         self.plugin.exec_mpc(['clear'])
         self.plugin.load_online_playlist(self.url)
         if self.volume1 > self.volume2:
@@ -31,6 +32,7 @@ class FadeThread(PluginThread):
                    str(self.volume2),
                    self.host]
         args = self.plugin.core.utils.list_unicode_cleanup(command)
+        print("run process")
         self.plugin.core.utils.popenAndWait(args)
         return(["MPD Fade ended"])
 
@@ -104,7 +106,7 @@ class MpdPlugin(Plugin):
                                           self.core.config['mpd']['sleep_fade'],
                                           self.core.config['mpd']['sleep_url'],
                                           [['motion', 'watch']])
-            self.fade_thread.run()
+            self.fade_thread.start()
             return (["MPD Sleep mode activated"])
         else:
             return (["MPD Sleep mode NOT activated due other fade in progress"])
@@ -119,7 +121,7 @@ class MpdPlugin(Plugin):
                                           self.core.config['mpd']['max_volume'],
                                           self.core.config['mpd']['wakeup_fade'],
                                           self.core.config['mpd']['wakeup_url'])
-            self.fade_thread.run()
+            self.fade_thread.start()
             return (["MPD Wakeup mode activated"])
         else:
             return (["MPD Wakeup mode NOT activated due other fade in progress"])

@@ -7,37 +7,63 @@ import wiringpi
 
 from james.plugin import *
 
-# FIXME!
-# class RaspberryThread(PluginThread):
+class RaspberryThread(PluginThread):
 
-#     def __init__(self, plugin, host, volume1, volume2, fade_time, url, commands = []):
-#         super(RaspberryThread, self).__init__(plugin)
-#         self.host = host
-#         self.volume1 = str(volume1)
-#         self.volume2 = str(volume2)
-#         self.fade_time = str(fade_time)
-#         self.url = url
-#         self.commands = commands
+    def __init__(self, plugin, read_pins, write_pins):
+        super(RaspberryThread, self).__init__(plugin)
+        self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
+        self.read_pins = read_pins
+        self.write_pins = write_pins
+        self.plugin = plugin
+        self.led_state = []
 
-#     def work(self):
-#         self.plugin.exec_mpc(['clear'])
-#         self.plugin.load_online_playlist(self.url)
-#         if self.volume1 > self.volume2:
-#             # sleep mode
-#             self.plugin.exec_mpc(['volume', self.volume1])
-#             self.plugin.exec_mpc(['play'])
-#         self.plugin.exec_mpc(['volume', self.volume1])
-#         command = ['/usr/bin/mpfade',
-#                    str(self.fade_time),
-#                    str(self.volume2),
-#                    self.host]
-#         args = self.plugin.core.utils.list_unicode_cleanup(command)
-#         self.plugin.core.utils.popenAndWait(args)
-#         return(["MPD Fade ended"])
+    def get_led_state(self, state):
+        # Lock.acquire()
+        return self.led_state
+        # Lock.release()
+        pass
 
-#     def on_exit(self, result):
-#         self.plugin.mpd_callback(result, self.commands)
+    def set_led_state(self, state):
+        # Lock.acquire()
+        self.led_state = state
+        # Lock.release()
+        pass
 
+    def init_wiringpi(self):
+        # set modes on pins
+        for pin in self.read_pins:
+            self.gpio.pinMode(pin, self.gpio.INPUT)
+        
+        for pin in self.write_pins:
+            self.gpio.pinMode(pin, self.gpio.OUTPUT)
+
+    def work(self):
+        self.init_wiringpi()
+
+        active = True
+        while active:
+        # read instructions to set leds
+            state = self.get_led_state()
+        # self.led_state
+        # [0, 1, 2] = 0: no change, 1: switch on, 2: switch off
+            for pin in self.read_pins:
+                self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin)
+
+            # do something meaningful
+            self.set_led_state(state)
+            # sleep
+
+    def read_pin(self, pin):
+        return self.gpio.digitalRead(pin)
+
+    def set_pin(self, led_id, mode):
+        if mode:
+            self.gpio.digitalWrite(led_id, self.gpio.HIGH)
+        else:
+            self.gpio.digitalWrite(led_id, self.gpio.LOW)
+        
+    def on_exit(self, result):
+        self.plugin.on_worker_exit()
 
 class RaspberryPlugin(Plugin):
 
@@ -45,23 +71,21 @@ class RaspberryPlugin(Plugin):
 
         super(RaspberryPlugin, self).__init__(core, descriptor)
 
-        self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
-        
-        #gpio.pinMode(1,gpio.OUTPUT)
-        #gpio.digitalWrite(1,gpio.HIGH)
-
         if core.os_username == 'root':
-            self.commands.create_subcommand('test', 'Test command for raspberry. turns on the 2nd led', self.rasp_test)
+            self.commands.create_subcommand('test', 'Test command for raspberry. turns on the 2nd led', self.cmd_rasp_test)
 
-    def rasp_test(self, args):
-        self.gpio.pinMode(1,self.gpio.OUTPUT)
-        self.gpio.digitalWrite(1,self.gpio.HIGH)
+    def start(self):
+        #self.rasp_thread = RaspberryThread(self)
 
-        message = self.core.new_message(self.name)
-        message.header = "Testing RaspberryPi"
-        message.send()
+    def cmd_rasp_test(self, args):
+        self.rasp_thread.set_led_state(state)
+        pass
 
-    def rasp_button_callback(self, args):
+    # methods called from worker process
+    def on_button_press(self, args):
+        pass
+
+    def on_worker_exit(self):
         pass
 
 descriptor = {
@@ -71,4 +95,3 @@ descriptor = {
     'mode' : PluginMode.MANAGED,
     'class' : RaspberryPlugin
 }
-

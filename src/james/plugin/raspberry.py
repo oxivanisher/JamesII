@@ -76,6 +76,7 @@ class RaspberryPlugin(Plugin):
 
     def start(self):
         #self.rasp_thread = RaspberryThread(self)
+        pass
 
     def cmd_rasp_test(self, args):
         self.rasp_thread.set_led_state(state)

@@ -96,24 +96,24 @@ class Plugin(object):
 class PluginThread(threading.Thread):
 
     def __init__(self, plugin):
-        #FIXME dieser thread funktioniert nicht so wie er sollte -.-
-        # threading.Thread.__init__(self)
+        super(PluginThread, self).__init__()
         self.plugin = plugin
 
-    def worked(self):
-        ret = self.work()
-        self.plugin.core.add_timeout(0, self.on_exit, ret)
-        pass
-
     def work(self):
+        """
+        Method representing the threads activity
+        """
         pass
 
     def run(self):
-        self.plugin.core.spawnSubprocess(self.work, self.on_exit)
+        result = self.work()
+        self.plugin.core.add_timeout(0, self.on_exit, result)
 
     def on_exit(self, result):
+        """
+        Called when thread finished working (synchroized to core)
+        """
         pass
-
 
 class PluginNotAvailable(Exception):
     pass

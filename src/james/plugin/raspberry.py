@@ -1,5 +1,4 @@
 
-import subprocess
 import sys
 import wiringpi
 import time

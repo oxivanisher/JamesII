@@ -66,6 +66,7 @@ class MpdPlugin(Plugin):
             radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
             radio_command.create_subcommand('on', 'Turn the radio on', self.radio_on)
             radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
+            radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
             if os.path.isfile('/usr/bin/mpfade'):
                 radio_command.create_subcommand('sleep', 'Start mpd sleep mode', self.mpd_sleep)
                 radio_command.create_subcommand('wakeup', 'Start mpd wakup mode', self.mpd_wakeup)
@@ -94,6 +95,17 @@ class MpdPlugin(Plugin):
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
         self.exec_mpc(['play'])
         return (["Radio on"])
+
+    def radio_toggle(self, args):
+        playing = False
+        status = self.exec_mpc(['status'])
+        for line in status:
+            if 'playing' in line:
+                playing = True
+        if playing:
+            self.radio_off(args)
+        else:
+            self.radio_on(args)
 
     def mpd_sleep(self, args):
         if not self.fade_in_progress:

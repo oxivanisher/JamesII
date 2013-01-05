@@ -249,14 +249,12 @@ class RaspberryPlugin(Plugin):
         self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins)
         self.rasp_thread.start()
         return self.send_broadcast(['Rasp worker starting'])
-        # return(["Rasp worker starting"])
 
     def worker_must_exit(self):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
         return self.send_broadcast(['Rasp worker exiting'])
-        # return(["Rasp worker exiting"])
 
     # james system event handler
     def process_proximity_event(self, newstatus):

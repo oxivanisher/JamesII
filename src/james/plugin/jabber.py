@@ -80,10 +80,9 @@ class JabberThread(PluginThread):
     def create_message(self, to, header = [], body = []):
         if len(header) == 0:
             return False
-        message_list = header
+        message_list = filter(lambda s: s != '', header)
         if len(body) > 0:
-            message_list.append('\n')
-            message_list = message_list + body
+            message_list = message_list + filter(lambda s: s != '', body)
         message_text = '\n'.join(message_list)
         message = xmpp.protocol.Message(to, message_text)
         message.setAttr('type', 'chat')
@@ -94,7 +93,6 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
-        print("message callback")
         self.plugin.core.add_timeout(0, self.plugin.process_jabber_message, message)
 
     # called when the worker ends
@@ -132,7 +130,7 @@ class JabberPlugin(Plugin):
 
     # james command methods
     def cmd_xmpp_test(self, args):
-        self.send_message(["test head"], ["test body line 1", "test body line"])
+        self.send_xmpp_message(["test head"], ["test body line 1", "test body line"])
         return "Sending test message"
 
     def cmd_list_users(self, args):
@@ -142,9 +140,7 @@ class JabberPlugin(Plugin):
         return ret
 
     # methods for worker process
-    def send_message(self, message_head = [], message_body = [], to = None):
-        print ("s head: %s" % message_head)
-        print ("s body: %s" % message_body)
+    def send_xmpp_message(self, message_head = [], message_body = [], to = None):
         self.worker_lock.acquire()
         self.waiting_messages.append((message_head, message_body, to))
         self.worker_lock.release()
@@ -155,16 +151,10 @@ class JabberPlugin(Plugin):
         jid_ress = jid_data[1]
 
         command = self.core.utils.convert_from_unicode(message.getBody().split())
-        print("command: %s" % command)
-
-        print("jid_from: %s" % jid_from)
-        print ("process in main thread")
-        if 'help' in message.getBody():
+        if command[0] == 'help':
             search_for = self.core.utils.convert_from_unicode(message.getBody().split())
-            print("search for: %s" % search_for)
-            help_text = self.jabber_cmd_help(command)
-            print("help text: %s" % help_text)
-            self.send_message(['Commands are:'], help_text, jid_from)
+            help_text = self.jabber_cmd_help(command[1:])
+            self.send_xmpp_message(['Commands are:'], help_text, jid_from)
         else:
             self.send_command(command)
         pass
@@ -174,26 +164,28 @@ class JabberPlugin(Plugin):
         ret = []
         if len(args) > 0:    
             command = self.core.ghost_commands.get_best_match(args)
-            print command
             if command:
                 ret.append("%s:" % (command.help))
-                self.print_command_help_lines(command)
+                ret.append("%-20s %s" % ('Command:', 'Description:'))
+                for line in self.return_command_help_lines(command):
+                    ret.append(line)
             else:
                 ret.append("Command not found")
         else:
             ret.append("%-20s %s" % ('Command:', 'Description:'))
-            ret = ret + self.print_command_help_lines(self.core.ghost_commands, 1)
+            for line in self.return_command_help_lines(self.core.ghost_commands, 1):
+                ret.append(line)
         return ret
 
-    def print_command_help_lines(self, command_obj, depth = 0):
+    def return_command_help_lines(self, command_obj, depth = 0):
         ret = []
         for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
                 ret.append("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
-                print("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
             if len(c.subcommands.keys()) > 0:
-                ret = ret + self.print_command_help_lines(c, depth + 1)
+                for line in self.return_command_help_lines(c, depth + 1):
+                    ret.append(line)
         return ret
 
     def on_worker_exit(self):
@@ -223,13 +215,13 @@ class JabberPlugin(Plugin):
         message = ['Direct:']
         for line in args:
             message.append("%10s@%-10s: %s" % (plugin, host, line))
-        self.send_message(message)
+        self.send_xmpp_message(message)
 
     def process_broadcast_command_response(self, args, host, plugin):
         message = ['Broadcast:']
         for line in args:
             message.append("%10s@%-10s: %s" % (plugin, host, line))
-        self.send_message(message)
+        self.send_xmpp_message(message)
 
     def process_message(self, message):
         if message.level > 1:
@@ -243,13 +235,13 @@ class JabberPlugin(Plugin):
                     message_text.append(line)
             except Exception:
                 pass
-            self.send_message(message_text)
+            self.send_xmpp_message(message_text)
 
     def process_proximity_event(self, newstatus):
         if self.core.config['core']['debug']:
             print("Jabber Processing proximity event")
         if not newstatus['status'][self.core.location]:
-            self.send_message(['Nobody at home. Security measures activated.'])
+            self.send_xmpp_message(['Nobody at home. Security measures activated.'])
 
 descriptor = {
     'name' : 'jabber',

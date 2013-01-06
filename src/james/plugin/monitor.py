@@ -61,7 +61,7 @@ class MonitorPlugin(Plugin):
             if self.core.config['core']['debug']:
                 print("Saving monitor log to %s" % (self.file_cache_name))
             self.file_cache = []
-            self.send_broadcast(['Monitor logfile saved'])
+            return ["Monitor logfile saved"]
         except IOError:
             print("WARNING: Could not save monitor log to file!")
 

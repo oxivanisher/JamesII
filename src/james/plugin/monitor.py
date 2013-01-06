@@ -85,13 +85,15 @@ class MonitorPlugin(Plugin):
         try:
             for line in command['body']:
                 bytes += len(line)
+                lines = len(command['body'])
         except TypeError:
             bytes = 1
+            lines = 1
             pass
 
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                             "Command Response",
-                            ("Lines: %s; Bytes: %s (%s)" % (len(command['body']), bytes, command['uuid'])))
+                            ("Lines: %s; Bytes: %s (%s)" % (lines, bytes, command['uuid'])))
 
     def process_discovery_event(self, msg):
         events = ['hello', 'byebye', 'shutdown'] #'ping', 'pong'

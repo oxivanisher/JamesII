@@ -95,7 +95,7 @@ class TransmissionPlugin(Plugin):
             torrent =  self.tr_conn.info(torrent_id)[torrent_id]
             if torrent.isFinished and torrent.status == 'stopped':
                 message = self.core.new_message(self.name)
-                message.level = 1
+                message.level = 2
                 message.header = ("Download of %s finished" % torrent.name)
                 message.send()
                 self.tr_conn.remove(torrent_id)

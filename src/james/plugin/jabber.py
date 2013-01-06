@@ -15,6 +15,7 @@ class JabberThread(PluginThread):
         self.password = password
         self.active = True
         self.users = users
+        self.status_message = ''
 
     def work(self):
         # setup connection
@@ -68,6 +69,13 @@ class JabberThread(PluginThread):
                         conn.send(message)
             except Exception as e:
                 print("Jabber worker ERROR: %s" % e)
+        # see if we must change our status
+        if self.plugin.jabber_status_string != self.status_message:
+            self.status_message = self.plugin.jabber_status_string
+            new_status = self.status_message
+            presence = xmpp.Presence()
+            presence.setStatus(new_status)
+            conn.send(presence)
 
         self.plugin.waiting_messages = []
         self.plugin.worker_lock.release()
@@ -111,7 +119,9 @@ class JabberPlugin(Plugin):
         self.waiting_messages = []
         self.users = []
         # FIXME please implement me as status of jabber james
-        self.nodes_online_string = ''
+        self.jabber_status_string = ''
+        self.proximity_status_string = ''
+        self.nodes_online_num = 0
 
         self.commands.create_subcommand('test', 'Sends a test message over jabber', self.cmd_xmpp_test)
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
@@ -123,6 +133,15 @@ class JabberPlugin(Plugin):
                 self.users.append((self.core.config['persons'][person]['jid'], person))
             except Exception:
                 pass
+
+        # generate initial staus
+        if self.core.proximity_status.status[self.core.location]:
+            self.proximity_status_string = "You are at home"
+        else:
+            self.proximity_status_string = "You are away"
+        self.process_discovery_event(None)
+        self.set_jabber_status()
+
         self.start_worker()
     
     def terminate(self):
@@ -143,6 +162,11 @@ class JabberPlugin(Plugin):
     def send_xmpp_message(self, message_head = [], message_body = [], to = None):
         self.worker_lock.acquire()
         self.waiting_messages.append((message_head, message_body, to))
+        self.worker_lock.release()
+
+    def change_xmpp_status_message(self, new_message):
+        self.worker_lock.acquire()
+        self.jabber_status_string = new_message
         self.worker_lock.release()
 
     def process_jabber_message(self, message):
@@ -240,8 +264,21 @@ class JabberPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         if self.core.config['core']['debug']:
             print("Jabber Processing proximity event")
-        if not newstatus['status'][self.core.location]:
-            self.send_xmpp_message(['Nobody at home. Security measures activated.'])
+        if newstatus['status'][self.core.location]:
+            self.proximity_status_string = "You are at home"
+            self.set_jabber_status()
+        else:
+            self.proximity_status_string = "You are away"
+            self.set_jabber_status()
+
+    def process_discovery_event(self, msg):
+        self.nodes_online_num = len(self.core.nodes_online)
+        self.set_jabber_status()
+        pass
+
+    def set_jabber_status(self):
+        self.change_xmpp_status_message("%s. %s nodes online." % (self.proximity_status_string,
+                                                     self.nodes_online_num))
 
 descriptor = {
     'name' : 'jabber',

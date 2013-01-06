@@ -113,7 +113,7 @@ class MpdPlugin(Plugin):
 
             self.fade_thread = FadeThread(self,
                                           self.core.config['mpd']['nodes'][self.core.hostname]['host'],
-                                          (self.core.config['mpd']['max_volume'] - 25),
+                                          (self.core.config['mpd']['max_volume'] - 30),
                                           0,
                                           self.core.config['mpd']['sleep_fade'],
                                           self.core.config['mpd']['sleep_url'],

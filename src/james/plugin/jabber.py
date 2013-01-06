@@ -6,6 +6,7 @@ from james.plugin import *
 
 # http://xmpppy.sourceforge.net/
 # FIXME add muc support and send broadcast command responses only there
+# http://stackoverflow.com/questions/3528373/how-to-create-muc-and-send-messages-to-existing-muc-using-python-and-xmpp
 class JabberThread(PluginThread):
 
     def __init__(self, plugin, users, cfg_jid, password):

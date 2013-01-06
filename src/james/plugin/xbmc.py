@@ -5,6 +5,12 @@ import json
 
 from james.plugin import *
 
+
+# http://forum.xbmc.org/showthread.php?tid=111772
+
+
+
+
 # http://isbullsh.it/2012/06/Rest-api-in-python/
 # => http://docs.python-requests.org/en/latest/index.html
 

@@ -31,6 +31,7 @@ You Need (outdated!):
 * python-tz
 * python-yaml
 * python-requests (http://docs.python-requests.org/en/latest/index.html)
+* python-transmissionrpc (https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 
 
 Old stuff

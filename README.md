@@ -32,6 +32,7 @@ You Need (outdated!):
 * python-yaml
 * python-requests (http://docs.python-requests.org/en/latest/index.html)
 * python-transmissionrpc (https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
+* python-jsonrpclib (https://github.com/joshmarshall/jsonrpclib/)
 
 
 Old stuff

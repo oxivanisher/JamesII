@@ -123,9 +123,13 @@ class JabberPlugin(Plugin):
         self.jabber_status_string = ''
         self.proximity_status_string = ''
         self.nodes_online_num = 0
+        self.show_broadcast = False
 
         self.commands.create_subcommand('test', 'Sends a test message over jabber', self.cmd_xmpp_test)
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
+        broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
+        broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
+        broadcase_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
 
     # plugin methods
     def start(self):
@@ -158,6 +162,14 @@ class JabberPlugin(Plugin):
         for (jid, name) in self.users:
             ret.append("%-15s %s" % (jid, name))
         return ret
+
+    def cmd_broadcast_on(self, args):
+        self.show_broadcast = True
+        return ["Broadcast messages will be shown"]
+
+    def cmd_broadcast_off(self, args):
+        self.show_broadcast = False
+        return ["Broadcast messages will no longer be shown"]
 
     # methods for worker process
     def send_xmpp_message(self, message_head = [], message_body = [], to = None):
@@ -243,10 +255,11 @@ class JabberPlugin(Plugin):
         self.send_xmpp_message(message)
 
     def process_broadcast_command_response(self, args, host, plugin):
-        message = ['Broadcast:']
-        for line in args:
-            message.append("%10s@%-10s: %s" % (plugin, host, line))
-        self.send_xmpp_message(message)
+        if self.show_broadcast:
+            message = ['Broadcast:']
+            for line in args:
+                message.append("%10s@%-10s: %s" % (plugin, host, line))
+            self.send_xmpp_message(message)
 
     def process_message(self, message):
         if message.level > 1:

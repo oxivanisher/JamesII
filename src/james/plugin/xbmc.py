@@ -12,7 +12,13 @@ class XbmcPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(XbmcPlugin, self).__init__(core, descriptor)
 
+        self.show_broadcast = False
+
         self.commands.create_subcommand('update', 'Initiates a Database update', self.cmd_update)
+        self.commands.create_subcommand('test', 'test message', self.cmd_test)
+        broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
+        broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
+        broadcase_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
 
         user_string = ""
         if self.core.config['xbmc']['nodes'][self.core.hostname]['username']:
@@ -27,8 +33,54 @@ class XbmcPlugin(Plugin):
         self.xbmc_conn = jsonrpclib.Server(connection_string)
 
     def cmd_update(self, args):
-        self.xbmc_conn.VideoLibrary.Scan()
-        return 'args: ' + ' '.join(args)
+        try:
+            self.xbmc_conn.VideoLibrary.Scan()
+            return ["Video database is updating"]
+        except Exception as e:
+            return ["Could not send update command %s" % e]
+
+    def cmd_test(self, args):
+        try:
+            self.xbmc_conn.GUI.ShowNotification("test head", "test body")
+            return ["Notification sent"]
+        except Exception as e:
+            return ["Could not send notification %s" % e]
+
+    def cmd_broadcast_on(self, args):
+        self.show_broadcast = True
+        return ["Broadcast messages will be shown"]
+
+    def cmd_broadcast_off(self, args):
+        self.show_broadcast = False
+        return ["Broadcast messages will no longer be shown"]
+
+    def process_message(self, message):
+        if message.level > 0:
+            header = 'Level %s Message from %s@%s:' % (message.level,
+                                                             message.sender_name,
+                                                             message.sender_host)
+            body_list = []
+            for line in self.core.utils.list_unicode_cleanup([message.header]):
+                body_list.append(line)
+            try:
+                for line in self.core.utils.list_unicode_cleanup([message.body]):
+                    body_list.append(line)
+            except Exception:
+                pass
+            body = '\n'.join(body_list)
+            try:
+                self.xbmc_conn.GUI.ShowNotification(header, body)
+            except Exception as e:
+                return ["Could not send notification %s" % e]
+
+    def process_broadcast_command_response(self, args, host, plugin):
+        if self.show_broadcast:
+            header = "Broadcast from %s@%s" % (plugin, host)
+            body = '\n'.join(self.core.utils.convert_from_unicode(args))
+            try:
+                self.xbmc_conn.GUI.ShowNotification(header, body)
+            except Exception as e:
+                return ["Could not send notification %s" % e]
 
 descriptor = {
     'name' : 'xbmc',

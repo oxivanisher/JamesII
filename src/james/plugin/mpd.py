@@ -111,9 +111,10 @@ class MpdPlugin(Plugin):
         if not self.fade_in_progress:
             self.fade_in_progress = True
 
+            start_volume = int(self.core.config['mpd']['max_volume']) - 30
             self.fade_thread = FadeThread(self,
                                           self.core.config['mpd']['nodes'][self.core.hostname]['host'],
-                                          (self.core.config['mpd']['max_volume'] - 30),
+                                          start_volume,
                                           0,
                                           self.core.config['mpd']['sleep_fade'],
                                           self.core.config['mpd']['sleep_url'],

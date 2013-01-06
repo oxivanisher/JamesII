@@ -82,8 +82,13 @@ class MonitorPlugin(Plugin):
 
     def process_command_response_event(self, command):
         bytes = 0
-        for line in command['body']:
-            bytes += len(line)
+        try:
+            for line in command['body']:
+                bytes += len(line)
+        except TypeError:
+            bytes = 1
+            pass
+
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                             "Command Response",
                             ("Lines: %s; Bytes: %s (%s)" % (len(command['body']), bytes, command['uuid'])))

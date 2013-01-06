@@ -288,7 +288,6 @@ class JabberPlugin(Plugin):
     def process_discovery_event(self, msg):
         self.nodes_online_num = len(self.core.nodes_online)
         self.set_jabber_status()
-        pass
 
     def set_jabber_status(self):
         self.change_xmpp_status_message("%s. %s nodes online." % (self.proximity_status_string,

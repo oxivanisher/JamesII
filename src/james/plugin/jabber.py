@@ -1,6 +1,7 @@
 
 import xmpp
 import sys
+import time
 
 from james.plugin import *
 
@@ -9,7 +10,7 @@ from james.plugin import *
 # http://stackoverflow.com/questions/3528373/how-to-create-muc-and-send-messages-to-existing-muc-using-python-and-xmpp
 class JabberThread(PluginThread):
 
-    def __init__(self, plugin, users, cfg_jid, password, muc_room):
+    def __init__(self, plugin, users, cfg_jid, password, muc_room = None, muc_nick = 'JamesII'):
         # FIXME i must become a singleton!
         super(JabberThread, self).__init__(plugin)
         self.cfg_jid = cfg_jid
@@ -17,6 +18,8 @@ class JabberThread(PluginThread):
         self.active = True
         self.users = users
         self.status_message = ''
+        self.muc_room = muc_room
+        self.muc_nick = muc_nick
 
     def work(self):
         # setup connection
@@ -44,6 +47,10 @@ class JabberThread(PluginThread):
         # lets go online
         conn.sendInitPresence()
 
+        # do we have to connect to a muc room?
+        if self.muc_room:
+            conn.send(xmpp.Presence(to='%s/%s' % (self.muc_room, self.muc_nick)))
+
         # dive into the endless loops
         self.GoOn(conn)
 
@@ -55,7 +62,7 @@ class JabberThread(PluginThread):
         # see if i must shut myself down
         if self.plugin.worker_exit:
             self.active = False
-        # see if we must send messages
+        # see if we must send direct messages
         for (header, body, to_jid) in self.plugin.waiting_messages:
             try:
                 message = False
@@ -69,7 +76,19 @@ class JabberThread(PluginThread):
                         message = self.create_message(jid, header, body)
                         conn.send(message)
             except Exception as e:
-                print("Jabber worker ERROR: %s" % e)
+                print("Jabber worker send direct msg ERROR: %s" % e)
+        # see if we must send muc messages
+        for (header, body) in self.plugin.waiting_muc_messages:
+            try:
+                msg_text = '\n'.join(header)
+                if len(body):
+                    msg_text = msg_text + '\n' + '\n'.join(body)
+                msg = xmpp.protocol.Message(body=msg_text)
+                msg.setTo(self.muc_room)
+                msg.setType('groupchat')
+                conn.send(msg)
+            except Exception as e:
+                print("Jabber worker send muc msg ERROR: %s" % e)
         # see if we must change our status
         if self.plugin.jabber_status_string != self.status_message:
             self.status_message = self.plugin.jabber_status_string
@@ -78,6 +97,7 @@ class JabberThread(PluginThread):
             presence.setStatus(new_status)
             conn.send(presence)
 
+        self.plugin.waiting_muc_messages = []
         self.plugin.waiting_messages = []
         self.plugin.worker_lock.release()
 
@@ -102,7 +122,7 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
-        self.plugin.core.add_timeout(0, self.plugin.process_jabber_message, message)
+        self.plugin.core.add_timeout(0, self.plugin.on_xmpp_message, message)
 
     # called when the worker ends
     def on_exit(self, result):
@@ -118,12 +138,14 @@ class JabberPlugin(Plugin):
         self.worker_exit = False
         self.worker_lock = threading.Lock()
         self.waiting_messages = []
+        self.waiting_muc_messages = []
         self.users = []
         # FIXME please implement me as status of jabber james
         self.jabber_status_string = ''
         self.proximity_status_string = ''
         self.nodes_online_num = 0
         self.show_broadcast = False
+        self.start_time = int(time.time())
 
         self.commands.create_subcommand('test', 'Sends a test message over jabber', self.cmd_xmpp_test)
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
@@ -177,28 +199,79 @@ class JabberPlugin(Plugin):
         self.waiting_messages.append((message_head, message_body, to))
         self.worker_lock.release()
 
+    def send_xmpp_muc_message(self, message_head = [], message_body = []):
+        self.worker_lock.acquire()
+        self.waiting_muc_messages.append((message_head, message_body))
+        self.worker_lock.release()
+
     def change_xmpp_status_message(self, new_message):
         self.worker_lock.acquire()
         self.jabber_status_string = new_message
         self.worker_lock.release()
 
-    def process_jabber_message(self, message):
+    # worker callback methods
+    def on_worker_exit(self):
+        self.send_broadcast(['XMPP worker exited'])
+
+    def on_xmpp_message(self, message):
+        msg_types = {'chat'      : self.on_chat_msg,
+                     'error'     : self.on_error_msg,
+                     'groupchat' : self.on_groupchat_msg}
+
+        try:
+            msg_types[message.__getitem__('type')](message)
+        except KeyError:
+            print("Recieved unkonwn message type: %s" % message.__getitem__('type'))
+            pass
+
+    def on_chat_msg(self, message):
         jid_data = str(message.getFrom()).split('/')
         jid_from = jid_data[0]
         try:
             jid_ress = jid_data[1]
 
             command = self.core.utils.convert_from_unicode(message.getBody().split())
-            if command[0] == 'help':
-                search_for = self.core.utils.convert_from_unicode(message.getBody().split())
-                help_text = self.jabber_cmd_help(command[1:])
-                self.send_xmpp_message(['Commands are:'], help_text, jid_from)
-            else:
-                self.send_command(command)
+            self.run_command(command, jid_from)
         except IndexError:
             pass
 
-    # worker process help functions
+    def on_groupchat_msg(self, message):
+        # for the first 3 seconds, ignore groupchat messages
+        # (the server sends the last X messages, so do not process them multiple times)
+        if (self.start_time + 3) < int(time.time()):
+            jid_data = str(message.getFrom()).split('/')
+            jid_from = jid_data[1]
+            # ignore my own messages
+            if not jid_from == self.core.config['jabber']['muc_nick']:
+                try:
+                    jid_ress = jid_data[1]
+
+                    command = self.core.utils.convert_from_unicode(message.getBody().split())
+                    self.run_muc_command(command)
+                except IndexError:
+                    pass
+                pass
+
+    def on_error_msg(self, message):
+        print("rcv error msg: %s" % message)
+        pass
+
+    # worker callback helper methods
+    def run_command(self, command, jid_from):
+        if command[0] == 'help':
+            help_text = self.jabber_cmd_help(command[1:])
+            self.send_xmpp_message(['Commands are:'], help_text, jid_from)
+        else:
+            self.send_command(command)
+
+    def run_muc_command(self, command):
+        if command[0] == 'help':
+            help_text = self.jabber_cmd_help(command[1:])
+            self.send_xmpp_muc_message(['Commands are:'], help_text)
+        else:
+            self.send_command(command)
+
+    # worker process help methods
     def jabber_cmd_help(self, args):
         ret = []
         if len(args) > 0:    
@@ -227,9 +300,6 @@ class JabberPlugin(Plugin):
                     ret.append(line)
         return ret
 
-    def on_worker_exit(self):
-        self.send_broadcast(['XMPP worker exited'])
-
     # worker control methods
     def start_worker(self):
         # FIXME make me singleton!
@@ -239,7 +309,9 @@ class JabberPlugin(Plugin):
         self.rasp_thread = JabberThread(self,
                                         self.users,
                                         self.core.config['jabber']['jid'],
-                                        self.core.config['jabber']['password'])
+                                        self.core.config['jabber']['password'],
+                                        self.core.config['jabber']['muc_room'],
+                                        self.core.config['jabber']['muc_nick'])
         self.rasp_thread.start()
         return self.send_broadcast(['XMPP worker starting'])
 
@@ -254,13 +326,22 @@ class JabberPlugin(Plugin):
         message = ['Direct:']
         for line in args:
             message.append("%10s@%-10s: %s" % (plugin, host, line))
-        self.send_xmpp_message(message)
+        self.send_xmpp_muc_message(message)
+        if not self.core.proximity_status.status[self.core.location]:
+            self.send_xmpp_message(message)
 
     def process_broadcast_command_response(self, args, host, plugin):
+        message = ['Broadcast:']
+        for line in args:
+            message.append("%10s@%-10s: %s" % (plugin, host, line))
+        self.send_xmpp_muc_message(message)
+
+        send_msg = False
         if self.show_broadcast:
-            message = ['Broadcast:']
-            for line in args:
-                message.append("%10s@%-10s: %s" % (plugin, host, line))
+            send_msg = True
+        if not self.core.proximity_status.status[self.core.location]:
+            send_msg = True
+        if send_msg:
             self.send_xmpp_message(message)
 
     def process_message(self, message):

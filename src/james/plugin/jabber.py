@@ -9,7 +9,7 @@ from james.plugin import *
 # http://stackoverflow.com/questions/3528373/how-to-create-muc-and-send-messages-to-existing-muc-using-python-and-xmpp
 class JabberThread(PluginThread):
 
-    def __init__(self, plugin, users, cfg_jid, password):
+    def __init__(self, plugin, users, cfg_jid, password, muc_room):
         # FIXME i must become a singleton!
         super(JabberThread, self).__init__(plugin)
         self.cfg_jid = cfg_jid
@@ -185,16 +185,18 @@ class JabberPlugin(Plugin):
     def process_jabber_message(self, message):
         jid_data = str(message.getFrom()).split('/')
         jid_from = jid_data[0]
-        jid_ress = jid_data[1]
+        try:
+            jid_ress = jid_data[1]
 
-        command = self.core.utils.convert_from_unicode(message.getBody().split())
-        if command[0] == 'help':
-            search_for = self.core.utils.convert_from_unicode(message.getBody().split())
-            help_text = self.jabber_cmd_help(command[1:])
-            self.send_xmpp_message(['Commands are:'], help_text, jid_from)
-        else:
-            self.send_command(command)
-        pass
+            command = self.core.utils.convert_from_unicode(message.getBody().split())
+            if command[0] == 'help':
+                search_for = self.core.utils.convert_from_unicode(message.getBody().split())
+                help_text = self.jabber_cmd_help(command[1:])
+                self.send_xmpp_message(['Commands are:'], help_text, jid_from)
+            else:
+                self.send_command(command)
+        except IndexError:
+            pass
 
     # worker process help functions
     def jabber_cmd_help(self, args):

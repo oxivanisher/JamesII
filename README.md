@@ -3,7 +3,7 @@ James II: Your Butler
 
 James your Butler brought to the next level.
 
-The Idea behing James Butler is to implement smarthome functions and ideas to your existing infrastraucture like.
+The Idea behing James Butler is to implement smarthome features in combination with multimedia to your existing infrastraucture.
 
 
 ATTENTION: This project is under heavy dev and this readme is probably outdated.
@@ -18,9 +18,6 @@ Main:
 Plugins:
 * plugin requirement checks before load
 * scripting plugin
-* xbmc remote plugin
-* transmission remote plugin
-* xmpp service plugin
 * HTTP monitor/plugin
 
 You Need (outdated!):
@@ -35,19 +32,12 @@ You Need (outdated!):
 * python-jsonrpclib (https://github.com/joshmarshall/jsonrpclib/)
 
 
-Old stuff
----------
-* python-jsonschema
-* python-sqlite
-* python-jabberbot (http://thp.io/2007/python-jabberbot/)
-
-MQueue Setup (also outdated!):
+RabbitMQueue Setup (also outdated!):
 -------------
 apt-get  install rabbitmq-server
 rabbitmqctl add_user test test
 rabbitmqctl add_vhost test
 rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
-
 
 
 Technologies and software used (you guessed it: outdated!):
@@ -58,10 +48,8 @@ Technologies and software used (you guessed it: outdated!):
 * eSpeak http://espeak.sourceforge.net/
 * MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
 * Transmission http://www.transmissionbt.com/
-* SQLite http://www.sqlite.org/
 * XBMC Mediacenter http://wiki.xbmc.org/
 * Raspberry Pi http://www.raspberrypi.org/
-* Python Jabberbot http://thp.io/2007/python-jabberbot/
 
 
 Copy of the old Readme due lazyness:
@@ -96,5 +84,3 @@ Based on:
 * https://github.com/oxivanisher/beaglebot which is based on jabberbot
 * mac2vendor - lookup the OUI part of a MAC address in the IEEE registration Hessel Schut, hessel@isquared.nl, 2008-10-12
 * http://gentoo-wiki.com/Talk:TIP_Bluetooth_Proximity_Monitor
-
-

@@ -8,6 +8,35 @@ import threading
 
 from james.plugin import *
 
+class BlinkLed(object):
+    # led blink class, returns false
+    def __init__(self, thread, pin, amount, cycles = 5):
+        self.thread = thread
+        self.pin = pin
+        self.amount = amount * 2 - 1
+        self.cycles = cycles
+        self.counter = 0
+        self.led_state = True
+        self.thread.set_led(self.pin, True)
+
+    def check(self):
+        self.counter += 1
+        if self.counter >= self.cycles:
+            if self.led_state:
+                self.thread.set_led(self.pin, False)
+                self.led_state = False
+            else:
+                self.thread.set_led(self.pin, True)
+                self.led_state = True
+
+            self.counter = 0
+            self.amount -= 1
+
+        if self.amount <= 0:
+            return True
+        else:
+            return False
+
 class RaspberryThread(PluginThread):
 
     def __init__(self, plugin, button_pins, switch_pins, led_pins):
@@ -19,6 +48,7 @@ class RaspberryThread(PluginThread):
         self.plugin = plugin
         self.pin_state_cache = {}
         self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
+        self.led_blink_list = []
 
     def rasp_init(self):
         self.pin_state_cache['buttons'] = {}
@@ -41,11 +71,23 @@ class RaspberryThread(PluginThread):
 
         active = True
         loop_count = 0
+        millis = int(round(time.time() * 1000)) - 10
+        last_diff = 10
 
         while active:
             loop_count += 1
-            if (loop_count % 1000) == 0:
-                self.led_blink(0, 1)
+
+            # this magic calculates the next sleep time based on the last run to about 0.01 sec
+            new_millis = int(round(time.time() * 1000))
+            diff = new_millis - millis
+            sleep_time = (20 - ((diff + last_diff )/ 2 )) * 0.001
+            last_diff = diff
+            millis = new_millis
+
+            # see if we must blink with some leds
+            for blink in self.led_blink_list:
+                if blink.check():
+                    self.led_blink_list.remove(blink)
 
             self.plugin.worker_lock.acquire()
             # see if i must shut myself down
@@ -57,7 +99,7 @@ class RaspberryThread(PluginThread):
             # see if we must switch some leds off
             for pin in self.plugin.waiting_leds_off:
                 self.set_led(pin, False)
-            # see if we must blink with some leds
+            # see if we must create new blink objects from main thread
             for (pin, amount, duration) in self.plugin.waiting_leds_blink:
                 self.led_blink(pin, amount, duration)
 
@@ -71,23 +113,15 @@ class RaspberryThread(PluginThread):
             for pin in self.button_pins:
                 if not self.read_pin(pin):
                     self.pin_state_cache['buttons'][pin] += 1
-                    if (self.pin_state_cache['buttons'][pin] % 100) == 0:
-                        self.led_blink(2, 1)
+                    if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
+                        self.led_blink(1, 1)
                 else:
                     # 100 counts are ~+ 1 second
-                    if self.pin_state_cache['buttons'][pin] > 300:
-                        self.plugin.core.add_timeout(0, self.plugin.on_extended_button_press, pin)
-                        self.led_blink(2, 4)
-                    if self.pin_state_cache['buttons'][pin] > 200:
-                        self.plugin.core.add_timeout(0, self.plugin.on_long_button_press, pin)
-                        self.led_blink(2, 3)
-                    elif self.pin_state_cache['buttons'][pin] > 100:
-                        self.plugin.core.add_timeout(0, self.plugin.on_medium_button_press, pin)
-                        self.led_blink(2, 2)
-                    elif self.pin_state_cache['buttons'][pin] > 1:
-                        self.plugin.core.add_timeout(0, self.plugin.on_short_button_press, pin)
-                        self.led_blink(2, 1)
-                    self.pin_state_cache['buttons'][pin] = 0
+                    if self.pin_state_cache['buttons'][pin]:
+                        duration = int(self.pin_state_cache['buttons'][pin] / 100) + 1
+                        self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
+                        self.led_blink(2, duration)
+                        self.pin_state_cache['buttons'][pin] = 0
 
             # check for switch states
             for pin in self.switch_pins:
@@ -100,16 +134,13 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
             # sleeping for 1/100 sec seems to be a good value for raspberry
-            time.sleep(0.01)
+            time.sleep(sleep_time)
+            # time.sleep(1)
 
     # rasp gpio methods
-    def led_blink(self, led, amount = 1, sleep = 0.05):
-        for step in range(amount):
-            self.set_led(led, 1)
-            time.sleep(sleep)
-            self.set_led(led, 0)
-            time.sleep(sleep)
-        
+    def led_blink(self, pin, amount = 1, cycles = 5):
+        self.led_blink_list.append(BlinkLed(self, pin, amount, cycles))
+
     def set_led(self, led_id, mode):
         if mode:
             self.gpio.digitalWrite(led_id, self.gpio.HIGH)
@@ -154,8 +185,10 @@ class RaspberryPlugin(Plugin):
     # plugin methods
     def start(self):
         self.start_worker()
+        count = 0
         for led in self.led_pins:
-            self.blink_led(led, 3, 0.05)
+            self.blink_led(led, (len(self.led_pins) - count) * 3, 2)
+            count += 1
         if self.core.proximity_status.status[self.core.location]:
             self.turn_off_led(3)
         else:
@@ -203,38 +236,19 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_off.append(pin)
         self.worker_lock.release()
 
-    def blink_led(self, pin, amount = 1, sleep = 0.05):
+    def blink_led(self, pin, amount = 1, sleep = 5):
         self.worker_lock.acquire()
         self.waiting_leds_blink.append((pin, amount, sleep))
         self.worker_lock.release()
 
     # methods for worker process
-    def on_short_button_press(self, pin):
+    def on_button_press(self, pin, duration):
         try:
-            if pin == 4:
+            self.send_broadcast(['Button %s pressed for %s seconds' % (pin, duration)])
+            if pin == 4 and duration == 1:
                 self.send_command(['mpd', 'radio', 'toggle'])
-            self.send_broadcast(['Short Button %s event' % pin])
         except Exception as e:
-            self.send_broadcast(['Short Button press error: %s' % (e)])
-    
-    def on_medium_button_press(self, pin):
-        try:
-            self.send_broadcast(['Medium Button %s event' % pin])
-        except Exception as e:
-            self.send_broadcast(['Medium Button press error: %s' % (e)])
-
-    def on_long_button_press(self, pin):
-        try:
-            self.send_broadcast(['Long Button %s event' % pin])
-        except Exception as e:
-            self.send_broadcast(['Long Button press error: %s' % (e)])
-
-    def on_extended_button_press(self, pin):
-        try:
-            self.send_broadcast(['Extended Button %s event' % pin])
-            self.send_command(['sys', 'quit'])
-        except Exception as e:
-            self.send_broadcast(['Extended Button press error: %s' % (e)])
+            self.send_broadcast(['Button press error: %s' % (e)])
 
     def on_switch_change(self, pin, new_state):
         self.send_broadcast(['Switch %s changed state to %s' % (pin, new_state)])

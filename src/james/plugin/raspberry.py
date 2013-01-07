@@ -88,8 +88,7 @@ class RaspberryThread(PluginThread):
             # see if we must blink with some leds
             for blink in self.led_blink_list:
                 if blink.check():
-                    # self.led_blink_list.remove(blink)
-                    pass
+                    self.led_blink_list.remove(blink)
 
             self.plugin.worker_lock.acquire()
             # see if i must shut myself down

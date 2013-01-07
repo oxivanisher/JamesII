@@ -29,8 +29,8 @@ def conv_to_set(obj):  # Allow single integer to be provided
 # The actual CronEvent class
 class CronEvent(object):
     def __init__(self, action, min=allMatch, hour=allMatch, 
-                       day=allMatch, month=allMatch, dow=allMatch, 
-                       args=(), kwargs={}):
+                 day=allMatch, month=allMatch, dow=allMatch, 
+                 args=(), kwargs={}):
         self.mins = conv_to_set(min)
         self.hours= conv_to_set(hour)
         self.days = conv_to_set(day)
@@ -42,6 +42,7 @@ class CronEvent(object):
 
     def matchtime(self, t):
         """Return True if this event should trigger at the specified datetime"""
+        print("%s:%s" % (t.weekday(), self.dow))
         return ((t.minute     in self.mins) and
                 (t.hour       in self.hours) and
                 (t.day        in self.days) and
@@ -169,7 +170,7 @@ class CronPlugin(Plugin):
                         elif '-' in arg:
                             tmp_list = []
                             tmp_args = arg.split('-')
-                            for tmp_num in range(int(tmp_args[0]), int(tmp_args[1])):
+                            for tmp_num in range(int(tmp_args[0]), (int(tmp_args[1]) + 1)):
                                 tmp_list.append(tmp_num)
                             cron_args.append(tmp_list)
 

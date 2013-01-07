@@ -75,6 +75,7 @@ class RaspberryThread(PluginThread):
         millis = int(round(time.time() * 1000)) - 10
         last_diff = 10
 
+        # sleeping for 1/100 sec seems to be a good value for raspberry
         while active:
             loop_count += 1
 
@@ -134,10 +135,8 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['state'] = new_state
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
-            # sleeping for 1/100 sec seems to be a good value for raspberry
-            print sleep_time
-            time.sleep(sleep_time)
-            # time.sleep(1)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
     # rasp gpio methods
     def led_blink(self, pin, amount = 1, cycles = 5):

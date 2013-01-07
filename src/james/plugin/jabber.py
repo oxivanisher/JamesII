@@ -133,7 +133,7 @@ class JabberThread(PluginThread):
         self.plugin.core.add_timeout(0, self.plugin.on_xmpp_message, message)
 
     def presence_callback(self, conn, msg):
-        print str(msg)
+        # print str(msg)
         prs_type=msg.getType()
         who=msg.getFrom()
         if prs_type == 'subscribe':

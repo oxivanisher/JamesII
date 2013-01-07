@@ -9,7 +9,7 @@ import threading
 from james.plugin import *
 
 class BlinkLed(object):
-    # led blink class, returns false
+    # led blink class, returns true when finished
     def __init__(self, thread, pin, amount, cycles = 5):
         self.thread = thread
         self.pin = pin
@@ -21,16 +21,17 @@ class BlinkLed(object):
 
     def check(self):
         self.counter += 1
-        if self.counter >= self.cycles:
-            if self.led_state:
-                self.thread.set_led(self.pin, False)
-                self.led_state = False
-            else:
-                self.thread.set_led(self.pin, True)
-                self.led_state = True
+        if self.amount > 0:
+            if self.counter >= self.cycles:
+                if self.led_state:
+                    self.thread.set_led(self.pin, False)
+                    self.led_state = False
+                else:
+                    self.thread.set_led(self.pin, True)
+                    self.led_state = True
 
-            self.counter = 0
-            self.amount -= 1
+                self.counter = 0
+                self.amount -= 1
 
         if self.amount <= 0:
             return True
@@ -87,7 +88,8 @@ class RaspberryThread(PluginThread):
             # see if we must blink with some leds
             for blink in self.led_blink_list:
                 if blink.check():
-                    self.led_blink_list.remove(blink)
+                    # self.led_blink_list.remove(blink)
+                    pass
 
             self.plugin.worker_lock.acquire()
             # see if i must shut myself down

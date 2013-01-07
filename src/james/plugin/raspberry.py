@@ -135,6 +135,7 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
             # sleeping for 1/100 sec seems to be a good value for raspberry
+            print sleep_time
             time.sleep(sleep_time)
             # time.sleep(1)
 

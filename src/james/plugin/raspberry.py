@@ -71,16 +71,22 @@ class RaspberryThread(PluginThread):
             for pin in self.button_pins:
                 if not self.read_pin(pin):
                     self.pin_state_cache['buttons'][pin] += 1
+                    if (self.pin_state_cache['buttons'][pin] % 100) == 0:
+                        self.led_blink(2, 1)
                 else:
                     # 100 counts are ~+ 1 second
-                    if self.pin_state_cache['buttons'][pin] > 500:
+                    if self.pin_state_cache['buttons'][pin] > 300:
                         self.plugin.core.add_timeout(0, self.plugin.on_extended_button_press, pin)
+                        self.led_blink(2, 4)
                     if self.pin_state_cache['buttons'][pin] > 200:
                         self.plugin.core.add_timeout(0, self.plugin.on_long_button_press, pin)
+                        self.led_blink(2, 3)
                     elif self.pin_state_cache['buttons'][pin] > 100:
                         self.plugin.core.add_timeout(0, self.plugin.on_medium_button_press, pin)
+                        self.led_blink(2, 2)
                     elif self.pin_state_cache['buttons'][pin] > 1:
                         self.plugin.core.add_timeout(0, self.plugin.on_short_button_press, pin)
+                        self.led_blink(2, 1)
                     self.pin_state_cache['buttons'][pin] = 0
 
             # check for switch states
@@ -205,7 +211,6 @@ class RaspberryPlugin(Plugin):
     # methods for worker process
     def on_short_button_press(self, pin):
         try:
-            self.blink_led(2, 1)
             if pin == 4:
                 self.send_command(['mpd', 'radio', 'toggle'])
             self.send_broadcast(['Short Button %s event' % pin])
@@ -214,21 +219,18 @@ class RaspberryPlugin(Plugin):
     
     def on_medium_button_press(self, pin):
         try:
-            self.blink_led(2, 2)
             self.send_broadcast(['Medium Button %s event' % pin])
         except Exception as e:
             self.send_broadcast(['Medium Button press error: %s' % (e)])
 
     def on_long_button_press(self, pin):
         try:
-            self.blink_led(2, 3)
             self.send_broadcast(['Long Button %s event' % pin])
         except Exception as e:
             self.send_broadcast(['Long Button press error: %s' % (e)])
 
     def on_extended_button_press(self, pin):
         try:
-            self.blink_led(2, 3)
             self.send_broadcast(['Extended Button %s event' % pin])
             self.send_command(['sys', 'quit'])
         except Exception as e:

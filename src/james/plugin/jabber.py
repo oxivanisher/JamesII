@@ -5,12 +5,18 @@ import time
 
 from james.plugin import *
 
+
+# FIXME!!! only run commands from users in the users list!
+
+
 # http://xmpppy.sourceforge.net/
-# FIXME add muc support and send broadcast command responses only there
 # http://stackoverflow.com/questions/3528373/how-to-create-muc-and-send-messages-to-existing-muc-using-python-and-xmpp
+# http://xmpppy-guide.berlios.de/html/
+# http://stackoverflow.com/questions/2381597/xmpp-chat-accessing-contacts-status-messages-with-xmpppys-roster
+
 class JabberThread(PluginThread):
 
-    def __init__(self, plugin, users, cfg_jid, password, muc_room = None, muc_nick = 'JamesII'):
+    def __init__(self, plugin, users, cfg_jid, password, muc_room = None, muc_nick = 'james'):
         # FIXME i must become a singleton!
         super(JabberThread, self).__init__(plugin)
         self.cfg_jid = cfg_jid
@@ -42,7 +48,8 @@ class JabberThread(PluginThread):
             print "Warning: unable to perform SASL auth on %s. Old authentication method used!"%server
 
         # registering handlers
-        conn.RegisterHandler('message',self.message_callback)
+        conn.RegisterHandler('message', self.message_callback)
+        conn.RegisterHandler('presence', self.presence_callback)
 
         # lets go online
         conn.sendInitPresence()
@@ -78,17 +85,18 @@ class JabberThread(PluginThread):
             except Exception as e:
                 print("Jabber worker send direct msg ERROR: %s" % e)
         # see if we must send muc messages
-        for (header, body) in self.plugin.waiting_muc_messages:
-            try:
-                msg_text = '\n'.join(header)
-                if len(body):
-                    msg_text = msg_text + '\n' + '\n'.join(body)
-                msg = xmpp.protocol.Message(body=msg_text)
-                msg.setTo(self.muc_room)
-                msg.setType('groupchat')
-                conn.send(msg)
-            except Exception as e:
-                print("Jabber worker send muc msg ERROR: %s" % e)
+        if self.muc_room:
+            for (header, body) in self.plugin.waiting_muc_messages:
+                try:
+                    msg_text = '\n'.join(header)
+                    if len(body):
+                        msg_text = msg_text + '\n' + '\n'.join(body)
+                    msg = xmpp.protocol.Message(body=msg_text)
+                    msg.setTo(self.muc_room)
+                    msg.setType('groupchat')
+                    conn.send(msg)
+                except Exception as e:
+                    print("Jabber worker send muc msg ERROR: %s" % e)
         # see if we must change our status
         if self.plugin.jabber_status_string != self.status_message:
             self.status_message = self.plugin.jabber_status_string
@@ -124,6 +132,18 @@ class JabberThread(PluginThread):
     def message_callback(self, conn, message):
         self.plugin.core.add_timeout(0, self.plugin.on_xmpp_message, message)
 
+    def presence_callback(self, conn, msg):
+        print str(msg)
+        prs_type=msg.getType()
+        who=msg.getFrom()
+        if prs_type == 'subscribe':
+                conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
+                conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
+        # elif prs_type == 'presence':
+        #     print("::: %s" % msg.__getitem__('jid'))
+        # print("nick: %s / jid: %s" % (msg.getNick(), msg.getJid()))
+        # print(msg.getAttrs())
+
     # called when the worker ends
     def on_exit(self, result):
         self.plugin.on_worker_exit()
@@ -140,7 +160,6 @@ class JabberPlugin(Plugin):
         self.waiting_messages = []
         self.waiting_muc_messages = []
         self.users = []
-        # FIXME please implement me as status of jabber james
         self.jabber_status_string = ''
         self.proximity_status_string = ''
         self.nodes_online_num = 0

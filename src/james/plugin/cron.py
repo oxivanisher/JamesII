@@ -42,7 +42,6 @@ class CronEvent(object):
 
     def matchtime(self, t):
         """Return True if this event should trigger at the specified datetime"""
-        print("%s:%s" % (t.weekday(), self.dow))
         return ((t.minute     in self.mins) and
                 (t.hour       in self.hours) and
                 (t.day        in self.days) and

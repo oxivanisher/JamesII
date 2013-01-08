@@ -248,6 +248,10 @@ class RaspberryPlugin(Plugin):
             self.send_broadcast(['Button %s pressed for %s seconds' % (pin, duration)])
             if pin == 4 and duration == 1:
                 self.send_command(['mpd', 'radio', 'toggle'])
+            if pin == 4 and duration == 3:
+                self.send_command(['sys', 'quit'])
+            if pin == 4 and duration == 5:
+                self.send_command(['mpd', 'radio', 'sleep'])
         except Exception as e:
             self.send_broadcast(['Button press error: %s' % (e)])
 

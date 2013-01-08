@@ -252,7 +252,9 @@ class JabberPlugin(Plugin):
             command = self.core.utils.convert_from_unicode(message.getBody().split())
             self.run_command(command, jid_from)
         except IndexError:
-            pass
+   			return ["No command submitted"]
+        except AttributeError:
+			return ["No command submitted"]
 
     def on_groupchat_msg(self, message):
         # for the first 3 seconds, ignore groupchat messages

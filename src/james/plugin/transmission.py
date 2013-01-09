@@ -53,6 +53,9 @@ class TransmissionPlugin(Plugin):
             print(e.message)
             return ["Torrent not added (%s)" % e.message]
             pass
+        except IndexError:
+            return ["Syntax error!"]
+            pass
 
     def cmd_remove(self, args):
         args = self.core.utils.list_unicode_cleanup(args)

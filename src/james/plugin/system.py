@@ -107,7 +107,7 @@ class SystemPlugin(Plugin):
     def process_command_request_event(self, command):
         if self.core.master:
             try:
-                request = self.core.utils.list_unicode_cleanup(command['body'])
+                request = self.core.utils.convert_from_unicode(command['body'])
             except Exception:
                 request = False
                 pass

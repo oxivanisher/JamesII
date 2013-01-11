@@ -163,8 +163,6 @@ class RaspberryPlugin(Plugin):
 
         super(RaspberryPlugin, self).__init__(core, descriptor)
 
-        self.button_pins = [4]
-        self.switch_pins = [5]
         self.led_pins = [0, 1, 2, 3]
 
         self.rasp_thread = False
@@ -174,6 +172,25 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_off = []
         self.waiting_leds_blink = []
         self.messages_waiting_count = 0
+
+        self.button_pins = []
+        self.button_commands = {}
+        try:
+            for command in self.core.utils.convert_from_unicode(self.core.config['raspberry']['nodes'][self.core.hostname]['buttons']):
+                self.button_commands[(command['pin'], command['seconds'])] = command['command'].split()
+                self.button_pins.append(command['pin'])
+        except Exception as e:
+            print "Rasp Button load Exception (%s)" % e
+
+        self.switch_pins = []
+        self.switch_commands = {}
+        try:
+            for command in self.core.utils.convert_from_unicode(self.core.config['raspberry']['nodes'][self.core.hostname]['switches']):
+                self.switch_commands[(command['pin'], True)] = command['cmd_on'].split()
+                self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
+                self.switch_pins.append(command['pin'])
+        except Exception as e:
+            print "Rasp Switch load Exception (%s)" % e
 
         if core.os_username == 'root':
             self.commands.create_subcommand('test', 'Do something with the leds', self.cmd_rasp_test)
@@ -245,18 +262,15 @@ class RaspberryPlugin(Plugin):
     # methods for worker process
     def on_button_press(self, pin, duration):
         try:
-            self.send_broadcast(['Button %s pressed for %s seconds' % (pin, duration)])
-            if pin == 4 and duration == 1:
-                self.send_command(['mpd', 'radio', 'toggle'])
-            if pin == 4 and duration == 3:
-                self.send_command(['sys', 'quit'])
-            if pin == 4 and duration == 5:
-                self.send_command(['mpd', 'radio', 'sleep'])
+            self.send_command(self.button_commands[(pin, duration)])
         except Exception as e:
-            self.send_broadcast(['Button press error: %s' % (e)])
+            print "button press error (%s)" % e
 
     def on_switch_change(self, pin, new_state):
-        self.send_broadcast(['Switch %s changed state to %s' % (pin, new_state)])
+        try:
+            self.send_command(self.switch_commands[(pin, new_state)])
+        except Exception as e:
+            print "switch change error (%s)" % e
 
     def on_worker_exit(self):
         self.send_broadcast(['Raspberry worker exited'])

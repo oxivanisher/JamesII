@@ -11,11 +11,13 @@ class SystemPlugin(Plugin):
         super(SystemPlugin, self).__init__(core, descriptor)
 
         self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
+        self.command_aliases = self.core.utils.convert_from_unicode(self.core.config['core']['command_aliases'])
 
         self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
+            self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
         self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.show_plugins)
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.show_proximity)
         if self.core.master:
@@ -93,6 +95,28 @@ class SystemPlugin(Plugin):
 
     def cmd_ping(self, args):
         self.core.ping_nodes()
+
+    def cmd_show_aliases(self, args):
+        ret = []
+        for command in sorted(self.command_aliases.keys()):
+            ret.append("%-10s %s" % (command, self.command_aliases[command]))
+        return ret
+
+    # call from core for requests
+    # only the master should process aliases
+    if self.core.master:
+        def process_command_request_event(self, command):
+            request = self.core.utils.list_unicode_cleanup(command['body'])
+            args = []
+            if len(request) > 1:
+                args = request[1:]
+            try:
+                command = self.command_aliases[request[0]].split() + args
+                self.send_command(command)
+                self.send_broadcast(['Processing command alias %s (%s)' % (request[0], ' '.join(command))])
+            except Exception as e:
+                # print "command alias error (%s)" % e
+                pass
 
 descriptor = {
     'name' : 'system',

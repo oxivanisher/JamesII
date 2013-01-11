@@ -109,7 +109,7 @@ class SystemPlugin(Plugin):
             try:
                 request = self.core.utils.list_unicode_cleanup(command['body'])
             except Exception:
-                continue
+                break
                 pass
 
             args = []

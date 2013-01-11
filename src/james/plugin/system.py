@@ -11,7 +11,7 @@ class SystemPlugin(Plugin):
         super(SystemPlugin, self).__init__(core, descriptor)
 
         self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
-        self.command_aliases = self.core.utils.convert_from_unicode(self.core.config['core']['command_aliases'])
+        self.command_aliases = self.core.config['core']['command_aliases']
 
         self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:

@@ -188,6 +188,10 @@ class CliPlugin(Plugin):
             print ("%-20s %s" % ('+', 'Remote Commands'))
             self.print_command_help_lines(self.core.ghost_commands, 1)
 
+            print ("%-20s %s" % ('+', 'Command Aliases'))
+            for command in sorted(self.core.config['core']['command_aliases'].keys()):
+                print "|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command])
+
         return True
 
     def print_command_help_lines(self, command_obj, depth = 0):

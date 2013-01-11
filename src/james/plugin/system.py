@@ -104,8 +104,8 @@ class SystemPlugin(Plugin):
 
     # call from core for requests
     # only the master should process aliases
-    if self.core.master:
-        def process_command_request_event(self, command):
+    def process_command_request_event(self, command):
+        if self.core.master:
             request = self.core.utils.list_unicode_cleanup(command['body'])
             args = []
             if len(request) > 1:

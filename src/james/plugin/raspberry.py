@@ -193,12 +193,14 @@ class RaspberryPlugin(Plugin):
             print "Rasp Switch load Exception (%s)" % e
 
         if core.os_username == 'root':
-            self.commands.create_subcommand('test', 'Do something with the leds', self.cmd_rasp_test)
             self.commands.create_subcommand('quit', 'Quits the raspberry worker', self.cmd_rasp_quit)
             self.commands.create_subcommand('start', 'Starts the raspberry worker', self.cmd_rasp_start)
             led_commands = self.commands.create_subcommand('led', 'Led control commands', None)
             led_commands.create_subcommand('on', 'Switches on given pin', self.cmd_led_on)
             led_commands.create_subcommand('off', 'Switches off given pin', self.cmd_led_off)
+            show_commands = self.commands.create_subcommand('show', 'Show commands for buttons and switches', None)
+            show_commands.create_subcommand('buttons', 'Shows button commands', self.cmd_show_buttons)
+            show_commands.create_subcommand('switches', 'Shows switch commands', self.cmd_show_switches)
 
     # plugin methods
     def start(self):
@@ -216,8 +218,21 @@ class RaspberryPlugin(Plugin):
         self.worker_must_exit()
 
     # james command methods
-    def cmd_rasp_test(self, args):
-        self.set_led(0, 1)
+    def cmd_show_buttons(self, args):
+        ret = []
+        for (pin, seconds) in sorted(self.button_commands.keys()):
+            ret.append("Pin: %2s %2s secs: %s" % (pin,
+                                                  seconds,
+                                                  ' '.join(self.button_commands[(pin, seconds)])))
+        return ret
+
+    def cmd_show_switches(self, args):
+        ret = []
+        for (pin, state) in sorted(self.switch_commands.keys()):
+            ret.append("Pin: %2s, %5s: %s" % (pin,
+                                              state,
+                                              ' '.join(self.switch_commands[(pin, state)])))
+        return ret
 
     def cmd_led_on(self, args):
         args = self.core.utils.list_unicode_cleanup(args)

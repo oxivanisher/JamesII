@@ -34,14 +34,35 @@ class TransmissionPlugin(Plugin):
 
     def cmd_show(self, args):
         ret = ["Currently available torrents:"]
-        ret.append("%3s %-12s %9s %s" % ("ID", "Status", "Remaining", "Name"))
+
+        (u'rateDownload', 1473000)
+        (u'peersConnected', 247)
+
+        ret.append("%3s %-12s %10s %6s %9s %-8s %s" % ("ID",
+                                                       "Status",
+                                                       "DL Speed",
+                                                       "Peers",
+                                                       "Remaining",
+                                                       "UL Ratio",
+                                                       "Name"))
         for torrent_id in self.tr_conn.get_files():
             torrent =  self.tr_conn.info(torrent_id)[torrent_id]
             if not torrent.eta:
                 my_eta = "-"
             else:
                 my_eta = torrent.eta
-            ret.append("%3s %-12s %9s %s" % (torrent_id, torrent.status, my_eta, torrent.name))
+
+            dl_rate = self.core.utils.bytes2human(torrent.rateDownload)
+            # with this code block you see all the attributes of the torrent
+            # for key, value in torrent.fields.iteritems():
+            #     print(key, value)
+            ret.append("%3s %-12s %8s/s %6s %9s %-8s %s" % (torrent_id,
+                                                           torrent.status,
+                                                           dl_rate,
+                                                           torrent.peersConnected,
+                                                           my_eta,
+                                                           torrent.uploadRatio,
+                                                           torrent.name))
         return ret
 
     def cmd_add(self, args):

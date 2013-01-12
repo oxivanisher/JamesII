@@ -269,6 +269,11 @@ class Core(object):
             """We received a ping request. Be a good boy and send a pong."""
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
+            # Broadcast command list
+            for p in self.plugins:
+                if p.commands:
+                    self.discovery_channel.send(['commands', p.commands.serialize()])
+
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
             self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))

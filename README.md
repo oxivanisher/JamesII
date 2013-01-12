@@ -48,14 +48,12 @@ $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
 
 RabbitMQueue Setup (also outdated!):
 -------------
-<pre>
-<code>
+<pre><code>
 apt-get  install rabbitmq-server
 rabbitmqctl add_user test test
 rabbitmqctl add_vhost test
 rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
-</code>
-</pre>
+</code></pre>
 
 Technologies and software used (you guessed it: outdated!):
 ------------------

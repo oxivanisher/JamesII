@@ -34,24 +34,25 @@ You Need (outdated!):
 
 How to integrate JamesII torrent download to your linux desktop:
 ---------
-sudo vim /usr/share/applications/JamesII.desktop
-
+$ sudo vim /usr/share/applications/JamesII.desktop
+<code>
 [Desktop Entry]
 Exec=/path/to/JamesII/src/cli.sh tr add %U
 MimeType=application/x-bittorrent;x-scheme-handler/magnet;
 Terminal=false
 Type=Application
-
-xdg-mime default JamesII.desktop x-scheme-handler/magnet
+</code>
+$ xdg-mime default JamesII.desktop x-scheme-handler/magnet
 
 
 RabbitMQueue Setup (also outdated!):
 -------------
+<code>
 apt-get  install rabbitmq-server
 rabbitmqctl add_user test test
 rabbitmqctl add_vhost test
 rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
-
+</code>
 
 Technologies and software used (you guessed it: outdated!):
 ------------------

@@ -363,7 +363,7 @@ class Core(object):
         except KeyError:
             # this proximity event is not for our location. just ignore it for now
             pass
-            
+
     def proximity_event(self, changedstatus, pluginname):
         """
         If the local proximity state has changed, call the publish method
@@ -436,6 +436,10 @@ class Core(object):
                 #print("process events")
             except KeyboardInterrupt:
                 self.terminate()
+            except pika.exceptions.AMQPConnectionError:
+                # disconnection error
+                self.terminate()
+                raise ConnectionError()
         
     def terminate(self):
         """

@@ -1,3 +1,4 @@
+# http://docs.python.org/2/library/logging.html
 
 class LogLevel(object):
 	DEBUG = 0

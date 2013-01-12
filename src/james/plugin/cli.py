@@ -17,7 +17,7 @@ class ConsoleThread(threading.Thread):
         super(ConsoleThread, self).__init__()
         self.plugin = plugin
         self.terminated = False
-
+    
         self.keywords = []
 
         if sys.platform == 'darwin':
@@ -42,10 +42,23 @@ class ConsoleThread(threading.Thread):
                         self.plugin.core.brokerconfig['port']))
 
         while (not self.terminated):
+            self.plugin.worker_lock.acquire()
+            if self.plugin.worker_exit:
+                self.plugin.worker_lock.release()
+                self.terminated = True
+                sys.quit()
+                break
+            self.plugin.worker_lock.release()
+
+            # check for keyboard interrupt
             try:
                 line = raw_input()
             except KeyboardInterrupt:
-                self.plugin.core.terminate()
+                # http://bytes.com/topic/python/answers/43936-canceling-interrupting-raw_input
+                self.plugin.core.add_timeout(0, self.plugin.core.terminate)
+                self.terminated = True
+                sys.quit()
+                break
 
             line = line.strip()
 
@@ -105,6 +118,9 @@ class CliPlugin(Plugin):
 
         self.console_thread = None
         self.cmd_line_mode = len(sys.argv) > 1
+        self.worker_exit = False
+        self.worker_lock = threading.Lock()
+
 
         self.commands.hide = True
         self.commands.create_subcommand('exit', 'Quits the console', self.cmd_exit)
@@ -121,6 +137,10 @@ class CliPlugin(Plugin):
             self.console_thread.start()
 
     def terminate(self):
+        self.worker_lock.acquire()
+        self.worker_exit = True
+        self.worker_lock.release()
+
         if self.console_thread:
             self.console_thread.terminate()
 

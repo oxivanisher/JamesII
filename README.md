@@ -32,6 +32,19 @@ You Need (outdated!):
 * python-jsonrpclib (https://github.com/joshmarshall/jsonrpclib/)
 
 
+How to integrate JamesII torrent download to your linux desktop:
+---------
+sudo vim /usr/share/applications/JamesII.desktop
+
+[Desktop Entry]
+Exec=/path/to/JamesII/src/cli.sh tr add %U
+MimeType=application/x-bittorrent;x-scheme-handler/magnet;
+Terminal=false
+Type=Application
+
+xdg-mime default JamesII.desktop x-scheme-handler/magnet
+
+
 RabbitMQueue Setup (also outdated!):
 -------------
 apt-get  install rabbitmq-server

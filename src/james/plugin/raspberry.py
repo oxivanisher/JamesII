@@ -94,7 +94,11 @@ class RaspberryThread(PluginThread):
             self.plugin.worker_lock.acquire()
             # see if i must shut myself down
             if self.plugin.worker_exit:
+                for pin in self.led_pins:
+                    self.set_led(pin, True)
                 active = False
+                self.plugin.worker_lock.release()
+                continue
             # see if we must switch some leds on
             for pin in self.plugin.waiting_leds_on:
                 self.set_led(pin, True)

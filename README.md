@@ -34,6 +34,7 @@ You Need (outdated!):
 
 How to integrate JamesII torrent download to your linux desktop:
 ---------
+<pre>
 $ sudo vim /usr/share/applications/JamesII.desktop
 <code>
 [Desktop Entry]
@@ -43,16 +44,18 @@ Terminal=false
 Type=Application
 </code>
 $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
-
+</pre>
 
 RabbitMQueue Setup (also outdated!):
 -------------
+<pre>
 <code>
 apt-get  install rabbitmq-server
 rabbitmqctl add_user test test
 rabbitmqctl add_vhost test
 rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
 </code>
+</pre>
 
 Technologies and software used (you guessed it: outdated!):
 ------------------

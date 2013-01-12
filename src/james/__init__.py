@@ -125,7 +125,7 @@ class Core(object):
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
         else:
-            self.ping_nodes()
+            self.add_timeout(2, self.ping_nodes)
             try:
                 self.location = self.config['locations'][self.hostname]
             except Exception as e:

@@ -104,6 +104,8 @@ class Core(object):
         try:
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
         except Exception as e:
+            print "Could not connect to RabbitMQ server!"
+            time.sleep(3)
             raise ConnectionError()
 
         # Create discovery & configuration channels
@@ -438,7 +440,8 @@ class Core(object):
                 self.terminate()
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error
-                print "Lost connection to RabbitMQ!"
+                print "Lost connection to RabbitMQ server!"
+                time.sleep(3)
                 self.terminate()
         
     def terminate(self):

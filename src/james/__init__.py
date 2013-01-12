@@ -269,11 +269,6 @@ class Core(object):
             """We received a ping request. Be a good boy and send a pong."""
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
-            # Broadcast command list
-            for p in self.plugins:
-                if p.commands:
-                    self.discovery_channel.send(['commands', p.commands.serialize()])
-
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
             self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
@@ -431,6 +426,11 @@ class Core(object):
         This method is called right at the beginning of normal operations. (after initialisation)
         Calls start() on all started plugins.
         """
+        # Broadcast command list
+        for p in self.plugins:
+            if p.commands:
+                self.discovery_channel.send(['commands', p.commands.serialize()])
+
         if self.config['core']['debug']:
             print(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
         for p in self.plugins:

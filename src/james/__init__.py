@@ -438,8 +438,8 @@ class Core(object):
                 self.terminate()
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error
+                print "Lost connection to RabbitMQ!"
                 self.terminate()
-                raise ConnectionError()
         
     def terminate(self):
         """

@@ -67,12 +67,17 @@ class TransmissionPlugin(Plugin):
 
     def cmd_add(self, args):
         args = self.core.utils.list_unicode_cleanup(args)
+        message = self.core.new_message(self.name)
+        message.level = 2
         try:
             self.tr_conn.add_uri(args[0])
+            message.header = ("Torrent download started")
+            message.body = args[0]
+            message.send()            
             return ["Torrent added"]
         except transmissionrpc.TransmissionError as e:
-            print(e.message)
-            return ["Torrent not added (%s)" % e.message]
+            message.header = ("Torrent download not started due error")
+            message.send()
             pass
         except IndexError:
             return ["Syntax error!"]

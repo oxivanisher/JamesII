@@ -77,6 +77,7 @@ class TransmissionPlugin(Plugin):
             return ["Torrent added"]
         except transmissionrpc.TransmissionError as e:
             message.header = ("Torrent download not started due error")
+            message.body = args[0]
             message.send()
             pass
         except IndexError:

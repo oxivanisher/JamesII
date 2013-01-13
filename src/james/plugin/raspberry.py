@@ -94,8 +94,6 @@ class RaspberryThread(PluginThread):
             self.plugin.worker_lock.acquire()
             # see if i must shut myself down
             if self.plugin.worker_exit:
-                for pin in self.led_pins:
-                    self.set_led(pin, True)
                 active = False
                 self.plugin.worker_lock.release()
                 continue
@@ -141,6 +139,9 @@ class RaspberryThread(PluginThread):
 
             if sleep_time > 0:
                 time.sleep(sleep_time)
+
+        for pin in self.led_pins:
+            self.set_led(pin, True)
 
     # rasp gpio methods
     def led_blink(self, pin, amount = 1, cycles = 5):

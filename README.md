@@ -17,7 +17,6 @@ Main:
 
 Plugins:
 * plugin requirement checks before load
-* scripting plugin
 * HTTP monitor/plugin
 
 You Need (outdated!):

@@ -65,8 +65,7 @@ class Core(object):
         self.nodes_online = {}
         self.master_node = ''
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
-
-        # self.add_timeout(15, self.test_handler, 'test1', 'test2', test3='test', test4='test')
+        self.core_lock = threading.RLock()
 
         try:
             self.os_username = getpass.getuser()
@@ -439,7 +438,9 @@ class Core(object):
         while not self.terminated:
             try:
                 self.connection.process_data_events()
+                self.lock_core()
                 self.process_timeouts()
+                self.unlock_core()
                 #print("process events")
             except KeyboardInterrupt:
                 self.terminate()
@@ -448,7 +449,13 @@ class Core(object):
                 print "Lost connection to RabbitMQ server!"
                 time.sleep(3)
                 self.terminate()
-        
+
+    def lock_core(self):
+        self.core_lock.acquire()
+    
+    def unlock_core(self):
+        self.core_lock.release()
+
     def terminate(self):
         """
         Terminate the core. This method will first call the terminate() on each plugin.

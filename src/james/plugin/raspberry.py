@@ -86,10 +86,10 @@ class RaspberryThread(PluginThread):
             millis = new_millis
 
             # debug output
-            if (loop_count % 100) == 0:
-                print "Rasp Worker Debug: time:       %s" % int(time.time())
-                print "Rasp Worker Debug: sleep_time: %s" % sleep_time
-                print "Rasp Worker Debug: diff:       %s" % diff
+            # if (loop_count % 100) == 0:
+            #     print "Rasp Worker Debug: time:       %s" % int(time.time())
+            #     print "Rasp Worker Debug: sleep_time: %s" % sleep_time
+            #     print "Rasp Worker Debug: diff:       %s" % diff
 
             # see if we must blink with some leds
             for blink in self.led_blink_list:
@@ -122,7 +122,7 @@ class RaspberryThread(PluginThread):
             for pin in self.button_pins:
                 if not self.read_pin(pin):
                     self.pin_state_cache['buttons'][pin] += 1
-                    if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
+                    if (self.pin_state_cache['buttons'][pin] % 100) == 0: # or self.pin_state_cache['buttons'][pin] == 2:
                         self.led_blink(1, 1)
                 else:
                     # 100 counts are ~+ 1 second

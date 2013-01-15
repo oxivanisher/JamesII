@@ -86,9 +86,9 @@ class RaspberryThread(PluginThread):
             millis = new_millis
 
             # debug output
-            if (loop_count % 1000) == 0:
+            if (loop_count % 100) == 0:
+                print "Rasp Worker Debug: time:       %s" % int(time.time())
                 print "Rasp Worker Debug: sleep_time: %s" % sleep_time
-                print "Rasp Worker Debug: millis:     %s" % millis
                 print "Rasp Worker Debug: diff:       %s" % diff
 
             # see if we must blink with some leds

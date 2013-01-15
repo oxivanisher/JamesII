@@ -78,13 +78,18 @@ class RaspberryThread(PluginThread):
         # sleeping for 1/100 sec seems to be a good value for raspberry
         while active:
             loop_count += 1
-
             # this magic calculates the next sleep time based on the last run to about 0.01 sec
             new_millis = int(round(time.time() * 1000))
             diff = new_millis - millis
             sleep_time = (20 - ((diff + last_diff )/ 2 )) * 0.001
             last_diff = diff
             millis = new_millis
+
+            # debug output
+            if (loop_count % 1000) == 0:
+                print "Rasp Worker Debug: sleep_time: %s" % sleep_time
+                print "Rasp Worker Debug: millis:     %s" % millis
+                print "Rasp Worker Debug: diff:       %s" % diff
 
             # see if we must blink with some leds
             for blink in self.led_blink_list:

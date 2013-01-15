@@ -255,7 +255,7 @@ class Core(object):
 
             # Broadcast configuration if master
             if self.master:
-                self.config_channel.send(self.config)
+                self.config_channel.send((self.config, self.uuid))
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
                 # Send actual proximity state
                 # self.publish_proximity_status(self.proximity_status.get_all_status_copy(), 'core')
@@ -299,7 +299,7 @@ class Core(object):
             """Call process_discovery_event() on each started plugin."""
             p.process_discovery_event(msg)
 
-    def config_listener(self, msg):
+    def config_listener(self, (new_config, sender_uuid)):
         """
         Listens for configurations on the configuration channel. If we get a
         changed version of the config (= new config on master node) we will exit.
@@ -307,7 +307,7 @@ class Core(object):
         if not self.config:
             show_message = True
             try:
-                if not msg['core']['debug']:
+                if not new_config['core']['debug']:
                     show_message = False
             except TypeError as e:
                 pass
@@ -315,16 +315,20 @@ class Core(object):
             if show_message:
                 print("Received config, debug mode activated:")
 
-            self.config = msg
+            self.config = new_config
+            self.master_node = sender_uuid
 
             try:
                 self.location = self.config['locations'][self.hostname]
             except Exception as e:
                 self.location = 'home'
         else:
-            if self.config != msg:
-                print("The configuration file has changed. Exiting!")
+            if self.config != new_config:
+                print("Core: The configuration file has changed. Exiting!")
                 self.terminate()
+            elif self.master_node != sender_uuid:
+                print("Core: The master node has changed.")
+                self.master_node = sender_uuid
 
     # message channel methods
     def send_message(self, msg):

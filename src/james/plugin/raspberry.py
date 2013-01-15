@@ -122,7 +122,7 @@ class RaspberryThread(PluginThread):
             for pin in self.button_pins:
                 if not self.read_pin(pin):
                     self.pin_state_cache['buttons'][pin] += 1
-                    if (self.pin_state_cache['buttons'][pin] % 100) == 0: # or self.pin_state_cache['buttons'][pin] == 2:
+                    if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
                         self.led_blink(1, 1)
                 else:
                     # 100 counts are ~+ 1 second

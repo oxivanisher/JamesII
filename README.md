@@ -78,18 +78,16 @@ Desktop DBUS Notifications:
 
 RaspberryPi Plugin:
 <pre>
-My prototype for the GPIO is working, but a real prototype. A schematic will follow sometime.
+My prototype for the GPIO is working, but a real prototype. A schematic will follow sometimes.
 <code>Checkout and read (!) include/install_wiring_pi.sh</code>
 </pre>
 
 Motion Plugin:
-<pre><code>
-Add the following lines to your /etc/motion/motion.conf:
+<pre><code>Add the following lines to your /etc/motion/motion.conf:
 on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
 on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
-</code>
-</pre>
+</code></pre>
 
 Technologies and software used (probably outdated!):
 ------------------

@@ -5,7 +5,7 @@ James your Butler brought to the next level.
 
 The Idea behing JamesII Butler is to implement smarthome features in combination with multimedia, networking and interaction applications to your existing infrastraucture.
 
-Module documentation (hopefully not too old): http://oxi.ch/JamesII/
+Module documentation nightly updated: http://oxi.ch/JamesII/doc/
 
 ToDo:
 ------
@@ -49,7 +49,7 @@ Installation and RabbitMQueue Setup:
 <pre><code>
 apt-get  install rabbitmq-server
 </code>
-JamesII currently only uses anonymous rabbitmq auth. This code is currently not needed.
+JamesII currently only uses anonymous rabbitmq auth. This following code is currently not needed.
 <code>
 rabbitmqctl add_user test test
 rabbitmqctl add_vhost test
@@ -73,20 +73,17 @@ Type=Application
 $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
 </pre>
 
-<pre>
 Desktop DBUS Notifications:
-<code>start the dbus-notify_loop.sh with your desktop</code>
-</pre>
+<pre><code>start the dbus-notify_loop.sh with your desktop</code></pre>
 
-<pre>
 RaspberryPi Plugin:
+<pre>
 My prototype for the GPIO is working, but a real prototype. A schematic will follow sometime.
 <code>Checkout and read (!) include/install_wiring_pi.sh</code>
 </pre>
 
-<pre>
 Motion Plugin:
-<code>
+<pre><code>
 Add the following lines to your /etc/motion/motion.conf:
 on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"

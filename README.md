@@ -28,6 +28,7 @@ You Need (debian packages):
 * python-tz
 * python-yaml
 * screen (always a good idea)
+<code>apt-get install python-pika python-psutil python-tz python-yaml</code>
 
 Optional (plugin specific):
 ----------
@@ -40,6 +41,8 @@ Optional (plugin specific):
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
 * python-pylirc (lirc plugin)
+<pre><code>apt-get install bluetooth espeak motion mpc mpdtoys python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip
+pip install jsonrpclib</code></pre>
 
 Installation and RabbitMQueue Setup:
 -------------

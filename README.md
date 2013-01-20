@@ -3,36 +3,62 @@ James II: Your Butler
 
 James your Butler brought to the next level.
 
-The Idea behing James Butler is to implement smarthome features in combination with multimedia to your existing infrastraucture.
-
-
-ATTENTION: This project is under heavy dev and this readme is probably outdated.
----------------------------
+The Idea behing JamesII Butler is to implement smarthome features in combination with multimedia, networking and interaction applications to your existing infrastraucture.
 
 ToDo:
 ------
 Main:
-* add process monitor / events
 * log class
+* YAML Schemas to detect wrong config files
 
 Plugins:
-* plugin requirement checks before load
-* HTTP monitor/plugin
+* LIRC plugin for RaspberryPi (http://aron.ws/projects/lirc_rpi/)
+* Doorbell extension for RaspberryPi Plugin
+* plugin requirement checks before load (external files)
+* HTTP monitor/plugin with restapi for future mobile apps
+* Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
-You Need (outdated!):
+You Need (debian packages):
 ---------
 * python
 * python-pika (https://github.com/pika/pika)
-* python-psutil (http://code.google.com/p/psutil/)
+* python-psutil (sysstat plugin, http://code.google.com/p/psutil/)
 * python-tz
 * python-yaml
-* python-requests (http://docs.python-requests.org/en/latest/index.html)
-* python-transmissionrpc (https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
-* python-jsonrpclib (https://github.com/joshmarshall/jsonrpclib/)
+* screen (always a good idea)
 
+Optional (plugin specific):
+----------
+* bluetooth (proximity plugin)
+* espeak (espeak plugin)
+* motion (motion plugin)
+* mpc, mpdtoys (mpd plugin)
+* python-xmpp (jabber plugin)
+* python-dbus (dbus notification plugin)
+* python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
+* python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
+* python-pylirc (lirc plugin)
 
-How to integrate JamesII torrent download to your linux desktop:
+Installation and RabbitMQueue Setup:
+-------------
+* Clone JamesII to a directory (git clone git://github.com/oxivanisher/JamesII.git)
+* Edit your config file (config/config.yaml)
+* Install RabbitMQ
+<pre><code>
+apt-get  install rabbitmq-server
+</code>
+JamesII currently only uses anonymous rabbitmq auth. This code is currently not needed.
+<code>
+rabbitmqctl add_user test test
+rabbitmqctl add_vhost test
+rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
+</code></pre>
+* Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some tools need root access to work.
+<code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code>
+
+How to integrate JamesII to your infrastructure:
 ---------
+Desktop torrent download:
 <pre>
 $ sudo vim /usr/share/applications/JamesII.desktop
 <code>
@@ -45,16 +71,28 @@ Type=Application
 $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
 </pre>
 
-RabbitMQueue Setup (also outdated!):
--------------
-<pre><code>
-apt-get  install rabbitmq-server
-rabbitmqctl add_user test test
-rabbitmqctl add_vhost test
-rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
-</code></pre>
+<pre>
+Desktop DBUS Notifications:
+<code>start the dbus-notify_loop.sh with your desktop</code>
+</pre>
 
-Technologies and software used (you guessed it: outdated!):
+<pre>
+RaspberryPi Plugin:
+My prototype for the GPIO is working, but a real prototype. A schematic will follow sometime.
+<code>Checkout and read (!) include/install_wiringpi.sh</code>
+</pre>
+
+<pre>
+Motion Plugin:
+<code>
+Add the following lines to your /etc/motion/motion.conf:
+on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
+on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
+on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
+</code>
+</pre>
+
+Technologies and software used (probably outdated!):
 ------------------
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol
 * AMQP http://en.wikipedia.org/wiki/AMQP
@@ -64,37 +102,3 @@ Technologies and software used (you guessed it: outdated!):
 * Transmission http://www.transmissionbt.com/
 * XBMC Mediacenter http://wiki.xbmc.org/
 * Raspberry Pi http://www.raspberrypi.org/
-
-
-Copy of the old Readme due lazyness:
-------------------------------------
-
-What he does:
-* Monitors your LAN for unknown MAC addresses
-* Monitors your home with motion when you are not at home
-* Alerts events
-* Speak via espeak
-* Send XMPP (Jabber) messages (xmpp alert)
-* Listens to XMPP commands (james bot)
-
-Installation:
-default installation dir: /opt/james
-
-copy and edit:
-- settings/james.cfg.example to settings/james.cfg
-- settings/settings.sh.example to settings/settings.sh
-
-add the watchdogs to crontab -e:
-* * * * * /opt/james/new_event.sh periodic >/dev/null 2>&1
-
-
-Attention:
-* Theese are very "hacky" scripts. They should run as root but be aware of possible security risks!
-* You should use different users for james (XMPP bot) and the alerting.
-* You have to install (debian) python-xmp, screen, espeak, etherwake, rsync, nmap, arp-scan, sendxmpp, php, motion
-* Optional: mpc
-
-Based on:
-* https://github.com/oxivanisher/beaglebot which is based on jabberbot
-* mac2vendor - lookup the OUI part of a MAC address in the IEEE registration Hessel Schut, hessel@isquared.nl, 2008-10-12
-* http://gentoo-wiki.com/Talk:TIP_Bluetooth_Proximity_Monitor

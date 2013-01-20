@@ -1,24 +1,151 @@
-# core settings
-core:
- timezone   : Europe/Zurich
- debug      : False
- pingtimeout : 10
- sleeptimeout: 90
+# JamesII example config file
+# node_name = hostname JamesII is running on
+# the node with this config.yaml file will become the master node
 
-# plugin configurations
-xmpp:
- destination: your@jid
- jid        : botJid/resource
- password   : password
+# core / basic settings
+core:
+ timezone    : Europe/Zurich
+ debug       : True      #True/False
+ # this configures the periodic node detection
+ # pingtimeout is the waittime for the nodes to
+ # answer the ping, sleeptimeout the time between cycles
+ pingtimeout : 5
+ sleeptimeout: 90
+ # you have to be careful with "extending" existing commands. both would be run
+ command_aliases:
+  at         : mcp at
+  in         : mcp in
+  tee        : mcp in 4m espeak say your tea is ready
+  gn8        : mpd radio sleep
+  bye        : in 1m mpd radio off
+  nom        : espeak say nom nom nom nom nom nom nom nom nom
+  get        : tr add
+  say        : espeak say
+
+persons:
+# cofigure the persons recognized by JamesII
+ johndoe:
+  jid        : you@your.domain
+  email      : you@your.domain
+  bt_devices:
+   # hostname : bluetooth mac address
+   none      : 00:00:00:00:00:00
+  eth_devices:
+   # hostname : mac address
+   none      : 00:00:00:00:00:00
+
+# plugin configurations "under construction"
+http-server:
+ nodes:
+  node_name:
+   port     : 8181
+
+jabber:
+# configure your xmpp account for the deamon
+ jid        : james@your.domain
+ password   : secret
+ muc_room   : james2@conference.your.domain
+ muc_nick   : JamesII
+ nodes:
+  - node_name
+
+# config for modules considered "working"
+motion:
+# where should the movies and image files be copied?
+ target-dir : '/media/pot/proximity/'
+# you can leave this blank
+ dropbox-dir: '/home/you/Dropbox/Public/Proximity/'
+ dropbox-url: 'https://dl.dropbox.com/u/your_dropbox_id/Proximity/'
+ nodes:
+  - node_name
+
+xbmc:
+ nodes:
+  node_name:
+   host       : localhost
+   port       : 8080
+   username   : 
+   password   : 
+
+raspberry:
+ nodes:
+  node_name:
+   buttons:
+    - pin     : 4
+      seconds : 1
+      command : mpd radio toggle
+    - pin     : 4
+      seconds : 3
+      command : sys quit
+    - pin     : 4
+      seconds : 5
+      command : mpd radio sleep
+    - pin     : 5
+      seconds : 1
+      command : espeak say button 5 pressed
+#   switches:
+#    - pin     : 5
+#      cmd_on  : espeak say switch 5 on
+#      cmd_off : espeak say switch 5 off
+
+transmission:
+ nodes:
+  node_name:
+   host       : localhost
+   port       : 9091
+   username   : admin
+   password   : secret
+   loop_time  : 30
+
+proximity:
+# proximity deamon sleep times. long if somebody is at home, short if not
+ sleep_long : 240
+ sleep_short: 20
+ nodes:
+  - node_name
 
 mpd:
+# configure your basic radio stations
  radio_url  : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
- sleep_url  : http://www.radioswissjazz.ch/live/aacp.m3u
- wakeup_url : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
- host       : 
- password   : 
- port       : 
+ wakeup_url : http://www.radioswissjazz.ch/live/aacp.m3u
+ sleep_url  : http://www.oxi.ch/chillout.m3u
+ # fade time in minutes for the wakeup and sleep timers
+ wakeup_fade: 15
+ sleep_fade : 30
+ # max and talkover (for espeak) volume for mpd
+ max_volume : 80
+ talk_volume: 30
+ nodes:
+ # mpd server configurations
+  node_name:
+   host    : localhost
+   port    :
+   password:
 
-# configure locations (the system will default to 'home')
+espeak:
+# set your custom espeak command:
+# -ven+f3 -m -p 70 -s 180  this one sounds somewhat like GlaDOS (play with pitch -p)
+# -v en-rp -ven+m7         british enlish english like a butler
+ espeak_command: /usr/bin/espeak -ven+f3 -m -p 70 -s 180
+ nodes:
+  - node_name
+
+monitor:
+ nodes:
+  - node_name
+
+timer:
+ nodes:
+  - node_name
+
+cron:
+ nodes:
+  - node_name
+
+wakeonlan:
+ nodes:
+  - node_name
+
 locations:
- # hostname : location
+# configure locations (the system will default to 'home')
+ # node_name: location

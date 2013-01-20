@@ -5,6 +5,8 @@ James your Butler brought to the next level.
 
 The Idea behing JamesII Butler is to implement smarthome features in combination with multimedia, networking and interaction applications to your existing infrastraucture.
 
+Module documentation (hopefully not too old): http://oxi.ch/JamesII/
+
 ToDo:
 ------
 Main:

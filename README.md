@@ -79,7 +79,7 @@ Desktop DBUS Notifications:
 <pre>
 RaspberryPi Plugin:
 My prototype for the GPIO is working, but a real prototype. A schematic will follow sometime.
-<code>Checkout and read (!) include/install_wiringpi.sh</code>
+<code>Checkout and read (!) include/install_wiring_pi.sh</code>
 </pre>
 
 <pre>

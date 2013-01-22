@@ -102,3 +102,10 @@ Technologies and software used (probably outdated!):
 * Transmission http://www.transmissionbt.com/
 * XBMC Mediacenter http://wiki.xbmc.org/
 * Raspberry Pi http://www.raspberrypi.org/
+
+Thanks:
+-----------------
+Special thanks go to:
+* http://github.com/westlicht for a lot of OO and Python knowledge
+* http://aron.ws/projects/lirc_rpi/ for the IR solution used with RaspberryPi
+* Kurt Fierz and Anaxagoras for support with the electronic part of JamesII

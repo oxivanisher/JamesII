@@ -124,9 +124,10 @@ class TransmissionPlugin(Plugin):
         for torrent_id in self.tr_conn.get_files():
             torrent =  self.tr_conn.info(torrent_id)[torrent_id]
             if torrent.isFinished and torrent.status == 'stopped':
+                newname = torrent.name.replace(".", " ").replace(",", " ")
                 message = self.core.new_message(self.name)
                 message.level = 2
-                message.header = ("Download of %s finished" % torrent.name)
+                message.header = ("Download of %s finished" % newname)
                 message.send()
                 self.tr_conn.remove(torrent_id)
         self.core.add_timeout(self.core.config['transmission']['nodes'][self.core.hostname]['loop_time'], self.finished_loop)

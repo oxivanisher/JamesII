@@ -124,7 +124,7 @@ class TransmissionPlugin(Plugin):
         for torrent_id in self.tr_conn.get_files():
             torrent =  self.tr_conn.info(torrent_id)[torrent_id]
             if torrent.isFinished and torrent.status == 'stopped':
-                newname = torrent.name.replace(".", " ").replace(",", " ").replace("-", " ").replace("eztv", "").replace("ettv", "")
+                newname = torrent.name.replace(".", " ").replace(",", " ").replace("-", " ").replace("eztv", "").replace("ettv", "").replace("HDTV", "").replace("x264", "").replace("asap", "").replace("PROPER", "").replace("EVOLVE", "").replace("HD", "").replace("FQM", "").replace("LOL", "").replace("SiON", "").replace("2HD", "")
                 message = self.core.new_message(self.name)
                 message.level = 2
                 message.header = ("Download of %s finished" % newname)

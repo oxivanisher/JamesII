@@ -86,10 +86,12 @@ class MpdPlugin(Plugin):
         return (["Deactivate talkover"])
 
     def radio_off(self, args):
+        self.send_broadcast(['Stopping radio'])
         self.exec_mpc(['clear'])
         return (["Radio off"])
 
     def radio_on(self, args):
+        self.send_broadcast(['Starting radio'])
         self.exec_mpc(['clear'])
         self.load_online_playlist(self.core.config['mpd']['radio_url'])
         self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])

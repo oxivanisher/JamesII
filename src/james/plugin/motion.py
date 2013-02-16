@@ -92,6 +92,7 @@ class MotionPlugin(Plugin):
             # somebody is at home. delete the file and deactivate motion
             try:
                 if self.watch_mode:
+                    self.send_broadcast(['Motion Watching starts mpd radio on'])
                     self.send_command(['mpd', 'radio', 'on'])
                 self.watch_mode = False
                 os.remove(args[0])

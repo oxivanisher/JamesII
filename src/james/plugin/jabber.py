@@ -7,6 +7,7 @@ from james.plugin import *
 
 
 # FIXME!!! only run commands from users in the users list!
+# FIXME check for commands case insensitive. at least 1st char of 1st cmd
 
 
 # http://xmpppy.sourceforge.net/

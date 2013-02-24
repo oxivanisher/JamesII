@@ -6,4 +6,7 @@ git clone https://github.com/WiringPi/WiringPi-Python.git
 cd WiringPi-Python
 git clone https://github.com/WiringPi/WiringPi.git
 git submodule update --init
+cd WiringPi
+./build
+cd ..
 sudo python setup.py install

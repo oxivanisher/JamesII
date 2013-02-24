@@ -39,6 +39,7 @@ class CronEvent(object):
         self.action = action
         self.args = args
         self.kwargs = kwargs
+        self.active = True
 
     def matchtime(self, t):
         """Return True if this event should trigger at the specified datetime"""
@@ -49,11 +50,13 @@ class CronEvent(object):
                 (t.weekday()  in self.dow))
 
     def check(self, t):
-        if self.matchtime(t):
-            self.action(*self.args, **self.kwargs)
+        if self.active:
+            if self.matchtime(t):
+                self.action(*self.args, **self.kwargs)
 
     def show(self):
         ret = {}
+        ret['act'] = self.active
         ret['mins'] = self.mins
         ret['hours'] = self.hours
         ret['days'] = self.days
@@ -76,15 +79,34 @@ class CronTab(object):
     def add_event(self, event):
         self.events.append(event)
 
+    def activate_event(self, id):
+        try:
+            self.events[id].active = True
+            return True
+        except Exception as e:
+            pass
+
+    def deactivate_event(self, id):
+        try:
+            self.events[id].active = False
+            return True
+        except Exception as e:
+            pass
+
     def show(self):
         ret = []
-        ret_format = '%-3s %-7s %-7s %-7s %-7s %-7s %s'
-        ret.append(ret_format % ('id', 'mins', 'hours', 'days', 'months', 'dow', 'command'))
+        ret_format = '%-3s %-3s %-7s %-7s %-7s %-7s %-7s %s'
+        ret.append(ret_format % ('id', 'act', 'mins', 'hours', 'days', 'months', 'dow', 'command'))
         for e in self.events:
             event_data = e.show()
             for key in event_data.keys():
                 if event_data[key] == AllMatch():
                     event_data[key] = "*"
+                elif key == "act":
+                    if event_data[key]:
+                        event_data[key] = "+"
+                    else:
+                        event_data[key] = "-"
                 elif len(event_data[key]) > 0:
                     if key == 'cmd':
                         event_data[key] = ' '.join(event_data[key])
@@ -92,6 +114,7 @@ class CronTab(object):
                         event_data[key] = ','.join(str(x) for x in event_data[key])
 
             ret.append(ret_format % (self.events.index(e),
+                                     event_data['act'],
                                      event_data['mins'],
                                      event_data['hours'],
                                      event_data['days'],
@@ -108,6 +131,8 @@ class CronPlugin(Plugin):
         self.commands.create_subcommand('add', 'Adds a cron command (*[*][*][*][*];cmd)', self.cmd_cron_add)
         self.commands.create_subcommand('remove', 'Removes a cron command (id)', self.cmd_cron_remove)
         self.commands.create_subcommand('show', 'Shows the cron commands', self.cmd_cron_show)
+        self.commands.create_subcommand('activate', 'Activates a cron command (id)', self.cmd_cron_activate)
+        self.commands.create_subcommand('deactivate', 'Deactivates a cron command (id)', self.cmd_cron_deactivate)
 
         self.crontab = CronTab()
         self.command_cron_file = os.path.join(os.path.expanduser("~"), ".james_crontab")
@@ -175,20 +200,32 @@ class CronPlugin(Plugin):
 
                     cmd_args = cmd_string.split()
 
-                    new_cron_list.append(cron_entry)
+                    act_args = True
+                    try:
+                        act_string = cron_data[2].strip()
+                        if act_string != "True":
+                            act_args = False
+                    except Exception as e:
+                        pass
 
-                    self.add_cron_job(cron_args, cmd_args)
+                    new_cron_list.append("%s;%s;%s" % (cron_string, cmd_string, act_args))
+                    self.add_cron_job(cron_args, cmd_args, act_args)
                 else:
                     ret = False
             except Exception as e:
                 ret = False
                 pass
         self.cron_list = new_cron_list
+        print self.cron_list
         return ret
 
-    def add_cron_job(self, cron_args, cmd_args):
+    def add_cron_job(self, cron_args, cmd_args, act_args):
         try:
             newevent = CronEvent(self.run_crontab_command, *cron_args, args=cmd_args)
+            if act_args:
+                newevent.active = True
+            else:
+                newevent.active = False
             self.crontab.add_event(newevent)
         except Exception as e:
             print ("Error on adding cron command: %s" % (e))
@@ -209,11 +246,34 @@ class CronPlugin(Plugin):
         try:
             del_id = int(args[0])
             num_of_jobs = len(self.cron_list)
-            print self.cron_list[del_id]
             del_data = self.cron_list[del_id]
             self.cron_list.remove(del_data)
             self.load_commands_from_cron_list()
             return(["Removed job: %s" % (del_data)])
+        except Exception as e:
+            return(["Invalid syntax (%s)" % (e)])
+
+    def cmd_cron_activate(self, args):
+        try:
+            act_id = int(args[0])
+            old_str = self.cron_list[act_id]
+            old_data = old_str.split(";")
+            new_data = "%s;%s;%s" % (old_data[0], old_data[1], "True")
+            self.cron_list[act_id] = new_data
+            self.crontab.activate_event(act_id)
+            return(["Activated job: %s" % (act_id)])
+        except Exception as e:
+            return(["Invalid syntax (%s)" % (e)])
+
+    def cmd_cron_deactivate(self, args):
+        try:
+            deact_id = int(args[0])
+            old_str = self.cron_list[deact_id]
+            old_data = old_str.split(";")
+            new_data = "%s;%s;%s" % (old_data[0], old_data[1], "False")
+            self.cron_list[deact_id] = new_data
+            self.crontab.deactivate_event(deact_id)
+            return(["Deactivated job: %s" % (deact_id)])
         except Exception as e:
             return(["Invalid syntax (%s)" % (e)])
 

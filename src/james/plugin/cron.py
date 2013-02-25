@@ -216,7 +216,6 @@ class CronPlugin(Plugin):
                 ret = False
                 pass
         self.cron_list = new_cron_list
-        print self.cron_list
         return ret
 
     def add_cron_job(self, cron_args, cmd_args, act_args):

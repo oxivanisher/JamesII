@@ -7,6 +7,8 @@ import time
 
 from james.plugin import *
 
+#FIXME! use python-mpd2 https://github.com/Mic92/python-mpd2
+
 class FadeThread(PluginThread):
 
     def __init__(self, plugin, host, volume1, volume2, fade_time, url, commands = []):

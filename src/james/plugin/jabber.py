@@ -344,6 +344,8 @@ class JabberPlugin(Plugin):
             jid_ress = jid_data[1]
 
             command = self.core.utils.convert_from_unicode(message.getBody().split())
+            # compensate for first auto capital letter on many mobile devices
+            command[0] = command[0].lower()
             self.run_command(command, jid_from)
         except IndexError:
    			return ["No command submitted"]

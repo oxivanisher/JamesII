@@ -220,22 +220,23 @@ class JabberThread(PluginThread):
         prs_type = message.getType()
         who = message.getFrom()
         my_id = self.plugin.core.utils.convert_from_unicode(message.__getitem__('id'))
-        src_jid = self.plugin.core.utils.convert_from_unicode(message.getJid()).split('/')
-        if prs_type == 'subscribe':
-                self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
-                self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
-        # elif prs_type == 'presence':
-        #     print("::: %s" % msg.__getitem__('jid'))
-        else:
-            # print message
-            self.presence_ids[my_id] = (src_jid[0], src_jid[1], prs_type)
-            
-            # for key, value in msg.iteritems():
-            #     print(key, value)
-        # print("nick: %s / jid: %s" % (msg.getNick(), msg.getJid()))
+        if message.getJid():
+            src_jid = self.plugin.core.utils.convert_from_unicode(message.getJid()).split('/')
+            if prs_type == 'subscribe':
+                    self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
+                    self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
+            # elif prs_type == 'presence':
+            #     print("::: %s" % msg.__getitem__('jid'))
+            else:
+                # print message
+                self.presence_ids[my_id] = (src_jid[0], src_jid[1], prs_type)
+                
+                # for key, value in msg.iteritems():
+                #     print(key, value)
+            # print("nick: %s / jid: %s" % (msg.getNick(), msg.getJid()))
 
-        # print "Presence IDs updated: %s" % self.presence_ids
-        # print(message.getAttrs())
+            # print "Presence IDs updated: %s" % self.presence_ids
+            # print(message.getAttrs())
 
     # called when the worker ends
     def on_exit(self, result):

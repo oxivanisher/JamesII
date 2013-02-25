@@ -89,6 +89,12 @@ raspberry:
 #      cmd_off : espeak say switch 5 off
 
 transmission:
+ dont_say:
+  - iso
+  - mp4
+  - avi
+  - mpg
+  - mkv
  nodes:
   node_name:
    host       : localhost

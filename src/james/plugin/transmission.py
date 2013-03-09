@@ -176,7 +176,7 @@ class TransmissionPlugin(Plugin):
 
     # helper methods
     def remove_muted_words(self, text):
-        spacers = ['.', ',', '-', '[', ']', '(', ')', '{', '}', '/', '\\']
+        spacers = ['.', ',', '-', '_', '[', ']', '(', ')', '{', '}', '/', '\\']
         for spacer in spacers:
             text = text.replace(spacer, ' ')
 

@@ -4,6 +4,7 @@ import sys
 import urllib2
 import subprocess
 import time
+import mpd
 
 from james.plugin import *
 
@@ -41,20 +42,24 @@ class FadeThread(PluginThread):
     def on_exit(self, result):
         self.plugin.mpd_callback(result, self.commands)
 
-class MpdPlugin(Plugin):
+class MpdClientPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(MpdPlugin, self).__init__(core, descriptor)
+        super(MpdClientPlugin, self).__init__(core, descriptor)
 
         self.mpc_bin = '/usr/bin/mpc'
 
         self.connection_string = []
         self.connection_string.append(self.mpc_bin)
-        self.myhost = self.core.config['mpd']['nodes'][self.core.hostname]['host']
-        self.myport = self.core.config['mpd']['nodes'][self.core.hostname]['port']
-        self.mypassword = self.core.config['mpd']['nodes'][self.core.hostname]['password']
+        self.myhost = self.core.config['mpd-client']['nodes'][self.core.hostname]['host']
+        self.myport = self.core.config['mpd-client']['nodes'][self.core.hostname]['port']
+        self.mypassword = self.core.config['mpd-client']['nodes'][self.core.hostname]['password']
 
         self.fade_in_progress = False
+
+        self.client = mpd.MPDClient(use_unicode=False)
+        self.client.connect(self.myhost, self.myport)
+        self.client.timeout = 10
 
         if self.myhost:
             self.connection_string.append('--host=' + self.myhost)
@@ -76,15 +81,19 @@ class MpdPlugin(Plugin):
             talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
             talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
 
+    def terminate(self):
+        self.client.close()
+        self.client.disconnect()
+
     def mpc(self, args):
         return self.exec_mpc(args)
 
     def activate_talkover(self, args):
-        self.exec_mpc(['volume', str(self.core.config['mpd']['talk_volume'])])
+        self.exec_mpc(['volume', str(self.core.config['mpd-client']['talk_volume'])])
         return (["Activate talkover"])
 
     def deactivate_talkover(self, args):
-        self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
+        self.exec_mpc(['volume', str(self.core.config['mpd-client']['max_volume'])])
         return (["Deactivate talkover"])
 
     def radio_off(self, args):
@@ -95,8 +104,8 @@ class MpdPlugin(Plugin):
     def radio_on(self, args):
         self.send_broadcast(['Starting radio'])
         self.exec_mpc(['clear'])
-        self.load_online_playlist(self.core.config['mpd']['radio_url'])
-        self.exec_mpc(['volume', str(self.core.config['mpd']['max_volume'])])
+        self.load_online_playlist(self.core.config['mpd-client']['radio_url'])
+        self.exec_mpc(['volume', str(self.core.config['mpd-client']['max_volume'])])
         self.exec_mpc(['play'])
         return (["Radio on"])
 
@@ -115,13 +124,13 @@ class MpdPlugin(Plugin):
         if not self.fade_in_progress:
             self.fade_in_progress = True
 
-            start_volume = int(self.core.config['mpd']['max_volume']) - 30
+            start_volume = int(self.core.config['mpd-client']['max_volume']) - 30
             self.fade_thread = FadeThread(self,
-                                          self.core.config['mpd']['nodes'][self.core.hostname]['host'],
+                                          self.core.config['mpd-client']['nodes'][self.core.hostname]['host'],
                                           start_volume,
                                           0,
-                                          self.core.config['mpd']['sleep_fade'],
-                                          self.core.config['mpd']['sleep_url'])
+                                          self.core.config['mpd-client']['sleep_fade'],
+                                          self.core.config['mpd-client']['sleep_url'])
             self.fade_thread.start()
             return (["MPD Sleep mode activated"])
         else:
@@ -132,11 +141,11 @@ class MpdPlugin(Plugin):
             self.fade_in_progress = True
 
             self.fade_thread = FadeThread(self,
-                                          self.core.config['mpd']['nodes'][self.core.hostname]['host'],
+                                          self.core.config['mpd-client']['nodes'][self.core.hostname]['host'],
                                           0,
-                                          self.core.config['mpd']['max_volume'],
-                                          self.core.config['mpd']['wakeup_fade'],
-                                          self.core.config['mpd']['wakeup_url'])
+                                          self.core.config['mpd-client']['max_volume'],
+                                          self.core.config['mpd-client']['wakeup_fade'],
+                                          self.core.config['mpd-client']['wakeup_url'])
             self.fade_thread.start()
             return (["MPD Wakeup mode activated"])
         else:
@@ -173,10 +182,10 @@ class MpdPlugin(Plugin):
                 self.exec_mpc(['add', source])
 
 descriptor = {
-    'name' : 'mpd',
+    'name' : 'mpd-client',
     'help' : 'Interface to mpd via mpc',
     'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
-    'class' : MpdPlugin
+    'class' : MpdClientPlugin
 }
 

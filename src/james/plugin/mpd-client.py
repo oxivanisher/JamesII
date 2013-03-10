@@ -8,7 +8,10 @@ import mpd
 
 from james.plugin import *
 
-#FIXME! use python-mpd2 https://github.com/Mic92/python-mpd2
+#FIXME: ToDo
+# - better status command output
+# - what happens when mpd disconnects?
+# - command to set volume
 
 class MpdClientWorker(object):
     # FIXME: make me singleton!
@@ -220,7 +223,7 @@ class MpdClientPlugin(Plugin):
 
     def show_status(self, args):
         status = self.client_worker.status()
-        return "%s at %s" % (status['state'], status['volume'])
+        return "[%s] %s at %s%" % (status['state'], status['song'], status['volume'])
         pass
 
     def radio_off(self, args):

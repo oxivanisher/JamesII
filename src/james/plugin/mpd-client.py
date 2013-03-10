@@ -42,7 +42,6 @@ class MpdClientWorker(object):
         # print "    unlocked"
 
     def play_url(self, uri, volume = None):
-        print "play url"
         self.lock()
         self.client.command_list_ok_begin()
 
@@ -115,12 +114,12 @@ class FadeThread(PluginThread):
         self.start_volume = int(self.mpd_client.status()['volume'])
         self.last_vol = self.start_volume
 
-        print "fade thread startet (vol: %s)" % self.start_volume
+        # print "fade thread startet (vol: %s)" % self.start_volume
 
         # self.work()
 
     def work(self):
-        print("fading started working")
+        # print("fading started working")
 
         run = True
         loopcount = 0
@@ -137,10 +136,10 @@ class FadeThread(PluginThread):
 
         step_wait = int((self.fade_time) / vol_steps) #*10
 
-        print "increase : %s" % increase
-        print "fade_time: %s" % self.fade_time
-        print "vol_steps: %s" % vol_steps
-        print "step_wait: %s" % step_wait
+        # print "increase : %s" % increase
+        # print "fade_time: %s" % self.fade_time
+        # print "vol_steps: %s" % vol_steps
+        # print "step_wait: %s" % step_wait
 
         step_count = 0
 
@@ -170,7 +169,7 @@ class FadeThread(PluginThread):
             time.sleep(0.1)
 
     def on_exit(self, result):
-        print "on exit"
+        # print "on exit"
         self.plugin.fade_ended()
 
 class MpdClientPlugin(Plugin):
@@ -281,14 +280,14 @@ class MpdClientPlugin(Plugin):
             return (["MPD Wakeup mode activated"])
 
     def fade_ended(self):
-        print "fade ending"
+        # print "fade ending"
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
         if int(self.client_worker.status()['volume']) == 0:
             self.client_worker.stop()
             self.client_worker.clear()
-        print "fade ended"
+        # print "fade ended"
 
     # react on proximity events
     def process_proximity_event(self, newstatus):

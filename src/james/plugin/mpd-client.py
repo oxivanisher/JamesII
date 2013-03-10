@@ -134,7 +134,7 @@ class FadeThread(PluginThread):
         else:
             increase = False
 
-        step_wait = int((self.fade_time) / vol_steps) #*10
+        step_wait = int((self.fade_time * 10) / vol_steps)
 
         # print "increase : %s" % increase
         # print "fade_time: %s" % self.fade_time

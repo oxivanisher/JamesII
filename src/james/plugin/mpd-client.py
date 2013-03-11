@@ -212,12 +212,11 @@ class MpdClientPlugin(Plugin):
         self.client_worker.disconnect()
 
     def activate_talkover(self, args):
-        self.pretalk_volume = int(self.client_worker.status()['volume'])
         self.client_worker.setvol(self.core.config['mpd-client']['talk_volume'])
         return (["Activate talkover"])
 
     def deactivate_talkover(self, args):
-        self.client_worker.setvol(self.pretalk_volume)
+        self.client_worker.setvol(self.core.config['mpd-client']['norm_volume'])
         return (["Deactivate talkover"])
 
     def show_status(self, args):

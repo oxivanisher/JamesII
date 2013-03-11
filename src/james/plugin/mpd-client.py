@@ -88,6 +88,12 @@ class MpdClientWorker(object):
         self.unlock()
         return tmp_status
 
+    def currentsong(self):
+        self.lock()
+        tmp_status = self.client.currentsong()
+        self.unlock()
+        return tmp_status
+
     def setvol(self, volume):
         # print "set volume (%s)" % volume
         self.lock()

@@ -218,7 +218,6 @@ class MpdClientPlugin(Plugin):
 
     def deactivate_talkover(self, args):
         self.client_worker.setvol(self.pretalk_volume)
-        self.pretalk_volume = None
         return (["Deactivate talkover"])
 
     def show_status(self, args):

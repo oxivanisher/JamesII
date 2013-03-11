@@ -227,8 +227,8 @@ class MpdClientPlugin(Plugin):
 
     def show_status(self, args):
         status = self.client_worker.status()
-        songname = self.client_worker.currentsong()
-        return "[%s] %s at %s\%" % (status['state'], songname, status['volume'])
+        currentsong = self.client_worker.currentsong()
+        return "[%s] %s at %s\%" % (status['state'], currentsong['song'], status['volume'])
         pass
 
     def radio_off(self, args):

@@ -89,7 +89,7 @@ class MpdClientWorker(object):
         return tmp_status
 
     def setvol(self, volume):
-        print "set volume (%s)" % volume
+        # print "set volume (%s)" % volume
         self.lock()
         self.client.setvol(volume)
         self.unlock()

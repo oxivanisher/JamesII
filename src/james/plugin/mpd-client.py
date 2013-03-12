@@ -9,7 +9,6 @@ import mpd
 from james.plugin import *
 
 #FIXME: ToDo
-# - better status command output
 # - what happens when mpd disconnects?
 # - command to set volume
 
@@ -228,8 +227,20 @@ class MpdClientPlugin(Plugin):
     def show_status(self, args):
         status = self.client_worker.status()
         currentsong = self.client_worker.currentsong()
-        return "[%s] %s at %s\%" % (status['state'], currentsong['song'], status['volume'])
-        pass
+        str_status = status['state']
+        name = "Nothing"
+        title = ""
+
+        if status['state'] == "play":
+            str_status = "Playing"
+            title = currentsong['title']
+            name = " (" + currentsong['name'] + ")"
+        elif status['state'] == "stop":
+            str_status = "Stopped"
+        elif status['state'] == "pause":
+            str_status = "Paused"
+
+        return "[%s@%s%%] %s%s" % (str_status, status['volume'], title, name)
 
     def radio_off(self, args):
         self.send_broadcast(['Stopping radio'])

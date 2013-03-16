@@ -115,8 +115,9 @@ class SystemPlugin(Plugin):
                 pass
 
             args = []
-            if len(request) > 1:
-                args = request[1:]
+            if request:
+                if len(request) > 1:
+                    args = request[1:]
             try:
                 command = self.command_aliases[request[0]].split() + args
                 self.send_command(command)

@@ -58,7 +58,10 @@ class Command(object):
         return True
 
     def process_args(self, args):
-        args = jamesutils.JamesUtils(self).list_unicode_cleanup(args)
+        try:
+            args = jamesutils.JamesUtils(self).list_unicode_cleanup(args)
+        except UnicodeDecodeError:
+            pass
 
         if self.handler:
             return self.handler(args)

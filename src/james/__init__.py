@@ -464,9 +464,13 @@ class Core(object):
         """
         Terminate the core. This method will first call the terminate() on each plugin.
         """
-        if self.discovery_channel:
-            self.discovery_channel.send(['byebye', self.hostname, self.uuid])
         print("Core.terminate() called. I shall die now.")
+
+        try:
+            self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+        except Exception:
+            pass
+
         for p in self.plugins:
             p.terminate()
         try:

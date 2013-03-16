@@ -14,6 +14,7 @@ do
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
 	sudo ./james.py
 	if [[ $? -eq 2 ]];
+	then
 		echo -e "\nJamesII connection error detected. Sleeping for 20 seconds\n"
 		sleep 20
 	elif [[ $? -gt 0 ]];

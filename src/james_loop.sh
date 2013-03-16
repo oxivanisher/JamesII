@@ -7,7 +7,7 @@ while true;
 do
 	CRASH=false
 
-	if [[ $GITPULL ]];
+	if $GITPULL;
 	then
 		clear
 		echo -e "..:: Doing git pull ::..\n"

@@ -479,7 +479,7 @@ class Core(object):
             file.close()
             if self.config['core']['debug']:
                 print("Saving proximity status to %s" % (self.proximity_state_file))
-        except IOError:
+        except IOError, TypeError:
             print("WARNING: Could not safe proximity status to file!")
         self.terminated = True
 

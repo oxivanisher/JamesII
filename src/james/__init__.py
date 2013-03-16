@@ -448,10 +448,13 @@ class Core(object):
                 #print("process events")
             except KeyboardInterrupt:
                 self.terminate()
+            except pika.exceptions.ChannelClosed:
+                # channel closed error
+                print "Lost connection to RabbitMQ server! (ChannelClosed)"
+                self.terminate()
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error
-                print "Lost connection to RabbitMQ server!"
-                time.sleep(3)
+                print "Lost connection to RabbitMQ server! (AMQPConnectionError)"
                 self.terminate()
 
     def lock_core(self):

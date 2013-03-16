@@ -56,7 +56,7 @@ class MonitorPlugin(Plugin):
     def save_log_to_disk(self):
         try:
             file = open(self.file_cache_name, 'a')
-            file.write('\n'.join(self.file_cache) + '\n')
+            file.write('\n'.join(self.core.utils.list_unicode_cleanup(self.file_cache)) + '\n')
             file.close()
             if self.core.config['core']['debug']:
                 print("Saving monitor log to %s" % (self.file_cache_name))

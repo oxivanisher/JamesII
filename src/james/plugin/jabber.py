@@ -342,7 +342,7 @@ class JabberPlugin(Plugin):
         try:
             jid_ress = jid_data[1]
 
-            command = self.core.utils.convert_from_unicode(message.getBody().split())
+            command = self.core.utils.list_unicode_cleanup(message.getBody().split())
             # compensate for first auto capital letter on many mobile devices
             command[0] = command[0].lower()
             self.run_command(command, jid_from)
@@ -362,7 +362,7 @@ class JabberPlugin(Plugin):
                 try:
                     jid_ress = jid_data[1]
 
-                    command = self.core.utils.convert_from_unicode(message.getBody().split())
+                    command = self.core.utils.list_unicode_cleanup(message.getBody().split())
                     # compensate for first auto capital letter on many mobile devices
                     command[0] = command[0].lower()
                     self.run_muc_command(command)

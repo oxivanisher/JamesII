@@ -107,8 +107,10 @@ class SystemPlugin(Plugin):
     def process_command_request_event(self, command):
         if self.core.master:
             try:
-                request = self.core.utils.convert_from_unicode(command['body'])
-            except Exception:
+                request = self.core.utils.convert_from_unicode(command['body'].encode('utf-8'))
+            except Exception as e:
+                #FIXME: tmp output
+                print "error: %s" % e
                 request = False
                 pass
 

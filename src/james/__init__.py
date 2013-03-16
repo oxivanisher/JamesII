@@ -36,8 +36,6 @@ class PluginNotFound(Exception):
     pass
 class BrokerConfigNotLoaded(Exception):
     pass
-class ConnectionError(Exception):
-    pass
 class AddTimeoutHandlerMissing(Exception):
     pass
 
@@ -103,9 +101,8 @@ class Core(object):
         try:
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
         except Exception as e:
-            print "Could not connect to RabbitMQ server!"
-            time.sleep(3)
-            raise ConnectionError()
+            print "Could not connect to RabbitMQ server! (%s)" % e
+            self.terminate()
 
         # Create discovery & configuration channels
         self.discovery_channel = broadcastchannel.BroadcastChannel(self, 'discovery')

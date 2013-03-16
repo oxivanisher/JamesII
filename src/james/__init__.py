@@ -477,9 +477,10 @@ class Core(object):
             file = open(self.proximity_state_file, 'w')
             file.write(json.dumps(self.proximity_status.status[self.location]))
             file.close()
-            if self.config['core']['debug']:
-                print("Saving proximity status to %s" % (self.proximity_state_file))
-        except IOError, TypeError:
+            #FIXME: please add the fucking loggin class already :/
+            # if self.config['core']['debug']:
+                # print("Saving proximity status to %s" % (self.proximity_state_file))
+        except IOError:
             print("WARNING: Could not safe proximity status to file!")
         self.terminated = True
 

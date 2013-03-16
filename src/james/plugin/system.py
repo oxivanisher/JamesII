@@ -109,8 +109,6 @@ class SystemPlugin(Plugin):
             try:
                 request = self.core.utils.list_unicode_cleanup(command['body'])
             except Exception as e:
-                #FIXME: tmp output
-                print "error: %s" % e
                 request = False
                 pass
 

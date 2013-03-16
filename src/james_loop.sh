@@ -11,7 +11,7 @@ do
 	then
 		clear
 		echo -e "..:: Doing git pull ::..\n"
-		#git pull
+		git pull
 	fi
 
 	clear

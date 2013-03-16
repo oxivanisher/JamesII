@@ -13,7 +13,10 @@ do
 	clear
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
 	sudo ./james.py
-	if [[ $? -gt 0 ]];
+	if [[ $? -eq 2 ]];
+		echo -e "\nJamesII connection error detected. Sleeping for 20 seconds\n"
+		sleep 20
+	elif [[ $? -gt 0 ]];
 	then
 		echo -e "\nJamesII crash detected. Sleeping for 20 seconds\n"
 		echo $(date +%s) > ./.james_crashed

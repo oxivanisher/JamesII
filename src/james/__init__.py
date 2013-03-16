@@ -102,7 +102,7 @@ class Core(object):
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
         except Exception as e:
             print "Could not connect to RabbitMQ server!"
-            sys.exit(0)
+            sys.exit(2)
 
         # Create discovery & configuration channels
         self.discovery_channel = broadcastchannel.BroadcastChannel(self, 'discovery')

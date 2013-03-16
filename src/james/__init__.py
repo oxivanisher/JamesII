@@ -101,7 +101,7 @@ class Core(object):
         try:
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
         except Exception as e:
-            print "Could not connect to RabbitMQ server! (%s)" % e
+            print "Could not connect to RabbitMQ server!"
             self.terminate()
 
         # Create discovery & configuration channels
@@ -464,7 +464,8 @@ class Core(object):
         """
         Terminate the core. This method will first call the terminate() on each plugin.
         """
-        self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+        if self.discovery_channel:
+            self.discovery_channel.send(['byebye', self.hostname, self.uuid])
         print("Core.terminate() called. I shall die now.")
         for p in self.plugins:
             p.terminate()

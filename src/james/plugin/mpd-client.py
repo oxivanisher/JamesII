@@ -24,14 +24,27 @@ class MpdClientWorker(object):
         self.worker_lock = threading.Lock()
 
         self.client = mpd.MPDClient(use_unicode=False)
+        self.check_connection()
+
+    def connect(self):
         try:
             self.client.connect(self.myhost, self.myport)
             self.connected = True
+            self.client.timeout = 10
+            return True
         except Exception as e:
-            print "connection error (%s)" % e
-            pass
+            print "MPD connection error (%s)" % e
+            return False
 
-        self.client.timeout = 10
+    def check_connection(self):
+        try:
+            self.client.ping()
+            return True
+        except mpd.ConnectionError:
+            if self.connect():
+                return True
+            else:
+                return False
 
     def lock(self):
         # print "    locking"
@@ -44,60 +57,66 @@ class MpdClientWorker(object):
         # print "    unlocked"
 
     def play_url(self, uri, volume = None):
-        self.lock()
-        self.client.command_list_ok_begin()
+        if self.check_connection():
+            self.lock()
+            self.client.command_list_ok_begin()
 
-        if volume:
-            self.client.setvol(volume)
+            if volume:
+                self.client.setvol(volume)
 
-        self.client.clear()
+            self.client.clear()
 
-        url_found = False
-        for source in urllib2.urlopen(uri):
-            if source != "":
-                self.client.add(source.strip())
-                url_found = True
+            url_found = False
+            for source in urllib2.urlopen(uri):
+                if source != "":
+                    self.client.add(source.strip())
+                    url_found = True
 
-        if url_found:
-            self.client.play()
+            if url_found:
+                self.client.play()
 
-        self.client.command_list_end()
-        self.unlock()
+            self.client.command_list_end()
+            self.unlock()
 
-        if url_found:
-            return True
-        else:
-            return False
+            if url_found:
+                return True
+            else:
+                return False
 
     def stop(self):
-        self.lock()
-        self.plugin.fade_in_progress = False
-        self.client.stop()
-        self.unlock()
+        if self.check_connection():
+            self.lock()
+            self.plugin.fade_in_progress = False
+            self.client.stop()
+            self.unlock()
 
     def clear(self):
-        self.lock()
-        self.plugin.fade_in_progress = False
-        self.client.clear()
-        self.unlock()
+        if self.check_connection():
+            self.lock()
+            self.plugin.fade_in_progress = False
+            self.client.clear()
+            self.unlock()
 
     def status(self):
-        self.lock()
-        tmp_status = self.client.status()
-        self.unlock()
-        return tmp_status
+        if self.check_connection():
+            self.lock()
+            tmp_status = self.client.status()
+            self.unlock()
+            return tmp_status
 
     def currentsong(self):
-        self.lock()
-        tmp_status = self.client.currentsong()
-        self.unlock()
-        return tmp_status
+        if self.check_connection():
+            self.lock()
+            tmp_status = self.client.currentsong()
+            self.unlock()
+            return tmp_status
 
     def setvol(self, volume):
-        # print "set volume (%s)" % volume
-        self.lock()
-        self.client.setvol(volume)
-        self.unlock()
+        if self.check_connection():
+            # print "set volume (%s)" % volume
+            self.lock()
+            self.client.setvol(volume)
+            self.unlock()
 
     def disconnect(self):
         self.lock()
@@ -217,16 +236,23 @@ class MpdClientPlugin(Plugin):
         self.client_worker.disconnect()
 
     def activate_talkover(self, args):
-        self.client_worker.setvol(self.core.config['mpd-client']['talk_volume'])
-        return (["Activate talkover"])
+        if self.client_worker.setvol(self.core.config['mpd-client']['talk_volume']):
+            return (["Activate talkover"])
+        else:
+            return "Unable to connect to MPD"
 
     def deactivate_talkover(self, args):
-        self.client_worker.setvol(self.core.config['mpd-client']['norm_volume'])
-        return (["Deactivate talkover"])
+        if self.client_worker.setvol(self.core.config['mpd-client']['norm_volume']):
+            return (["Deactivate talkover"])
+        else:
+            return "Unable to connect to MPD"
 
     def show_status(self, args):
         status = self.client_worker.status()
         currentsong = self.client_worker.currentsong()
+        if not status and not currentsong:
+            return "Unable to connect to MPD"
+
         str_status = status['state']
         name = "Nothing"
         title = ""
@@ -243,27 +269,35 @@ class MpdClientPlugin(Plugin):
         return "[%s@%s%%] %s%s" % (str_status, status['volume'], title, name)
 
     def radio_off(self, args):
-        self.send_broadcast(['Stopping radio'])
-        self.client_worker.stop()
-        self.client_worker.clear()
-        return (["Radio off"])
+        if self.client_worker.stop():
+            self.client_worker.clear()
+            self.send_broadcast(['Stopping radio'])
+            return (["Radio off"])
+        else:
+            return "Unable to connect to MPD"
 
     def radio_on(self, args):
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
         self.send_broadcast(['Starting radio'])
-        self.client_worker.play_url(self.core.config['mpd-client']['radio_url'],
-                                    self.core.config['mpd-client']['norm_volume'])
-        return (["Radio on"])
+        if self.client_worker.play_url(self.core.config['mpd-client']['radio_url'],
+                                    self.core.config['mpd-client']['norm_volume']):
+            return (["Radio on"])
+        else:
+            return "Unable to connect to MPD"
 
     def radio_toggle(self, args):
-        self.send_broadcast(['Radio toggle'])
-        if self.client_worker.status()['state'] == 'play':
-            self.radio_off(args)
+        tmp_state = self.client_worker.status()
+        if tmp_state:
+            if tmp_state['state'] == 'play':
+                self.radio_off(args)
+            else:
+                self.radio_on(args)
+            self.send_broadcast(['Radio toggle'])
+            return (["Toggling radio"])
         else:
-            self.radio_on(args)
-        return (["Toggling radio"])
+            return "Unable to connect to MPD"
 
     def mpd_sleep(self, args):
         self.send_broadcast(['MPD Sleeping activated'])

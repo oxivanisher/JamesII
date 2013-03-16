@@ -118,7 +118,13 @@ class Core(object):
         if not self.master:
             print("Waiting for config")
             while not self.config:
-                self.connection.process_data_events()
+                try:
+                    self.connection.process_data_events()
+                except KeyboardInterrupt:
+                    print "Keyboard interrupt detected. Exiting..."
+                    sys.exit(3)
+                    pass
+
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
         else:
@@ -445,7 +451,8 @@ class Core(object):
                 self.unlock_core()
                 #print("process events")
             except KeyboardInterrupt:
-                self.terminate()
+                print "Keyboard interrupt detected. Exiting..."
+                self.terminate(3)
             except pika.exceptions.ChannelClosed:
                 # channel closed error
                 print "Lost connection to RabbitMQ server! (ChannelClosed)"

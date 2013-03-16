@@ -6,6 +6,7 @@ nbproject/*
 *.sublime-*
 doc/
 src/.james_crashed
+src/.james_crashed_log
 src/.james_console_log
 
 *.py[cod]

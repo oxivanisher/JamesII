@@ -475,7 +475,11 @@ class Core(object):
         """
         self.returncode = returncode
         print("Core.terminate() called. I shall die now.")
-        self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+
+        try:
+            self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+        except Exception:
+            pass
 
         for p in self.plugins:
             p.terminate()

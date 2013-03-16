@@ -51,6 +51,7 @@ class Core(object):
         self.timeouts = []
         self.timeout_queue = Queue.Queue()
         self.terminated = False
+        self.returncode = 0
         self.hostname = socket.gethostname()
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
@@ -448,11 +449,12 @@ class Core(object):
             except pika.exceptions.ChannelClosed:
                 # channel closed error
                 print "Lost connection to RabbitMQ server! (ChannelClosed)"
-                self.terminate()
+                self.terminate(2)
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error
                 print "Lost connection to RabbitMQ server! (AMQPConnectionError)"
-                self.terminate()
+                self.terminate(2)
+        sys.exit(self.returncode)
 
     def lock_core(self):
         self.core_lock.acquire()
@@ -460,10 +462,11 @@ class Core(object):
     def unlock_core(self):
         self.core_lock.release()
 
-    def terminate(self):
+    def terminate(self, returncode = 0):
         """
         Terminate the core. This method will first call the terminate() on each plugin.
         """
+        self.returncode = returncode
         print("Core.terminate() called. I shall die now.")
         self.discovery_channel.send(['byebye', self.hostname, self.uuid])
 

@@ -16,7 +16,7 @@ do
 
 	clear
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
-	sudo ./james.py
+	sudo ./james.py | sudo tee ./.james_crashed_log
 	if [[ $? -eq 2 ]];
 	then
 		GITPULL=false
@@ -28,6 +28,7 @@ do
 		echo -e "\nJamesII crash detected. Sleeping for 20 seconds\n"
 		echo $(date +%s) > ./.james_crashed
 		chmod 666 ./.james_crashed
+		sudo cat ./.james_crashed_log | mail root -s "JamesII Crash on $(hostname)"
 		sleep 20
 	else
 		GITPULL=true

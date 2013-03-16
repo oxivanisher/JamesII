@@ -102,7 +102,7 @@ class Core(object):
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
         except Exception as e:
             print "Could not connect to RabbitMQ server!"
-            self.terminate()
+            sys.exit(0)
 
         # Create discovery & configuration channels
         self.discovery_channel = broadcastchannel.BroadcastChannel(self, 'discovery')
@@ -465,11 +465,7 @@ class Core(object):
         Terminate the core. This method will first call the terminate() on each plugin.
         """
         print("Core.terminate() called. I shall die now.")
-
-        try:
-            self.discovery_channel.send(['byebye', self.hostname, self.uuid])
-        except Exception:
-            pass
+        self.discovery_channel.send(['byebye', self.hostname, self.uuid])
 
         for p in self.plugins:
             p.terminate()
@@ -477,9 +473,8 @@ class Core(object):
             file = open(self.proximity_state_file, 'w')
             file.write(json.dumps(self.proximity_status.status[self.location]))
             file.close()
-            #FIXME: please add the fucking loggin class already :/
-            # if self.config['core']['debug']:
-                # print("Saving proximity status to %s" % (self.proximity_state_file))
+            if self.config['core']['debug']:
+                print("Saving proximity status to %s" % (self.proximity_state_file))
         except IOError:
             print("WARNING: Could not safe proximity status to file!")
         self.terminated = True

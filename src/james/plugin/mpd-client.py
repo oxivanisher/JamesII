@@ -39,11 +39,14 @@ class MpdClientWorker(object):
     def check_connection(self):
         try:
             self.client.ping()
+            print "ping ok"
             return True
         except mpd.ConnectionError:
             if self.connect():
+                print "connect ok"
                 return True
             else:
+                print "connect nok"
                 return False
 
     def lock(self):
@@ -83,12 +86,24 @@ class MpdClientWorker(object):
             else:
                 return False
 
+    def play(self):
+        if self.check_connection():
+            self.lock()
+            self.client.play()
+            self.unlock()
+            return True
+        else:
+            return False
+
     def stop(self):
         if self.check_connection():
             self.lock()
             self.plugin.fade_in_progress = False
             self.client.stop()
             self.unlock()
+            return True
+        else:
+            return False
 
     def clear(self):
         if self.check_connection():
@@ -96,6 +111,9 @@ class MpdClientWorker(object):
             self.plugin.fade_in_progress = False
             self.client.clear()
             self.unlock()
+            return True
+        else:
+            return False
 
     def status(self):
         if self.check_connection():
@@ -117,6 +135,9 @@ class MpdClientWorker(object):
             self.lock()
             self.client.setvol(volume)
             self.unlock()
+            return True
+        else:
+            return False
 
     def disconnect(self):
         self.lock()
@@ -265,6 +286,7 @@ class MpdClientPlugin(Plugin):
             str_status = "Stopped"
         elif status['state'] == "pause":
             str_status = "Paused"
+            name = currentsong['name']
 
         return "[%s@%s%%] %s%s" % (str_status, status['volume'], title, name)
 
@@ -292,6 +314,8 @@ class MpdClientPlugin(Plugin):
         if tmp_state:
             if tmp_state['state'] == 'play':
                 self.radio_off(args)
+            elif tmp_state['state'] == 'paused':
+                self.client_worker.play()
             else:
                 self.radio_on(args)
             self.send_broadcast(['Radio toggle'])
@@ -317,20 +341,25 @@ class MpdClientPlugin(Plugin):
             return (["MPD Sleep mode activated"])
 
     def mpd_wakeup(self, args):
-        self.send_broadcast(['MPD Wakeup activated'])
-        self.radio_off(None)
-        self.client_worker.play_url(self.core.config['mpd-client']['wakeup_url'], 0)
+        if self.core.proximity_status.get_status_here():
+            self.send_broadcast(['MPD Wakeup activated'])
+            self.radio_off(None)
+            self.client_worker.play_url(self.core.config['mpd-client']['wakeup_url'], 0)
 
-        self.thread = FadeThread(self,
-                                 self.client_worker,
-                                 self.core.config['mpd-client']['wakeup_fade'],
-                                 self.core.config['mpd-client']['norm_volume'])
-        self.thread.start()
+            self.thread = FadeThread(self,
+                                     self.client_worker,
+                                     self.core.config['mpd-client']['wakeup_fade'],
+                                     self.core.config['mpd-client']['norm_volume'])
+            self.thread.start()
 
-        if self.fade_in_progress:
-            return (["MPD Wakeup mode NOT activated due other fade in progress"])
+            if self.fade_in_progress:
+                return (["MPD Wakeup mode NOT activated due other fade in progress"])
+            else:
+                return (["MPD Wakeup mode activated"])
         else:
-            return (["MPD Wakeup mode activated"])
+            self.send_broadcast(['MPD Wakeup not activated. You are not here.'])
+            return (["MPD Wakeup not activated. You are not here."])
+
 
     def fade_ended(self):
         # print "fade ending"

@@ -68,8 +68,12 @@ class MotionPlugin(Plugin):
         return True
 
     def cmd_watch_on(self, args):
-        self.watch_mode = True
-        self.cam_control(True)
+        if self.core.proximity_status.get_status_here():
+            self.watch_mode = True
+            self.cam_control(True)
+        else:
+            self.send_broadcast(['MPD Wakeup not activated. You are not here.'])
+            return (["MPD Wakeup not activated. You are not here."])
 
     def cmd_show_log(self, args):
         var = 0
@@ -158,12 +162,32 @@ class MotionPlugin(Plugin):
 
     def cam_control(self, switch_on):
         if switch_on:
-            self.send_broadcast(['Motion is now watching'])
-            self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
+            self.send_broadcast(['Motion is starting'])
+
+            self.core.spawnSubprocess(self.cam_on,
+                                      self.on_cam_controll_callback)
+
         else:
-            self.send_broadcast(['Motion is not watching anymore'])
+            self.send_broadcast(['Motion is stopping'])
             self.watch_mode = False
-            self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
+
+            self.core.spawnSubprocess(self.cam_off,
+                                      self.on_cam_controll_callback)
+
+    def cam_on(self):
+        self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
+        return "Motion started"
+
+    def cam_off(self):
+        self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
+        return "Motion stopped"
+
+    def on_cam_controll_callback(self, state):
+        self.core.add_timeout(0, self.send_control_message, state)
+
+    def send_control_message(self, state):
+        self.send_broadcast([state])
+
 
     # react on proximity events
     def process_proximity_event(self, newstatus):

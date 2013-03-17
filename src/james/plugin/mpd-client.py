@@ -39,14 +39,11 @@ class MpdClientWorker(object):
     def check_connection(self):
         try:
             self.client.ping()
-            print "ping ok"
             return True
         except mpd.ConnectionError:
             if self.connect():
-                print "connect ok"
                 return True
             else:
-                print "connect nok"
                 return False
 
     def lock(self):

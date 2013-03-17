@@ -116,7 +116,7 @@ class EspeakPlugin(Plugin):
             work_archived_messages = self.archived_messages
             self.archived_messages = []
             for (timestamp, message) in work_archived_messages:
-                speak_text += "\n" + self.core.utils.get_nice_age(int(timestamp)) + ": " + message + "."
+                speak_text += "\n" + self.core.utils.get_nice_age(int(timestamp)) + ", " + message + "."
 
             speak_text += "\nEnd of Log"
 

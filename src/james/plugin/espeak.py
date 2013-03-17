@@ -75,8 +75,10 @@ class EspeakPlugin(Plugin):
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:
-            msg = self.message_cache[0]
-            self.message_cache.pop(0)
+            msg = '\n'.join(self.message_cache)
+            self.message_cache = []
+            # msg = self.message_cache[0]
+            # self.message_cache.pop(0)
             self.talkover = True
             try:
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])

@@ -110,12 +110,16 @@ class EspeakPlugin(Plugin):
 
         if len(self.archived_messages) > 0:
         # reading the log
-            self.speak('While we where apart, the following things happend:')
+            speak_text = 'While we where apart, the following things happend:'
             work_archived_messages = self.archived_messages
             self.archived_messages = []
             for (timestamp, message) in work_archived_messages:
-                self.speak(self.core.utils.get_nice_age(int(timestamp)) + ": " + message)
-            self.speak('End of Log')
+                speak_text += "\n" + self.core.utils.get_nice_age(int(timestamp)) + ": " + message
+
+            speak_text += "\nEnd of Log"
+
+            self.speak(speak_text)
+            
         else:
             self.speak('Nothing happend while we where apart.')
 

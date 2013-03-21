@@ -6,6 +6,22 @@ from james.plugin import *
 # http://docs.python.org/2/library/socketserver.html
 # http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python
 
+# http://stackoverflow.com/questions/14444913/web-py-specify-address-and-port
+
+
+# urls = (
+#     '/', 'index'
+# )
+
+# class index:
+#     def GET(self):
+#         return "Hello, world!"
+
+# if __name__ == "__main__":
+#     app = web.application(urls, globals())
+#     app.run()
+
+    
 class HttpServerPlugin(Plugin):
 
     def __init__(self, core, descriptor):

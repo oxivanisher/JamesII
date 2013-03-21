@@ -17,7 +17,7 @@ do
 	clear
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
 	# sudo "./james.py" | sudo tee -i ./.james_crashed_log ; RESULT=${PIPESTATUS[0]}
-	sudo script -c "./james.py" ./.james_crashed_log ; RESULT=${PIPESTATUS[0]}
+	sudo script -c "./james.py" -e ./.james_crashed_log ; RESULT=${PIPESTATUS[0]}
 	if [[ $RESULT -eq 0 ]];
 	then
 		GITPULL=true

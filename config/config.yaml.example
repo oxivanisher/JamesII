@@ -5,6 +5,7 @@
 # core / basic settings
 core:
  timezone    : Europe/Zurich
+ debug       : True      #True/False
  # this configures the periodic node detection
  # pingtimeout is the waittime for the nodes to
  # answer the ping, sleeptimeout the time between cycles

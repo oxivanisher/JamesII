@@ -1,13 +1,14 @@
+# JamesII stuff
 config/*.yaml
-data/whoisonline.csv
-data/whoisonline.new
-*.swp
-nbproject/*
-*.sublime-*
 doc/
 src/.james_crashed
-src/.james_crashed_log
 src/.james_console_log
+src/JamesII.log
+
+# Editor files
+nbproject/*
+*.swp
+*.sublime-*
 
 *.py[cod]
 

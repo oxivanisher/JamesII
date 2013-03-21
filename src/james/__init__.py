@@ -22,6 +22,7 @@ import broadcastchannel
 import proximitystatus
 import jamesutils
 import jamesmessage
+import jameslogging
 
 # Pika SUPER HACK (c) westlicht
 try:
@@ -40,9 +41,6 @@ class AddTimeoutHandlerMissing(Exception):
     pass
 
 class Core(object):
-
-    def test_handler(self, *args, **kwargs):
-        print "test_handler", args, kwargs
 
     def __init__(self, passive = False):
         output = 'JamesII starting up'
@@ -65,6 +63,7 @@ class Core(object):
         self.master_node = ''
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.core_lock = threading.RLock()
+        self.logger = jameslogging.logger('core')
 
         try:
             self.os_username = getpass.getuser()
@@ -96,13 +95,13 @@ class Core(object):
             mode_output = "passive"
 
         # Show welcome header
-        print ("%s (%s mode)" % (output, mode_output))
+        self.logger.info("%s (%s mode)" % (output, mode_output))
 
         # Create global connection
         try:
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
         except Exception as e:
-            print "Could not connect to RabbitMQ server!"
+            self.logger.critical("Could not connect to RabbitMQ server!")
             sys.exit(2)
 
         # Create discovery & configuration channels
@@ -116,12 +115,12 @@ class Core(object):
 
         # Wait for configuration if not master
         if not self.master:
-            print("Waiting for config")
+            self.logger.debug("Waiting for config")
             while not self.config:
                 try:
                     self.connection.process_data_events()
                 except KeyboardInterrupt:
-                    print "Keyboard interrupt detected. Exiting..."
+                    self.logger.warning("Keyboard interrupt detected. Exiting...")
                     sys.exit(3)
                     pass
 
@@ -134,14 +133,12 @@ class Core(object):
             except Exception as e:
                 pass
 
-        # Show if we are in debug mode
-        if self.config['core']['debug']:
-            print("Hostname:      %s" % (self.hostname))
-            print("UUID:          %s" % (self.uuid))
-            print("Location:      %s" % (self.location))
-            print("OS Username:   %s" % (self.os_username))
-            print("Master:        %s" % (self.master))
-            print("RabbitMQ Host: %s:%s" % (self.brokerconfig['host'], self.brokerconfig['port']))
+        self.logger.debug("Hostname:      %s" % (self.hostname))
+        self.logger.debug("UUID:          %s" % (self.uuid))
+        self.logger.debug("Location:      %s" % (self.location))
+        self.logger.debug("OS Username:   %s" % (self.os_username))
+        self.logger.debug("Master:        %s" % (self.master))
+        self.logger.debug("RabbitMQ Host: %s:%s" % (self.brokerconfig['host'], self.brokerconfig['port']))
 
 
         # Create request & response channels
@@ -162,7 +159,7 @@ class Core(object):
             self.proximity_status.status[self.location] = self.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
             if self.config['core']['debug']:
-                print("Loading proximity status from %s" % (self.proximity_state_file))
+                self.logger.debug("Loading proximity status from %s" % (self.proximity_state_file))
         except IOError:
             pass
 
@@ -176,26 +173,24 @@ class Core(object):
     # plugin methods
     def load_plugin(self, name):
         try:
-            print("Loading plugin '%s'" % (name))
+            self.logger.debug("Loading plugin '%s'" % (name))
             c = plugin.Factory.get_plugin_class(name)
             self.instantiate_plugin(c)
         except plugin.PluginNotAvailable, e:
-            print e
+            self.logger.warning(e)
 
     def autoload_plugins(self):
 
         output = "Ignoring manual plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
             output += (" %s" % (c.name))
-        if self.config['core']['debug']:
-            print(output)
+        self.logger.debug(output)
 
         output = "Autoloading plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
             output += (" %s" % (c.name))
             self.instantiate_plugin(c)
-        if self.config['core']['debug']:
-            print(output)
+        self.logger.debug(output)
 
         output = "Loading managed plugins:"
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
@@ -216,8 +211,7 @@ class Core(object):
             else:
                 output += (" -%s" % (c.name))
 
-        if self.config['core']['debug']:
-            print(output)
+        self.logger.debug(output)
 
     def instantiate_plugin(self, cls):
         p = cls(self, cls.descriptor)
@@ -309,15 +303,16 @@ class Core(object):
         changed version of the config (= new config on master node) we will exit.
         """
         if not self.config:
-            show_message = True
             try:
-                if not new_config['core']['debug']:
-                    show_message = False
+                if new_config['core']['debug']:
+                    self.logger.setDebug(True)
+                else:
+                    self.logger.setDebug(False)
+
             except TypeError as e:
                 pass
 
-            if show_message:
-                print("Received config, debug mode activated:")
+            self.logger.debug("Received config")
 
             self.config = new_config
             self.master_node = sender_uuid
@@ -328,10 +323,10 @@ class Core(object):
                 self.location = 'home'
         else:
             if self.config != new_config:
-                print("Core: The configuration file has changed. Exiting!")
+                self.logger.info("The configuration file has changed. Exiting!")
                 self.terminate()
             elif self.master_node != sender_uuid:
-                print("Core: The master node has changed.")
+                self.logger.info("The master node has changed.")
                 self.master_node = sender_uuid
 
     # message channel methods
@@ -398,7 +393,7 @@ class Core(object):
                                          'plugin' : pluginname,
                                          'location' : self.location})
         except Exception as e:
-            print("Warning! Could not send proximity status (%s)" % (e))
+            self.logger.warning("Could not send proximity status (%s)" % (e))
 
     # discovery methods
     def ping_nodes(self):
@@ -438,8 +433,7 @@ class Core(object):
             if p.commands:
                 self.discovery_channel.send(['commands', p.commands.serialize()])
 
-        if self.config['core']['debug']:
-            print(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
+        self.logger.info(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
         for p in self.plugins:
             p.start()
 
@@ -449,17 +443,17 @@ class Core(object):
                 self.lock_core()
                 self.process_timeouts()
                 self.unlock_core()
-                #print("process events")
+                #self.logger.debug("process events")
             except KeyboardInterrupt:
-                print "Keyboard interrupt detected. Exiting..."
+                self.logger.info("Keyboard interrupt detected. Exiting...")
                 self.terminate(3)
             except pika.exceptions.ChannelClosed:
                 # channel closed error
-                print "Lost connection to RabbitMQ server! (ChannelClosed)"
+                self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
                 self.terminate(2)
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error
-                print "Lost connection to RabbitMQ server! (AMQPConnectionError)"
+                self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 self.terminate(2)
         sys.exit(self.returncode)
 
@@ -474,7 +468,7 @@ class Core(object):
         Terminate the core. This method will first call the terminate() on each plugin.
         """
         self.returncode = returncode
-        print("Core.terminate() called. I shall die now.")
+        self.logger.info("Core.terminate() called. I shall die now.")
 
         try:
             self.discovery_channel.send(['byebye', self.hostname, self.uuid])
@@ -487,10 +481,9 @@ class Core(object):
             file = open(self.proximity_state_file, 'w')
             file.write(json.dumps(self.proximity_status.status[self.location]))
             file.close()
-            if self.config['core']['debug']:
-                print("Saving proximity status to %s" % (self.proximity_state_file))
+            self.logger.debug("Saving proximity status to %s" % (self.proximity_state_file))
         except IOError:
-            print("WARNING: Could not safe proximity status to file!")
+            self.logger.warning("Could not safe proximity status to file")
         self.terminated = True
 
     # threading methods

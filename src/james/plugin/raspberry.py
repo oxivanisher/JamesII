@@ -87,9 +87,9 @@ class RaspberryThread(PluginThread):
 
             # debug output
             # if (loop_count % 100) == 0:
-            #     print "Rasp Worker Debug: time:       %s" % int(time.time())
-            #     print "Rasp Worker Debug: sleep_time: %s" % sleep_time
-            #     print "Rasp Worker Debug: diff:       %s" % diff
+            #     self.logger.debug("Rasp Worker Debug: time:       %s" % int(time.time()))
+            #     self.logger.debug("Rasp Worker Debug: sleep_time: %s" % sleep_time)
+            #     self.logger.debug("Rasp Worker Debug: diff:       %s" % diff)
 
             # see if we must blink with some leds
             for blink in self.led_blink_list:
@@ -190,7 +190,7 @@ class RaspberryPlugin(Plugin):
                 self.button_commands[(command['pin'], command['seconds'])] = command['command'].split()
                 self.button_pins.append(command['pin'])
         except Exception as e:
-            print "Rasp Button load Exception (%s)" % e
+            self.logger.debug("Rasp Button load Exception (%s)" % e)
 
         self.switch_pins = []
         self.switch_commands = {}
@@ -200,7 +200,7 @@ class RaspberryPlugin(Plugin):
                 self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
                 self.switch_pins.append(command['pin'])
         except Exception as e:
-            print "Rasp Switch load Exception (%s)" % e
+            self.logger.debug("Rasp Switch load Exception (%s)" % e)
 
         if core.os_username == 'root':
             self.commands.create_subcommand('quit', 'Quits the raspberry worker', self.cmd_rasp_quit)
@@ -289,13 +289,13 @@ class RaspberryPlugin(Plugin):
         try:
             self.send_command(self.button_commands[(pin, duration)])
         except Exception as e:
-            print "button press error (%s)" % e
+            self.logger.debug("Button press error (%s)" % e)
 
     def on_switch_change(self, pin, new_state):
         try:
             self.send_command(self.switch_commands[(pin, new_state)])
         except Exception as e:
-            print "switch change error (%s)" % e
+            self.logger.debug("Switch change error (%s)" % e)
 
     def on_worker_exit(self):
         self.send_broadcast(['Raspberry worker exited'])
@@ -318,8 +318,7 @@ class RaspberryPlugin(Plugin):
 
     # james system event handler
     def process_proximity_event(self, newstatus):
-        if self.core.config['core']['debug']:
-            print("RaspberryPi Processing proximity event")
+        self.logger.debug("Processing proximity event")
         
         if newstatus['status'][self.core.location]:
             self.turn_off_led(3)
@@ -328,8 +327,7 @@ class RaspberryPlugin(Plugin):
             self.turn_on_led(3)
 
     def process_message(self, message):
-        if self.core.config['core']['debug']:
-            print("RaspberryPi Processing message event")
+        self.logger.debug("Processing message event")
 
         # at home
         if self.core.proximity_status.status[self.core.location]:

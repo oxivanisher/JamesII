@@ -34,8 +34,7 @@ class SystemPlugin(Plugin):
             file = open(self.crash_detection_file, 'r')
             timestamp = int(file.read())
             file.close()
-            if self.core.config['core']['debug']:
-                print("Checking for crash restart in %s" % (self.crash_detection_file))
+            self.logger.debug("Checking for crash restart in %s" % (self.crash_detection_file))
             os.remove(self.crash_detection_file)
             self.send_broadcast(['JamesII started after crash %s' % (self.core.utils.get_nice_age(timestamp))])
 
@@ -121,7 +120,7 @@ class SystemPlugin(Plugin):
                 self.send_command(command)
                 self.send_broadcast(['Processing command alias %s (%s)' % (request[0], ' '.join(command))])
             except Exception as e:
-                # print "command alias error (%s)" % e
+                self.logger.debug("Command alias error (%s)" % e)
                 pass
 
 descriptor = {

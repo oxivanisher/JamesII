@@ -45,8 +45,7 @@ class ProximityPlugin(Plugin):
             file = open(self.persons_status_file, 'r')
             self.persons_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Loading persons status from %s" % (self.persons_status_file))
+            self.logger.debug("Loading persons status from %s" % (self.persons_status_file))
         except IOError:
             pass
         pass
@@ -56,10 +55,9 @@ class ProximityPlugin(Plugin):
             file = open(self.persons_status_file, 'w')
             file.write(json.dumps(self.persons_status))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Saving persons status to %s" % (self.persons_status_file))
+            self.logger.debug("Saving persons status to %s" % (self.persons_status_file))
         except IOError:
-            print("WARNING: Could not save persons status to file!")
+            self.logger.warning("Could not save persons status to file!")
 
     # command methods
     def test(self, args):

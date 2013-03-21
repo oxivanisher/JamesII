@@ -58,12 +58,11 @@ class MonitorPlugin(Plugin):
             file = open(self.file_cache_name, 'a')
             file.write('\n'.join(self.core.utils.list_unicode_cleanup(self.file_cache)) + '\n')
             file.close()
-            if self.core.config['core']['debug']:
-                print("Saving monitor log to %s" % (self.file_cache_name))
+            self.logger.debug("Saving monitor log to %s" % (self.file_cache_name))
             self.file_cache = []
             return ["Monitor logfile saved"]
         except IOError:
-            print("WARNING: Could not save monitor log to file!")
+            self.logger.warning("Could not save monitor log to file!")
 
     def process_message(self, message):
         self.process_event(("%s@%s" % (message.sender_name, message.sender_host)),

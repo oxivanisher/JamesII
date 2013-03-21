@@ -70,7 +70,7 @@ class TransmissionPlugin(Plugin):
                 dl_rate = self.core.utils.bytes2human(torrent.rateDownload)
                 # with this code block you see all the attributes of the torrent
                 # for key, value in torrent.fields.iteritems():
-                #     print(key, value)
+                #     self.logger.debug(key, value)
                 ret.append("%3s %-12s %8s/s %6s %9s %-8s %s" % (torrent_id,
                                                                torrent.status,
                                                                dl_rate,
@@ -163,9 +163,9 @@ class TransmissionPlugin(Plugin):
 
                         self.tr_conn.remove(torrent_id)
                 except ValueError:
-                    print ("FIXME: Strange ValueError occured. FIX ME MASTER!")
+                    self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
                 except transmissionrpc.error.TransmissionError as e:
-                    print ("TransmissionError occured: %s" % e)
+                    self.logger.warning("TransmissionError occured: %s" % e)
         self.core.add_timeout(self.core.config['transmission']['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):
@@ -185,7 +185,6 @@ class TransmissionPlugin(Plugin):
         for word in old_words:
             if word.lower() not in [x.lower() for x in self.muted_words] and word:
                 new_words.append(word)
-        print ' '.join(new_words)
         return ' '.join(new_words)
 
 descriptor = {

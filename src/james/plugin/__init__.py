@@ -22,6 +22,7 @@ class Plugin(object):
         self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
+        self.logger = self.core.logger.getLogger('plugin.' + self.name)
 
     def start(self):
         pass
@@ -98,6 +99,7 @@ class PluginThread(threading.Thread):
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
+        self.logger = self.plugin.logger.getLogger(self.plugin.name + '.thread')
 
     def work(self):
         """

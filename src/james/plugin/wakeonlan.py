@@ -41,8 +41,7 @@ class WakeOnLanPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:
             if newstatus['status'][self.core.location]:
-                if self.core.config['core']['debug']:
-                    print("WOL Processing proximity event")
+                self.logger.debug("Processing proximity event")
                 ret = []
                 for (name, mac) in self.wol_devices:
                     self.core.utils.wake_on_lan(mac)

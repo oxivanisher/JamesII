@@ -33,7 +33,7 @@ class MpdClientWorker(object):
             self.client.timeout = 10
             return True
         except Exception as e:
-            print "MPD connection error (%s)" % e
+            self.logger.error("MPD connection error (%s)" % e)
             return False
 
     def check_connection(self):
@@ -47,14 +47,10 @@ class MpdClientWorker(object):
                 return False
 
     def lock(self):
-        # print "    locking"
         self.worker_lock.acquire()
-        # print "    locked"
 
     def unlock(self):
-        # print "    unlocking"
         self.worker_lock.release()
-        # print "    unlocked"
 
     def play_url(self, uri, volume = None):
         if self.check_connection():
@@ -128,7 +124,7 @@ class MpdClientWorker(object):
 
     def setvol(self, volume):
         if self.check_connection():
-            # print "set volume (%s)" % volume
+            self.logger.info("set volume (%s)" % volume)
             self.lock()
             self.client.setvol(volume)
             self.unlock()
@@ -159,12 +155,12 @@ class FadeThread(PluginThread):
         self.start_volume = int(self.mpd_client.status()['volume'])
         self.last_vol = self.start_volume
 
-        # print "fade thread startet (vol: %s)" % self.start_volume
+        self.logger.debug("Fade thread startet (vol: %s)" % self.start_volume)
 
         # self.work()
 
     def work(self):
-        # print("fading started working")
+        self.logger.debug("Fading started working")
 
         run = True
         loopcount = 0
@@ -181,10 +177,10 @@ class FadeThread(PluginThread):
 
         step_wait = int((self.fade_time * 10) / vol_steps)
 
-        # print "increase : %s" % increase
-        # print "fade_time: %s" % self.fade_time
-        # print "vol_steps: %s" % vol_steps
-        # print "step_wait: %s" % step_wait
+        # self.logger.debug("increase : %s" % increase)
+        # self.logger.debug("fade_time: %s" % self.fade_time)
+        # self.logger.debug("vol_steps: %s" % vol_steps)
+        # self.logger.debug("step_wait: %s" % step_wait)
 
         step_count = 0
 
@@ -214,7 +210,6 @@ class FadeThread(PluginThread):
             time.sleep(0.1)
 
     def on_exit(self, result):
-        # print "on exit"
         self.plugin.fade_ended()
 
 class MpdClientPlugin(Plugin):
@@ -359,20 +354,19 @@ class MpdClientPlugin(Plugin):
 
 
     def fade_ended(self):
-        # print "fade ending"
+        self.logger.debug("Fade ending")
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
         if int(self.client_worker.status()['volume']) == 0:
             self.client_worker.stop()
             self.client_worker.clear()
-        # print "fade ended"
+        self.logger.debug("Fade ended")
 
     # react on proximity events
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:
-            if self.core.config['core']['debug']:
-                print("MPD Processing proximity event")
+            self.logger.debug("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
                 self.radio_on(None)
             else:

@@ -42,22 +42,22 @@ class JabberThread(PluginThread):
         conres = self.conn.connect()
 
         if not conres:
-            print "Unable to connect to server %s!"%jid.getDomain()
+            self.logger.error("Unable to connect to server %s!" % jid.getDomain())
             self.active = False
         else:
             self.active = True
     
         if self.active:
             if conres != 'tls':
-                print "Warning: unable to estabilish secure connection - TLS failed!"
+                self.logger.warning("Unable to estabilish secure connection - TLS failed!")
 
             authres = self.conn.auth(jid.getNode(), self.password)
 
             if not authres:
-                print "Unable to authorize on %s - check login/password."%jid.getDomain()
+                self.logger.error("Unable to authorize on %s - check login/password." % jid.getDomain())
                 self.active = False
             if authres != 'sasl':
-                print "Warning: unable to perform SASL auth on %s. Old authentication method used!"%server
+                self.logger.warning("Warning: unable to perform SASL auth on %s. Old authentication method used!" % server)
 
             # registering handlers
             self.conn.RegisterHandler('message', self.message_callback)
@@ -83,7 +83,7 @@ class JabberThread(PluginThread):
                 self.roster[i] = my_roster.getStatus(i)
             self.roster = self.plugin.core.utils.convert_from_unicode(self.roster)
 
-            # print "Jabber worker roster: %s" % self.roster
+            self.logger.debug("Jabber worker roster: %s" % self.roster)
             return True
 
         else:
@@ -98,7 +98,7 @@ class JabberThread(PluginThread):
         if not exit:
             try:
                 while not self.conn.reconnectAndReauth():
-                    print "Jabber worker reconnecting..."
+                    self.logger.debug("Reconnecting...")
                     time.sleep(5)
             except:
                 self.conn = False
@@ -150,7 +150,7 @@ class JabberThread(PluginThread):
                         message = self.create_message(jid, header, body)
                         self.conn.send(message)
             except Exception as e:
-                print("Jabber worker send direct msg ERROR: %s" % e)
+                self.logger.debug("Send direct msg ERROR: %s" % e)
         # see if we must send muc messages
         if self.muc_room:
             for (header, body) in self.plugin.waiting_muc_messages:
@@ -163,7 +163,7 @@ class JabberThread(PluginThread):
                     msg.setType('groupchat')
                     self.conn.send(msg)
                 except Exception as e:
-                    print("Jabber worker send muc msg ERROR: %s" % e)
+                    self.logger.debug("Send muc msg ERROR: %s" % e)
         # see if we must change our status
         if self.plugin.jabber_status_string != self.status_message:
             self.status_message = self.plugin.jabber_status_string
@@ -200,21 +200,21 @@ class JabberThread(PluginThread):
         self.plugin.core.add_timeout(0, self.plugin.on_xmpp_message, message)
 
     def disconnect_callback(self, conn, message):
-        print("Jabber worker disconnect callback called!")
+        self.logger.info("Jabber worker disconnect callback called!")
         self.xmpp_disconnect()
         
     def iq_callback(self, conn, message):
         if message.getType() == 'get':
             pass
         else:
-            print("iq event callback from %s to %s!" % (message.getFrom(), message.getTo()))
+            self.logger.debug("iq event callback from %s to %s!" % (message.getFrom(), message.getTo()))
             if message.getType() == 'result':
-                print(message.getAttrs())
+                self.logger.debug(message.getAttrs())
             elif message.getType() == 'error':
-                print(message.getAttrs())
+                self.logger.debug(message.getAttrs())
 
     def presence_callback(self, conn, message):
-        # print str(msg)
+        # self.logger.debug(str(msg))
         # if message.getJid():
         prs_type = message.getType()
         who = message.getFrom()
@@ -223,19 +223,19 @@ class JabberThread(PluginThread):
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
         # elif prs_type == 'presence':
-        #     print("::: %s" % msg.__getitem__('jid'))
+        #     self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
             if message.getJid():
                 src_jid = self.plugin.core.utils.convert_from_unicode(message.getJid()).split('/')
-                # print message
+                # self.logger.debug(message)
                 self.presence_ids[my_id] = (src_jid[0], src_jid[1], prs_type)
                 
                 # for key, value in msg.iteritems():
-                #     print(key, value)
-            # print("nick: %s / jid: %s" % (msg.getNick(), msg.getJid()))
+                #     self.logger.debug(key, value)
+            # self.logger.debug("nick: %s / jid: %s" % (msg.getNick(), msg.getJid()))
 
-            # print "Presence IDs updated: %s" % self.presence_ids
-            # print(message.getAttrs())
+            # self.logger.debug("Presence IDs updated: %s" % self.presence_ids)
+            # self.logger.debug(message.getAttrs())
 
     # called when the worker ends
     def on_exit(self, result):
@@ -333,7 +333,7 @@ class JabberPlugin(Plugin):
         try:
             msg_types[message.__getitem__('type')](message)
         except KeyError:
-            print("Recieved unkonwn message type: %s" % message.__getitem__('type'))
+            self.logger.debug("Recieved unkonwn message type: %s" % message.__getitem__('type'))
             pass
 
     def on_chat_msg(self, message):
@@ -371,7 +371,7 @@ class JabberPlugin(Plugin):
                 pass
 
     def on_error_msg(self, message):
-        print("rcv error msg: %s" % message)
+        # self.logger.error("Recieved error msg: %s" % message)
         pass
 
     # worker callback helper methods
@@ -477,8 +477,7 @@ class JabberPlugin(Plugin):
             self.send_xmpp_message(message_text)
 
     def process_proximity_event(self, newstatus):
-        if self.core.config['core']['debug']:
-            print("Jabber Processing proximity event")
+        self.logger.debug("Processing proximity event")
         if newstatus['status'][self.core.location]:
             self.proximity_status_string = "You are at home"
             self.set_jabber_status()

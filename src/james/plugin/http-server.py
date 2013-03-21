@@ -28,7 +28,7 @@ class HttpServerPlugin(Plugin):
 
         super(HttpServerPlugin, self).__init__(core, descriptor)
 
-        print "http server loaded"
+        self.logger.info("http server loaded")
 
 
 descriptor = {

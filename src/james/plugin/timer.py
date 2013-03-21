@@ -35,8 +35,7 @@ class TimerPlugin(Plugin):
             file = open(self.command_cache_file, 'r')
             self.saved_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Loading timed commands from %s" % (self.command_cache_file))
+            self.logger.debug("Loading timed commands from %s" % (self.command_cache_file))
         except IOError:
             pass
         pass
@@ -46,10 +45,9 @@ class TimerPlugin(Plugin):
             file = open(self.command_cache_file, 'w')
             file.write(json.dumps(self.saved_commands))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Saving timed commands to %s" % (self.command_cache_file))
+            self.logger.debug("Saving timed commands to %s" % (self.command_cache_file))
         except IOError:
-            print("WARNING: Could not save cached commands to file!")
+            self.logger.warning("Could not save cached commands to file!")
 
     # command methods
     def cmd_timer_in(self, args):

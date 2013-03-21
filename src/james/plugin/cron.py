@@ -149,18 +149,16 @@ class CronPlugin(Plugin):
             file = open(self.command_cron_file, 'w')
             file.write(json.dumps(self.cron_list))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Saving crontab to %s" % (self.command_cron_file))
+            self.logger.debug("Saving crontab to %s" % (self.command_cron_file))
         except IOError:
-            print("WARNING: Could not safe cron tab to file!")
+            self.logger.warning("Could not safe cron tab to file!")
 
     def load_saved_commands(self):
         try:
             file = open(self.command_cron_file, 'r')
             self.cron_list = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Loading crontab from %s" % (self.command_cron_file))
+            self.logger.debug("Loading crontab from %s" % (self.command_cron_file))
             self.load_commands_from_cron_list()
         except IOError:
             pass
@@ -227,7 +225,7 @@ class CronPlugin(Plugin):
                 newevent.active = False
             self.crontab.add_event(newevent)
         except Exception as e:
-            print ("Error on adding cron command: %s" % (e))
+            self.logger.error("Error on adding cron command: %s" % (e))
             pass
 
     # cron commands

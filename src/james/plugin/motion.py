@@ -42,8 +42,7 @@ class MotionPlugin(Plugin):
             file = open(self.log_file, 'r')
             self.log = self.core.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Loading motion events from %s" % (self.log_file))
+            self.logger.debug("Loading motion events from %s" % (self.log_file))
         except IOError:
             pass
         pass
@@ -53,10 +52,9 @@ class MotionPlugin(Plugin):
             file = open(self.log_file, 'w')
             file.write(json.dumps(self.log))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Saving motion events to %s" % (self.log_file))
+            self.logger.debug("Saving motion events to %s" % (self.log_file))
         except IOError:
-            print("WARNING: Could not save motion events to file!")
+            self.logger.warning("Could not save motion events to file!")
 
     def terminate(self):
         pass
@@ -103,7 +101,7 @@ class MotionPlugin(Plugin):
                 self.send_broadcast(['Motion video file removed'])
                 self.cam_control(False)
             except Exception as e:
-                print("error: %s" % e)
+                self.logger.error("Motion video file error: %s" % e)
         else:
             # nobody is at home .. so ...why do we have movement? DANGER WILL ROBINSON!
             try:
@@ -191,8 +189,7 @@ class MotionPlugin(Plugin):
 
     # react on proximity events
     def process_proximity_event(self, newstatus):
-        if self.core.config['core']['debug']:
-            print("Motion processing proximity event")
+        self.logger.debug("Motion processing proximity event")
         if newstatus['status'][self.core.location]:
             self.watch_mode = False
             self.cmd_off(None)

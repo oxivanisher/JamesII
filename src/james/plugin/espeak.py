@@ -44,10 +44,9 @@ class EspeakPlugin(Plugin):
             file = open(self.message_archive_file, 'w')
             file.write(json.dumps(self.archived_messages))
             file.close()
-            if self.core.config['core']['debug']:
-                print("Saving archived messages to %s" % (self.message_archive_file))
+            self.logger.debug("Saving archived messages to %s" % (self.message_archive_file))
         except IOError:
-            print("WARNING: Could not safe archived messages to file!")
+            self.logger.warning("Could not safe archived messages to file!")
 
     def espeak_say(self, args):
         text = ' '.join(args)
@@ -126,8 +125,7 @@ class EspeakPlugin(Plugin):
             self.speak('Nothing happend while we where apart.')
 
     def process_proximity_event(self, newstatus):
-        if self.core.config['core']['debug']:
-            print("Espeak Processing proximity event")
+        self.logger.debug("Espeak Processing proximity event")
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()

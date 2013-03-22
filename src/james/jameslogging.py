@@ -29,13 +29,10 @@ class logger(object):
         return logger(name)
 
     def debug(self, message):
-        if self.debug_mode:
-            print(message)
         self.filelogger.debug(message)
 
     def info(self, message):
-        if self.debug_mode:
-            print(message)
+        print(message)
         self.filelogger.info(message)
 
     def warning(self, message):

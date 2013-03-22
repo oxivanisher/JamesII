@@ -19,9 +19,13 @@ class logger(object):
         self.debug_mode = True
 
     def setDebug(self, mode):
-        self.debug_mode = mode
+        if mode:
+            self.filelogger.setLevel(logging.DEBUG)
+        else:
+            self.filelogger.setLevel(logging.WARNING)
 
     def getLogger(self, name):
+        #FIXME: this is wrong
         return logger(name)
 
     def debug(self, message):

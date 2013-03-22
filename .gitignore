@@ -3,7 +3,7 @@ config/*.yaml
 doc/
 src/.james_crashed
 src/.james_console_log
-src/JamesII.log
+src/JamesII.log*
 
 # Editor files
 nbproject/*

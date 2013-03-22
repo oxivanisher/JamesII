@@ -158,9 +158,10 @@ class Factory(object):
     @classmethod
     def find_plugins(cls, path):
         files = os.listdir(path)
-        plugin_load_error = []
 
-        output = "Discovering plugins:"
+        available_plugins = []
+        plugin_warning = []
+        plugin_descr_error = []
         for f in files:
             # Get module filename and extension
             (name, ext) = os.path.splitext(os.path.basename(f))
@@ -168,26 +169,21 @@ class Factory(object):
             if ext != '.py' or name == '__init__':
                 continue
             # Load plugin
-            output += (" %s" % (name))
             plugin = None
             info = imp.find_module(name, [path])
             try:
                 plugin = imp.load_module(name, *info)
+                available_plugins.append(name)
             except ImportError, e:
-                plugin_load_error.append("Failed to initialize plugin '%s' (%s)" % (name, e))
+                plugin_warning.append((name, e))
                 continue
             # Check plugin descriptor
             try:
                 descriptor = plugin.__dict__['descriptor']
                 cls.register_plugin(descriptor)
             except KeyError, e:
-                plugin_load_error.append("Plugin '%s' has no valid descriptor" % (name))
+                plugin_descr_error.append(name)
                 continue
 
-        print(output)
-        # FIXME: wie mache ich hier core.config['core']['debug'] ?
-        # -->> logger package
-
-        for e in plugin_load_error:
-            print(e)
+        return (available_plugins, plugin_warning, plugin_descr_error)
 

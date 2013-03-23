@@ -10,10 +10,15 @@ class logger(object):
 
         self.filelogger = logging.getLogger(name)
         # hdlr = logging.FileHandler('/tmp/james.log')
-        hdlr = logging.FileHandler("./JamesII.log")
-        formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')
-        hdlr.setFormatter(formatter)
-        self.filelogger.addHandler(hdlr)
+        try:
+            hdlr = logging.FileHandler("./JamesII.log")
+            formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')
+            hdlr.setFormatter(formatter)
+            self.filelogger.addHandler(hdlr)
+        except Exception:
+            print "WARNING: Unable to open Logfile for writing"
+            pass
+            
         self.filelogger.setLevel(logging.DEBUG)
 
         self.debug_mode = True

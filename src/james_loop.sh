@@ -1,5 +1,17 @@
 #!/bin/bash
 INPWD=$(pwd)
+
+if [[ -f "/var/lock/JamesII.pid" ]];
+then
+	PID=$(cat /var/lock/JamesII.pid)
+	if kill -0 $PID > /dev/null 2>&1;
+	then
+		exit
+	fi
+fi
+
+echo $$ > /var/lock/JamesII.pid
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 GITPULL=true
@@ -44,4 +56,5 @@ do
 		sleep 20
 	fi
 done
+rm /var/lock/JamesII.pid
 cd $INPWD

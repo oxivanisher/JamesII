@@ -17,6 +17,8 @@ do
 	clear
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
 	sudo mv ./JamesII.log ./JamesII.log.old 2>&1 >/dev/null
+	sudo touch ./JamesII.log
+	sudo chmod 666 ./JamesII.log
 	sudo script -c "./james.py" -e ./.james_console_log ; RESULT=${PIPESTATUS[0]}
 	if [[ $RESULT -eq 0 ]];
 	then

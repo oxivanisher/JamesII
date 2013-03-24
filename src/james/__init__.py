@@ -177,11 +177,11 @@ class Core(object):
         (loaded_plugins, plugin_warnings, plugin_descr_error) = plugin.Factory.find_plugins(path)
         for plugin_name in loaded_plugins:
             # plugin_factory_logger.debug('<%s> available' % plugin_name)
-            self.logger.debug('PluginFactory: <%s> available' % plugin_name)
+            self.logger.debug('Plugin %s available' % plugin_name)
         for (plugin_name, plugin_error) in plugin_warnings:
-            self.logger.warning('PluginFactory: <%s> unavailable: %s' % (plugin_name, str(plugin_error)))
-        for error in plugin_descr_error:
-            self.logger.error('PluginFactory: <%s> unavailable: has no valid descriptor' % error)
+            self.logger.warning('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
+        for plugin_name in plugin_descr_error:
+            self.logger.error('Plugin %s has no valid descriptor' % plugin_name)
 
     # plugin methods
     def load_plugin(self, name):

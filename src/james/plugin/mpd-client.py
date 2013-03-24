@@ -8,9 +8,6 @@ import mpd
 
 from james.plugin import *
 
-#FIXME: ToDo
-# - what happens when mpd disconnects?
-
 class MpdClientWorker(object):
     # FIXME: make me singleton!
 

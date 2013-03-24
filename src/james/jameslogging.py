@@ -9,7 +9,7 @@ class logger(object):
 
     def __init__(self, name):
     # def setup_custom_logger(name):
-        print "new logger: %s" % name
+        # print "new logger: %s" % name
 
         # %(module)s
         file_formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')

@@ -10,7 +10,6 @@ from james.plugin import *
 
 #FIXME: ToDo
 # - what happens when mpd disconnects?
-# - command to set volume
 
 class MpdClientWorker(object):
     # FIXME: make me singleton!
@@ -132,10 +131,16 @@ class MpdClientWorker(object):
     def setvol(self, volume):
         if self.check_connection():
             self.lock()
-            self.client.setvol(volume)
-            self.unlock()
-            self.logger.debug("Set volume to %s" % volume)
-            return True
+            try:
+                int(volume)
+            except Exception:
+                return False
+
+            if volume >= 0 and volume <= 100:
+                self.client.setvol(volume)
+                self.unlock()
+                self.logger.debug("Set volume to %s" % volume)
+                return True
         else:
             return False
 
@@ -262,19 +267,19 @@ class MpdClientPlugin(Plugin):
         if self.client_worker.setvol(self.core.config['mpd-client']['talk_volume']):
             return (["Activate talkover"])
         else:
-            return "Unable to connect to MPD"
+            return (["Unable to connect to MPD"])
 
     def deactivate_talkover(self, args):
         if self.client_worker.setvol(self.core.config['mpd-client']['norm_volume']):
             return (["Deactivate talkover"])
         else:
-            return "Unable to connect to MPD"
+            return (["Unable to connect to MPD"])
 
     def show_status(self, args):
         status = self.client_worker.status()
         currentsong = self.client_worker.currentsong()
         if not status and not currentsong:
-            return "Unable to connect to MPD"
+            return (["Unable to connect to MPD"])
 
         str_status = status['state']
         name = "Nothing"
@@ -290,7 +295,7 @@ class MpdClientPlugin(Plugin):
             str_status = "Paused"
             name = currentsong['name']
 
-        return "[%s@%s%%] %s%s" % (str_status, status['volume'], title, name)
+        return ("[%s@%s%%] %s%s" % (str_status, status['volume'], title, name))
 
     def radio_off(self, args):
         if self.client_worker.stop():
@@ -298,7 +303,7 @@ class MpdClientPlugin(Plugin):
             self.send_broadcast(['Stopping radio'])
             return (["Radio off"])
         else:
-            return "Unable to connect to MPD"
+            return (["Unable to connect to MPD"])
 
     def radio_on(self, args):
         self.client_worker.lock()
@@ -309,7 +314,7 @@ class MpdClientPlugin(Plugin):
                                     self.core.config['mpd-client']['norm_volume']):
             return (["Radio on"])
         else:
-            return "Unable to connect to MPD"
+            return (["Unable to connect to MPD"])
 
     def radio_toggle(self, args):
         tmp_state = self.client_worker.status()
@@ -323,10 +328,20 @@ class MpdClientPlugin(Plugin):
             self.send_broadcast(['Radio toggle'])
             return (["Toggling radio"])
         else:
-            return "Unable to connect to MPD"
+            return (["Unable to connect to MPD"])
 
     def cmd_set_volume(self, args):
-        pass
+        try:
+            volume = int(args[0])
+            if volume >= 0 and volume <= 100:
+                if self.client_worker.setvol(volume):
+                    return (["Volume set to: %s" % volume])
+        except Exception:
+            volume = args[0]
+            pass
+
+        self.logger.debug("Unable to set the volume to: %s" % volume)
+        return (["Unable to set the volume to: %s" % volume])
 
     def mpd_sleep(self, args):
         if self.core.proximity_status.get_status_here():

@@ -56,7 +56,6 @@ class MpdClientWorker(object):
             self.client.command_list_ok_begin()
 
             if volume >= 0:
-                print "volume found"
                 self.client.setvol(volume)
 
             self.client.clear()

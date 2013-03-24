@@ -27,6 +27,7 @@ import jameslogging
 # also pika hack
 # import logging
 # logging.basicConfig()
+# https://pika.readthedocs.org/en/latest/connecting.html
 
 # Pika SUPER HACK (c) westlicht
 try:

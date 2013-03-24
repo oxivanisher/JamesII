@@ -40,7 +40,8 @@ class MotionPlugin(Plugin):
     def load_saved_state(self):
         try:
             file = open(self.log_file, 'r')
-            self.log = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.log = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            self.log = json.loads(file.read())
             file.close()
             self.logger.debug("Loading motion events from %s" % (self.log_file))
         except IOError:

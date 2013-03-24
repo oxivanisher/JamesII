@@ -156,7 +156,8 @@ class CronPlugin(Plugin):
     def load_saved_commands(self):
         try:
             file = open(self.command_cron_file, 'r')
-            self.cron_list = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.cron_list = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            self.cron_list = json.loads(file.read())
             file.close()
             self.logger.debug("Loading crontab from %s" % (self.command_cron_file))
             self.load_commands_from_cron_list()
@@ -168,7 +169,8 @@ class CronPlugin(Plugin):
         self.crontab = CronTab()
         new_cron_list = []
         ret = True
-        for cron_entry in self.core.utils.list_unicode_cleanup(self.cron_list):
+        # for cron_entry in self.core.utils.list_unicode_cleanup(self.cron_list):
+        for cron_entry in self.cron_list:
             try:
                 cron_data = cron_entry.split(';')
                 if len(cron_data) > 1:

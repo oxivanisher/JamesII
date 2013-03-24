@@ -43,7 +43,8 @@ class ProximityPlugin(Plugin):
     def load_saved_state(self):
         try:
             file = open(self.persons_status_file, 'r')
-            self.persons_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.persons_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            self.persons_status = json.loads(file.read())
             file.close()
             self.logger.debug("Loading persons status from %s" % (self.persons_status_file))
         except IOError:

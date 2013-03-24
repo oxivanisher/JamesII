@@ -33,7 +33,8 @@ class TimerPlugin(Plugin):
     def load_saved_commands(self):
         try:
             file = open(self.command_cache_file, 'r')
-            self.saved_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.saved_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            self.saved_commands = json.loads(file.read())
             file.close()
             self.logger.debug("Loading timed commands from %s" % (self.command_cache_file))
         except IOError:
@@ -96,6 +97,8 @@ class TimerPlugin(Plugin):
             target_timestamp = int(target_time.strftime('%s'))
 
         if target_timestamp > 0 and len(args) > 0:
+            print "args1: %s" % args
+            # print "args2: %s" % self.core.utils.list_unicode_cleanup(args)
             return [self.timer_at(target_timestamp, args)]
         else:
             return ["Invalid syntax. Use timestamp or hh:mm[:ss] [dd-mm-yyyy]"]
@@ -124,7 +127,8 @@ class TimerPlugin(Plugin):
 
     # internal timer methods
     def timer_at(self, timestamp, command):
-        self.saved_commands.append(( timestamp, self.core.utils.list_unicode_cleanup(command) ))
+        # self.saved_commands.append(( timestamp, self.core.utils.list_unicode_cleanup(command) ))
+        self.saved_commands.append(( timestamp, command ))
         return("Saved Command (%s) %s" % (' '.join(command),
                                           self.core.utils.get_nice_age(timestamp)))
 

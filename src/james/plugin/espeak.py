@@ -32,7 +32,8 @@ class EspeakPlugin(Plugin):
     def load_archived_messages(self):
         try:
             file = open(self.message_archive_file, 'r')
-            self.archived_messages = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.archived_messages = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            self.archived_messages = json.loads(file.read())
             file.close()
 
         except IOError:

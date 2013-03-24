@@ -4,6 +4,7 @@ import os
 import imp
 import sys
 import threading
+import logging
 
 class CommandNotFound(Exception):
     pass
@@ -22,7 +23,9 @@ class Plugin(object):
         self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
-        self.logger = self.core.logger.getLogger('plugin.' + self.name)
+        # self.logger = self.core.logger.getLogger('core.plugin.' + self.name)
+        # self.logger = self.core.logger.getLogger('plugin.' + self.name)
+        self.logger = logging.getLogger('core.plugin')
 
     def start(self):
         pass

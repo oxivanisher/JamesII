@@ -66,7 +66,9 @@ class Core(object):
         self.master_node = ''
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.core_lock = threading.RLock()
-        self.logger = jameslogging.logger('core')
+        # self.logger = jameslogging.setup_custom_logger('core')
+        # logger = jameslogging.logger('core')
+        self.logger = jameslogging.logger('core').getLogger('core')
 
         try:
             self.os_username = getpass.getuser()
@@ -171,15 +173,15 @@ class Core(object):
 
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
-        plugin_factory_logger = self.logger.getLogger('core.pluginfactory')
 
         (loaded_plugins, plugin_warnings, plugin_descr_error) = plugin.Factory.find_plugins(path)
         for plugin_name in loaded_plugins:
-            plugin_factory_logger.debug('<%s> available' % plugin_name)
+            # plugin_factory_logger.debug('<%s> available' % plugin_name)
+            self.logger.debug('PluginFactory: <%s> available' % plugin_name)
         for (plugin_name, plugin_error) in plugin_warnings:
-            plugin_factory_logger.warning('<%s> unavailable: %s' % (plugin_name, str(plugin_error)))
+            self.logger.warning('PluginFactory: <%s> unavailable: %s' % (plugin_name, str(plugin_error)))
         for error in plugin_descr_error:
-            plugin_factory_logger.error('<%s> unavailable: has no valid descriptor' % error)
+            self.logger.error('PluginFactory: <%s> unavailable: has no valid descriptor' % error)
 
     # plugin methods
     def load_plugin(self, name):
@@ -316,9 +318,11 @@ class Core(object):
         if not self.config:
             try:
                 if new_config['core']['debug']:
-                    self.logger.setDebug(True)
+                    # self.logger.setDebug(True)
+                    pass
                 else:
-                    self.logger.setDebug(False)
+                    # self.logger.setDebug(False)
+                    pass
 
             except TypeError as e:
                 pass

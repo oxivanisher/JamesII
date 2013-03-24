@@ -102,7 +102,8 @@ class PluginThread(threading.Thread):
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
-        self.logger = self.plugin.logger.getLogger(self.plugin.name + '.thread')
+        # self.logger = self.plugin.logger.getLogger(self.plugin.name + '.thread')
+        self.logger = logging.getLogger('self.%s.thread' % self.plugin.name)
 
     def work(self):
         """

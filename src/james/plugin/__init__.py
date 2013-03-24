@@ -25,7 +25,7 @@ class Plugin(object):
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
         # self.logger = self.core.logger.getLogger('core.plugin.' + self.name)
         # self.logger = self.core.logger.getLogger('plugin.' + self.name)
-        self.logger = logging.getLogger('core.plugin')
+        self.logger = logging.getLogger('core.%s' % self.name)
 
     def start(self):
         pass

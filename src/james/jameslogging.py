@@ -11,7 +11,8 @@ class logger(object):
     # def setup_custom_logger(name):
         print "new logger: %s" % name
 
-        file_formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s(%(module)s): %(message)s')
+        # %(module)s
+        file_formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')
         screen_formatter = logging.Formatter('%(message)s')
 
         self.log = logging.getLogger(name)

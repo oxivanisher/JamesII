@@ -24,6 +24,10 @@ import jamesutils
 import jamesmessage
 import jameslogging
 
+# also pika hack
+# import logging
+# logging.basicConfig()
+
 # Pika SUPER HACK (c) westlicht
 try:
     pika.adapters.blocking_connection.log
@@ -43,8 +47,6 @@ class AddTimeoutHandlerMissing(Exception):
 class Core(object):
 
     def __init__(self, passive = False):
-        output = 'JamesII starting up'
-
         self.plugins = []
         self.timeouts = []
         self.timeout_queue = Queue.Queue()
@@ -95,7 +97,7 @@ class Core(object):
             mode_output = "passive"
 
         # Show welcome header
-        self.logger.info("%s (%s mode)" % (output, mode_output))
+        self.logger.info("JamesII starting up (%s mode)" % (mode_output))
 
         # Create global connection
         try:

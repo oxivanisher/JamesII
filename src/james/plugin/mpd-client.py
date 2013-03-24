@@ -26,6 +26,8 @@ class MpdClientWorker(object):
         self.client = mpd.MPDClient(use_unicode=False)
         self.check_connection()
 
+        self.logger = self.plugin.logger.getLogger(self.plugin.name + '.worker')
+
     def connect(self):
         try:
             self.client.connect(self.myhost, self.myport)
@@ -33,7 +35,7 @@ class MpdClientWorker(object):
             self.client.timeout = 10
             return True
         except Exception as e:
-            self.logger.error("MPD connection error (%s)" % e)
+            self.logger.error("Connection error (%s)" % e)
             return False
 
     def check_connection(self):
@@ -52,12 +54,13 @@ class MpdClientWorker(object):
     def unlock(self):
         self.worker_lock.release()
 
-    def play_url(self, uri, volume = None):
+    def play_url(self, uri, volume = -1):
         if self.check_connection():
             self.lock()
             self.client.command_list_ok_begin()
 
-            if volume:
+            if volume >= 0:
+                print "volume found"
                 self.client.setvol(volume)
 
             self.client.clear()
@@ -75,6 +78,7 @@ class MpdClientWorker(object):
             self.unlock()
 
             if url_found:
+                self.logger.debug("Play URI: %s" % uri)
                 return True
             else:
                 return False
@@ -84,6 +88,7 @@ class MpdClientWorker(object):
             self.lock()
             self.client.play()
             self.unlock()
+            self.logger.debug("Play")
             return True
         else:
             return False
@@ -94,6 +99,7 @@ class MpdClientWorker(object):
             self.plugin.fade_in_progress = False
             self.client.stop()
             self.unlock()
+            self.logger.debug("Stop")
             return True
         else:
             return False
@@ -104,6 +110,7 @@ class MpdClientWorker(object):
             self.plugin.fade_in_progress = False
             self.client.clear()
             self.unlock()
+            self.logger.debug("Cleared playlist")
             return True
         else:
             return False
@@ -124,10 +131,10 @@ class MpdClientWorker(object):
 
     def setvol(self, volume):
         if self.check_connection():
-            self.logger.info("set volume (%s)" % volume)
             self.lock()
             self.client.setvol(volume)
             self.unlock()
+            self.logger.debug("Set volume to %s" % volume)
             return True
         else:
             return False
@@ -138,6 +145,7 @@ class MpdClientWorker(object):
         self.client.close()
         self.client.disconnect()
         self.unlock()
+        self.logger.debug("Disconnected")
 
 
 class FadeThread(PluginThread):
@@ -155,7 +163,7 @@ class FadeThread(PluginThread):
         self.start_volume = int(self.mpd_client.status()['volume'])
         self.last_vol = self.start_volume
 
-        self.logger.debug("Fade thread startet (vol: %s)" % self.start_volume)
+        self.logger.debug("Fade initialized with volume %s" % self.start_volume)
 
         # self.work()
 
@@ -228,6 +236,8 @@ class MpdClientPlugin(Plugin):
         self.client_worker = MpdClientWorker(self, self.myhost, self.myport)
         self.fade_in_progress = False
         self.thread = None
+
+        self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
 
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_command.create_subcommand('on', 'Turn the radio on', self.radio_on)
@@ -315,43 +325,47 @@ class MpdClientPlugin(Plugin):
         else:
             return "Unable to connect to MPD"
 
+    def cmd_set_volume(self, args):
+        pass
+
     def mpd_sleep(self, args):
-        self.send_broadcast(['MPD Sleeping activated'])
-        self.radio_off(None)
-        self.client_worker.play_url(self.core.config['mpd-client']['sleep_url'],
-                                int(self.core.config['mpd-client']['norm_volume']) - 30)
+        if self.core.proximity_status.get_status_here():
+            if self.fade_in_progress:
+                self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
+            else:
+                self.send_broadcast(['MPD Sleeping activated'])
+                self.radio_off(None)
+                self.client_worker.play_url(self.core.config['mpd-client']['sleep_url'],
+                                        int(self.core.config['mpd-client']['norm_volume']) - 30)
 
-        self.thread = FadeThread(self,
-                                 self.client_worker,
-                                 self.core.config['mpd-client']['sleep_fade'],
-                                 0)
-        self.thread.start()
-
-        if self.fade_in_progress:
-            return (["MPD Sleep mode NOT activated due other fade in progress"])
+                self.thread = FadeThread(self,
+                                         self.client_worker,
+                                         self.core.config['mpd-client']['sleep_fade'],
+                                         0)
+                self.thread.start()
+                self.logger.info("MPD Sleep mode activated")
         else:
-            return (["MPD Sleep mode activated"])
+            self.send_broadcast(['MPD Sleep mode not activated. You are not here.'])
+            self.logger.info("MPD Sleep mode not activated. You are not here.")
 
     def mpd_wakeup(self, args):
         if self.core.proximity_status.get_status_here():
-            self.send_broadcast(['MPD Wakeup activated'])
-            self.radio_off(None)
-            self.client_worker.play_url(self.core.config['mpd-client']['wakeup_url'], 0)
-
-            self.thread = FadeThread(self,
-                                     self.client_worker,
-                                     self.core.config['mpd-client']['wakeup_fade'],
-                                     self.core.config['mpd-client']['norm_volume'])
-            self.thread.start()
-
             if self.fade_in_progress:
-                return (["MPD Wakeup mode NOT activated due other fade in progress"])
+                self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
             else:
-                return (["MPD Wakeup mode activated"])
+                self.send_broadcast(['MPD Wakeup activated'])
+                self.radio_off(None)
+                self.client_worker.play_url(self.core.config['mpd-client']['wakeup_url'], 0)
+
+                self.thread = FadeThread(self,
+                                         self.client_worker,
+                                         self.core.config['mpd-client']['wakeup_fade'],
+                                         self.core.config['mpd-client']['norm_volume'])
+                self.thread.start()
+                self.logger.info("MPD Wakeup mode activated")
         else:
             self.send_broadcast(['MPD Wakeup not activated. You are not here.'])
-            return (["MPD Wakeup not activated. You are not here."])
-
+            self.logger.info("Wakeup not activated. You are not here.")
 
     def fade_ended(self):
         self.logger.debug("Fade ending")

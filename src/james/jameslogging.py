@@ -2,6 +2,11 @@
 # http://docs.python.org/release/2.3.5/lib/node304.html
 # http://stackoverflow.com/questions/7621897/python-logging-module-globally
 
+# todo:
+# - non class like 3rd link
+# - getLogger checks for parent, does getchild if exists, creates new if none
+# - add dynamic debugging option with plugin base class command "mpd log debug"
+
 import os
 import logging
 
@@ -49,6 +54,7 @@ class logger(object):
 
         #FIXME: this is wrong
         return logging.getLogger(name)
+        # return self.log.getChild(name)
 
     def debug(self, message):
         self.log.debug(message)

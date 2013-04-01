@@ -206,10 +206,8 @@ class JamesUtils(object):
     def getLogger(self, name, parent = None):
 
         if parent:
-            print "child logger with name: %s" % name
             return parent.getChild(name)
         else:
-            print "new logger with name: %s" % name
             # %(module)s
             file_formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')
             screen_formatter = logging.Formatter('%(message)s')

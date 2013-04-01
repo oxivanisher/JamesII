@@ -51,6 +51,7 @@ class MpdClientWorker(object):
         self.worker_lock.release()
 
     def play_url(self, uri, volume = -1):
+        self.logger.debug('Trying to play URI (%s) with volume (%s)' % (uri, volume))
         if self.check_connection():
             self.lock()
             self.client.command_list_ok_begin()
@@ -73,7 +74,7 @@ class MpdClientWorker(object):
             self.unlock()
 
             if url_found:
-                self.logger.debug("Play URI: %s" % uri)
+                self.logger.debug("Playing URI: %s" % uri)
                 return True
             else:
                 return False
@@ -83,9 +84,10 @@ class MpdClientWorker(object):
             self.lock()
             self.client.play()
             self.unlock()
-            self.logger.debug("Play")
+            self.logger.debug("Playing")
             return True
         else:
+            self.logger.debug("Unable to play")
             return False
 
     def stop(self):
@@ -94,9 +96,10 @@ class MpdClientWorker(object):
             self.plugin.fade_in_progress = False
             self.client.stop()
             self.unlock()
-            self.logger.debug("Stop")
+            self.logger.debug("Stoped")
             return True
         else:
+            self.logger.debug("Unable to stop")
             return False
 
     def clear(self):
@@ -108,6 +111,7 @@ class MpdClientWorker(object):
             self.logger.debug("Cleared playlist")
             return True
         else:
+            self.logger.debug("Unable to clear playlist")
             return False
 
     def status(self):
@@ -118,6 +122,7 @@ class MpdClientWorker(object):
             return tmp_status
 
     def currentsong(self):
+        self.logger.debug('Fetching current song')
         if self.check_connection():
             self.lock()
             tmp_status = self.client.currentsong()
@@ -138,6 +143,7 @@ class MpdClientWorker(object):
                 self.logger.debug("Set volume to %s" % volume)
                 return True
         else:
+            self.logger.debug('Unable setting volume')
             return False
 
     def disconnect(self):
@@ -185,11 +191,6 @@ class FadeThread(PluginThread):
             increase = False
 
         step_wait = int((self.fade_time * 10) / vol_steps)
-
-        # self.logger.debug("increase : %s" % increase)
-        # self.logger.debug("fade_time: %s" % self.fade_time)
-        # self.logger.debug("vol_steps: %s" % vol_steps)
-        # self.logger.debug("step_wait: %s" % step_wait)
 
         step_count = 0
 
@@ -260,18 +261,21 @@ class MpdClientPlugin(Plugin):
         self.client_worker.disconnect()
 
     def activate_talkover(self, args):
+        self.logger.debug('Activating talkover')
         if self.client_worker.setvol(self.core.config['mpd-client']['talk_volume']):
             return (["Activate talkover"])
         else:
             return (["Unable to connect to MPD"])
 
     def deactivate_talkover(self, args):
+        self.logger.debug('Deactivating talkover')
         if self.client_worker.setvol(self.core.config['mpd-client']['norm_volume']):
             return (["Deactivate talkover"])
         else:
             return (["Unable to connect to MPD"])
 
     def show_status(self, args):
+        self.logger.debug('Showing status')
         status = self.client_worker.status()
         currentsong = self.client_worker.currentsong()
         if not status and not currentsong:
@@ -294,6 +298,7 @@ class MpdClientPlugin(Plugin):
         return ("[%s@%s%%] %s%s" % (str_status, status['volume'], title, name))
 
     def radio_off(self, args):
+        self.logger.debug('Radio off')
         if self.client_worker.stop():
             self.client_worker.clear()
             self.send_broadcast(['Stopping radio'])
@@ -302,6 +307,7 @@ class MpdClientPlugin(Plugin):
             return (["Unable to connect to MPD"])
 
     def radio_on(self, args):
+        self.logger.debug('Radio on')
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
@@ -313,6 +319,7 @@ class MpdClientPlugin(Plugin):
             return (["Unable to connect to MPD"])
 
     def radio_toggle(self, args):
+        self.logger.debug('Radio toggle')
         tmp_state = self.client_worker.status()
         if tmp_state:
             if tmp_state['state'] == 'play':
@@ -340,6 +347,7 @@ class MpdClientPlugin(Plugin):
         return (["Unable to set the volume to: %s" % volume])
 
     def mpd_sleep(self, args):
+        self.logger.debug('Activating sleep mode')
         if self.core.proximity_status.get_status_here():
             if self.fade_in_progress:
                 self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
@@ -360,6 +368,7 @@ class MpdClientPlugin(Plugin):
             self.logger.info("MPD Sleep mode not activated. You are not here.")
 
     def mpd_wakeup(self, args):
+        self.logger.debug('Activating wakeup mode')
         if self.core.proximity_status.get_status_here():
             if self.fade_in_progress:
                 self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")

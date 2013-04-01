@@ -13,6 +13,7 @@ import subprocess
 import Queue
 import time
 import atexit
+import logging, logging.handlers
 
 import plugin
 import config
@@ -64,7 +65,7 @@ class Core(object):
         self.master_node = ''
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.core_lock = threading.RLock()
-        self.logger = self.utils.getLogger('core')
+        self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
 
         try:
             self.os_username = getpass.getuser()
@@ -133,6 +134,13 @@ class Core(object):
                 self.location = self.config['locations'][self.hostname]
             except Exception as e:
                 pass
+
+        # registring network logger handlers
+        if self.config['monitor']['nodes']:
+            for target_host in self.config['monitor']['nodes']:
+                socketHandler = logging.handlers.SocketHandler(target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+                socketHandler.setLevel(logging.DEBUG)
+                self.logger.addHandler(socketHandler)
 
         self.logger.debug("Hostname:      %s" % (self.hostname))
         self.logger.debug("UUID:          %s" % (self.uuid))

@@ -97,8 +97,6 @@ class TimerPlugin(Plugin):
             target_timestamp = int(target_time.strftime('%s'))
 
         if target_timestamp > 0 and len(args) > 0:
-            print "args1: %s" % args
-            # print "args2: %s" % self.core.utils.list_unicode_cleanup(args)
             return [self.timer_at(target_timestamp, args)]
         else:
             return ["Invalid syntax. Use timestamp or hh:mm[:ss] [dd-mm-yyyy]"]

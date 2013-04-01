@@ -6,6 +6,7 @@ import socket
 import struct
 import collections
 import subprocess
+import logging
 import re
 
 class JamesUtils(object):
@@ -189,7 +190,7 @@ class JamesUtils(object):
         else:
             return data
 
-    def list_unicode_cleanup(Self, data):
+    def list_unicode_cleanup(self, data):
         args = [s.encode('utf-8', errors='ignore').strip() for s in data]
         args = filter(lambda s: s != '', args)
         return args
@@ -201,3 +202,35 @@ class JamesUtils(object):
         ret = subprocess.Popen(command, \
                   stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
         return ret.split("\n")
+
+    def getLogger(self, name, parent = None):
+
+        if parent:
+            print "child logger with name: %s" % name
+            return parent.getChild(name)
+        else:
+            print "new logger with name: %s" % name
+            # %(module)s
+            file_formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')
+            screen_formatter = logging.Formatter('%(message)s')
+
+            log = logging.getLogger(name)
+            log.setLevel(logging.DEBUG)
+
+            # screen handler
+            streamhandler = logging.StreamHandler()
+            streamhandler.setLevel(logging.INFO)
+            streamhandler.setFormatter(screen_formatter)
+            log.addHandler(streamhandler)
+
+            # file handler
+            try:
+                filehandler = logging.FileHandler("./JamesII.log")
+                filehandler.setLevel(logging.DEBUG)
+                filehandler.setFormatter(file_formatter)
+                log.addHandler(filehandler)
+            except Exception:
+                log.warning("WARNING: Unable to open Logfile for writing")
+                pass
+
+            return log

@@ -4,7 +4,7 @@ import os
 import imp
 import sys
 import threading
-import logging
+import time
 
 class CommandNotFound(Exception):
     pass
@@ -23,9 +23,7 @@ class Plugin(object):
         self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
-        # self.logger = self.core.logger.getLogger('core.plugin.' + self.name)
-        # self.logger = self.core.logger.getLogger('plugin.' + self.name)
-        self.logger = logging.getLogger('core.%s' % self.name)
+        self.logger = self.core.utils.getLogger(self.name, self.core.logger)
 
     def start(self):
         pass
@@ -96,14 +94,12 @@ class Plugin(object):
     def send_broadcast(self, message):
         self.core.add_timeout(0, self.send_response, self.uuid, 'broadcast', message)
 
-# FIXME ThreadBaseClass
 class PluginThread(threading.Thread):
 
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
-        # self.logger = self.plugin.logger.getLogger(self.plugin.name + '.thread')
-        self.logger = logging.getLogger('self.%s.thread' % self.plugin.name)
+        self.logger = self.plugin.core.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
 
     def work(self):
         """

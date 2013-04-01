@@ -5,7 +5,6 @@ import urllib2
 import subprocess
 import time
 import mpd
-import logging
 
 from james.plugin import *
 
@@ -23,8 +22,7 @@ class MpdClientWorker(object):
         self.client = mpd.MPDClient(use_unicode=False)
         self.check_connection()
 
-        # self.logger = self.plugin.logger.getLogger(self.plugin.name + '.worker')
-        self.logger = logging.getLogger('core.%s.worker' % self.plugin.name)
+        self.logger = self.plugin.core.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
     def connect(self):
         try:

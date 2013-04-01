@@ -13,7 +13,6 @@ import subprocess
 import Queue
 import time
 import atexit
-# import datetime
 
 import plugin
 import config
@@ -22,7 +21,6 @@ import broadcastchannel
 import proximitystatus
 import jamesutils
 import jamesmessage
-import jameslogging
 
 # also pika hack
 # import logging
@@ -66,9 +64,7 @@ class Core(object):
         self.master_node = ''
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.core_lock = threading.RLock()
-        # self.logger = jameslogging.setup_custom_logger('core')
-        # logger = jameslogging.logger('core')
-        self.logger = jameslogging.logger('core').getLogger('core')
+        self.logger = self.utils.getLogger('core')
 
         try:
             self.os_username = getpass.getuser()

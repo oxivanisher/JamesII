@@ -140,6 +140,10 @@ monitor:
  nodes:
   - node_name
 
+netlog:
+ nodes:
+  - node_name
+
 timer:
  nodes:
   - node_name

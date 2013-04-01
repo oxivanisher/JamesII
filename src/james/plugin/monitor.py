@@ -1,6 +1,4 @@
 
-import subprocess
-import sys
 from time import localtime, strftime
 
 from james.plugin import *

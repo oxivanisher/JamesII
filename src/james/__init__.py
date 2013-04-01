@@ -136,8 +136,8 @@ class Core(object):
                 pass
 
         # registring network logger handlers
-        if self.config['monitor']['nodes']:
-            for target_host in self.config['netlog$']['nodes']:
+        if self.config['netlog']['nodes']:
+            for target_host in self.config['netlog']['nodes']:
                 socketHandler = logging.handlers.SocketHandler(target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
                 socketHandler.setLevel(logging.DEBUG)
                 self.logger.addHandler(socketHandler)

@@ -102,7 +102,11 @@ class EspeakPlugin(Plugin):
             if self.unmuted:
                 self.speak(message.header)
             else:
-                self.archived_messages.append((time(), message.header))
+                try:
+                    self.archived_messages.append((time(), message.header))
+                except TypeError as e:
+                    self.logger.error('Very strange error occured while processing message!')
+                    pass
 
     def greet_homecomer(self):
         nicetime = strftime("%H:%M", localtime())

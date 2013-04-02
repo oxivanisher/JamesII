@@ -2,7 +2,7 @@
 import sys
 import atexit
 import json
-from time import localtime, strftime, sleep, time
+import time
 
 from james.plugin import *
 
@@ -102,16 +102,12 @@ class EspeakPlugin(Plugin):
             if self.unmuted:
                 self.speak(message.header)
             else:
-                try:
-                    self.archived_messages.append((time(), message.header))
-                except TypeError as e:
-                    self.logger.error('Very strange error occured while processing message!')
-                    pass
+                self.archived_messages.append((time.time(), message.header))
 
     def greet_homecomer(self):
-        nicetime = strftime("%H:%M", localtime())
+        nicetime = time.strftime("%H:%M", time.localtime())
 
-        if (time() - self.core.startup_timestamp) > 10:
+        if (time.time() - self.core.startup_timestamp) > 10:
             self.speak('Welcome. It is now %s.' % (nicetime))
 
         if len(self.archived_messages) > 0:

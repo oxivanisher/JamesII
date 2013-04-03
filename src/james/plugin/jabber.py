@@ -323,7 +323,7 @@ class JabberPlugin(Plugin):
 
     # worker callback methods
     def on_worker_exit(self):
-        self.send_broadcast(['XMPP worker exited'])
+        self.logger.info('XMPP worker exited')
 
     def on_xmpp_message(self, message):
         msg_types = {'chat'      : self.on_chat_msg,
@@ -431,13 +431,15 @@ class JabberPlugin(Plugin):
                                         self.core.config['jabber']['muc_room'],
                                         self.core.config['jabber']['muc_nick'])
         self.rasp_thread.start()
-        return self.send_broadcast(['XMPP worker starting'])
+        self.logger.info('XMPP worker starting')
+        return 'XMPP worker starting'
 
     def worker_must_exit(self):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
-        return self.send_broadcast(['XMPP worker exiting'])
+        self.logger.info('XMPP worker exiting')
+        return 'XMPP worker exiting'
 
     # plugin event methods
     def process_command_response(self, args, host, plugin):

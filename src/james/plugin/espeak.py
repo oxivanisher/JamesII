@@ -71,7 +71,7 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         self.core.utils.popenAndWait(self.espeak_command + [msg])
-        self.send_broadcast(['Espeak spoke: %s' % (msg)])
+        self.logger.info('Espeak spoke: %s' % (msg))
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:

@@ -71,7 +71,7 @@ class MotionPlugin(Plugin):
             self.watch_mode = True
             self.cam_control(True)
         else:
-            self.send_broadcast(['MPD Wakeup not activated. You are not here.'])
+            self.logger.debug('MPD Wakeup not activated. You are not here.')
             return (["MPD Wakeup not activated. You are not here."])
 
     def cmd_show_log(self, args):
@@ -95,11 +95,11 @@ class MotionPlugin(Plugin):
             # somebody is at home. delete the file and deactivate motion
             try:
                 if self.watch_mode:
-                    self.send_broadcast(['Motion Watching starts mpd radio on'])
+                    self.logger.info('Motion Watching starts mpd radio on')
                     self.send_command(['mpd', 'radio', 'on'])
                 self.watch_mode = False
                 os.remove(args[0])
-                self.send_broadcast(['Motion video file removed'])
+                self.logger.info('Motion video file removed')
                 self.cam_control(False)
             except Exception as e:
                 self.logger.error("Motion video file error: %s" % e)
@@ -112,14 +112,14 @@ class MotionPlugin(Plugin):
 
             file_name = ntpath.basename(file_path)
             if self.move_file(file_path, self.core.config['motion']['target-dir']):
-                self.send_broadcast(['Motion: New Video file %s' % file_name])
+                self.logger.info('Motion: New Video file %s' % file_name)
 
     def cmd_img(self, args):
         if self.core.proximity_status.get_status_here():
             # somebody is at home. delete the file and do nothing else
             try:
                 os.remove(args[0])
-                self.send_broadcast(['Motion image file removed'])
+                self.logger.info('Motion image file removed')
             except Exception as e:
                 pass
         else:
@@ -130,7 +130,7 @@ class MotionPlugin(Plugin):
                 return (["Please add the path to the file (%s)" % (e)])
 
             file_name = ntpath.basename(file_path)
-            self.send_broadcast(['Motion: New image file %s' % file_name])
+            self.logger.info('Motion: New image file %s' % file_name)
 
             message = self.core.new_message(self.name)
             message.level = 2
@@ -141,7 +141,7 @@ class MotionPlugin(Plugin):
             message.send()
 
             if self.move_file(file_path, self.core.config['motion']['target-dir']):
-                self.send_broadcast(['Motion: New Image file %s' % file_name])
+                self.logger.info('Motion: New Image file %s' % file_name)
 
     def move_file(self, src_file, dst_path):
         try:
@@ -161,13 +161,13 @@ class MotionPlugin(Plugin):
 
     def cam_control(self, switch_on):
         if switch_on:
-            self.send_broadcast(['Motion is starting'])
+            self.logger.info('Motion is starting')
 
             self.core.spawnSubprocess(self.cam_on,
                                       self.on_cam_controll_callback)
 
         else:
-            self.send_broadcast(['Motion is stopping'])
+            self.logger.info('Motion is stopping')
             self.watch_mode = False
 
             self.core.spawnSubprocess(self.cam_off,
@@ -182,11 +182,7 @@ class MotionPlugin(Plugin):
         return "Motion stopped"
 
     def on_cam_controll_callback(self, state):
-        self.core.add_timeout(0, self.send_control_message, state)
-
-    def send_control_message(self, state):
-        self.send_broadcast([state])
-
+        self.logger.info(state)
 
     # react on proximity events
     def process_proximity_event(self, newstatus):

@@ -298,7 +298,7 @@ class RaspberryPlugin(Plugin):
             self.logger.debug("Switch change error (%s)" % e)
 
     def on_worker_exit(self):
-        self.send_broadcast(['Raspberry worker exited'])
+        self.logger.info('Raspberry worker exited')
 
     # worker control methods
     def start_worker(self):
@@ -308,13 +308,15 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.release()
         self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins)
         self.rasp_thread.start()
-        return self.send_broadcast(['Rasp worker starting'])
+        self.logger.info('Rasp worker starting')
+        return ['Rasp worker starting']
 
     def worker_must_exit(self):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
-        return self.send_broadcast(['Rasp worker exiting'])
+        self.logger.info('Rasp worker exiting')
+        return ['Rasp worker exiting']
 
     # james system event handler
     def process_proximity_event(self, newstatus):

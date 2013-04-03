@@ -149,7 +149,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.send_broadcast(['Proximity found %s' % (name)])
+                self.logger.info('Proximity found %s' % (name))
 
         for (mac, name) in old_hosts_online:
             notfound = True
@@ -157,7 +157,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.send_broadcast(['Proximity lost %s' % (name)])
+                self.logger.info('Proximity lost %s' % (name))
 
         # registering the person for this device as detected
         for (mac, name) in values:
@@ -191,9 +191,9 @@ class ProximityPlugin(Plugin):
 
         if self.status != self.core.proximity_status.get_status_here():
             if self.status:
-                self.send_broadcast(['You are now at home'])
+                self.logger.info('You are now at home')
             else:
-                self.send_broadcast(['You are now away'])
+                self.logger.info('You are now away')
             # self.core.proximity_status.set_status_here(self.status, 'btproximity')
             self.core.proximity_event(self.status, 'btproximity')
 

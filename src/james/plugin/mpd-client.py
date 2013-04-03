@@ -35,7 +35,7 @@ class MpdClientWorker(object):
         except Exception as e:
             self.logger.error("Connection error (%s)" % e)
             pass
-            
+
         return False
 
     def check_connection(self):
@@ -307,7 +307,6 @@ class MpdClientPlugin(Plugin):
         self.logger.debug('Radio off')
         if self.client_worker.stop():
             self.client_worker.clear()
-            self.send_broadcast(['Stopping radio'])
             return (["Radio off"])
         else:
             return (["Unable to connect to MPD"])
@@ -317,7 +316,6 @@ class MpdClientPlugin(Plugin):
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
-        self.send_broadcast(['Starting radio'])
         if self.client_worker.play_url(self.core.config['mpd-client']['radio_url'],
                                     self.core.config['mpd-client']['norm_volume']):
             return (["Radio on"])
@@ -334,7 +332,6 @@ class MpdClientPlugin(Plugin):
                 self.client_worker.play()
             else:
                 self.radio_on(args)
-            self.send_broadcast(['Radio toggle'])
             return (["Toggling radio"])
         else:
             return (["Unable to connect to MPD"])
@@ -358,7 +355,6 @@ class MpdClientPlugin(Plugin):
             if self.fade_in_progress:
                 self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
             else:
-                self.send_broadcast(['MPD Sleeping activated'])
                 self.radio_off(None)
                 self.client_worker.play_url(self.core.config['mpd-client']['sleep_url'],
                                         int(self.core.config['mpd-client']['norm_volume']) - 30)
@@ -370,7 +366,6 @@ class MpdClientPlugin(Plugin):
                 self.thread.start()
                 self.logger.info("MPD Sleep mode activated")
         else:
-            self.send_broadcast(['MPD Sleep mode not activated. You are not here.'])
             self.logger.info("MPD Sleep mode not activated. You are not here.")
 
     def mpd_wakeup(self, args):
@@ -379,7 +374,6 @@ class MpdClientPlugin(Plugin):
             if self.fade_in_progress:
                 self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
             else:
-                self.send_broadcast(['MPD Wakeup activated'])
                 self.radio_off(None)
                 self.client_worker.play_url(self.core.config['mpd-client']['wakeup_url'], 0)
 
@@ -390,7 +384,6 @@ class MpdClientPlugin(Plugin):
                 self.thread.start()
                 self.logger.info("MPD Wakeup mode activated")
         else:
-            self.send_broadcast(['MPD Wakeup not activated. You are not here.'])
             self.logger.info("Wakeup not activated. You are not here.")
 
     def fade_ended(self):

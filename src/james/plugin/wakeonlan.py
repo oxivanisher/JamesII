@@ -46,7 +46,7 @@ class WakeOnLanPlugin(Plugin):
                 for (name, mac) in self.wol_devices:
                     self.core.utils.wake_on_lan(mac)
                     ret.append('WOL Woke host %s (%s)' % (name, mac))
-                self.send_broadcast(ret)
+                self.logger.info(ret)
 
 descriptor = {
     'name' : 'wakeonlan',

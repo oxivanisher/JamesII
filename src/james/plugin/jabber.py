@@ -490,8 +490,10 @@ class JabberPlugin(Plugin):
         self.set_jabber_status()
 
     def set_jabber_status(self):
-        self.change_xmpp_status_message("%s. %s nodes online." % (self.proximity_status_string,
-                                                     self.nodes_online_num))
+        message = "%s. %s nodes online." % (self.proximity_status_string,
+                                            self.nodes_online_num)
+        self.logger.debug('Setting status message to (%s)' % message)
+        self.change_xmpp_status_message(message)
 
 descriptor = {
     'name' : 'jabber',

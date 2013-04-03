@@ -5,10 +5,6 @@ import time
 
 from james.plugin import *
 
-
-# FIXME!!! only run commands from users in the users list!
-
-
 # http://xmpppy.sourceforge.net/
 # http://stackoverflow.com/questions/3528373/how-to-create-muc-and-send-messages-to-existing-muc-using-python-and-xmpp
 # http://xmpppy-guide.berlios.de/html/
@@ -32,7 +28,7 @@ class JabberThread(PluginThread):
         self.muc_nick = muc_nick
         self.conn = False
         self.roster = {}
-        self.presence_ids = {}
+        self.muc_users = {}
 
     # jabber connection methods
     def xmpp_connect(self):
@@ -59,23 +55,18 @@ class JabberThread(PluginThread):
             if authres != 'sasl':
                 self.logger.warning("Warning: unable to perform SASL auth on %s. Old authentication method used!" % server)
 
+            # lets go online
+            self.conn.sendInitPresence(requestRoster=0)
+
             # registering handlers
             self.conn.RegisterHandler('message', self.message_callback)
             self.conn.RegisterHandler('presence', self.presence_callback)
             self.conn.RegisterHandler('disconnect', self.disconnect_callback)
-            # self.conn.RegisterHandler('iq', self.iq_callback)
-
-            # lets go online
-            self.conn.sendInitPresence(requestRoster=1)
+            self.conn.RegisterHandler('iq', self.iq_callback)
 
             # do we have to connect to a muc room?
             if self.muc_room:
                 self.conn.send(xmpp.Presence(to='%s/%s' % (self.muc_room, self.muc_nick)))
-                # message = xmpp.protocol.Iq('james2@conference.oxi.ch/oxi')
-                # message.setAttr('id', 'james2@conference.oxi.ch/oxi') #get
-                # message.setQuerynode()
-                # message.setQueryNS(xmpp.NS_DISCO_ITEMS)
-                # self.conn.send(message)
 
             # get our roster
             my_roster = self.conn.getRoster()
@@ -197,13 +188,26 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
-        self.plugin.core.add_timeout(0, self.plugin.on_xmpp_message, message)
+        realjid = self.muc_users[message.getFrom()]
+        # check if it is a message from myself
+        if self.cfg_jid != realjid:
+            admin = None
+            # check if the user is a admin
+            for (jid, username) in self.users:
+                if jid == realjid:
+                    admin = username
+
+            if admin:
+                self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message)
+            else:
+                self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message)
 
     def disconnect_callback(self, conn, message):
         self.logger.info("Jabber worker disconnect callback called!")
         self.xmpp_disconnect()
         
     def iq_callback(self, conn, message):
+        # self.logger.debug("iq") # callback: %s" % message)
         if message.getType() == 'get':
             pass
         else:
@@ -214,28 +218,17 @@ class JabberThread(PluginThread):
                 self.logger.debug(message.getAttrs())
 
     def presence_callback(self, conn, message):
-        # self.logger.debug(str(msg))
-        # if message.getJid():
         prs_type = message.getType()
-        who = message.getFrom()
-        my_id = self.plugin.core.utils.convert_from_unicode(message.__getitem__('id'))
+        who = str(message.getFrom())
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
-        # elif prs_type == 'presence':
-        #     self.logger.debug("::: %s" % msg.__getitem__('jid'))
+        elif prs_type == 'presence':
+            self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
             if message.getJid():
                 src_jid = self.plugin.core.utils.convert_from_unicode(message.getJid()).split('/')
-                # self.logger.debug(message)
-                self.presence_ids[my_id] = (src_jid[0], src_jid[1], prs_type)
-                
-                # for key, value in msg.iteritems():
-                #     self.logger.debug(key, value)
-            # self.logger.debug("nick: %s / jid: %s" % (msg.getNick(), msg.getJid()))
-
-            # self.logger.debug("Presence IDs updated: %s" % self.presence_ids)
-            # self.logger.debug(message.getAttrs())
+                self.muc_users[who] = src_jid[0]
 
     # called when the worker ends
     def on_exit(self, result):
@@ -326,7 +319,7 @@ class JabberPlugin(Plugin):
     def on_worker_exit(self):
         self.logger.info('XMPP worker exited')
 
-    def on_xmpp_message(self, message):
+    def on_authorized_xmpp_message(self, message):
         msg_types = {'chat'      : self.on_chat_msg,
                      'error'     : self.on_error_msg,
                      'groupchat' : self.on_groupchat_msg}
@@ -336,6 +329,9 @@ class JabberPlugin(Plugin):
         except KeyError:
             self.logger.debug("Recieved unkonwn message type: %s" % message.__getitem__('type'))
             pass
+
+    def on_unauthorized_xmpp_message(self, message):
+        self.send_xmpp_muc_message(['You are not authorized'])
 
     def on_chat_msg(self, message):
         jid_data = str(message.getFrom()).split('/')
@@ -426,7 +422,7 @@ class JabberPlugin(Plugin):
         self.worker_exit = False
         self.worker_lock.release()
         self.rasp_thread = JabberThread(self,
-                                        self.users,
+                                        self.core.utils.convert_from_unicode(self.users),
                                         self.core.config['jabber']['jid'],
                                         self.core.config['jabber']['password'],
                                         self.core.config['jabber']['muc_room'],

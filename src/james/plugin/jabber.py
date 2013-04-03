@@ -188,7 +188,16 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
-        realjid = self.muc_users[str(message.getFrom())]
+        realjid = self.cfg_jid
+        if message.__getitem__('type') == 'groupchat':
+            try:
+                realjid = self.muc_users[str(message.getFrom())]
+            except KeyError:
+                # recieved a message from a user which is probably not here anymore
+                pass
+        elif message.__getitem__('type') == 'chat':
+            realjid = str(message.getFrom()).split('/')[0]
+
         # check if it is a message from myself
         if self.cfg_jid != realjid:
             admin = None

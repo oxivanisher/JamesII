@@ -5,6 +5,7 @@ import imp
 import sys
 import threading
 import time
+import logging
 
 class CommandNotFound(Exception):
     pass
@@ -23,6 +24,11 @@ class Plugin(object):
         self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
+
+        debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
+        debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
+        debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
+
         self.logger = self.core.utils.getLogger(self.name, self.core.logger)
 
     def start(self):
@@ -71,6 +77,14 @@ class Plugin(object):
 
     def cmd_avail(self, args):
         return self.core.hostname + ' ' + self.name
+
+    def cmd_activate_debug(self, args):
+        self.logger.info('Activating debug')
+        self.logger.setLevel(logging.DEBUG)
+
+    def cmd_deactivate_debug(self, args):
+        self.logger.info('Deactivating debug')
+        self.logger.setLevel(logging.INFO)
 
     # message methods
     def process_message(self, message):

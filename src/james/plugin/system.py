@@ -18,12 +18,16 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-        self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.show_plugins)
-        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.show_proximity)
+        self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.cmd_show_plugins)
+        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
         if self.core.master:
             self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
         if os.path.isfile('/usr/bin/git'):
             self.commands.create_subcommand('version', 'Shows the git checkout HEAD', self.cmd_version)
+
+        core_debug_command = self.commands.create_subcommand('core_debug', 'Activates or deactivates debug output on core', None)
+        core_debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_core_debug)
+        core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
     def get_ip(self, args):
         return commands.getoutput(["/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -47,18 +51,25 @@ class SystemPlugin(Plugin):
             pass
         pass
 
-    def show_proximity(self, args):
+    def cmd_show_proximity(self, args):
         return (["%-10s %-10s %s" % (self.core.hostname,
                                   self.core.proximity_status.get_status_here(),
                                   self.core.location)])
 
-    def show_plugins(self, args):
+    def cmd_show_plugins(self, args):
         plugin_names = []
         for p in self.core.plugins:
             plugin_names.append(p.name)
         plugin_names.sort()
         return([', '.join(plugin_names)])
 
+    def cmd_activate_core_debug(self, args):
+        self.core.logger.info('Activating core debug')
+        self.core.logger.setLevel(logging.DEBUG)
+
+    def cmd_deactivate_core_debug(self, args):
+        self.core.logger.info('Deactivating core debug')
+        self.core.logger.setLevel(logging.INFO)
 
     def cmd_version(self, args):
         version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')

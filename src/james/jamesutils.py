@@ -214,10 +214,10 @@ class JamesUtils(object):
         else:
             # %(module)s
             file_formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)s: %(message)s')
-            screen_formatter = logging.Formatter('%(message)s')
+            screen_formatter = logging.Formatter('%(levelname)-7s %(message)s')
 
             log = logging.getLogger(name)
-            log.setLevel(logging.DEBUG)
+            log.setLevel(logging.INFO)
 
             # screen handler
             streamhandler = logging.StreamHandler()

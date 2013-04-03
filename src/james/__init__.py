@@ -66,6 +66,7 @@ class Core(object):
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.core_lock = threading.RLock()
         self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
+        self.logger.setLevel(logging.DEBUG)
 
         try:
             self.os_username = getpass.getuser()
@@ -87,6 +88,9 @@ class Core(object):
             self.master = True
             mode_output = "master"
             self.master_node = self.uuid
+            if not self.config['core']['debug']:
+                self.logger.debug('Setting loglevel to INFO')
+                self.logger.setLevel(logging.INFO)
         except Exception as e:
             mode_output = "client"
 
@@ -329,13 +333,9 @@ class Core(object):
         """
         if not self.config:
             try:
-                if new_config['core']['debug']:
-                    # self.logger.setDebug(True)
-                    pass
-                else:
-                    # self.logger.setDebug(False)
-                    pass
-
+                if not new_config['core']['debug']:
+                    self.logger.debug('Setting loglevel to INFO')
+                    self.logger.setLevel(logging.INFO)
             except TypeError as e:
                 pass
 

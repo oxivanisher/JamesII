@@ -18,7 +18,7 @@ class TimerPlugin(Plugin):
         self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [dd-mm-yyyy])', self.cmd_timer_at)
         self.commands.create_subcommand('remove', 'Delets a command (id)', self.cmd_timer_remove)
         self.commands.create_subcommand('in', 'Runs a command in given time (sec|1s2m3h4d5w)', self.cmd_timer_in)
-        self.commands.create_subcommand('show', 'Seturns a list of commands', self.cmd_timer_show)
+        self.commands.create_subcommand('show', 'Returns a list of commands', self.cmd_timer_show)
 
         self.command_cache_file = os.path.join(os.path.expanduser("~"), ".james_saved_commands")
         atexit.register(self.save_commands)

@@ -30,8 +30,8 @@ class SystemPlugin(Plugin):
         core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
     def get_ip(self, args):
-        return commands.getoutput(["/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
-                         "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'"])
+        return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
+                         "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
 
     def start(self):
         try:

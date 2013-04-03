@@ -125,7 +125,7 @@ class SystemPlugin(Plugin):
             try:
                 command = self.command_aliases[request[0]].split() + args
                 self.send_command(command)
-                self.logger.info('Processing command alias %s (%s)' % (request[0], ' '.join(command)))
+                self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(command)))
             except Exception as e:
                 if depth == 0:
                     self.logger.info('Unknown command (%s)' % e)

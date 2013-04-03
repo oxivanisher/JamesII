@@ -59,7 +59,7 @@ class Plugin(object):
 
             try:
                 if self.command == args[0]:
-                    self.logger.debug('Processing command (%s)' % ' '.join(args))
+                    self.logger.info('Processing command (%s)' % ' '.join(args))
                     res = self.core.commands.process_args(args)
                     if res:
                         self.send_response(uuid, name, res)

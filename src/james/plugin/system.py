@@ -119,7 +119,7 @@ class SystemPlugin(Plugin):
                 pass
 
             args = []
-            if request and depth > 0:
+            if request:
                 if len(request) > 1:
                     args = request[1:]
             try:
@@ -127,7 +127,8 @@ class SystemPlugin(Plugin):
                 self.send_command(command)
                 self.logger.info('Processing command alias %s (%s)' % (request[0], ' '.join(command)))
             except Exception as e:
-                self.logger.info('Unknown command (%s)' % e)
+                if depth > 0:
+                    self.logger.info('Unknown command (%s)' % e)
                 pass
 
 descriptor = {

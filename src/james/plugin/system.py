@@ -104,7 +104,6 @@ class SystemPlugin(Plugin):
     # call from core for requests
     # only the master should process aliases
     def process_command_request_event(self, command):
-        # search in ghost commands
         try:
             request = self.core.utils.list_unicode_cleanup(command['body'])
         except Exception as e:
@@ -112,6 +111,7 @@ class SystemPlugin(Plugin):
             pass
 
         if self.core.master:
+            # search in ghost commands
             depth = 0
             try:
                 depth = self.core.ghost_commands.get_best_match(request).get_depth()

@@ -289,7 +289,7 @@ class Core(object):
 
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
-            self.logger.debug('Node commands received')
+            # self.logger.debug('Node commands received')
             self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
 
         elif msg[0] == 'nodes_online':

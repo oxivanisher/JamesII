@@ -10,6 +10,7 @@ from james.plugin import *
 
 class MpdClientWorker(object):
     # FIXME: make me singleton!
+    # FIXME: sometimes, i loose connection :()
 
     def __init__(self, plugin, myhost, myport):
         self.connected = False
@@ -25,6 +26,7 @@ class MpdClientWorker(object):
         self.logger = self.plugin.core.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
     def connect(self):
+        self.logger.debug('Connecting...')
         try:
             self.client.connect(self.myhost, self.myport)
             self.connected = True
@@ -32,13 +34,17 @@ class MpdClientWorker(object):
             return True
         except Exception as e:
             self.logger.error("Connection error (%s)" % e)
-            return False
+            pass
+            
+        return False
 
     def check_connection(self):
+        self.logger.debug('Checking connection...')
         try:
             self.client.ping()
             return True
         except mpd.ConnectionError:
+            self.logger.debug('We are disconnected (ping)')
             if self.connect():
                 return True
             else:
@@ -75,7 +81,6 @@ class MpdClientWorker(object):
 
             if url_found:
                 self.logger.debug("Playing URI: %s" % uri)
-                self.plugin.core.add_timeout(1, self.play)
                 return True
             else:
                 return False

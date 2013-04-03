@@ -269,6 +269,7 @@ class Core(object):
             # register node in nodes_online
             args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]
+            self.logger.debug('New node (%s) detected' % args[1])
 
             # Broadcast configuration if master
             if self.master:
@@ -283,15 +284,18 @@ class Core(object):
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
+            self.logger.debug('Node ping received')
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
+            self.logger.debug('Node commands received')
             self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
 
         elif msg[0] == 'nodes_online':
             """We received a new nodes_online list. Replace our current one."""
             if not self.master:
+                self.logger.debug('Updating online nodes we got from master node')
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
                 self.nodes_online = args[1]
@@ -305,11 +309,13 @@ class Core(object):
             """This host is shutting down. Remove him from nodes_online."""
             try:
                 self.nodes_online.pop(msg[2])
+                self.logger.debug('Node (%s) is going offline' % msg[1])
             except KeyError:
                 pass
 
         elif msg[0] == 'shutdown':
             """We received a systemwide shutdown signal. So STFU and RAGEQUIT!"""
+            self.logger.debug('We received a systemwide shutdown signal. So STFU and RAGEQUIT!')
             self.terminate()
 
         for p in self.plugins:
@@ -408,6 +414,7 @@ class Core(object):
         """
         send the newstatus proximity status over the proximity channel.
         """
+        self.logger.debug('Publishing proximity status update in %s to %s from plugin' % (self.location, newstatus, pluginname))
         try:
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,
@@ -422,6 +429,7 @@ class Core(object):
         If master, ping send the ping command to the discovery channel
         """
         if self.master:
+            self.logger.debug('Pinging slave nodes.')
             self.discovery_channel.send(['ping', self.hostname, self.uuid])
 
     def master_send_nodes_online(self):
@@ -430,6 +438,7 @@ class Core(object):
         master_ping_nodes() callback after given sleeptimeout in config.
         """
         if self.master:
+            self.logger.debug('Publishing online nodes')
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
@@ -543,6 +552,7 @@ class Core(object):
         Spawns a subprocess with call target and calls onExit with the return
         when finished
         """
+        self.logger.debug('Spawning subprocess (%s)' % target)
         def runInThread(target, onExit, target_args):
             #FIXME make me thread safe (call onExit tith add_timeout)
             if target_args != None:

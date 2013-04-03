@@ -154,6 +154,8 @@ class JamesUtils(object):
         return "%sB" % n
 
     def wake_on_lan(self, macaddress):
+        logger = self.getLogger('jamesutils', self.core.logger)
+        logger.debug('Wake on lan called for (%s)' % macaddress)
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """
 
@@ -199,6 +201,8 @@ class JamesUtils(object):
         """
         Runs the given command in a subprocess but will not spawn a subprocess.
         """
+        logger = self.getLogger('jamesutils', self.core.logger)
+        logger.debug('popenAndWait called for (%s)' % command)
         ret = subprocess.Popen(command, \
                   stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
         return ret.split("\n")

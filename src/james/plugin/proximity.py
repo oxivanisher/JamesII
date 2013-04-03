@@ -72,6 +72,7 @@ class ProximityPlugin(Plugin):
         return(devices)
 
     def discover(self, args):
+        self.logger.debug('Discovering bluetooth hosts...')
         lines = self.core.utils.popenAndWait(['hcitool', 'scan'])
         lines = self.core.utils.list_unicode_cleanup(lines)
         hosts = {}
@@ -79,6 +80,7 @@ class ProximityPlugin(Plugin):
             for line in lines[1:]:
                 values = line.split()
                 hosts[values[0]] = values[1]
+        self.logger.debug('Found %s bluetooth hosts' % len(hosts))
         return(hosts)
 
     def show_persons(self, args):
@@ -103,6 +105,7 @@ class ProximityPlugin(Plugin):
                                   self.proximity_check_callback)
 
     def proximity_check_worker(self):
+        self.logger.debug('Starting proximity scan')
         hosts = []
         for person in self.core.config['persons'].keys():
             for name in self.core.config['persons'][person]['bt_devices'].keys():
@@ -119,6 +122,7 @@ class ProximityPlugin(Plugin):
         return hosts
 
     def proximity_check_callback(self, values):
+        self.logger.debug('Proximity scan finished')
         self.oldstatus = self.status
         self.status = False
         old_hosts_online = self.hosts_online
@@ -199,6 +203,7 @@ class ProximityPlugin(Plugin):
                 self.core.add_timeout(3, self.process_discovery_event_callback)
 
     def process_discovery_event_callback(self):
+        self.logger.debug('Publishing proximity event')
         self.proxy_send_lock = False
         self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
 

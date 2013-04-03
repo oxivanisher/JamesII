@@ -421,8 +421,15 @@ class JabberPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = False
         self.worker_lock.release()
+        
+        cleaned_users = self.users
+        try:
+            cleaned_users = self.core.utils.convert_from_unicode(self.users)
+        except RuntimeError:
+            pass
+
         self.rasp_thread = JabberThread(self,
-                                        self.core.utils.convert_from_unicode(self.users),
+                                        cleaned_users,
                                         self.core.config['jabber']['jid'],
                                         self.core.config['jabber']['password'],
                                         self.core.config['jabber']['muc_room'],

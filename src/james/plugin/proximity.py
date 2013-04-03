@@ -98,6 +98,7 @@ class ProximityPlugin(Plugin):
         sleep = self.core.config['proximity']['sleep_short']
         if self.status:
             sleep = self.core.config['proximity']['sleep_long']
+        self.logger.debug('Proximity scan sleeping for %s seconds' % sleep)
         self.core.add_timeout(sleep, self.proximity_check_daemon)
 
     def proximity_check(self, args):

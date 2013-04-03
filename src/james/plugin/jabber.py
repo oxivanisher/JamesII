@@ -74,7 +74,7 @@ class JabberThread(PluginThread):
                 self.roster[i] = my_roster.getStatus(i)
             self.roster = self.plugin.core.utils.convert_from_unicode(self.roster)
 
-            self.logger.debug("Jabber worker roster: %s" % self.roster)
+            # self.logger.debug("Jabber worker roster: %s" % self.roster)
             return True
 
         else:
@@ -198,9 +198,9 @@ class JabberThread(PluginThread):
                     admin = username
 
             if admin:
-                self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message)
+                self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
             else:
-                self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message)
+                self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 
     def disconnect_callback(self, conn, message):
         self.logger.info("Jabber worker disconnect callback called!")
@@ -211,11 +211,13 @@ class JabberThread(PluginThread):
         if message.getType() == 'get':
             pass
         else:
-            self.logger.debug("iq event callback from %s to %s!" % (message.getFrom(), message.getTo()))
+            # self.logger.debug("iq event callback from %s to %s!" % (message.getFrom(), message.getTo()))
             if message.getType() == 'result':
-                self.logger.debug(message.getAttrs())
+                # self.logger.debug(message.getAttrs())
+                pass
             elif message.getType() == 'error':
-                self.logger.debug(message.getAttrs())
+                # self.logger.debug(message.getAttrs())
+                pass
 
     def presence_callback(self, conn, message):
         prs_type = message.getType()
@@ -253,7 +255,6 @@ class JabberPlugin(Plugin):
         self.start_time = int(time.time())
         self.last_xmpp_status_message = ''
 
-        self.commands.create_subcommand('test', 'Sends a test message over jabber', self.cmd_xmpp_test)
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
         broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
         broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
@@ -281,10 +282,6 @@ class JabberPlugin(Plugin):
         self.worker_must_exit()
 
     # james command methods
-    def cmd_xmpp_test(self, args):
-        self.send_xmpp_message(["test head"], ["test body line 1", "test body line"])
-        return "Sending test message"
-
     def cmd_list_users(self, args):
         ret = []
         for (jid, name) in self.users:
@@ -319,7 +316,7 @@ class JabberPlugin(Plugin):
     def on_worker_exit(self):
         self.logger.info('XMPP worker exited')
 
-    def on_authorized_xmpp_message(self, message):
+    def on_authorized_xmpp_message(self, message, realjid):
         msg_types = {'chat'      : self.on_chat_msg,
                      'error'     : self.on_error_msg,
                      'groupchat' : self.on_groupchat_msg}
@@ -330,8 +327,12 @@ class JabberPlugin(Plugin):
             self.logger.debug("Recieved unkonwn message type: %s" % message.__getitem__('type'))
             pass
 
-    def on_unauthorized_xmpp_message(self, message):
-        self.send_xmpp_muc_message(['You are not authorized'])
+    def on_unauthorized_xmpp_message(self, message, realjid):
+        # for the first 3 seconds, ignore groupchat messages
+        # (the server sends the last X messages, so do not process them multiple times)
+        if (self.start_time + 3) < int(time.time()):
+            bad_user = str(message.getFrom()).split('/')[1]
+            self.send_xmpp_muc_message(['%s (%s), you are not authorized!' % (bad_user, realjid)])
 
     def on_chat_msg(self, message):
         jid_data = str(message.getFrom()).split('/')
@@ -421,7 +422,7 @@ class JabberPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = False
         self.worker_lock.release()
-        
+
         cleaned_users = self.users
         try:
             cleaned_users = self.core.utils.convert_from_unicode(self.users)

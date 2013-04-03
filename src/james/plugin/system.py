@@ -129,7 +129,7 @@ class SystemPlugin(Plugin):
             except Exception as e:
                 if depth == 0:
                     self.logger.info('Unknown command (%s)' % e)
-                    return ['Currently unknown command on core (%s)' % e]
+                    self.send_broadcast(['Currently unknown command on core (%s)' % e])
                 pass
 
 descriptor = {

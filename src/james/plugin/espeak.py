@@ -84,6 +84,7 @@ class EspeakPlugin(Plugin):
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])
             except Exception:
                 pass
+            self.logger.debug('Espeak will say: %s' % msg)
             self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg)
         else:
             if self.talkover:

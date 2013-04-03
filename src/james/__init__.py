@@ -554,7 +554,7 @@ class Core(object):
         """
         self.logger.debug('Spawning subprocess (%s)' % target)
         def runInThread(target, onExit, target_args):
-            #FIXME make me thread safe (call onExit tith add_timeout)
+            #FIXME make me thread safe (call onExit with add_timeout)
             if target_args != None:
                 onExit(target(target_args))
             else:

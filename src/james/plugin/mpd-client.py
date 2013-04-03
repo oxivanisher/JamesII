@@ -21,9 +21,9 @@ class MpdClientWorker(object):
         self.worker_lock = threading.Lock()
 
         self.client = mpd.MPDClient(use_unicode=False)
-        self.check_connection()
-
         self.logger = self.plugin.core.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
+        
+        self.check_connection()
 
     def connect(self):
         self.logger.debug('Connecting...')

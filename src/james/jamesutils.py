@@ -202,7 +202,7 @@ class JamesUtils(object):
         Runs the given command in a subprocess but will not spawn a subprocess.
         """
         logger = self.getLogger('jamesutils', self.core.logger)
-        logger.debug('popenAndWait called for (%s)' % command)
+        logger.debug('popenAndWait: %s' % command)
         ret = subprocess.Popen(command, \
                   stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
         return ret.split("\n")

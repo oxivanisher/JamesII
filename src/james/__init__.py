@@ -287,7 +287,8 @@ class Core(object):
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
-            self.logger.debug('Node ping received')
+            if not self.master:
+                self.logger.debug('Node ping received')
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
 
         elif msg[0] == 'commands':

@@ -258,6 +258,7 @@ class JabberPlugin(Plugin):
         self.nodes_online_num = 0
         self.show_broadcast = False
         self.start_time = int(time.time())
+        self.last_xmpp_status_message = ''
 
         self.commands.create_subcommand('test', 'Sends a test message over jabber', self.cmd_xmpp_test)
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
@@ -494,8 +495,11 @@ class JabberPlugin(Plugin):
     def set_jabber_status(self):
         message = "%s. %s nodes online." % (self.proximity_status_string,
                                             self.nodes_online_num)
-        self.logger.debug('Setting status message to (%s)' % message)
-        self.change_xmpp_status_message(message)
+        if self.last_xmpp_status_message != message:
+            self.logger.debug('Setting status message to (%s)' % message)
+            self.change_xmpp_status_message(message)
+            self.last_xmpp_status_message = message
+
 
 descriptor = {
     'name' : 'jabber',

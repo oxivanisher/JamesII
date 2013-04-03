@@ -104,13 +104,14 @@ class SystemPlugin(Plugin):
     # call from core for requests
     # only the master should process aliases
     def process_command_request_event(self, command):
-        if self.core.master:
-            try:
-                request = self.core.utils.list_unicode_cleanup(command['body'])
-            except Exception as e:
-                request = False
-                pass
+        # search in ghost commands
+        try:
+            request = self.core.utils.list_unicode_cleanup(command['body'])
+        except Exception as e:
+            request = False
+            pass
 
+        if self.core.master and self.core.ghost_commands.get_best_match(request).get_depth() > 0:
             args = []
             if request:
                 if len(request) > 1:
@@ -120,7 +121,7 @@ class SystemPlugin(Plugin):
                 self.send_command(command)
                 self.logger.info('Processing command alias %s (%s)' % (request[0], ' '.join(command)))
             except Exception as e:
-                self.logger.debug("Command alias error (%s)" % e)
+                self.logger.info('Unknown command (%s)' % e)
                 pass
 
 descriptor = {

@@ -407,7 +407,7 @@ class MpdClientPlugin(Plugin):
 
 descriptor = {
     'name' : 'mpd-client',
-    'help' : 'Interface to mpd via mpc',
+    'help' : 'Interface to mpd via python-mpc2 lib',
     'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
     'class' : MpdClientPlugin

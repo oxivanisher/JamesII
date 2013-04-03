@@ -53,6 +53,7 @@ class Plugin(object):
 
             try:
                 if self.command == args[0]:
+                    self.logger.debug('Processing command (%s)' % ' '.join(args))
                     res = self.core.commands.process_args(args)
                     if res:
                         self.send_response(uuid, name, res)
@@ -100,6 +101,7 @@ class PluginThread(threading.Thread):
         super(PluginThread, self).__init__()
         self.plugin = plugin
         self.logger = self.plugin.core.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger.debug('Thread initialized')
 
     def work(self):
         """
@@ -112,6 +114,7 @@ class PluginThread(threading.Thread):
         self.plugin.core.add_timeout(0, self.on_exit, result)
 
     def on_exit(self, result):
+        self.logger.debug('Thread exited')
         """
         Called when thread finished working (synchroized to core)
         """

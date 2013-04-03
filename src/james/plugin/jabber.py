@@ -188,7 +188,7 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
-        realjid = self.muc_users[message.getFrom()]
+        realjid = self.muc_users[str(message.getFrom())]
         # check if it is a message from myself
         if self.cfg_jid != realjid:
             admin = None

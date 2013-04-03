@@ -111,9 +111,15 @@ class SystemPlugin(Plugin):
             request = False
             pass
 
-        if self.core.master and self.core.ghost_commands.get_best_match(request).get_depth() > 0:
+        if self.core.master:
+            depth = 0
+            try:
+                depth = self.core.ghost_commands.get_best_match(request).get_depth()
+            except Exception:
+                pass
+
             args = []
-            if request:
+            if request and depth > 0:
                 if len(request) > 1:
                     args = request[1:]
             try:

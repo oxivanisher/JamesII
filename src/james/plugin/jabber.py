@@ -489,8 +489,10 @@ class JabberPlugin(Plugin):
             self.set_jabber_status()
 
     def process_discovery_event(self, msg):
-        self.nodes_online_num = len(self.core.nodes_online)
-        self.set_jabber_status()
+        if msg:
+            if msg[0] == 'nodes_online' or msg[0] == 'byebye' or msg[0] == 'hello':
+                self.nodes_online_num = len(self.core.nodes_online)
+                self.set_jabber_status()
 
     def set_jabber_status(self):
         message = "%s. %s nodes online." % (self.proximity_status_string,

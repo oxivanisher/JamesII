@@ -75,6 +75,7 @@ class MpdClientWorker(object):
 
             if url_found:
                 self.logger.debug("Playing URI: %s" % uri)
+                self.play()
                 return True
             else:
                 return False

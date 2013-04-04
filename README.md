@@ -24,7 +24,7 @@ Things / Services you can use or interact with:
 * Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)
 
 Plugin modes explanation:
-* Manual: Passive plugins are run exclusively, normally with a separate command
+* Manual: Passive plugins are run exclusively, normally with a separate bash command
 * Managed: Only loaded if specified in config
 * Autoload: If all requirements are met, this plugin will be loaded automatically
 
@@ -34,20 +34,11 @@ Core functionality:
 * Logger facility with network functionality (netlog_monitor.py)
 
 Not yet done:
-* HTTP Server (managed) (As front-end, console and also REST API for mobile clients)
+* HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
 * Lirc (managed) to control or be controlled via infrared
-
-
-ToDo:
-------
-Main:
 * YAML Schema to detect wrong config files
-
-Plugins:
-* LIRC plugin for RaspberryPi (http://aron.ws/projects/lirc_rpi/)
 * Doorbell extension for RaspberryPi Plugin
-* plugin requirement checks before load (external files)
-* HTTP monitor/plugin with RESTful API for future mobile apps
+* plugin requirement checks before load for external files
 * Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
 You Need (debian packages):
@@ -70,7 +61,7 @@ Optional (plugin specific):
 * python-dbus (dbus notification plugin)
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
-* python-pylirc (lirc plugin)
+* python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 <pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
 pip install jsonrpclib</code></pre>
 

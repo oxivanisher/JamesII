@@ -485,6 +485,7 @@ class Core(object):
                 # disconnection error
                 self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 self.terminate(2)
+        self.logger.debug("Exiting with returncode (%s)" % self.returncode)
         sys.exit(self.returncode)
 
     def lock_core(self):

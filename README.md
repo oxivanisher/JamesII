@@ -1,22 +1,53 @@
-James II: Your Butler
+James II: Your Butler brought to the next level.
 =====================
 
-James your Butler brought to the next level.
+The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
+The system runs with python and is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/)
 
-The Idea behing JamesII Butler is to implement smarthome features in combination with multimedia, networking and interaction applications to your existing infrastraucture.
+Things / Services you can use or interact with:
+--------------
+* CLI (managed) interface with history and command completion
+* Cron (autoload on core node) which emulates a standard Unix like cron daemon
+* Dbus-Notify (passive) as a messaging front-end
+* Espeak (managed) as a messaging front-end and some commands
+* Jabber (managed) as a messaging front-end and interface (has also MUC support)
+* Monitor (managed) to show what is going on in the console
+* Motion (managed) to watch over your home and also to automatically start radio when you get up on weekends
+* Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out)
+* Proximity (managed) to scan the area for known bluetooth mac addresses
+* Raspberry (managed) interactive interface with buttons/switches and LEDs to interact with the real world
+* Sysstat (autoload) to request information's about the host like mounts, net info, memory info, ...
+* System (autoload) james system calls mostly used internally
+* Timer (autoload on core node) the all mighty MCP to time commands with "in" and "at"
+* Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server
+* Wakeonlan (managed) to wake up devices when you come home for example
+* Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)
 
-Module documentation nightly updated: http://oxi.ch/JamesII/doc/
+Plugin modes explanation:
+* Manual: Passive plugins are run exclusively, normally with a separate command
+* Managed: Only loaded if specified in config
+* Autoload: If all requirements are met, this plugin will be loaded automatically
+
+Core functionality:
+--------------
+* Integrated help. Just type help in interfaces
+* Logger facility with network functionality (netlog_monitor.py)
+
+Not yet done:
+* HTTP Server (managed) (As front-end, console and also REST API for mobile clients)
+* Lirc (managed) to control or be controlled via infrared
+
 
 ToDo:
 ------
 Main:
-* YAML Schemas to detect wrong config files
+* YAML Schema to detect wrong config files
 
 Plugins:
 * LIRC plugin for RaspberryPi (http://aron.ws/projects/lirc_rpi/)
 * Doorbell extension for RaspberryPi Plugin
 * plugin requirement checks before load (external files)
-* HTTP monitor/plugin with restapi for future mobile apps
+* HTTP monitor/plugin with RESTful API for future mobile apps
 * Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
 You Need (debian packages):
@@ -107,4 +138,4 @@ Thanks:
 Special thanks go to:
 * http://github.com/westlicht for a lot of OO and Python knowledge
 * http://aron.ws/projects/lirc_rpi/ for the IR solution used with RaspberryPi
-* Kurt Fierz and Anaxagoras for support with the electronic part of JamesII
+* Kurt Fierz and Anaxagoras for support with the electronics part of JamesII (RaspberryPi plugin)

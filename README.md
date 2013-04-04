@@ -3,6 +3,7 @@ James II: Your Butler brought to the next level.
 
 The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/).
+Module documentation nightly updated: http://oxi.ch/JamesII/
 
 Things / Services you can use or interact with:
 --------------
@@ -81,8 +82,6 @@ rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
 </code></pre>
 * Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work.
 <code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code>
-
-Module documentation nightly updated: http://oxi.ch/JamesII/
 
 How to integrate JamesII to your infrastructure:
 ---------

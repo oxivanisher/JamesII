@@ -2,7 +2,7 @@ James II: Your Butler brought to the next level.
 =====================
 
 The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
-The system is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/)
+The system is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/).
 
 Things / Services you can use or interact with:
 --------------
@@ -113,7 +113,7 @@ on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
 on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
 </code></pre>
 
-Technologies and software used (probably outdated!):
+Technologies and software used (incomplete!):
 ------------------
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol
 * AMQP http://en.wikipedia.org/wiki/AMQP

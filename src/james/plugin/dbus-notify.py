@@ -35,6 +35,8 @@ class DbusNotifyPlugin(Plugin):
             else:
                 message.body += "\n\n"
 
+            self.logger.debug('Processing message with level %s: %s' % (int(message.level), message.header))
+
             icon_name = ""
             if int(message.level) == 0:
                 icon_name = 'debug.png'

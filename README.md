@@ -1,7 +1,7 @@
 James II: Your Butler brought to the next level.
 =====================
 
-The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
+The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system runs with python and is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/)
 
 Things / Services you can use or interact with:

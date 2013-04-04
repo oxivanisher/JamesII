@@ -79,6 +79,7 @@ class TransmissionPlugin(Plugin):
                                                                torrent.uploadRatio,
                                                                torrent.name))
         else:
+            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
         return ret
 
@@ -89,11 +90,13 @@ class TransmissionPlugin(Plugin):
             message.level = 2
             try:
                 self.tr_conn.add_uri(args[0])
+                self.logger.info('Download of (%s) starting' % args[0])
                 message.header = ("Torrent download started")
                 message.body = args[0]
                 message.send()            
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:
+                self.logger.warning('Torrent download not started due error (%s)' % args[0])
                 message.header = ("Torrent download not started due error")
                 message.body = args[0]
                 message.send()
@@ -126,11 +129,14 @@ class TransmissionPlugin(Plugin):
             for t_id in args:
                 try:
                     self.tr_conn.start(int(t_id))
+                    self.logger.info("Started Torrent ID: %s" % t_id)
                     ret.append("Started Torrent ID: %s" % t_id)
                 except Exception:
+                    self.logger.warning("Unable to start Torrent ID: %s" % t_id)
                     ret.append("Unable to start Torrent ID: %s" % t_id)
                     pass
         else:
+            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
         return ret
 
@@ -147,6 +153,7 @@ class TransmissionPlugin(Plugin):
                     pass
             return ret
         else:
+            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
     
     def worker_loop(self):
@@ -157,6 +164,7 @@ class TransmissionPlugin(Plugin):
                     if torrent.isFinished and torrent.status == 'stopped':
                         newname = self.remove_muted_words(torrent.name)
                         message = self.core.new_message(self.name)
+                        self.logger.info("Download of %s finished" % newname)
                         message.level = 2
                         message.header = ("Download of %s finished" % newname)
                         message.send()

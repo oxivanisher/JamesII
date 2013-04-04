@@ -82,7 +82,7 @@ rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
 * Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work.
 <code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code>
 
-Module documentation nightly updated: http://oxi.ch/JamesII/doc/
+Module documentation nightly updated: http://oxi.ch/JamesII/
 
 How to integrate JamesII to your infrastructure:
 ---------

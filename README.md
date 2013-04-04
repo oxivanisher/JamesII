@@ -12,7 +12,7 @@ Things / Services you can use or interact with:
 * Espeak (managed) as a messaging front-end and some commands
 * Jabber (managed) as a messaging front-end and interface (has also MUC support)
 * Monitor (managed) to show what is going on in the console
-* Motion (managed) to watch over your home and also to automatically start radio when you get up on weekends
+* Motion (managed) to watch over your home and also to automatically start webradio when you get up on weekends or fade out some ambient station when you go to sleep
 * Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out)
 * Proximity (managed) to scan the area for known bluetooth mac addresses
 * Raspberry (managed) interactive interface with buttons/switches and LEDs to interact with the real world

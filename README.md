@@ -79,7 +79,7 @@ rabbitmqctl add_user test test
 rabbitmqctl add_vhost test
 rabbitmqctl set_permissions -p test test ".*" ".*" ".*"
 </code></pre>
-* Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some tools need root access to work.
+* Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work.
 <code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code>
 
 How to integrate JamesII to your infrastructure:

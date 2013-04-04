@@ -10,7 +10,6 @@ Module documentation nightly updated: http://oxi.ch/JamesII/doc/
 ToDo:
 ------
 Main:
-* log class
 * YAML Schemas to detect wrong config files
 
 Plugins:
@@ -35,13 +34,13 @@ Optional (plugin specific):
 * bluetooth (proximity plugin)
 * espeak (espeak plugin)
 * motion (motion plugin)
-* mpc, mpdtoys (mpd plugin)
+* python-mpd2 (mpd plugin)
 * python-xmpp (jabber plugin)
 * python-dbus (dbus notification plugin)
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
 * python-pylirc (lirc plugin)
-<pre><code>apt-get install bluetooth espeak motion mpc mpdtoys python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip
+<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
 pip install jsonrpclib</code></pre>
 
 Installation and RabbitMQueue Setup:

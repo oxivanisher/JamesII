@@ -202,15 +202,16 @@ class Core(object):
 
     def autoload_plugins(self):
 
-        # output = "Ignoring manual plugins:"
-        # for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
-        #     output += (" %s" % (c.name))
-        self.logger.debug("Ignoring manual plugins: %s" % plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL))
+        manual_plugins = []
+        for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
+            manual_plugins.append(c.name)
+        self.logger.debug("Ignoring manual plugins: %s" % manual_plugins)
 
-        # output = "Autoloading plugins:"
-        # for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
-        #     output += (" %s" % (c.name))
-        #     self.instantiate_plugin(c)
+
+        autoloaded_plugins = []
+        for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
+            autoloaded_plugins.append(c.name)
+            self.instantiate_plugin(c)
         self.logger.debug("Autoloading plugins: %s" % plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD))
 
         # output = "Loading managed plugins:"
@@ -228,11 +229,8 @@ class Core(object):
                 pass
 
             if load_plugin:
-                # output += (" +%s" % (c.name))
                 loaded_managed_plugins.append(c.name)
                 self.instantiate_plugin(c)
-            # else:
-                # output += (" -%s" % (c.name))
 
         self.logger.debug("Loading managed plugins: %s" % loaded_managed_plugins)
 

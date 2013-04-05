@@ -5,6 +5,7 @@ import urllib2
 import subprocess
 import time
 import mpd
+import signal
 
 from james.plugin import *
 
@@ -25,8 +26,12 @@ class MpdClientWorker(object):
         
         self.check_connection()
 
+    def sig_timeout_handler(signum, frame):
+        self.logger.warning('Lost connection to MPD server')
+        pass
+
     def connect(self):
-        self.logger.debug('Connecting...')
+        self.logger.debug('Connecting to MPD server')
         try:
             self.client.connect(self.myhost, self.myport)
             self.connected = True
@@ -39,9 +44,13 @@ class MpdClientWorker(object):
         return False
 
     def check_connection(self):
-        self.logger.debug('Checking connection...')
+        self.logger.debug('Checking connection to MPD server')
         try:
+            signal.signal(signal.SIGALRM, self.sig_timeout_handler)
+            signal.alarm(5)
             self.client.ping()
+            signal.alarm(0)
+
             return True
         except mpd.ConnectionError:
             self.logger.debug('We are disconnected (ping)')

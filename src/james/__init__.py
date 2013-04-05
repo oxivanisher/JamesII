@@ -596,3 +596,8 @@ class Core(object):
     def sighandler(self, signal, frame):
         self.logger.warning("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
 
+        message = self.new_message('sighandler')
+        message.level = 2
+        message.header = "Uncaught SIGNAL detected: %s (%s)" % (self.signal_names[signal], signal)
+        message.send()
+

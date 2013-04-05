@@ -90,6 +90,7 @@ class Core(object):
         self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
         signal.signal(signal.SIGINT,self.on_kill_sig)
         signal.signal(signal.SIGTERM,self.on_kill_sig)
+        signal.signal(signal.SIGWINCH,self.on_kill_sig)
 
         # Load broker configuration
         try:

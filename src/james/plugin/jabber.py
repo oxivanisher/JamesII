@@ -452,7 +452,7 @@ class JabberPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
-        self.logger.info('XMPP worker exiting')
+        self.logger.debug('XMPP worker exiting')
         return 'XMPP worker exiting'
 
     # plugin event methods

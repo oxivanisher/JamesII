@@ -315,7 +315,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
-        self.logger.info('Rasp worker exiting')
+        self.logger.debug('Rasp worker exiting')
         return ['Rasp worker exiting']
 
     # james system event handler

@@ -589,11 +589,11 @@ class Core(object):
         return thread
 
     # signal handlers
-    def sighandler(self, signal, frame):
-                            self.logger.debug("Uncatched signal %s (%s)" % (i, signum))
-        print "sighandler %s:" % (signal)
-        pass
-
     def on_kill_sig(self, signal, frame):
         self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
         self.terminate(3)
+
+    # catchall handler
+    def sighandler(self, signal, frame):
+        self.logger.debug("Uncatched signal %s (%s)" % (self.signal_names[signum], signum))
+

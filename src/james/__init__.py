@@ -184,9 +184,8 @@ class Core(object):
         path = os.path.join(os.path.dirname(__file__), 'plugin')
 
         (loaded_plugins, plugin_warnings, plugin_descr_error) = plugin.Factory.find_plugins(path)
-        for plugin_name in loaded_plugins:
-            # plugin_factory_logger.debug('<%s> available' % plugin_name)
-            self.logger.debug('Plugin %s available' % plugin_name)
+
+        self.logger.debug('Plugins available: %s' % loaded_plugins)
         for (plugin_name, plugin_error) in plugin_warnings:
             self.logger.warning('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
         for plugin_name in plugin_descr_error:
@@ -272,7 +271,8 @@ class Core(object):
             # register node in nodes_online
             args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]
-            self.logger.debug('New node (%s) detected' % args[1])
+            if self.master:
+                self.logger.debug('New node (%s) detected' % args[1])
 
             # Broadcast configuration if master
             if self.master:
@@ -414,7 +414,7 @@ class Core(object):
         """
         send the newstatus proximity status over the proximity channel.
         """
-        self.logger.debug('Publishing proximity status update %s from plugin %s' % (self.location, newstatus, pluginname))
+        self.logger.debug('Publishing proximity status update %s from plugin %s' % (newstatus, pluginname))
         try:
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,

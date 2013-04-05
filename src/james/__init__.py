@@ -76,11 +76,11 @@ class Core(object):
             pass
 
         # this block can be removed once all the needed signals are registred
-        ignored_signals = [17]
+        ignored_signals = [signal.SIGCLD, signal.SIGCHLD, signal.SIGTSTP, signal.SIGCONT]
         for i in [x for x in dir(signal) if x.startswith("SIG")]:
             try:
                 signum = getattr(signal,i)
-                if signum not in ignored_signals:
+                if signal not in ignored_signals:
                     signal.signal(signum,self.sighandler)
             except RuntimeError,m:
                 pass

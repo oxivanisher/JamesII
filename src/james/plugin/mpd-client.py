@@ -73,11 +73,9 @@ class MpdClientWorker(object):
                 return False
 
     def lock(self):
-        self.logger.debug('locking')
         self.worker_lock.acquire()
 
     def unlock(self):
-        self.logger.debug('unlocking')
         self.worker_lock.release()
 
     def play_url(self, uri, volume = -1):

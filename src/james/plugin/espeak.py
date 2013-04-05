@@ -70,8 +70,7 @@ class EspeakPlugin(Plugin):
         self.message_cache.append(msg)
 
     def speak_worker(self, msg):
-        #FIXME: THIS IS A VERRRRRRRY DIRTY RASPBERRY WORKAROUND!
-        self.core.utils.popenAndWait(self.espeak_command + [msg] + ['|', 'aplay', '-D', 'plug:hw:0'])
+        self.core.utils.popenAndWait(self.espeak_command + [msg])
         self.logger.info('Espeak spoke: %s' % (msg))
 
     def speak_hook(self, args = None):

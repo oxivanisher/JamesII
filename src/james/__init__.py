@@ -298,9 +298,10 @@ class Core(object):
         elif msg[0] == 'nodes_online':
             """We received a new nodes_online list. Replace our current one."""
             if not self.master:
-                self.logger.debug('Updating online nodes from master')
                 args = self.utils.convert_from_unicode(msg)
                 self.master_node = args[2]
+                if self.nodes_online != args[1]:
+                    self.logger.debug('Updating online nodes from master')
                 self.nodes_online = args[1]
 
         elif msg[0] == 'pong':

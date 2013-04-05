@@ -42,7 +42,7 @@ class MpdClientWorker(object):
             self.unlock()
             signal.alarm(0)
             self.connected = True
-            self.client.timeout = 10
+            self.client.timeout = 5
             return True
         except Exception as e:
             signal.alarm(0)
@@ -56,7 +56,7 @@ class MpdClientWorker(object):
         self.logger.debug('Checking connection to MPD server')
         try:
             self.lock()
-            signal.alarm(5)
+            signal.alarm(6)
             self.client.ping()
             self.unlock()
             signal.alarm(0)

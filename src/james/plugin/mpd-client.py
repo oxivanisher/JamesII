@@ -30,16 +30,23 @@ class MpdClientWorker(object):
     def sig_timeout_handler(self, signum, frame):
         self.logger.warning('Lost connection to MPD server')
         self.connected = False
+        self.unlock()
         pass
 
     def connect(self):
         self.logger.debug('Connecting to MPD server')
         try:
+            self.lock()
+            signal.alarm(5)
             self.client.connect(self.myhost, self.myport)
+            self.unlock()
+            signal.alarm(0)
             self.connected = True
             self.client.timeout = 10
             return True
         except Exception as e:
+            signal.alarm(0)
+            self.unlock()
             self.logger.error("Connection error (%s)" % e)
             pass
 
@@ -48,13 +55,17 @@ class MpdClientWorker(object):
     def check_connection(self):
         self.logger.debug('Checking connection to MPD server')
         try:
+            self.lock()
             signal.alarm(5)
             self.client.ping()
+            self.unlock()
             signal.alarm(0)
 
             return True
         except mpd.ConnectionError:
             self.logger.debug('We are disconnected (ping)')
+            signal.alarm(0)
+            self.unlock()
             if self.connect():
                 return True
             else:
@@ -62,9 +73,11 @@ class MpdClientWorker(object):
                 return False
 
     def lock(self):
+        self.logger.debug('locking')
         self.worker_lock.acquire()
 
     def unlock(self):
+        self.logger.debug('unlocking')
         self.worker_lock.release()
 
     def play_url(self, uri, volume = -1):
@@ -362,7 +375,7 @@ class MpdClientPlugin(Plugin):
                 if self.client_worker.setvol(volume):
                     return (["Volume set to: %s" % volume])
         except Exception:
-            volume = args[0]
+            volume = None
             pass
 
         self.logger.debug("Unable to set the volume to: %s" % volume)

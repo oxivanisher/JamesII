@@ -438,7 +438,11 @@ class Core(object):
         master_ping_nodes() callback after given sleeptimeout in config.
         """
         if self.master:
-            self.logger.debug('Publishing online nodes')
+            nodes_online = []
+            for node in self.nodes_online.keys():
+                nodes_online.append(self.nodes_online[node])
+            self.logger.debug('Publishing online nodes: %s' % nodes_online)
+
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 

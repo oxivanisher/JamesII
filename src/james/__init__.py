@@ -313,7 +313,8 @@ class Core(object):
             """This host is shutting down. Remove him from nodes_online."""
             try:
                 self.nodes_online.pop(msg[2])
-                self.logger.debug('Node (%s) is now offline' % msg[1])
+                if self.master:
+                    self.logger.debug('Node (%s) is now offline' % msg[1])
             except KeyError:
                 pass
 

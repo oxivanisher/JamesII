@@ -280,7 +280,7 @@ class MpdClientPlugin(Plugin):
         self.logger.debug('Activating talkover')
         status = self.client_worker.status()
         if status['volume'] != self.core.config['mpd-client']['talk_volume']:
-            self.talkover_volume = status['volume']
+            self.talkover_volume = int(status['volume'])
         if self.client_worker.setvol(self.core.config['mpd-client']['talk_volume']):
             return (["Activate talkover"])
         else:

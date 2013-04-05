@@ -511,6 +511,10 @@ class Core(object):
                 # disconnection error
                 self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 self.terminate(2)
+            except Exception as e:
+                self.logger.critical("Caught unknown error (%s)" % e)
+                self.terminate(1)
+
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)
         sys.exit(self.returncode)
 

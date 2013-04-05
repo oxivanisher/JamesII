@@ -26,7 +26,7 @@ class MpdClientWorker(object):
         
         self.check_connection()
 
-    def sig_timeout_handler(signum, frame):
+    def sig_timeout_handler(self, signum, frame):
         self.logger.warning('Lost connection to MPD server')
         pass
 

@@ -202,18 +202,19 @@ class Core(object):
 
     def autoload_plugins(self):
 
-        output = "Ignoring manual plugins:"
-        for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
-            output += (" %s" % (c.name))
-        self.logger.debug(output)
+        # output = "Ignoring manual plugins:"
+        # for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
+        #     output += (" %s" % (c.name))
+        self.logger.debug("Ignoring manual plugins: %s" % plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL))
 
-        output = "Autoloading plugins:"
-        for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
-            output += (" %s" % (c.name))
-            self.instantiate_plugin(c)
-        self.logger.debug(output)
+        # output = "Autoloading plugins:"
+        # for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
+        #     output += (" %s" % (c.name))
+        #     self.instantiate_plugin(c)
+        self.logger.debug("Autoloading plugins: %s" % plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD))
 
-        output = "Loading managed plugins:"
+        # output = "Loading managed plugins:"
+        loaded_managed_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
             load_plugin = False
 
@@ -227,12 +228,13 @@ class Core(object):
                 pass
 
             if load_plugin:
-                output += (" +%s" % (c.name))
+                # output += (" +%s" % (c.name))
+                loaded_managed_plugins.append(c.name)
                 self.instantiate_plugin(c)
-            else:
-                output += (" -%s" % (c.name))
+            # else:
+                # output += (" -%s" % (c.name))
 
-        self.logger.debug(output)
+        self.logger.debug("Loading managed plugins: %s" % loaded_managed_plugins)
 
     def instantiate_plugin(self, cls):
         p = cls(self, cls.descriptor)

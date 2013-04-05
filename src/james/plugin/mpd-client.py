@@ -244,6 +244,7 @@ class MpdClientPlugin(Plugin):
         self.client_worker = MpdClientWorker(self, self.myhost, self.myport)
         self.fade_in_progress = False
         self.thread = None
+        self.talkover_volume = self.core.config['mpd-client']['norm_volume']
 
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
 
@@ -268,6 +269,9 @@ class MpdClientPlugin(Plugin):
 
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')
+        status = self.client_worker.status()
+        if status['volume'] != self.core.config['mpd-client']['talk_volume']:
+            self.talkover_volume = status['volume']
         if self.client_worker.setvol(self.core.config['mpd-client']['talk_volume']):
             return (["Activate talkover"])
         else:
@@ -275,7 +279,7 @@ class MpdClientPlugin(Plugin):
 
     def deactivate_talkover(self, args):
         self.logger.debug('Deactivating talkover')
-        if self.client_worker.setvol(self.core.config['mpd-client']['norm_volume']):
+        if self.client_worker.setvol(self.talkover_volume):
             return (["Deactivate talkover"])
         else:
             return (["Unable to connect to MPD"])

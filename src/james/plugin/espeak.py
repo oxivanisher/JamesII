@@ -14,7 +14,8 @@ class EspeakPlugin(Plugin):
         self.core = core
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_message_archive")
         self.unmuted = self.core.proximity_status.get_status_here()
-        self.espeak_command = self.core.config['espeak']['espeak_command'].split()
+        #FIXME: THIS IS A VERRRRRRRY DIRTY RASPBERRY WORKAROUND!
+        self.espeak_command = self.core.config['espeak']['espeak_command'].split() + ['|', 'aplay', '-D', 'plug:hw:0']
 
         self.archived_messages = []
         self.message_cache = []

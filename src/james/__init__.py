@@ -147,13 +147,12 @@ class Core(object):
                 socketHandler.setLevel(logging.DEBUG)
                 self.logger.addHandler(socketHandler)
 
-        self.logger.debug("Hostname:      %s" % (self.hostname))
-        self.logger.debug("UUID:          %s" % (self.uuid))
-        self.logger.debug("Location:      %s" % (self.location))
-        self.logger.debug("OS Username:   %s" % (self.os_username))
-        self.logger.debug("Master:        %s" % (self.master))
-        self.logger.debug("RabbitMQ Host: %s:%s" % (self.brokerconfig['host'], self.brokerconfig['port']))
-
+        self.logger.debug("%s@%s; %s; %s; %s; %s:%s" % (self.hostname,
+                                                        self.location,
+                                                        self.uuid,
+                                                        self.os_username,
+                                                        self.master,
+                                                        self.brokerconfig['host'], self.brokerconfig['port']))
 
         # Create request & response channels
         self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')

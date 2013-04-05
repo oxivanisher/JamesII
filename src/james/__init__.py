@@ -14,6 +14,7 @@ import Queue
 import time
 import atexit
 import logging, logging.handlers
+import signal
 
 import plugin
 import config
@@ -73,6 +74,23 @@ class Core(object):
         except Exception as e:
             self.os_username = None
             pass
+
+        # this block can be removed once all the needed signals are registred
+        ignored_signals = [17]
+        for i in [x for x in dir(signal) if x.startswith("SIG")]:
+            try:
+                signum = getattr(signal,i)
+                if signum not in ignored_signals:
+                    signal.signal(signum,self.sighandler)
+            except RuntimeError,m:
+                pass
+            except ValueError,m:
+                pass
+
+        # catching signals
+        self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
+        signal.signal(signal.SIGINT,self.on_kill_sig)
+        signal.signal(signal.SIGTERM,self.on_kill_sig)
 
         # Load broker configuration
         try:
@@ -569,3 +587,13 @@ class Core(object):
         thread = threading.Thread(target=runInThread, args=(target, onExit, target_args))
         thread.start()
         return thread
+
+    # signal handlers
+    def sighandler(self, signal, frame):
+                            self.logger.debug("Uncatched signal %s (%s)" % (i, signum))
+        print "sighandler %s:" % (signal)
+        pass
+
+    def on_kill_sig(self, signal, frame):
+        self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
+        self.terminate(3)

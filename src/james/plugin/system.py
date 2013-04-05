@@ -111,7 +111,7 @@ class SystemPlugin(Plugin):
         nodes_online = []
         for node in self.core.nodes_online.keys():
             nodes_online.append(self.nodes_online[node])
-        return ' '.join(nodes_online)
+        return ['%s:' % len(nodes_online) + ' '.join(nodes_online)]
 
     def cmd_show_aliases(self, args):
         ret = []

@@ -595,5 +595,5 @@ class Core(object):
 
     # catchall handler
     def sighandler(self, signal, frame):
-        self.logger.debug("Uncatched signal %s (%s)" % (self.signal_names[signum], signum))
+        self.logger.debug("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
 

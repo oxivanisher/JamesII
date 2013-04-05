@@ -20,6 +20,7 @@ class MpdClientWorker(object):
         self.myport = myport
         self.pretalk_volume = None
         self.worker_lock = threading.Lock()
+        signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
         self.logger = self.plugin.core.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
@@ -28,6 +29,7 @@ class MpdClientWorker(object):
 
     def sig_timeout_handler(self, signum, frame):
         self.logger.warning('Lost connection to MPD server')
+        self.connected = False
         pass
 
     def connect(self):
@@ -46,7 +48,6 @@ class MpdClientWorker(object):
     def check_connection(self):
         self.logger.debug('Checking connection to MPD server')
         try:
-            signal.signal(signal.SIGALRM, self.sig_timeout_handler)
             signal.alarm(5)
             self.client.ping()
             signal.alarm(0)
@@ -57,6 +58,7 @@ class MpdClientWorker(object):
             if self.connect():
                 return True
             else:
+                self.connected = False
                 return False
 
     def lock(self):
@@ -164,8 +166,12 @@ class MpdClientWorker(object):
     def disconnect(self):
         self.lock()
         self.fade_in_progress = False
-        self.client.close()
-        self.client.disconnect()
+        self.connected = False
+        try:
+            self.client.close()
+            self.client.disconnect()
+        except mpd.ConnectionError:
+            pass
         self.unlock()
         self.logger.debug("Disconnected")
 

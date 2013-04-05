@@ -598,6 +598,6 @@ class Core(object):
 
         message = self.new_message('sighandler')
         message.level = 2
-        message.header = "Uncaught SIGNAL detected: %s (%s)" % (self.signal_names[signal], signal)
+        message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
         message.send()
 

@@ -76,7 +76,7 @@ class Core(object):
             pass
 
         # this block can be removed once all the needed signals are registred
-        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH']
+        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN']
         for i in [x for x in dir(signal) if x.startswith("SIG")]:
             try:
                 if i not in ignored_signals:
@@ -90,6 +90,10 @@ class Core(object):
         self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
         signal.signal(signal.SIGINT,self.on_kill_sig)
         signal.signal(signal.SIGTERM,self.on_kill_sig)
+        signal.signal(signal.SIGQUIT,self.on_kill_sig)
+        signal.signal(signal.SIGTSTP,self.on_kill_sig)
+        signal.signal(signal.SIGSEGV,self.on_fault_sig)
+
 
         # Load broker configuration
         try:
@@ -591,6 +595,10 @@ class Core(object):
     def on_kill_sig(self, signal, frame):
         self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
         self.terminate(3)
+
+    def on_fault_sig(self, signal, frame):
+        self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
+        self.terminate(1)
 
     # catchall handler
     def sighandler(self, signal, frame):

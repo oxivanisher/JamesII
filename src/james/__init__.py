@@ -76,7 +76,7 @@ class Core(object):
             pass
 
         # this block can be removed once all the needed signals are registred
-        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT']
+        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH']
         for i in [x for x in dir(signal) if x.startswith("SIG")]:
             try:
                 if i not in ignored_signals:
@@ -90,7 +90,6 @@ class Core(object):
         self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
         signal.signal(signal.SIGINT,self.on_kill_sig)
         signal.signal(signal.SIGTERM,self.on_kill_sig)
-        signal.signal(signal.SIGWINCH,self.on_kill_sig)
 
         # Load broker configuration
         try:

@@ -17,6 +17,7 @@ class SystemPlugin(Plugin):
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
+            self.commands.create_subcommand('nodes', 'Shows currently online nodes', self.cmd_nodes_online)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
         self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.cmd_show_plugins)
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
@@ -105,6 +106,12 @@ class SystemPlugin(Plugin):
 
     def cmd_ping(self, args):
         self.core.ping_nodes()
+
+    def cmd_nodes_online(self, args):
+        nodes_online = []
+        for node in self.core.nodes_online.keys():
+            nodes_online.append(self.nodes_online[node])
+        return ' '.join(nodes_online)
 
     def cmd_show_aliases(self, args):
         ret = []

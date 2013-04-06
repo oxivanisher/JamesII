@@ -69,7 +69,7 @@ pip install jsonrpclib</code></pre>
 
 Installation and RabbitMQueue Setup:
 -------------
-* Clone JamesII to a directory (git clone git://github.com/oxivanisher/JamesII.git)
+* Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
 * Edit your config file (config/config.yaml)
 * Install RabbitMQ (apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root (choose a password!):
@@ -78,6 +78,8 @@ rabbitmqctl add_vhost james2
 rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
 * Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work. Here is how to give the user the needed rights via "crontab -e":
 <pre><code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
+* To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
+<pre><code>su -c /path/to/JamesII/./james2_autostart_loop.sh youruser</code></pre>
 
 How to integrate JamesII to your infrastructure:
 ---------

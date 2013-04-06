@@ -48,7 +48,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * screen (always handy)
 
 #### Debian/Ubuntu:
-<pre>apt-get install python-yaml python-pika python-psutil python-tz</pre>
+	apt-get install python-yaml python-pika python-psutil python-tz
 
 #### OS X (Mac Ports):
 	sudo port select --set python python27
@@ -80,42 +80,40 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 You only need one server per network. The server don't need a JamesII node on it.
 * Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
-<pre>rabbitmqctl add_user james2 password
-rabbitmqctl add_vhost james2
-rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</pre>
+	rabbitmqctl add_user james2 password
+	rabbitmqctl add_vhost james2
+	rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"
 
 ### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
-<pre>youruser ALL=(ALL) NOPASSWD: ALL</pre>
+	youruser ALL=(ALL) NOPASSWD: ALL
 * To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
-<pre>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &</pre>
+	su -c /path/to/JamesII/james2_autostart_loop.sh youruser &
 
 ### How to integrate JamesII to your infrastructure:
 #### Desktop torrent download:
-<pre>
-$ sudo vim /usr/share/applications/JamesII.desktop
+	$ sudo vim /usr/share/applications/JamesII.desktop
 
-[Desktop Entry]
-Exec=/path/to/JamesII/src/cli.sh tr add %U
-MimeType=application/x-bittorrent;x-scheme-handler/magnet;
-Terminal=false
-Type=Application
+	[Desktop Entry]
+	Exec=/path/to/JamesII/src/cli.sh tr add %U
+	MimeType=application/x-bittorrent;x-scheme-handler/magnet;
+	Terminal=false
+	Type=Application
 
-$ xdg-mime default JamesII.desktop x-scheme-handler/magnet
-</pre>
+	$ xdg-mime default JamesII.desktop x-scheme-handler/magnet
 
 #### Desktop DBUS Notifications:
-<pre>start the dbus-notify_loop.sh with your desktop</pre>
+	start the dbus-notify_loop.sh with your desktop
 
 #### Motion Plugin:
 After setting up motion, add the following lines to your /etc/motion/motion.conf:
-<pre>on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
-on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
-on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"</pre>
+	on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
+	on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
+	on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
 
 #### RaspberryPi Plugin:
-<pre>My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
-Checkout and read (!) include/install_wiring_pi.sh</pre>
+	My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
+	Checkout and read (!) include/install_wiring_pi.sh
 
 ## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol

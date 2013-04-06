@@ -73,19 +73,18 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
-* Edit your main config file only on master node (example in config/config.yaml.example)
-* Edit your broker config file on every node (example in config/broker.yaml.example)
+* Edit your main config file only on master node [config/config.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/config.yaml.example "Base Config Example")
+* Edit your broker config file on every node [config/broker.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/broker.yaml.example "Broker Example")
 
 ## RabbitMQ Server Setup:
-You only need one server per network. The server don't need a JamesII node on it.
-* Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
+You only need one server per network. This server does not need a JamesII node.
+* Install RabbitMQ as root (Debian/Ubuntu):
+	apt-get install rabbitmq-server
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
 
 	rabbitmqctl add_user james2 password
-	
 	rabbitmqctl add_vhost james2
-
-	rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"
+	rabbitmqctl set_permissions -p james2 james2 \"\.\*\" \"\.\*\" \"\.\*\"
 
 ### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:

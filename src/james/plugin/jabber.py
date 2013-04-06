@@ -399,7 +399,7 @@ class JabberPlugin(Plugin):
                 help_text = self.jabber_cmd_help(command[1:])
                 header_text = ['Subcommands for (%s) are:' % best_match.name]
                 if best_match == self.core.ghost_commands:
-                    header_text = ['Ccommands are:']
+                    header_text = ['Commands are:']
 
                 self.send_xmpp_message(header_text, help_text, jid_from)
             else:
@@ -422,7 +422,7 @@ class JabberPlugin(Plugin):
                 help_text = self.jabber_cmd_help(command[1:])
                 header_text = ['Subcommands for (%s) are:' % best_match.name]
                 if best_match == self.core.ghost_commands:
-                    header_text = ['Ccommands are:']
+                    header_text = ['Commands are:']
 
                 self.send_xmpp_muc_message(header_text, help_text)
             else:

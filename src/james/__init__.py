@@ -82,15 +82,15 @@ class Core(object):
             pass
 
         # this block can be removed once all the needed signals are registred
-        # ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
-        # for i in [x for x in dir(signal) if x.startswith("SIG")]:
-        #     try:
-        #         if i not in ignored_signals:
-        #             signal.signal(getattr(signal,i),self.sighandler)
-        #     except RuntimeError,m:
-        #         pass
-        #     except ValueError,m:
-        #         pass
+        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
+        for i in [x for x in dir(signal) if x.startswith("SIG")]:
+            try:
+                if i not in ignored_signals:
+                    signal.signal(getattr(signal,i),self.sighandler)
+            except RuntimeError,m:
+                pass
+            except ValueError,m:
+                pass
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))

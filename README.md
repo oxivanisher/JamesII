@@ -80,9 +80,12 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 You only need one server per network. The server don't need a JamesII node on it.
 * Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
-<code>rabbitmqctl add_user james2 password
-rabbitmqctl add_vhost james2
-rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</pre>
+
+	rabbitmqctl add_user james2 password
+	
+	rabbitmqctl add_vhost james2
+
+	rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"
 
 ### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:

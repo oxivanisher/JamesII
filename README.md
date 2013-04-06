@@ -36,12 +36,12 @@ Core functionality:
 * Logger facility with network functionality (netlog_monitor.py)
 
 Not yet done:
-* HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
-* Lirc (managed) to control or be controlled via infrared
-* YAML Schema to detect wrong config files
-* Doorbell extension for RaspberryPi Plugin
-* plugin requirement checks before load for external files
-* Monitor LAN for unknown MAC addresses, MAC address db (see old james)
+[ ] HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
+[ ] Lirc (managed) to control or be controlled via infrared
+[ ] YAML Schema to detect wrong config files
+[ ] Doorbell extension for RaspberryPi Plugin
+[ ] plugin requirement checks before load for external files
+[ ] Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
 You Need:
 ---------

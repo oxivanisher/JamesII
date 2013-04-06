@@ -21,7 +21,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Wakeonlan (managed) to wake up devices when you come home for example
 * Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)
 
-Plugin modes explanation:
+#### Plugin modes explanation:
 * Manual: Passive plugins are run exclusively, normally with a separate bash command
 * Managed: Only loaded if specified in config
 * Autoload: If all requirements are met, this plugin will be loaded automatically
@@ -32,12 +32,12 @@ Plugin modes explanation:
 * Logger facility with network functionality (netlog_monitor.py)
 
 ### Not yet done:
-[ ] HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
-[ ] Lirc (managed) to control or be controlled via infrared
-[ ] YAML Schema to detect wrong config files
-[ ] Doorbell extension for RaspberryPi Plugin
-[ ] plugin requirement checks before load for external files
-[ ] Monitor LAN for unknown MAC addresses, MAC address db (see old james)
+* HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
+* Lirc (managed) to control or be controlled via infrared
+* YAML Schema to detect wrong config files
+* Doorbell extension for RaspberryPi Plugin
+* plugin requirement checks before load for external files
+* Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
 ## You Need:
 * python
@@ -47,16 +47,15 @@ Plugin modes explanation:
 * python-yaml
 * screen (always handy)
 
-Debian/Ubuntu:
-<pre><code>apt-get install python-yaml python-pika python-psutil python-tz </code></pre>
+#### Debian/Ubuntu:
+<pre><code>apt-get install python-yaml python-pika python-psutil python-tz</code></pre>
 
-OS X (Mac Ports):
+#### OS X (Mac Ports):
 <pre><code>sudo port select --set python python27
 sudo port install py27-yaml py27-pika py27-psutil py27-pip
 sudo pip-2.7 install pytz</code></pre>
 
-### Optional:
-Plugin specific
+### Optional (Plugin specific):
 * bluetooth (proximity plugin)
 * espeak (espeak plugin)
 * motion (motion plugin)
@@ -67,13 +66,12 @@ Plugin specific
 * python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 
-Debian/Ubuntu:
+#### Debian/Ubuntu:
 <pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
 python-transmissionrpc python-pylirc python-pip
 pip install jsonrpclib</code></pre>
 
 ## Installation:
--------------
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
 * Edit your main config file only on master node (example in config/config.yaml.example)
 * Edit your broker config file on every node (example in config/broker.yaml.example)

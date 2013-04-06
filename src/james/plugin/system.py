@@ -113,9 +113,9 @@ class SystemPlugin(Plugin):
             print "found %s" % hostname
 
             # try:
-            nodes_online_dict[hostname] += 1
+            nodes_online_dict[hostname] = nodes_online_dict[hostname] + 1
             print "multi"
-            
+
             # except:
             #     print "first"
             #     nodes_online_dict[hostname] = 1

@@ -60,8 +60,9 @@ OS X (Mac Ports):
 sudo port install py27-yaml py27-pika py27-psutil py27-pip
 sudo pip-2.7 install pytz</code></pre>
 
-Optional (plugin specific):
+Optional:
 ----------
+Plugin specific
 * bluetooth (proximity plugin)
 * espeak (espeak plugin)
 * motion (motion plugin)
@@ -73,7 +74,8 @@ Optional (plugin specific):
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 
 Debian/Ubuntu:
-<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
+<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
+python-transmissionrpc python-pylirc python-pip
 pip install jsonrpclib</code></pre>
 
 Installation:

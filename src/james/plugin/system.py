@@ -108,14 +108,15 @@ class SystemPlugin(Plugin):
         nodes_online_dict = {}
         nodes_online_list = []
 
-        for node in self.core.nodes_online.keys():
-            print "found %s" % self.core.nodes_online[node]
-            if nodes_online_dict[self.core.nodes_online[node]]:
+        for uuid in self.core.nodes_online.keys():
+            hostname = self.core.nodes_online[uuid]
+            print "found %s" % hostname
+            if nodes_online_dict[hostname]:
                 print "multi"
-                nodes_online_dict[self.core.nodes_online[node]] += 1
+                nodes_online_dict[hostname] += 1
             else:
                 print "first"
-                nodes_online_dict[self.core.nodes_online[node]] = 1
+                nodes_online_dict[hostname] = 1
 
         for node in nodes_online_dict.keys():
             print "crating for %s" % node

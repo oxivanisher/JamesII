@@ -71,7 +71,7 @@ Installation and RabbitMQueue Setup:
 -------------
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
 * Edit your config file (config/config.yaml)
-* Install RabbitMQ (apt-get  install rabbitmq-server)
+* Install RabbitMQ as root (apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root (choose a password!):
 <pre><code>rabbitmqctl add_user james2 password
 rabbitmqctl add_vhost james2

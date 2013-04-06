@@ -112,9 +112,10 @@ class SystemPlugin(Plugin):
             hostname = self.core.nodes_online[uuid]
             print "found %s" % hostname
 
-            try:
-                nodes_online_dict[hostname] += 1
-                print "multi"
+            # try:
+            nodes_online_dict[hostname] += 1
+            print "multi"
+            
             # except:
             #     print "first"
             #     nodes_online_dict[hostname] = 1

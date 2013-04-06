@@ -453,9 +453,9 @@ class JabberPlugin(Plugin):
             c = command_obj.subcommands[command]
             if not c.hide:
                 ret.append("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
-            if len(c.subcommands.keys()) > 0:
-                for line in self.return_command_help_lines(c, depth + 1):
-                    ret.append(line)
+                if len(c.subcommands.keys()) > 0:
+                    for line in self.return_command_help_lines(c, depth + 1):
+                        ret.append(line)
         return ret
 
     # worker control methods

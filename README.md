@@ -51,10 +51,12 @@ You Need:
 * python-tz
 * python-yaml
 * screen (always handy)
-<pre>Debian/Ubuntu:
-<code>apt-get install python-yaml python-pika python-psutil python-tz </code></pre>
-<pre>OS X (Mac Ports):
-<code>sudo port select --set python python27
+
+Debian/Ubuntu:
+<pre><code>apt-get install python-yaml python-pika python-psutil python-tz </code></pre>
+
+OS X (Mac Ports):
+<pre><code>sudo port select --set python python27
 sudo port install py27-yaml py27-pika py27-psutil py27-pip
 sudo pip-2.7 install pytz</code></pre>
 
@@ -69,17 +71,19 @@ Optional (plugin specific):
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
-<pre>Debian/Ubuntu:
-<code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
+
+Debian/Ubuntu:
+<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
 pip install jsonrpclib</code></pre>
 
 Installation:
 -------------
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
-* Edit your main config file only on master node (config/config.yaml)
-* Edit your broker config file on every node (config/broker.yaml)
+* Edit your main config file only on master node (example in config/config.yaml.example)
+* Edit your broker config file on every node (example in config/broker.yaml.example)
 
 RabbitMQ Server Setup:
+-------------
 You only need one server per network. The server don't need a JamesII node on it.
 * Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
@@ -120,7 +124,7 @@ My prototype for the GPIO is working, but a real prototype. A schematic will fol
 </pre>
 
 Motion Plugin:
-<pre><code>Add the following lines to your /etc/motion/motion.conf:
+<pre><code>After setting up motion, add the following lines to your /etc/motion/motion.conf:
 on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
 on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
@@ -137,9 +141,8 @@ Technologies and software used (incomplete!):
 * XBMC Mediacenter http://wiki.xbmc.org/
 * Raspberry Pi http://www.raspberrypi.org/
 
-Thanks:
+Thanks go to:
 -----------------
-Special thanks go to:
 * http://github.com/westlicht for a lot of OO and Python knowledge
 * http://aron.ws/projects/lirc_rpi/ for the IR solution used with RaspberryPi
 * Kurt Fierz and Anaxagoras for support with the electronics part of JamesII (RaspberryPi plugin)

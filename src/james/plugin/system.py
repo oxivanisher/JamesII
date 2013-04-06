@@ -110,10 +110,10 @@ class SystemPlugin(Plugin):
         nodes_online_list = []
 
         for node in self.core.nodes_online.keys():
-            if self.core.nodes_online_dict[node]:
-                self.core.nodes_online_dict[node] += 1
+            if nodes_online_dict[node]:
+                nodes_online_dict[node] += 1
             else:
-                self.core.nodes_online_dict[node] = 1
+                nodes_online_dict[node] = 1
 
         for node in nodes_online_dict.keys():
             nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))

@@ -32,7 +32,7 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
             self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
 
-            nodes_command.create_subcommand('list', 'Lists currently online nodes', self.cmd_nodes_list)
+            nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -104,10 +104,10 @@ class SystemPlugin(Plugin):
     def cmd_ping(self, args):
         self.core.ping_nodes()
 
-    def cmd_nodes_list(self, args):
+    def cmd_nodes_show(self, args):
         nodes_online_dict = {}
         nodes_online_list = []
-
+        print "nodes_online: %s" % self.core.nodes_online.keys()
         for uuid in self.core.nodes_online.keys():
             hostname = self.core.nodes_online[uuid]
             print "found %s" % hostname

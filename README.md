@@ -51,7 +51,7 @@ You Need (debian packages):
 * python-tz
 * python-yaml
 * screen (always a good idea)
-<code>apt-get install python-pika python-psutil python-tz python-yaml</code>
+<pre><code>apt-get install python-pika python-psutil python-tz python-yaml</code></pre>
 
 Optional (plugin specific):
 ----------

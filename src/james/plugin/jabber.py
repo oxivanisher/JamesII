@@ -372,13 +372,13 @@ class JabberPlugin(Plugin):
                     command = self.core.utils.list_unicode_cleanup(message.getBody().split())
                     # compensate for first auto capital letter on many mobile devices
                     command[0] = command[0].lower()
+
                     self.run_muc_command(command)
                 except IndexError:
                     pass
-                pass
 
     def on_error_msg(self, message):
-        # self.logger.error("Recieved error msg: %s" % message)
+        self.logger.error("Recieved error msg: %s" % message)
         pass
 
     # worker callback helper methods
@@ -386,15 +386,47 @@ class JabberPlugin(Plugin):
         if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
             self.send_xmpp_message(['Commands are:'], help_text, jid_from)
-        else:
+        elif command[0] in self.core.config['core']['command_aliases']:
             self.send_command(command)
+        else:
+            best_match = self.core.ghost_commands.get_best_match(command)
+            if best_match == self.core.ghost_commands:
+                command = ['help'] + command
+            else:
+                if len(best_match.subcommands) > 0:
+                    command = ['help'] + command
+            if command[0] == 'help':
+                help_text = self.jabber_cmd_help(command[1:])
+                header_text = ['Subcommands for (%s) are:' % best_match.name]
+                if best_match == self.core.ghost_commands:
+                    header_text = ['Ccommands are:']
+
+                self.send_xmpp_message(header_text, help_text, jid_from)
+            else:
+                self.send_command(command)
 
     def run_muc_command(self, command):
         if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
             self.send_xmpp_muc_message(['Commands are:'], help_text)
-        else:
+        elif command[0] in self.core.config['core']['command_aliases']:
             self.send_command(command)
+        else:
+            best_match = self.core.ghost_commands.get_best_match(command)
+            if best_match == self.core.ghost_commands:
+                command = ['help'] + command
+            else:
+                if len(best_match.subcommands) > 0:
+                    command = ['help'] + command
+            if command[0] == 'help':
+                help_text = self.jabber_cmd_help(command[1:])
+                header_text = ['Subcommands for (%s) are:' % best_match.name]
+                if best_match == self.core.ghost_commands:
+                    header_text = ['Ccommands are:']
+
+                self.send_xmpp_muc_message(header_text, help_text)
+            else:
+                self.send_command(command)
 
     # worker process help methods
     def jabber_cmd_help(self, args):
@@ -402,7 +434,8 @@ class JabberPlugin(Plugin):
         if len(args) > 0:    
             command = self.core.ghost_commands.get_best_match(args)
             if command:
-                ret.append("%s:" % (command.help))
+                if command.help:
+                    ret.append("%s:" % (command.help))
                 ret.append("%-20s %s" % ('Command:', 'Description:'))
                 for line in self.return_command_help_lines(command):
                     ret.append(line)

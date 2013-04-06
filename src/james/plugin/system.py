@@ -17,7 +17,7 @@ class SystemPlugin(Plugin):
         core_debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_core_debug)
         core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
-        nodes_command = self.commands.create_subcommand('nodes', 'Activates or deactivates debug output on core', None)
+        nodes_command = self.commands.create_subcommand('nodes', 'Informational node functions', None)
         nodes_command.create_subcommand('info', 'Shows informations', self.cmd_nodes_info)
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
         nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)

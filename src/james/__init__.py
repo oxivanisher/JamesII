@@ -132,7 +132,11 @@ class Core(object):
 
         # Create global connection
         try:
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host']))
+            cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
+            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
+                                                                                port = self.brokerconfig['port'],
+                                                                                virtual_host = self.brokerconfig['vhost'],
+                                                                                credentials = cred))
         except Exception as e:
             self.logger.critical("Could not connect to RabbitMQ server!")
             sys.exit(2)

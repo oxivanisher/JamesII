@@ -72,9 +72,12 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 	pip install jsonrpclib
 
 ## Installation:
-* Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
-* Edit your main config file only on master node [config/config.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/config.yaml.example "Base Config Example")
-* Edit your broker config file on every node [config/broker.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/broker.yaml.example "Broker Example")
+* Clone JamesII to a directory as user "youruser"
+
+	git clone git://github.com/oxivanisher/JamesII.git
+
+* Edit your main config file only on master node ([config/config.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/config.yaml.example "Base Config Example"))
+* Edit your broker config file on every node ([config/broker.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/broker.yaml.example "Broker Example"))
 
 ## RabbitMQ Server Setup:
 You only need one server per network. This server does not need a JamesII node.
@@ -82,9 +85,9 @@ You only need one server per network. This server does not need a JamesII node.
 	apt-get install rabbitmq-server
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
 
-	rabbitmqctl add_user james2 password
+	<code>rabbitmqctl add_user james2 password
 	rabbitmqctl add_vhost james2
-	rabbitmqctl set_permissions -p james2 james2 \"\.\*\" \"\.\*\" \"\.\*\"
+	rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code>
 
 ### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:

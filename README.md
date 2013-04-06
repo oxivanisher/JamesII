@@ -76,10 +76,10 @@ Installation and RabbitMQueue Setup:
 <pre><code>rabbitmqctl add_user james2 password
 rabbitmqctl add_vhost james2
 rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
-* Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work. Here is how to give the user the needed rights via "crontab -e":
+* Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work. Here is how to give the user the needed rights via "crontab -e":
 <pre><code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
 * To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
-<pre><code>su -c /path/to/JamesII/./james2_autostart_loop.sh youruser &</code></pre>
+<pre><code>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &</code></pre>
 
 How to integrate JamesII to your infrastructure:
 ---------

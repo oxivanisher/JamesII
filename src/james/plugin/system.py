@@ -13,13 +13,18 @@ class SystemPlugin(Plugin):
         self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
         self.command_aliases = self.core.config['core']['command_aliases']
 
+        nodes_command = self.commands.create_subcommand('nodes', 'Activates or deactivates debug output on core', None)
+        nodes_command.create_subcommand('info', 'Shows informations', self.cmd_nodes_info)
+        nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
+
         self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
-            self.commands.create_subcommand('nodes', 'Shows currently online nodes', self.cmd_nodes_online)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-        self.commands.create_subcommand('plugins', 'Show the running plugins on this node', self.cmd_show_plugins)
+
+            nodes_command.create_subcommand('list', 'Lists currently online nodes', self.cmd_nodes_list)
+
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
         if self.core.master:
             self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
@@ -56,13 +61,6 @@ class SystemPlugin(Plugin):
         return (["%-10s %-10s %s" % (self.core.hostname,
                                   self.core.proximity_status.get_status_here(),
                                   self.core.location)])
-
-    def cmd_show_plugins(self, args):
-        plugin_names = []
-        for p in self.core.plugins:
-            plugin_names.append(p.name)
-        plugin_names.sort()
-        return([', '.join(plugin_names)])
 
     def cmd_activate_core_debug(self, args):
         self.core.logger.info('Activating core debug')
@@ -107,11 +105,37 @@ class SystemPlugin(Plugin):
     def cmd_ping(self, args):
         self.core.ping_nodes()
 
-    def cmd_nodes_online(self, args):
-        nodes_online = []
+    def cmd_nodes_list(self, args):
+        nodes_online_dict = {}
+        nodes_online_list = []
+
         for node in self.core.nodes_online.keys():
-            nodes_online.append(self.core.nodes_online[node])
-        return ['%s:' % len(nodes_online) + ' '.join(sorted(nodes_online))]
+            if self.core.nodes_online_dict[node]:
+                self.core.nodes_online_dict[node] += 1
+            else:
+                self.core.nodes_online_dict[node] = 1
+
+        for node in nodes_online_dict.keys():
+            nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
+
+        return ['%-2s:' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
+
+    def cmd_nodes_info(self, args):
+        role = "Slave"
+        if self.core.master:
+            role = "Master"
+        return ['%10s@%-12s %-6s %-10s %-40s' % (self.core.os_username,
+                                                 self.core.hostname,
+                                                 role,
+                                                 sys.platform,
+                                                 self.core.uuid)]
+
+    def cmd_nodes_plugins(self, args):
+        plugin_names = []
+        for p in self.core.plugins:
+            plugin_names.append(p.name)
+        plugin_names.sort()
+        return([', '.join(plugin_names)])
 
     def cmd_show_aliases(self, args):
         ret = []

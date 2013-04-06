@@ -61,7 +61,7 @@ sudo port install py27-yaml py27-pika py27-psutil py27-pip
 sudo pip-2.7 install pytz</code></pre>
 
 Optional:
-----------
+-------
 Plugin specific
 * bluetooth (proximity plugin)
 * espeak (espeak plugin)

@@ -48,12 +48,12 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * screen (always handy)
 
 #### Debian/Ubuntu:
-<pre>apt-get install python-yaml python-pika python-psutil python-tz</pre>
+`apt-get install python-yaml python-pika python-psutil python-tz`
 
 #### OS X (Mac Ports):
-<pre>sudo port select --set python python27
+`sudo port select --set python python27
 sudo port install py27-yaml py27-pika py27-psutil py27-pip
-sudo pip-2.7 install pytz</pre>
+sudo pip-2.7 install pytz`
 
 ### Optional (Plugin specific):
 * bluetooth (proximity plugin)
@@ -67,9 +67,9 @@ sudo pip-2.7 install pytz</pre>
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 
 #### Debian/Ubuntu:
-<pre>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
+`apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
 python-transmissionrpc python-pylirc python-pip
-pip install jsonrpclib</pre>
+pip install jsonrpclib`
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
@@ -80,9 +80,9 @@ pip install jsonrpclib</pre>
 You only need one server per network. The server don't need a JamesII node on it.
 * Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
-<pre>rabbitmqctl add_user james2 password
+`rabbitmqctl add_user james2 password
 rabbitmqctl add_vhost james2
-rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</pre>
+rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"`
 
 ### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
@@ -92,7 +92,7 @@ rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</pre>
 
 ### How to integrate JamesII to your infrastructure:
 #### Desktop torrent download:
-<pre>
+`
 $ sudo vim /usr/share/applications/JamesII.desktop
 
 [Desktop Entry]
@@ -102,23 +102,20 @@ Terminal=false
 Type=Application
 
 $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
-</pre>
+`
 
 #### Desktop DBUS Notifications:
-<pre>start the dbus-notify_loop.sh with your desktop</pre>
+`start the dbus-notify_loop.sh with your desktop`
 
 #### Motion Plugin:
-<pre>After setting up motion, add the following lines to your /etc/motion/motion.conf:
-on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
+After setting up motion, add the following lines to your /etc/motion/motion.conf:
+<pre>on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
-on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
-</pre>
+on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"</pre>
 
 #### RaspberryPi Plugin:
-<pre>
-My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
-Checkout and read (!) include/install_wiring_pi.sh
-</pre>
+<pre>My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
+Checkout and read (!) include/install_wiring_pi.sh</pre>
 
 ## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol

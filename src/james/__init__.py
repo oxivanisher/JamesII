@@ -53,7 +53,7 @@ class Core(object):
         self.timeout_queue = Queue.Queue()
         self.terminated = False
         self.returncode = 0
-        self.hostname = socket.gethostname()
+        self.hostname = socket.getfqdn().split('.')[0]
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
         self.master = False

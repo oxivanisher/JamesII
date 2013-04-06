@@ -165,6 +165,7 @@ class MotionPlugin(Plugin):
 
             self.core.spawnSubprocess(self.cam_on,
                                       self.on_cam_controll_callback,
+                                      None,
                                       self.logger)
 
         else:
@@ -173,6 +174,7 @@ class MotionPlugin(Plugin):
 
             self.core.spawnSubprocess(self.cam_off,
                                       self.on_cam_controll_callback,
+                                      None,
                                       self.logger)
 
     def cam_on(self):

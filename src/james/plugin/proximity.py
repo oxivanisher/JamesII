@@ -104,6 +104,7 @@ class ProximityPlugin(Plugin):
     def proximity_check(self, args):
         self.core.spawnSubprocess(self.proximity_check_worker,
                                   self.proximity_check_callback,
+                                  None,
                                   self.logger)
 
     def proximity_check_worker(self):

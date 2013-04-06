@@ -51,9 +51,9 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 <pre>apt-get install python-yaml python-pika python-psutil python-tz</pre>
 
 #### OS X (Mac Ports):
-<pre>sudo port select --set python python27
-sudo port install py27-yaml py27-pika py27-psutil py27-pip
-sudo pip-2\.7 install pytz</pre>
+	sudo port select --set python python27
+	sudo port install py27-yaml py27-pika py27-psutil py27-pip
+	sudo pip-2.7 install pytz
 
 ### Optional (Plugin specific):
 * bluetooth (proximity plugin)
@@ -67,9 +67,9 @@ sudo pip-2\.7 install pytz</pre>
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 
 #### Debian/Ubuntu:
-<pre>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
-python-transmissionrpc python-pylirc python-pip
-pip install jsonrpclib</pre>
+	apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
+	python-transmissionrpc python-pylirc python-pip
+	pip install jsonrpclib
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)

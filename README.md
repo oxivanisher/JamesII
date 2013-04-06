@@ -73,11 +73,9 @@ Installation and RabbitMQueue Setup:
 * Edit your config file (config/config.yaml)
 * Install RabbitMQ (apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root (choose a password!):
-<pre><code>
-rabbitmqctl add_user james2 password
+<pre><code>rabbitmqctl add_user james2 password
 rabbitmqctl add_vhost james2
-rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"
-</code></pre>
+rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
 * Start it with the james_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work. Here is how to give the user the needed rights via "crontab -e":
 <pre><code>visudo: youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
 

@@ -109,17 +109,18 @@ class ProximityPlugin(Plugin):
         self.logger.debug('Starting proximity scan')
         hosts = []
         for person in self.core.config['persons'].keys():
-            for name in self.core.config['persons'][person]['bt_devices'].keys():
-                mac = self.core.config['persons'][person]['bt_devices'][name]
-                ret = self.core.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
-                clear_list = filter(lambda s: s != '', ret)
-                try:
-                    for line in clear_list:
-                        if "Device Name:" in line:
-                            args = line.split(':')
-                            hosts.append((mac, args[1].strip()))
-                except Exception:
-                    pass
+            if self.core.config['persons'][person]['bt_devices']:
+                for name in self.core.config['persons'][person]['bt_devices'].keys():
+                    mac = self.core.config['persons'][person]['bt_devices'][name]
+                    ret = self.core.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
+                    clear_list = filter(lambda s: s != '', ret)
+                    try:
+                        for line in clear_list:
+                            if "Device Name:" in line:
+                                args = line.split(':')
+                                hosts.append((mac, args[1].strip()))
+                    except Exception:
+                        pass
         return hosts
 
     def proximity_check_callback(self, values):

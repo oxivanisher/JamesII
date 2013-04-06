@@ -163,10 +163,11 @@ class ProximityPlugin(Plugin):
         # registering the person for this device as detected
         for (mac, name) in values:
             for person in self.core.config['persons'].keys():
-                for device in self.core.config['persons'][person]['bt_devices'].values():
-                    if device == mac:
-                        persons_detected.append(person)
-                        new_persons_status[person] = True
+                if self.core.config['persons'][person]['bt_devices']:
+                    for device in self.core.config['persons'][person]['bt_devices'].values():
+                        if device == mac:
+                            persons_detected.append(person)
+                            new_persons_status[person] = True
 
         # save the actual online hosts to var
         self.hosts_online = new_hosts_online

@@ -408,6 +408,9 @@ class JabberPlugin(Plugin):
     def run_muc_command(self, command):
         if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
+            help_text.append("%-20s %s" % ('+', 'Command Aliases'))
+            for command in sorted(self.core.config['core']['command_aliases'].keys()):
+                help_text.append("|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command]))
             self.send_xmpp_muc_message(['Commands are:'], help_text)
         elif command[0] in self.core.config['core']['command_aliases']:
             self.send_command(command)
@@ -423,6 +426,9 @@ class JabberPlugin(Plugin):
                 header_text = ['Subcommands for (%s) are:' % best_match.name]
                 if best_match == self.core.ghost_commands:
                     header_text = ['Commands are:']
+                    help_text.append("%-20s %s" % ('+', 'Command Aliases'))
+                    for command in sorted(self.core.config['core']['command_aliases'].keys()):
+                        help_text.append("|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command]))
 
                 self.send_xmpp_muc_message(header_text, help_text)
             else:

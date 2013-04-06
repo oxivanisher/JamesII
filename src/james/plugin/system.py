@@ -109,13 +109,13 @@ class SystemPlugin(Plugin):
         nodes_online_list = []
 
         for node in self.core.nodes_online.keys():
-            print "found %s" % node
-            if nodes_online_dict[node]:
+            print "found %s" % self.core.nodes_online[node]
+            if nodes_online_dict[self.core.nodes_online[node]]:
                 print "multi"
-                nodes_online_dict[node] += 1
+                nodes_online_dict[self.core.nodes_online[node]] += 1
             else:
                 print "first"
-                nodes_online_dict[node] = 1
+                nodes_online_dict[self.core.nodes_online[node]] = 1
 
         for node in nodes_online_dict.keys():
             print "crating for %s" % node

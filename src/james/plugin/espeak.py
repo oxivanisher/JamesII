@@ -85,7 +85,7 @@ class EspeakPlugin(Plugin):
             except Exception:
                 pass
             self.logger.debug('Espeak will say: %s' % msg)
-            self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg)
+            self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg, self.logger)
         else:
             if self.talkover:
                 self.talkover = False

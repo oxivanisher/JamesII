@@ -584,12 +584,14 @@ class Core(object):
                 timeout.handler(*timeout.args, **timeout.kwargs)
         self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
 
-    def spawnSubprocess(self, target, onExit, target_args = None):
+    def spawnSubprocess(self, target, onExit, target_args = None, logger = None):
         """
         Spawns a subprocess with call target and calls onExit with the return
         when finished
         """
-        self.logger.debug('Spawning subprocess (%s)' % target)
+        if not logger:
+            logger = self.logger
+        logger.debug('Spawning subprocess (%s)' % target)
         def runInThread(target, onExit, target_args):
             #FIXME make me thread safe (call onExit with add_timeout)
             if target_args != None:

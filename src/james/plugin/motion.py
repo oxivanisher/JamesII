@@ -164,14 +164,16 @@ class MotionPlugin(Plugin):
             self.logger.info('Motion is starting')
 
             self.core.spawnSubprocess(self.cam_on,
-                                      self.on_cam_controll_callback)
+                                      self.on_cam_controll_callback,
+                                      self.logger)
 
         else:
             self.logger.info('Motion is stopping')
             self.watch_mode = False
 
             self.core.spawnSubprocess(self.cam_off,
-                                      self.on_cam_controll_callback)
+                                      self.on_cam_controll_callback,
+                                      self.logger)
 
     def cam_on(self):
         self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])

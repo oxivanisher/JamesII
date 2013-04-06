@@ -43,15 +43,20 @@ Not yet done:
 * plugin requirement checks before load for external files
 * Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
-You Need (debian packages):
+You Need:
 ---------
 * python
 * python-pika (https://github.com/pika/pika)
 * python-psutil (sysstat plugin, http://code.google.com/p/psutil/)
 * python-tz
 * python-yaml
-* screen (always a good idea)
-<pre><code>apt-get install python-pika python-psutil python-tz python-yaml</code></pre>
+* screen (always handy)
+<pre>Debian/Ubuntu:
+<code>apt-get install python-yaml python-pika python-psutil python-tz </code></pre>
+<pre>OS X (Mac Ports):
+<code>sudo port select --set python python27
+sudo port install py27-yaml py27-pika py27-psutil py27-pip
+sudo pip-2.7 install pytz</code></pre>
 
 Optional (plugin specific):
 ----------
@@ -64,19 +69,28 @@ Optional (plugin specific):
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
-<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
+<pre>Debian/Ubuntu:
+<code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus python-transmissionrpc python-pylirc python-pip 
 pip install jsonrpclib</code></pre>
 
-Installation and RabbitMQueue Setup:
+Installation:
 -------------
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
-* Edit your config file (config/config.yaml)
-* Install RabbitMQ as root (apt-get  install rabbitmq-server)
-* Then you have to configure your rabbitmq server as root (choose a password!):
+* Edit your main config file only on master node (config/config.yaml)
+* Edit your broker config file on every node (config/broker.yaml)
+
+RabbitMQ Server Setup:
+You only need one server per network. The server don't need a JamesII node on it.
+* Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
+* Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
 <pre><code>rabbitmqctl add_user james2 password
 rabbitmqctl add_vhost james2
 rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
-* Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to work. Here is how to give the user the needed rights via "visudo" as root:
+
+Autostart:
+-------------
+Linux:
+* Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
 <pre><code>youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
 * To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
 <pre><code>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &</code></pre>

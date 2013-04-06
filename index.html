@@ -1,0 +1,223 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>JamesII</title>
+  <meta name="description" content="James your Butler brought to the next level.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">JamesII</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">James your Butler brought to the next level.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/oxivanisher/JamesII/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/oxivanisher/JamesII/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/oxivanisher/JamesII" class="code">View JamesII on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>James II: Your Butler brought to the next level.</h1>
+
+<p>The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
+The system is also very handy in combination with RaspberryPi's (<a href="http://www.raspberrypi.org/">http://www.raspberrypi.org/</a>).
+Module documentation nightly updated: <a href="http://oxi.ch/JamesII/">http://oxi.ch/JamesII/</a></p>
+
+<h2>Things / Services you can use or interact with:</h2>
+
+<ul>
+<li>CLI (managed) interface with history and command completion</li>
+<li>Cron (autoload on core node) which emulates a standard Unix like cron daemon</li>
+<li>Dbus-Notify (passive) as a messaging front-end</li>
+<li>Espeak (managed) as a messaging front-end and some commands</li>
+<li>Jabber (managed) as a messaging front-end and interface (has also MUC support)</li>
+<li>Monitor (managed) to show what is going on in the console</li>
+<li>Motion (managed) to watch over your home and also to automatically start webradio when you get up on weekends</li>
+<li>Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out for gn8 or wakeup)</li>
+<li>Proximity (managed) to scan the area for known bluetooth mac addresses</li>
+<li>Raspberry (managed) interactive interface with buttons/switches and LEDs to interact with the real world</li>
+<li>Sysstat (autoload) to request information's about the host like mounts, net info, memory info, ...</li>
+<li>System (autoload) james system calls mostly used internally</li>
+<li>Timer (autoload on core node) the all mighty MCP to time commands with "in" and "at"</li>
+<li>Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server</li>
+<li>Wakeonlan (managed) to wake up devices when you come home for example</li>
+<li>Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)</li>
+</ul><h4>Plugin modes explanation:</h4>
+
+<ul>
+<li>Manual: Passive plugins are run exclusively, normally with a separate bash command</li>
+<li>Managed: Only loaded if specified in config</li>
+<li>Autoload: If all requirements are met, this plugin will be loaded automatically</li>
+</ul><h3>Core functionality:</h3>
+
+<ul>
+<li>Integrated help. Just type help in interfaces</li>
+<li>Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"</li>
+<li>Logger facility with network functionality (netlog_monitor.py)</li>
+</ul><h3>Not yet done:</h3>
+
+<ul>
+<li>HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)</li>
+<li>Lirc (managed) to control or be controlled via infrared</li>
+<li>YAML Schema to detect wrong config files</li>
+<li>Doorbell extension for RaspberryPi Plugin</li>
+<li>plugin requirement checks before load for external files</li>
+<li>Monitor LAN for unknown MAC addresses, MAC address db (see old james)</li>
+</ul><h2>You Need:</h2>
+
+<ul>
+<li>python</li>
+<li>python-pika (<a href="https://github.com/pika/pika">https://github.com/pika/pika</a>)</li>
+<li>python-psutil (sysstat plugin, <a href="http://code.google.com/p/psutil/">http://code.google.com/p/psutil/</a>)</li>
+<li>python-tz</li>
+<li>python-yaml</li>
+<li>screen (always handy)</li>
+</ul><h4>Debian/Ubuntu:</h4>
+
+<pre><code>apt-get install python-yaml python-pika python-psutil python-tz</code></pre>
+
+<h4>OS X (Mac Ports):</h4>
+
+<pre><code>sudo port select --set python python27
+sudo port install py27-yaml py27-pika py27-psutil py27-pip
+sudo pip-2.7 install pytz</code></pre>
+
+### Optional (Plugin specific):
+* bluetooth (proximity plugin)
+* espeak (espeak plugin)
+* motion (motion plugin)
+* python-mpd2 (mpd plugin)
+* python-xmpp (jabber plugin)
+* python-dbus (dbus notification plugin)
+* python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
+* python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
+* python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
+
+#### Debian/Ubuntu:
+<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
+python-transmissionrpc python-pylirc python-pip
+pip install jsonrpclib</code></pre>
+
+## Installation:
+* Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
+* Edit your main config file only on master node (example in config/config.yaml.example)
+* Edit your broker config file on every node (example in config/broker.yaml.example)
+
+## RabbitMQ Server Setup:
+You only need one server per network. The server don't need a JamesII node on it.
+* Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
+* Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
+<pre><code>rabbitmqctl add_user james2 password
+rabbitmqctl add_vhost james2
+rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
+
+### Autostart on Linux:
+* Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
+<pre><code>youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
+* To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
+<pre><code>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &amp;</code></pre>
+
+### How to integrate JamesII to your infrastructure:
+#### Desktop torrent download:
+<pre>
+$ sudo vim /usr/share/applications/JamesII.desktop
+<code>
+[Desktop Entry]
+Exec=/path/to/JamesII/src/cli.sh tr add %U
+MimeType=application/x-bittorrent;x-scheme-handler/magnet;
+Terminal=false
+Type=Application
+</code>
+$ xdg-mime default JamesII.desktop x-scheme-handler/magnet
+</pre>
+
+<h4>Desktop DBUS Notifications:</h4>
+
+<pre><code>start the dbus-notify_loop.sh with your desktop</code></pre>
+
+<h4>Motion Plugin:</h4>
+
+<pre><code>After setting up motion, add the following lines to your /etc/motion/motion.conf:
+on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
+on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
+on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
+</code></pre>
+
+#### RaspberryPi Plugin:
+<pre>
+My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
+<code>Checkout and read (!) include/install_wiring_pi.sh</code>
+</pre>
+
+<h2>Technologies and software used (incomplete!):</h2>
+
+<ul>
+<li>XMPP <a href="http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol">http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol</a>
+</li>
+<li>AMQP <a href="http://en.wikipedia.org/wiki/AMQP">http://en.wikipedia.org/wiki/AMQP</a>
+</li>
+<li>Motion <a href="http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome">http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome</a>
+</li>
+<li>eSpeak <a href="http://espeak.sourceforge.net/">http://espeak.sourceforge.net/</a>
+</li>
+<li>MPD <a href="http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik">http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik</a>
+</li>
+<li>Transmission <a href="http://www.transmissionbt.com/">http://www.transmissionbt.com/</a>
+</li>
+<li>XBMC Mediacenter <a href="http://wiki.xbmc.org/">http://wiki.xbmc.org/</a>
+</li>
+<li>Raspberry Pi <a href="http://www.raspberrypi.org/">http://www.raspberrypi.org/</a>
+</li>
+</ul><h2>Thanks go to:</h2>
+
+<ul>
+<li>
+<a href="http://github.com/westlicht">http://github.com/westlicht</a> for a lot of OO and Python knowledge</li>
+<li>
+<a href="http://aron.ws/projects/lirc_rpi/">http://aron.ws/projects/lirc_rpi/</a> for the IR solution used with RaspberryPi</li>
+<li>Kurt Fierz and Anaxagoras for support with the electronics part of JamesII (RaspberryPi plugin)</li>
+<li>
+<a href="https://github.com/tervor">https://github.com/tervor</a> for alpha testing :)</li>
+</ul>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/oxivanisher" class="avatar"><img src="https://secure.gravatar.com/avatar/cda5afaecb8dd4d90042a966d88f213c?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/oxivanisher">oxivanisher</a> maintains <a href="https://github.com/oxivanisher/JamesII">JamesII</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/oxivanisher/JamesII/tarball/master" class="tar">tar</a><a href="https://github.com/oxivanisher/JamesII/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>

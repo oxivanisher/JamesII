@@ -80,14 +80,17 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 You only need one server per network. The server don't need a JamesII node on it.
 * Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
+
 	rabbitmqctl add_user james2 password
 	rabbitmqctl add_vhost james2
 	rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"
 
 ### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
+
 	youruser ALL=(ALL) NOPASSWD: ALL
 * To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
+
 	su -c /path/to/JamesII/james2_autostart_loop.sh youruser &
 
 ### How to integrate JamesII to your infrastructure:
@@ -107,11 +110,13 @@ You only need one server per network. The server don't need a JamesII node on it
 
 #### Motion Plugin:
 After setting up motion, add the following lines to your /etc/motion/motion.conf:
+
 	on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 	on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
 	on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
 
 #### RaspberryPi Plugin:
+
 	My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
 	Checkout and read (!) include/install_wiring_pi.sh
 

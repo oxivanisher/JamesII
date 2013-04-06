@@ -82,7 +82,7 @@ class Core(object):
             pass
 
         # this block can be removed once all the needed signals are registred
-        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN']
+        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
         for i in [x for x in dir(signal) if x.startswith("SIG")]:
             try:
                 if i not in ignored_signals:

@@ -219,8 +219,8 @@ class CliPlugin(Plugin):
             c = command_obj.subcommands[command]
             if not c.hide:
                 print ("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
-            if len(c.subcommands.keys()) > 0:
-                self.print_command_help_lines(c, depth + 1)
+                if len(c.subcommands.keys()) > 0:
+                    self.print_command_help_lines(c, depth + 1)
         return True
 
 descriptor = {

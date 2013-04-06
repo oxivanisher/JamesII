@@ -26,8 +26,8 @@ class Plugin(object):
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
-        debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug, True)
-        debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug, True)
+        debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
+        debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
 
         self.logger = self.core.utils.getLogger(self.name, self.core.logger)
 

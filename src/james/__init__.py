@@ -82,15 +82,15 @@ class Core(object):
             pass
 
         # this block can be removed once all the needed signals are registred
-        ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
-        for i in [x for x in dir(signal) if x.startswith("SIG")]:
-            try:
-                if i not in ignored_signals:
-                    signal.signal(getattr(signal,i),self.sighandler)
-            except RuntimeError,m:
-                pass
-            except ValueError,m:
-                pass
+        # ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
+        # for i in [x for x in dir(signal) if x.startswith("SIG")]:
+        #     try:
+        #         if i not in ignored_signals:
+        #             signal.signal(getattr(signal,i),self.sighandler)
+        #     except RuntimeError,m:
+        #         pass
+        #     except ValueError,m:
+        #         pass
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
@@ -617,11 +617,11 @@ class Core(object):
         self.terminate(1)
 
     # catchall handler
-    def sighandler(self, signal, frame):
-        self.logger.warning("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
+    # def sighandler(self, signal, frame):
+    #     self.logger.warning("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
 
-        message = self.new_message('sighandler')
-        message.level = 2
-        message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
-        message.send()
+    #     message = self.new_message('sighandler')
+    #     message.level = 2
+    #     message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
+    #     message.send()
 

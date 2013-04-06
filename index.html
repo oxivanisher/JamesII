@@ -1,42 +1,45 @@
 <!doctype html>
-<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
-<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>JamesII by oxivanisher</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
-  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
-  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-  <script type="text/javascript" src="javascripts/script.js"></script>
+  </head>
+  <body>
 
-  <title>JamesII</title>
-  <meta name="description" content="James your Butler brought to the next level.">
+      <header>
+        <h1>JamesII</h1>
+        <p>James your Butler brought to the next level.</p>
+      </header>
 
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+      <div id="banner">
+        <span id="logo"></span>
 
-</head>
-
-<body>
-
-  <div class="wrapper">
-    <header>
-      <h1 class="title">JamesII</h1>
-    </header>
-    <div id="container">
-      <p class="tagline">James your Butler brought to the next level.</p>
-      <div id="main" role="main">
-        <div class="download-bar">
-        <div class="inner">
-          <a href="https://github.com/oxivanisher/JamesII/tarball/master" class="download-button tar"><span>Download</span></a>
-          <a href="https://github.com/oxivanisher/JamesII/zipball/master" class="download-button zip"><span>Download</span></a>
-          <a href="https://github.com/oxivanisher/JamesII" class="code">View JamesII on GitHub</a>
+        <a href="https://github.com/oxivanisher/JamesII" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/oxivanisher/JamesII/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/oxivanisher/JamesII/tarball/master" class="button">TAR</a></li>
+          </ul>
         </div>
-        <span class="blc"></span><span class="trc"></span>
-        </div>
-        <article class="markdown-body">
-          <h1>James II: Your Butler brought to the next level.</h1>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>James II: Your Butler brought to the next level.</h1>
 
 <p>The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system is also very handy in combination with RaspberryPi's (<a href="http://www.raspberrypi.org/">http://www.raspberrypi.org/</a>).
@@ -93,80 +96,103 @@ Module documentation nightly updated: <a href="http://oxi.ch/JamesII/">http://ox
 <li>screen (always handy)</li>
 </ul><h4>Debian/Ubuntu:</h4>
 
-<pre><code>apt-get install python-yaml python-pika python-psutil python-tz</code></pre>
+<pre><code>apt-get install python-yaml python-pika python-psutil python-tz
+</code></pre>
 
 <h4>OS X (Mac Ports):</h4>
 
 <pre><code>sudo port select --set python python27
 sudo port install py27-yaml py27-pika py27-psutil py27-pip
-sudo pip-2.7 install pytz</code></pre>
+sudo pip-2.7 install pytz
+</code></pre>
 
-### Optional (Plugin specific):
-* bluetooth (proximity plugin)
-* espeak (espeak plugin)
-* motion (motion plugin)
-* python-mpd2 (mpd plugin)
-* python-xmpp (jabber plugin)
-* python-dbus (dbus notification plugin)
-* python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
-* python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
-* python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
+<h3>Optional (Plugin specific):</h3>
 
-#### Debian/Ubuntu:
+<ul>
+<li>bluetooth (proximity plugin)</li>
+<li>espeak (espeak plugin)</li>
+<li>motion (motion plugin)</li>
+<li>python-mpd2 (mpd plugin)</li>
+<li>python-xmpp (jabber plugin)</li>
+<li>python-dbus (dbus notification plugin)</li>
+<li>python-transmissionrpc (transmission plugin, <a href="https://bitbucket.org/blueluna/transmissionrpc/wiki/Home">https://bitbucket.org/blueluna/transmissionrpc/wiki/Home</a>)</li>
+<li>python-jsonrpclib (xbmc plugin, <a href="https://github.com/joshmarshall/jsonrpclib/">https://github.com/joshmarshall/jsonrpclib/</a>)</li>
+<li>python-pylirc (lirc plugin, <a href="http://aron.ws/projects/lirc_rpi/">http://aron.ws/projects/lirc_rpi/</a>)</li>
+</ul><h4>Debian/Ubuntu:</h4>
+
 <pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
 python-transmissionrpc python-pylirc python-pip
-pip install jsonrpclib</code></pre>
+pip install jsonrpclib
+</code></pre>
 
-## Installation:
-* Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
-* Edit your main config file only on master node (example in config/config.yaml.example)
-* Edit your broker config file on every node (example in config/broker.yaml.example)
+<h2>Installation:</h2>
 
-## RabbitMQ Server Setup:
-You only need one server per network. The server don't need a JamesII node on it.
-* Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
-* Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
-<pre><code>rabbitmqctl add_user james2 password
-rabbitmqctl add_vhost james2
-rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
+<ul>
+<li>Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)</li>
+<li>Edit your main config file only on master node (example in config/config.yaml.example)</li>
+<li>Edit your broker config file on every node (example in config/broker.yaml.example)</li>
+</ul><h2>RabbitMQ Server Setup:</h2>
 
-### Autostart on Linux:
-* Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
-<pre><code>youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
-* To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
-<pre><code>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &amp;</code></pre>
+<p>You only need one server per network. The server don't need a JamesII node on it.</p>
 
-### How to integrate JamesII to your infrastructure:
-#### Desktop torrent download:
-<pre>
-$ sudo vim /usr/share/applications/JamesII.desktop
-<code>
+<ul>
+<li>Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)</li>
+<li>
+<p>Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:</p>
+
+<p>rabbitmqctl add_user james2 password</p>
+
+<p>rabbitmqctl add_vhost james2</p>
+
+<p>rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</p>
+</li>
+</ul><h3>Autostart on Linux:</h3>
+
+<ul>
+<li>
+<p>Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:</p>
+
+<p>youruser ALL=(ALL) NOPASSWD: ALL</p>
+</li>
+<li>
+<p>To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:</p>
+
+<p>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &amp;</p>
+</li>
+</ul><h3>How to integrate JamesII to your infrastructure:</h3>
+
+<h4>Desktop torrent download:</h4>
+
+<pre><code>$ sudo vim /usr/share/applications/JamesII.desktop
+
 [Desktop Entry]
 Exec=/path/to/JamesII/src/cli.sh tr add %U
 MimeType=application/x-bittorrent;x-scheme-handler/magnet;
 Terminal=false
 Type=Application
-</code>
+
 $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
-</pre>
+</code></pre>
 
 <h4>Desktop DBUS Notifications:</h4>
 
-<pre><code>start the dbus-notify_loop.sh with your desktop</code></pre>
+<pre><code>start the dbus-notify_loop.sh with your desktop
+</code></pre>
 
 <h4>Motion Plugin:</h4>
 
-<pre><code>After setting up motion, add the following lines to your /etc/motion/motion.conf:
-on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
+<p>After setting up motion, add the following lines to your /etc/motion/motion.conf:</p>
+
+<pre><code>on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
 on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
 </code></pre>
 
-#### RaspberryPi Plugin:
-<pre>
-My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
-<code>Checkout and read (!) include/install_wiring_pi.sh</code>
-</pre>
+<h4>RaspberryPi Plugin:</h4>
+
+<pre><code>My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
+Checkout and read (!) include/install_wiring_pi.sh
+</code></pre>
 
 <h2>Technologies and software used (incomplete!):</h2>
 
@@ -198,26 +224,13 @@ My prototype for the GPIO is working, but is a real prototype. A schematic will 
 <li>
 <a href="https://github.com/tervor">https://github.com/tervor</a> for alpha testing :)</li>
 </ul>
-        </article>
-      </div>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/oxivanisher">oxivanisher</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
     </div>
-    <footer>
-      <div class="owner">
-      <p><a href="https://github.com/oxivanisher" class="avatar"><img src="https://secure.gravatar.com/avatar/cda5afaecb8dd4d90042a966d88f213c?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/oxivanisher">oxivanisher</a> maintains <a href="https://github.com/oxivanisher/JamesII">JamesII</a></p>
-
-
-      </div>
-      <div class="creds">
-        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
-      </div>
-    </footer>
-  </div>
-  <div class="current-section">
-    <a href="#top">Scroll to top</a>
-    <a href="https://github.com/oxivanisher/JamesII/tarball/master" class="tar">tar</a><a href="https://github.com/oxivanisher/JamesII/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
-    <p class="name"></p>
-  </div>
-
-  
-</body>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
 </html>

@@ -617,11 +617,11 @@ class Core(object):
         self.terminate(1)
 
     # catchall handler
-    # def sighandler(self, signal, frame):
-    #     self.logger.warning("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
+    def sighandler(self, signal, frame):
+        self.logger.warning("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
 
-    #     message = self.new_message('sighandler')
-    #     message.level = 2
-    #     message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
-    #     message.send()
+        message = self.new_message('sighandler')
+        message.level = 2
+        message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
+        message.send()
 

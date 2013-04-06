@@ -107,24 +107,18 @@ class SystemPlugin(Plugin):
     def cmd_nodes_show(self, args):
         nodes_online_dict = {}
         nodes_online_list = []
-        print "nodes_online: %s" % self.core.nodes_online
         for uuid in self.core.nodes_online.keys():
             hostname = self.core.nodes_online[uuid]
-            print "found %s" % hostname
-
-            # try:
-            nodes_online_dict[hostname] = nodes_online_dict[hostname] + 1
-            print "multi"
-
-            # except:
-            #     print "first"
-            #     nodes_online_dict[hostname] = 1
+            try:
+                nodes_online_dict[hostname]
+            except:
+                nodes_online_dict[hostname] = 0
+            nodes_online_dict[hostname] += 1
 
         for node in nodes_online_dict.keys():
-            print "crating for %s" % node
             nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
 
-        return ['%-2s:' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
+        return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
     def cmd_nodes_info(self, args):
         role = "Slave"

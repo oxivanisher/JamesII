@@ -13,27 +13,26 @@ class SystemPlugin(Plugin):
         self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
         self.command_aliases = self.core.config['core']['command_aliases']
 
+        core_debug_command = self.commands.create_subcommand('core_debug', 'Activates or deactivates debug output on core', None)
+        core_debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_core_debug)
+        core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
+
         nodes_command = self.commands.create_subcommand('nodes', 'Activates or deactivates debug output on core', None)
         nodes_command.create_subcommand('info', 'Shows informations', self.cmd_nodes_info)
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
+        nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)
+        if os.path.isfile('/usr/bin/git'):
+            nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
-        self.commands.create_subcommand('ip', 'Show the ip of this node', self.get_ip)
+        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
+
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
+            self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
 
             nodes_command.create_subcommand('list', 'Lists currently online nodes', self.cmd_nodes_list)
-
-        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
-        if self.core.master:
-            self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
-        if os.path.isfile('/usr/bin/git'):
-            self.commands.create_subcommand('version', 'Shows the git checkout HEAD', self.cmd_version)
-
-        core_debug_command = self.commands.create_subcommand('core_debug', 'Activates or deactivates debug output on core', None)
-        core_debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_core_debug)
-        core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -110,12 +109,16 @@ class SystemPlugin(Plugin):
         nodes_online_list = []
 
         for node in self.core.nodes_online.keys():
+            print "found %s" % node
             if nodes_online_dict[node]:
+                print "multi"
                 nodes_online_dict[node] += 1
             else:
+                print "first"
                 nodes_online_dict[node] = 1
 
         for node in nodes_online_dict.keys():
+            print "crating for %s" % node
             nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
 
         return ['%-2s:' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]

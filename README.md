@@ -1,12 +1,9 @@
-James II: Your Butler brought to the next level.
-=====================
-
+# James II: Your Butler brought to the next level.
 The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/).
 Module documentation nightly updated: http://oxi.ch/JamesII/
 
-Things / Services you can use or interact with:
---------------
+## Things / Services you can use or interact with:
 * CLI (managed) interface with history and command completion
 * Cron (autoload on core node) which emulates a standard Unix like cron daemon
 * Dbus-Notify (passive) as a messaging front-end
@@ -29,13 +26,12 @@ Plugin modes explanation:
 * Managed: Only loaded if specified in config
 * Autoload: If all requirements are met, this plugin will be loaded automatically
 
-Core functionality:
---------------
+### Core functionality:
 * Integrated help. Just type help in interfaces
 * Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"
 * Logger facility with network functionality (netlog_monitor.py)
 
-Not yet done:
+### Not yet done:
 [ ] HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
 [ ] Lirc (managed) to control or be controlled via infrared
 [ ] YAML Schema to detect wrong config files
@@ -43,8 +39,7 @@ Not yet done:
 [ ] plugin requirement checks before load for external files
 [ ] Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
-You Need:
----------
+## You Need:
 * python
 * python-pika (https://github.com/pika/pika)
 * python-psutil (sysstat plugin, http://code.google.com/p/psutil/)
@@ -60,8 +55,7 @@ OS X (Mac Ports):
 sudo port install py27-yaml py27-pika py27-psutil py27-pip
 sudo pip-2.7 install pytz</code></pre>
 
-Optional:
--------
+### Optional:
 Plugin specific
 * bluetooth (proximity plugin)
 * espeak (espeak plugin)
@@ -78,14 +72,13 @@ Debian/Ubuntu:
 python-transmissionrpc python-pylirc python-pip
 pip install jsonrpclib</code></pre>
 
-Installation:
+## Installation:
 -------------
 * Clone JamesII to a directory as user "youruser" (git clone git://github.com/oxivanisher/JamesII.git)
 * Edit your main config file only on master node (example in config/config.yaml.example)
 * Edit your broker config file on every node (example in config/broker.yaml.example)
 
-RabbitMQ Server Setup:
--------------
+## RabbitMQ Server Setup:
 You only need one server per network. The server don't need a JamesII node on it.
 * Install RabbitMQ as root (Debian/Ubuntu: apt-get  install rabbitmq-server)
 * Then you have to configure your rabbitmq server as root and choose a password for the broker.yaml config:
@@ -93,17 +86,14 @@ You only need one server per network. The server don't need a JamesII node on it
 rabbitmqctl add_vhost james2
 rabbitmqctl set_permissions -p james2 james2 ".*" ".*" ".*"</code></pre>
 
-Autostart:
--------------
-Linux:
+### Autostart on Linux:
 * Starting it with the james2_autostart_loop.sh script as a user with sudo rights in a screen. Dirty, i know! But some plugins need root access to fully work. Here is how to give the user the needed rights via "visudo" as root:
 <pre><code>youruser ALL=(ALL) NOPASSWD: ALL</code></pre>
 * To start JamesII automatically with your system, add the following line to /etc/rc.local before the "exit 0" line:
 <pre><code>su -c /path/to/JamesII/james2_autostart_loop.sh youruser &</code></pre>
 
-How to integrate JamesII to your infrastructure:
----------
-Desktop torrent download:
+### How to integrate JamesII to your infrastructure:
+#### Desktop torrent download:
 <pre>
 $ sudo vim /usr/share/applications/JamesII.desktop
 <code>
@@ -116,24 +106,23 @@ Type=Application
 $ xdg-mime default JamesII.desktop x-scheme-handler/magnet
 </pre>
 
-Desktop DBUS Notifications:
+#### Desktop DBUS Notifications:
 <pre><code>start the dbus-notify_loop.sh with your desktop</code></pre>
 
-RaspberryPi Plugin:
-<pre>
-My prototype for the GPIO is working, but a real prototype. A schematic will follow sometimes.
-<code>Checkout and read (!) include/install_wiring_pi.sh</code>
-</pre>
-
-Motion Plugin:
+#### Motion Plugin:
 <pre><code>After setting up motion, add the following lines to your /etc/motion/motion.conf:
 on_picture_save "/path/to/JamesII/src/cli.sh motion img %f"
 on_movie_end "/path/to/JamesII/src/cli.sh motion mov %f"
 on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
 </code></pre>
 
-Technologies and software used (incomplete!):
-------------------
+#### RaspberryPi Plugin:
+<pre>
+My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
+<code>Checkout and read (!) include/install_wiring_pi.sh</code>
+</pre>
+
+## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol
 * AMQP http://en.wikipedia.org/wiki/AMQP
 * Motion http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome
@@ -143,8 +132,7 @@ Technologies and software used (incomplete!):
 * XBMC Mediacenter http://wiki.xbmc.org/
 * Raspberry Pi http://www.raspberrypi.org/
 
-Thanks go to:
------------------
+## Thanks go to:
 * http://github.com/westlicht for a lot of OO and Python knowledge
 * http://aron.ws/projects/lirc_rpi/ for the IR solution used with RaspberryPi
 * Kurt Fierz and Anaxagoras for support with the electronics part of JamesII (RaspberryPi plugin)

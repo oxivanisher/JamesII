@@ -63,7 +63,7 @@ class ConsoleThread(threading.Thread):
             line = line.strip()
 
             if len(line.rstrip()) > 0:
-                args = line.split(' ')
+                args = line.split()
 
                 if not self.plugin.commands.process_args(args):
                     self.plugin.send_command(args)

@@ -69,6 +69,12 @@ class Core(object):
         self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
 
+        # setting up pika loggers
+        # pika.base_connection.logger = self.utils.getLogger('pika.adapters.base_connection', None)
+        # pika.base_connection.logger.setLevel(logger.INFO)
+        # pika.blocking_connection.logger = self.utils.getLogger('pika.adapters.blocking_connection', None)
+        # pika.blocking_connection.LOGGER.setLevel(logger.INFO)
+
         try:
             self.os_username = getpass.getuser()
         except Exception as e:
@@ -511,9 +517,9 @@ class Core(object):
                 # disconnection error
                 self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 self.terminate(2)
-            except Exception as e:
-                self.logger.critical("Caught unknown error (%s)" % e)
-                self.terminate(1)
+            # except Exception as e:
+            #     self.logger.critical("Caught unknown error (%s)" % e)
+            #     self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)
         sys.exit(self.returncode)

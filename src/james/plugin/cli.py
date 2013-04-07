@@ -66,7 +66,14 @@ class ConsoleThread(threading.Thread):
                 args = line.split()
 
                 if not self.plugin.commands.process_args(args):
-                    self.plugin.send_command(args)
+                    best_match = self.plugin.core.ghost_commands.get_best_match(args)
+                    if best_match == self.plugin.core.ghost_commands:
+                        self.plugin.commands.process_args(['help'] + args)
+                    else:
+                        if len(best_match.subcommands) > 0:
+                            self.plugin.commands.process_args(['help'] + args)
+                        else:
+                            self.plugin.send_command(args)
             else:
                 print("Enter 'help' for a list of available commands.")
 
@@ -107,8 +114,6 @@ class ConsoleThread(threading.Thread):
 
         except Exception, e:
             print e.__repr__()
-
-
 
 
 class CliPlugin(Plugin):
@@ -157,7 +162,7 @@ class CliPlugin(Plugin):
 
     # commands
     def cmd_nodes_online(self, args):
-        for node in self.core.nodes_online:
+        for node in sorted(self.core.nodes_online):
             if self.core.uuid == node:
                 temp_str = "(cli)"
             elif self.core.master_node == node:
@@ -194,7 +199,8 @@ class CliPlugin(Plugin):
         if len(args) > 0:    
             command = self.core.ghost_commands.get_best_match(args)
             if command:
-                print("%s:" % (command.help))
+                if command.help:
+                    print("%s:" % (command.help))
                 self.print_command_help_lines(command)
             else:
                 print ("Command not found")

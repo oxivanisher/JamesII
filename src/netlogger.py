@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# needs packages: python-mysqldb python-storm
+
 import cPickle
 import logging
 import logging.handlers
@@ -7,6 +9,22 @@ import SocketServer
 import struct
 import socket
 import commands
+import yaml
+
+import james.config
+from storm.locals import *
+
+class StormLogEntry(object):
+    __storm_table__ = "logentry"
+    id        = Int(primary=True)
+    timestamp = Int()
+    loglevel  = Unicode()
+    uuid      = Unicode()
+    hostname  = Unicode()
+    plugin    = Unicode()
+    p_child   = Unicode()
+    message   = Unicode()
+
 
 # http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
 
@@ -58,8 +76,6 @@ class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
 
     allow_reuse_address = 1
 
-#    def __init__(self, host='localhost',
-#    def __init__(self, host=socket.gethostname(),
     def __init__(self, host='localhost',
                  port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
                  handler=LogRecordStreamHandler):
@@ -81,6 +97,15 @@ class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
 
 def main():
 	#%(relativeCreated)5d
+
+    print "loading database"
+    myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
+    if not myconfig['port']:
+        myconfig['port'] = 3306
+    database = create_database("%s://%s:%s@%s:%s/%s" % (myconfig['schema'], myconfig['user'], myconfig['password'], myconfig['host'], myconfig['port'], myconfig['database']))
+    store = Store(database)
+
+
     logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
     hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()
     tcpserver = LogRecordSocketReceiver(host=hostip)

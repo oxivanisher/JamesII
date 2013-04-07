@@ -104,9 +104,9 @@ class TimerPlugin(Plugin):
     def cmd_timer_show(self, args):
         ret = []
         for (timestamp, command) in self.saved_commands:
-            ret.append("%10s %-25s %s" % (timestamp,
-                                          ' '.join(command),
-                                          self.core.utils.get_nice_age(timestamp)))
+            ret.append("(%s) %s: %s" % (timestamp,
+                                        self.core.utils.get_nice_age(timestamp),
+                                        ' '.join(command)))
         if len(ret) > 0:
             return ret
         else:

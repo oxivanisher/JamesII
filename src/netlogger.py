@@ -301,13 +301,19 @@ def main():
     signal.signal(signal.SIGTERM,on_kill_sig)
     signal.signal(signal.SIGQUIT,on_kill_sig)
 
-    myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
-
     saver = RecordSaver()
-    saver.active = myconfig['saver_active']
-
     shower = RecordShower()
-    shower.active = myconfig['shower_active']
+
+    # FIXME: if no config is available, start only viewer
+    try:
+        myconfig = james.config.YamlConfig("../config/netloggera.yaml").get_values()
+        saver.active = myconfig['saver_active']
+        shower.active = myconfig['shower_active']
+    except IOError:
+        print "No config found. Starting viewer mode only."
+        saver.active = False
+        shower.active = True
+        pass
 
     logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
     hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()

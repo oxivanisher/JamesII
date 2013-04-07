@@ -17,6 +17,7 @@ class ConsoleThread(threading.Thread):
         super(ConsoleThread, self).__init__()
         self.plugin = plugin
         self.terminated = False
+        self.logger = self.plugin.core.utils.getLogger('thread', self.plugin.logger)
     
         self.keywords = []
 
@@ -37,9 +38,9 @@ class ConsoleThread(threading.Thread):
 
     def run(self):
 
-        print("Interactive cli interface to JamesII (%s:%s) online." % (
-                        self.plugin.core.brokerconfig['host'],
-                        self.plugin.core.brokerconfig['port']))
+        self.logger.info("Interactive cli interface to JamesII (%s:%s) online." % (
+                         self.plugin.core.brokerconfig['host'],
+                         self.plugin.core.brokerconfig['port']))
 
         while (not self.terminated):
             self.plugin.worker_lock.acquire()
@@ -66,14 +67,17 @@ class ConsoleThread(threading.Thread):
                 args = line.split()
 
                 if not self.plugin.commands.process_args(args):
-                    best_match = self.plugin.core.ghost_commands.get_best_match(args)
-                    if best_match == self.plugin.core.ghost_commands:
-                        self.plugin.commands.process_args(['help'] + args)
+                    if args[0] in self.plugin.core.config['core']['command_aliases']:
+                        self.plugin.send_command(args)
                     else:
-                        if len(best_match.subcommands) > 0:
+                        best_match = self.plugin.core.ghost_commands.get_best_match(args)
+                        if best_match == self.plugin.core.ghost_commands:
                             self.plugin.commands.process_args(['help'] + args)
                         else:
-                            self.plugin.send_command(args)
+                            if len(best_match.subcommands) > 0:
+                                self.plugin.commands.process_args(['help'] + args)
+                            else:
+                                self.plugin.send_command(args)
             else:
                 print("Enter 'help' for a list of available commands.")
 
@@ -102,6 +106,8 @@ class ConsoleThread(threading.Thread):
                 else:
                     self.keywords = self.plugin.commands.get_subcommand_names()
                     self.keywords += self.plugin.core.ghost_commands.get_subcommand_names()
+                    if len(args) == 1:
+                        self.keywords += self.plugin.core.config['core']['command_aliases']
 
                 # keep keywords that start with correct text
                 args.append('')

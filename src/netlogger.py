@@ -50,80 +50,14 @@ class StormLogEntry(object):
 
 # http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
 
-class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
-    """Handler for a streaming logging request.
+#FIXME: baseclass mit handleRecord
+#    handler -> [] 
 
-    This basically logs the record using whatever logging policy is
-    configured locally.
-    """
-
-    def handle(self):
-        """
-        Handle multiple requests - each expected to be a 4-byte length,
-        followed by the LogRecord in pickle format. Logs the record
-        according to whatever policy is configured locally.
-        """
-        while 1:
-            chunk = self.connection.recv(4)
-            if len(chunk) < 4:
-                break
-            slen = struct.unpack(">L", chunk)[0]
-            chunk = self.connection.recv(slen)
-            while len(chunk) < slen:
-                chunk = chunk + self.connection.recv(slen - len(chunk))
-            obj = self.unPickle(chunk)
-            record = logging.makeLogRecord(obj)
-            self.handleLogRecord(record)
-
-    def unPickle(self, data):
-        return cPickle.loads(data)
-
-    def handleLogRecord(self, record):
-        # if a name is specified, we use the named logger rather than the one
-        # implied by the record.
-        # N.B. EVERY record gets logged. This is because Logger.handle
-        # is normally called AFTER logger-level filtering. If you want
-        # to do filtering, do it at the client end to save wasting
-        # cycles and network bandwidth!
-        # print "handle record %s" % record
-
-        RecordSaver(record)
-        RecordShower(record, self.server)
-
-class RecordShower(object):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(RecordShower, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
-
-    def __init__(self, record = None, server = None):
-        self.server = server
-        try:
-            self.active
-        except:
-            self.active = False
-            pass
-
-        if not self.active:
-            return
-
-        self.render_output(record)
-
-    def render_output(self, record):
-        if record:
-            if self.server.logname is not None:
-                name = self.server.logname
-            else:
-                name = record.name
-            logger = logging.getLogger(name)
-            logger.handle(record)
-
-    def set_active(self, state):
-        self.active = state
 
 class RecordSaver(object):
+    #FIXME: erbt von angerer viewer
+    #FIXME: thread, queue (worker)
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -264,20 +198,73 @@ class RecordSaver(object):
         self.commit_store()
         if (self.counter % 50) == 0:
             print "Totally processed %s messages" % self.counter
+
+
+# FIXME: own file
+
+
+class LogServerHandler(object):
+    def handle_log_record(self, record):
+        pass
+
+
+
+class LogServerRequestHandler(SocketServer.StreamRequestHandler):
+    """Handler for a streaming logging request.
+
+    This basically logs the record using whatever logging policy is
+    configured locally.
+    """
+
+    def handle(self):
+        """
+        Handle multiple requests - each expected to be a 4-byte length,
+        followed by the LogRecord in pickle format. Logs the record
+        according to whatever policy is configured locally.
+        """
+        while 1:
+            chunk = self.connection.recv(4)
+            if len(chunk) < 4:
+                break
+            slen = struct.unpack(">L", chunk)[0]
+            chunk = self.connection.recv(slen)
+            while len(chunk) < slen:
+                chunk = chunk + self.connection.recv(slen - len(chunk))
+            obj = self.unPickle(chunk)
+            record = logging.makeLogRecord(obj)
+            self.handleLogRecord(record)
+
+    def unPickle(self, data):
+        return cPickle.loads(data)
+
+    def handleLogRecord(self, record):
+        # if a name is specified, we use the named logger rather than the one
+        # implied by the record.
+        # N.B. EVERY record gets logged. This is because Logger.handle
+        # is normally called AFTER logger-level filtering. If you want
+        # to do filtering, do it at the client end to save wasting
+        # cycles and network bandwidth!
+        # print "handle record %s" % record
+
+        for handler in self.server.handlers:
+            handler.handle_log_record(record)
+
+        # RecordSaver(record)
+        # RecordShower(record, self.server)            
    
-class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
+class LogServer(SocketServer.ThreadingTCPServer):
     """simple TCP socket-based logging receiver suitable for testing.
     """
 
     allow_reuse_address = 1
 
     def __init__(self, host='localhost',
-                 port=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
-                 handler=LogRecordStreamHandler):
-        SocketServer.ThreadingTCPServer.__init__(self, (host, port), handler)
+                 port=logging.handlers.DEFAULT_TCP_LOGGING_PORT):
+        SocketServer.ThreadingTCPServer.__init__(self, (host, port), LogServerRequestHandler)
         self.abort = 0
         self.timeout = 1
         self.logname = None
+        self.handlers = []
 
     def serve_until_stopped(self):
         import select
@@ -290,6 +277,20 @@ class LogRecordSocketReceiver(SocketServer.ThreadingTCPServer):
                 self.handle_request()
             abort = self.abort
 
+    def add_handler(self, handler):
+        self.handlers.append(handler)
+
+
+
+#FIXME: "main" run file
+class RecordShower(object):
+    def __init__(self):
+        self.logger = logging.getLogger()
+
+    def handle_log_record(self, record):
+        if record:
+            self.logger.handle(record)
+
 def on_kill_sig(signal, frame):
     print "Exiting..."
     sys.exit(0)
@@ -299,24 +300,24 @@ def main():
     signal.signal(signal.SIGTERM,on_kill_sig)
     signal.signal(signal.SIGQUIT,on_kill_sig)
 
-    saver = RecordSaver()
-    shower = RecordShower()
+    logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
+    hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()
+    tcpserver = LogServer(host=hostip)
 
     try:
         myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
         print "Saver active: %s; Shower active: %s" % (myconfig['saver_active'], myconfig['shower_active'])
-        saver.active = myconfig['saver_active']
-        shower.active = myconfig['shower_active']
+        if myconfig['saver_active']:
+            tcpserver.add_handler(RecordShower())
+        if myconfig['shower_active']:
+            # tcpserver.add_handler(RecordSaver())
+            pass
     except IOError:
         print "No config found. Starting viewer mode only."
-        saver.active = False
-        shower.active = True
-        pass
+        tcpserver.add_handler(RecordShower())
 
-    logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
-    hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()
-    tcpserver = LogRecordSocketReceiver(host=hostip)
     print "About to start TCP server on %s:%s..." % (hostip, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+
     tcpserver.serve_until_stopped()
 
 if __name__ == "__main__":

@@ -505,8 +505,8 @@ class Core(object):
 
         while not self.terminated:
             try:
-                self.connection.process_data_events()
                 self.lock_core()
+                self.connection.process_data_events()
                 self.process_timeouts()
                 self.unlock_core()
                 #self.logger.debug("process events")

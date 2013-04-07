@@ -306,7 +306,7 @@ def main():
 
     # FIXME: if no config is available, start only viewer
     try:
-        myconfig = james.config.YamlConfig("../config/netloggera.yaml").get_values()
+        myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
         saver.active = myconfig['saver_active']
         shower.active = myconfig['shower_active']
     except IOError:

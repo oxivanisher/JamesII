@@ -4,3 +4,8 @@ port     :                 #can be empty
 user     : 
 password : 
 database : 
+
+# configure if you want to show the messages
+shower_active : True
+# configure if you want to save the messages to databae
+saver_active  : True

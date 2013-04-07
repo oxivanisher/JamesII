@@ -81,11 +81,6 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
     def handleLogRecord(self, record):
         # if a name is specified, we use the named logger rather than the one
         # implied by the record.
-        if self.server.logname is not None:
-            name = self.server.logname
-        else:
-            name = record.name
-        logger = logging.getLogger(name)
         # N.B. EVERY record gets logged. This is because Logger.handle
         # is normally called AFTER logger-level filtering. If you want
         # to do filtering, do it at the client end to save wasting
@@ -93,7 +88,40 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
         # print "handle record %s" % record
 
         RecordSaver(record)
-        logger.handle(record)
+        RecordShower(record, self.server)
+
+class RecordShower(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(RecordShower, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def __init__(self, record = None, server = None):
+        self.server = server
+        try:
+            self.active
+        except:
+            self.active = True
+            pass
+
+        if not self.active:
+            return
+
+        self.render_output(record)
+
+    def render_output(self, record):
+        if record:
+            if self.server.logname is not None:
+                name = self.server.logname
+            else:
+                name = record.name
+            logger = logging.getLogger(name)
+            logger.handle(record)
+
+    def set_active(self, state):
+        self.active = state
 
 class RecordSaver(object):
     _instance = None
@@ -104,6 +132,15 @@ class RecordSaver(object):
         return cls._instance
 
     def __init__(self, record = None):
+        try:
+            self.active
+        except:
+            self.active = True
+            pass
+
+        if not self.active:
+            return
+
         try:
             self.connecting
             while self.connecting:
@@ -118,8 +155,11 @@ class RecordSaver(object):
             self.connect_db()
             pass
 
-        self.save_record(record)
+        if record:
+            self.save_record(record)
 
+    def set_active(self, state):
+        self.active = state
 
     def connect_db(self):
         self.counter = 0
@@ -260,6 +300,14 @@ def main():
     signal.signal(signal.SIGINT,on_kill_sig)
     signal.signal(signal.SIGTERM,on_kill_sig)
     signal.signal(signal.SIGQUIT,on_kill_sig)
+
+    myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
+
+    saver = RecordSaver()
+    saver.active = myconfig['saver_active']
+
+    shower = RecordShower()
+    shower.active = myconfig['shower_active']
 
     logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
     hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()

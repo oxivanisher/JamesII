@@ -93,7 +93,7 @@ class LogRecordStreamHandler(SocketServer.StreamRequestHandler):
         # print "handle record %s" % record
 
         RecordSaver(record)
-        # logger.handle(record)
+        logger.handle(record)
 
 class RecordSaver(object):
     _instance = None

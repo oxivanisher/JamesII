@@ -140,7 +140,7 @@ monitor:
  nodes:
   - node_name
 
-netlog:
+netlogger:
  nodes:
   - node_name
 

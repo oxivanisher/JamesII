@@ -103,7 +103,7 @@ class RecordShower(object):
         try:
             self.active
         except:
-            self.active = True
+            self.active = False
             pass
 
         if not self.active:
@@ -135,7 +135,7 @@ class RecordSaver(object):
         try:
             self.active
         except:
-            self.active = True
+            self.active = False
             pass
 
         if not self.active:
@@ -295,8 +295,6 @@ def on_kill_sig(signal, frame):
     sys.exit(0)
 
 def main():
-	#%(relativeCreated)5d
-
     signal.signal(signal.SIGINT,on_kill_sig)
     signal.signal(signal.SIGTERM,on_kill_sig)
     signal.signal(signal.SIGQUIT,on_kill_sig)
@@ -304,9 +302,9 @@ def main():
     saver = RecordSaver()
     shower = RecordShower()
 
-    # FIXME: if no config is available, start only viewer
     try:
         myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
+        print "Saver active: %s; Shower active: %s" % (myconfig['saver_active'], myconfig['shower_active'])
         saver.active = myconfig['saver_active']
         shower.active = myconfig['shower_active']
     except IOError:

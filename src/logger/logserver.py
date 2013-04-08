@@ -38,20 +38,9 @@ class LogServerRequestHandler(SocketServer.StreamRequestHandler):
         return cPickle.loads(data)
 
     def handleLogRecord(self, record):
-        # if a name is specified, we use the named logger rather than the one
-        # implied by the record.
-        # N.B. EVERY record gets logged. This is because Logger.handle
-        # is normally called AFTER logger-level filtering. If you want
-        # to do filtering, do it at the client end to save wasting
-        # cycles and network bandwidth!
-        # print "handle record %s" % record
-
         for handler in self.server.handlers:
             handler.handle_log_record(record)
 
-        # RecordSaver(record)
-        # RecordShower(record, self.server)            
-   
 class LogServer(SocketServer.ThreadingTCPServer):
     """simple TCP socket-based logging receiver suitable for testing.
     """

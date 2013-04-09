@@ -53,7 +53,7 @@ class Core(object):
         self.timeout_queue = Queue.Queue()
         self.terminated = False
         self.returncode = 0
-        self.hostname = socket.getfqdn().split('.')[0]
+        self.hostname = socket.getfqdn().split('.')[0].lower()
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
@@ -61,6 +61,7 @@ class Core(object):
         self.proximity_status = proximitystatus.ProximityStatus(self)
         self.location = 'home'
         self.commands = command.Command('root')
+        self.data_commands = command.Command('data')
         self.ghost_commands = command.Command('ghost')
         self.nodes_online = {}
         self.master_node = ''

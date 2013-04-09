@@ -19,7 +19,6 @@ class SystemPlugin(Plugin):
         core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
         nodes_command = self.commands.create_subcommand('nodes', 'Informational node functions', None)
-        nodes_command.create_subcommand('info', 'Shows informations', self.cmd_nodes_info)
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
         nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)
         if os.path.isfile('/usr/bin/git'):
@@ -34,6 +33,8 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
+
+        self.data_commands.create_subcommand('details', 'Returns detailed node informations', self.get_data_core_details)
 
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -121,15 +122,19 @@ class SystemPlugin(Plugin):
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
-    def cmd_nodes_info(self, args):
-        role = "Slave"
-        if self.core.master:
-            role = "Master"
-        return ['%10s@%-25s %-6s %-10s %-40s' % (self.core.os_username,
-                                                 socket.getfqdn(),
-                                                 role,
-                                                 sys.platform,
-                                                 self.core.uuid)]
+    def get_data_core_details(self, args):
+        ret = {}
+        ret['master'] = self.core.master
+        ret['uuid'] = self.core.uuid
+        ret['ip'] = self.get_ip([])
+        ret['startup_timestamp'] = self.core.startup_timestamp
+        ret['fqdn'] = socket.getfqdn()
+        ret['location'] = self.core.location
+        ret['platform'] = sys.platform
+        ret['os_username'] = self.core.os_username
+        ret['now'] = time.time()
+        return ret
+
 
     def cmd_nodes_plugins(self, args):
         plugin_names = []
@@ -170,7 +175,7 @@ class SystemPlugin(Plugin):
                 self.send_command(command)
                 self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(command)))
             except Exception as e:
-                if depth == 0:
+                if depth == 0 and self.core.data_commands.get_best_match(request) != self.core.data_commands:
                     self.logger.info('Unknown command (%s)' % e)
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
                 pass

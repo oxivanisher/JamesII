@@ -70,14 +70,15 @@ class ConsoleThread(threading.Thread):
                     if args[0] in self.plugin.core.config['core']['command_aliases']:
                         self.plugin.send_command(args)
                     else:
-                        best_match = self.plugin.core.ghost_commands.get_best_match(args)
-                        if best_match == self.plugin.core.ghost_commands:
-                            self.plugin.commands.process_args(['help'] + args)
-                        else:
-                            if len(best_match.subcommands) > 0:
+                        if self.plugin.core.data_commands.get_best_match(args) != self.plugin.core.data_commands:
+                            best_match = self.plugin.core.ghost_commands.get_best_match(args)
+                            if best_match == self.plugin.core.ghost_commands:
                                 self.plugin.commands.process_args(['help'] + args)
                             else:
-                                self.plugin.send_command(args)
+                                if len(best_match.subcommands) > 0:
+                                    self.plugin.commands.process_args(['help'] + args)
+                                else:
+                                    self.plugin.send_command(args)
             else:
                 print("Enter 'help' for a list of available commands.")
 

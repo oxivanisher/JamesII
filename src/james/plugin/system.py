@@ -175,7 +175,7 @@ class SystemPlugin(Plugin):
                 self.send_command(command)
                 self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(command)))
             except Exception as e:
-                if depth == 0 and self.core.data_commands.get_best_match(request).get_depth() == 0:
+                if depth == 0 and self.core.data_commands.get_best_match(request) == self.core.data_commands:
                     self.logger.info('Unknown command (%s)' % e)
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
                 pass

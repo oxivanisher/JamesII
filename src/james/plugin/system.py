@@ -19,13 +19,14 @@ class SystemPlugin(Plugin):
         core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
         nodes_command = self.commands.create_subcommand('nodes', 'Informational node functions', None)
-        nodes_command.create_subcommand('info', 'Shows informations', self.cmd_nodes_info)
+        nodes_command.create_subcommand('details', 'Shows detailed informations', self.cmd_get_core_details)
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
         nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
+        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_get_core_details)
 
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
@@ -121,15 +122,25 @@ class SystemPlugin(Plugin):
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
-    def cmd_nodes_info(self, args):
-        role = "Slave"
-        if self.core.master:
-            role = "Master"
-        return ['%10s@%-25s %-6s %-10s %-40s' % (self.core.os_username,
-                                                 socket.getfqdn(),
-                                                 role,
-                                                 sys.platform,
-                                                 self.core.uuid)]
+    def cmd_get_core_details(self, args):
+        self.send_data_command(args)
+
+
+    def get_data_core_details(self, args):
+        ret = {}
+        # role = "Slave"
+        # if self.core.master:
+        #     role = "Master"
+        ret['master'] = self.core.master
+        ret['uuid'] = self.core.uuid
+        ret['ip'] = self.get_ip([])
+        ret['startup_timestamp'] = self.core.startup_timestamp
+        ret['fqdn'] = socket.getfqdn()
+        ret['location'] = self.core.location
+        ret['platform'] = sys.platform
+        ret['os_username'] = self.core.os_username
+        return ret
+
 
     def cmd_nodes_plugins(self, args):
         plugin_names = []

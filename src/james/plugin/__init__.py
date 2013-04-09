@@ -40,12 +40,19 @@ class Plugin(object):
     def process_command_response(self, args, host, plugin):
         pass
 
+    def process_data_response(self, args, host, plugin):
+        pass
+
     def process_broadcast_command_response(self, args, host, plugin):
         pass
 
     def send_command(self, args):
         """ Sends a command to the queue. """
         self.send_request(self.uuid, 'cmd', args)
+
+    def send_data_command(self, args):
+        """ Sends a data command to the queue. """
+        self.send_request(self.uuid, 'data', args)
 
     def send_request(self, uuid, name, body):
         self.core.send_request(uuid, name, body, self.core.hostname, self.name)
@@ -59,7 +66,18 @@ class Plugin(object):
 
             try:
                 if self.command == args[0]:
-                    self.logger.info('Processing command (%s)' % ' '.join(args))
+                    self.logger.info('Processing command request (%s)' % ' '.join(args))
+                    res = self.core.commands.process_args(args)
+                    if res:
+                        self.send_response(uuid, name, res)
+            except KeyError:
+                pass
+        elif name == 'data':
+            args = self.core.utils.list_unicode_cleanup(body)
+
+            try:
+                if self.command == args[0]:
+                    self.logger.info('Processing data request (%s)' % ' '.join(args))
                     res = self.core.commands.process_args(args)
                     if res:
                         self.send_response(uuid, name, res)
@@ -68,11 +86,15 @@ class Plugin(object):
 
     def handle_response(self, uuid, name, body, host, plugin):
         args = body
-        if not isinstance(args, list):
-            args = [args]
         if name == 'cmd' and uuid == self.uuid:
+            if not isinstance(args, list):
+                args = [args]
             self.process_command_response(args, host, plugin)
+        if name == 'data' and uuid == self.uuid:
+            self.process_data_response(args, host, plugin)
         elif name == 'broadcast':
+            if not isinstance(args, list):
+                args = [args]
             self.process_broadcast_command_response(args, host, plugin)
 
     def cmd_avail(self, args):

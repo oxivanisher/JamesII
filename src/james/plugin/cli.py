@@ -159,6 +159,9 @@ class CliPlugin(Plugin):
         for line in args:
             print ("D%11s@%-10s > %s" % (plugin, host, line))
 
+    def process_data_response(self, args, host, plugin):
+        print "data recieved"
+
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:
             print ("B%11s@%-10s > %s" % (plugin, host, line))

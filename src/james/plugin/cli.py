@@ -179,7 +179,7 @@ class CliPlugin(Plugin):
             display_data.append(('UUID', args['uuid']))
             display_data.append(('IP', args['ip'][0]))
             display_data.append(('James Startup', startup))
-            display_data.append(('Delay', '%s  seconds' % timedelay))
+            display_data.append(('Delay', '%s seconds' % timedelay))
             display_data.append(('Location', args['location']))
             display_data.append(('Platform', args['platform']))
             display_data.append(('OS Username', args['os_username']))

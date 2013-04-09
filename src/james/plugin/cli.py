@@ -34,7 +34,7 @@ class ConsoleThread(threading.Thread):
         except IOError:
             pass
 
-        atexit.register(readline.write_history_file, histfile)        
+        atexit.register(readline.write_history_file, histfile)
 
     def run(self):
 
@@ -69,16 +69,17 @@ class ConsoleThread(threading.Thread):
                 if not self.plugin.commands.process_args(args):
                     if args[0] in self.plugin.core.config['core']['command_aliases']:
                         self.plugin.send_command(args)
+                    elif str(self.plugin.core.data_commands.get_best_match(args)) != 'data':
+                        self.plugin.send_command(args)
                     else:
-                        if self.plugin.core.data_commands.get_best_match(args) != self.plugin.core.data_commands:
-                            best_match = self.plugin.core.ghost_commands.get_best_match(args)
-                            if best_match == self.plugin.core.ghost_commands:
+                        best_match = self.plugin.core.ghost_commands.get_best_match(args)
+                        if best_match == self.plugin.core.ghost_commands:
+                            self.plugin.commands.process_args(['help'] + args)
+                        else:
+                            if len(best_match.subcommands) > 0:
                                 self.plugin.commands.process_args(['help'] + args)
                             else:
-                                if len(best_match.subcommands) > 0:
-                                    self.plugin.commands.process_args(['help'] + args)
-                                else:
-                                    self.plugin.send_command(args)
+                                self.plugin.send_command(args)
             else:
                 print("Enter 'help' for a list of available commands.")
 

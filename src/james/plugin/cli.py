@@ -138,6 +138,7 @@ class CliPlugin(Plugin):
         self.commands.create_subcommand('help', 'List this help', self.cmd_help)
         self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
         self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
+        self.commands.create_subcommand('details', 'Request detailed node informations', self.cmd_request_nodes_details)
 
     def start(self):
         if self.cmd_line_mode:
@@ -155,12 +156,36 @@ class CliPlugin(Plugin):
         if self.console_thread:
             self.console_thread.terminate()
 
+    def cmd_request_nodes_details(self, args):
+        self.send_data_command(['sys', 'details'])
+
     def process_command_response(self, args, host, plugin):
         for line in args:
             print ("D%11s@%-10s > %s" % (plugin, host, line))
 
     def process_data_response(self, args, host, plugin):
-        print "data recieved"
+        print "*** Processing data response from %s@%s ***" % (plugin, host)
+        if plugin == 'system':
+            display_data = []
+            mode = "Slave"
+            if args['master']:
+                mode = "Master"
+
+            startup = self.core.utils.get_nice_age(int(args['startup_timestamp']))
+            timedelay = time.time() - args['now']
+
+            display_data.append(('FQDN', args['fqdn']))
+            display_data.append(('Mode', mode))
+            display_data.append(('UUID', args['uuid']))
+            display_data.append(('IP', args['ip'][0]))
+            display_data.append(('James Startup', startup))
+            display_data.append(('Delay', '%s  seconds' % timedelay))
+            display_data.append(('Location', args['location']))
+            display_data.append(('Platform', args['platform']))
+            display_data.append(('OS Username', args['os_username']))
+
+            for (key, value) in display_data:
+                print "%-14s %s" % (key, value)
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:

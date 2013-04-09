@@ -19,14 +19,12 @@ class SystemPlugin(Plugin):
         core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
         nodes_command = self.commands.create_subcommand('nodes', 'Informational node functions', None)
-        nodes_command.create_subcommand('details', 'Shows detailed informations', self.cmd_get_core_details)
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
         nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
-        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_get_core_details)
 
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
@@ -35,6 +33,8 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
+
+        self.data_commands.create_subcommand('details', 'Returns detailed node informations', self.get_data_core_details)
 
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -122,15 +122,8 @@ class SystemPlugin(Plugin):
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
-    def cmd_get_core_details(self, args):
-        self.send_data_command(args)
-
-
     def get_data_core_details(self, args):
         ret = {}
-        # role = "Slave"
-        # if self.core.master:
-        #     role = "Master"
         ret['master'] = self.core.master
         ret['uuid'] = self.core.uuid
         ret['ip'] = self.get_ip([])
@@ -139,6 +132,7 @@ class SystemPlugin(Plugin):
         ret['location'] = self.core.location
         ret['platform'] = sys.platform
         ret['os_username'] = self.core.os_username
+        ret['now'] = time.time()
         return ret
 
 

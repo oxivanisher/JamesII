@@ -23,6 +23,7 @@ class Plugin(object):
         self.core = core
         self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
+        self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
@@ -77,8 +78,8 @@ class Plugin(object):
 
             try:
                 if self.command == args[0]:
-                    self.logger.info('Processing data request (%s)' % ' '.join(args))
-                    res = self.core.commands.process_args(args)
+                    self.logger.info('Processing data command (%s)' % ' '.join(args))
+                    res = self.core.data_commands.process_args(args)
                     if res:
                         self.send_response(uuid, name, res)
             except KeyError:

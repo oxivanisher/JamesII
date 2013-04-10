@@ -13,17 +13,18 @@ class RecordSaverWorkerThread(threading.Thread):
         print "worker init ..."
         self.config = config
         self.queue = queue
+        self.database = None
+        self.store = None
+        self.last_store = 0.0
 
     def connect_db(self):
-        self.counter = 0
-
-        print "Connecting to db"
-        # self.config = james.config.YamlConfig("../config/netlogger.yaml").get_values()
         if not self.config['port']:
             self.config['port'] = 3306
-        self.database = create_database("%s://%s:%s@%s:%s/%s" % (self.config['schema'], self.config['user'], self.config['password'], self.config['host'], self.config['port'], self.config['database']))
+        dbConnectionString = "%s://%s:%s@%s:%s/%s" % (self.config['schema'], self.config['user'], self.config['password'], self.config['host'], self.config['port'], self.config['database'])
+        print "Connecting to db: %s" % dbConnectionString
+        
+        self.database = create_database(dbConnectionString)
         self.store = Store(self.database)
-        self.last_store = 0.0
         try:
             self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
                                                             relativeCreated FLOAT, \
@@ -53,10 +54,12 @@ class RecordSaverWorkerThread(threading.Thread):
                                                             p_child TEXT)", noresult=True)
             print "Table created"
         except :
+            print "Table not created"
             pass
         self.store.commit()
         self.store.flush()
         self.connecting = False
+        print "connecting ended"
 
     def commit_store(self):
         now = time.time()
@@ -119,8 +122,9 @@ class RecordSaverWorkerThread(threading.Thread):
             print "Totally processed %s messages" % self.counter
 
     def work(self):
-        # self.connect_db()
-        print "worker work"
+        print "worker starts work"
+        self.connect_db()
+        print "do loops ..."
         pass
 
     def run(self):
@@ -179,6 +183,7 @@ class RecordSaver(LogServerHandler):
     def handle_log_record(self, record):
         if record:
             print "add record to queue"
+            self.queue.put(record)
 
 class RecordShower(LogServerHandler):
     def __init__(self):

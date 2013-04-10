@@ -4,11 +4,12 @@ import logging.handlers
 import time
 import threading
 import Queue
+import logserver
 
 from storm.locals import *
 
 class RecordSaverWorkerThread(threading.Thread):
-    def __init__(self, queue, config):
+    def __init__(self, recordsaver, queue, config):
         super(RecordSaverWorkerThread, self).__init__()
         print "worker init ..."
         self.config = config
@@ -16,6 +17,9 @@ class RecordSaverWorkerThread(threading.Thread):
         self.database = None
         self.store = None
         self.last_store = 0.0
+        self.counter = 0
+        self.active = True
+        self.recordsaver = recordsaver
 
     def connect_db(self):
         if not self.config['port']:
@@ -24,38 +28,40 @@ class RecordSaverWorkerThread(threading.Thread):
         print "Connecting to db: %s" % dbConnectionString
         
         self.database = create_database(dbConnectionString)
+        self.database.connect()
         self.store = Store(self.database)
-        try:
-            self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-                                                            relativeCreated FLOAT, \
-                                                            process INTEGER, \
-                                                            module TEXT, \
-                                                            funcName TEXT, \
-                                                            message TEXT, \
-                                                            filename TEXT, \
-                                                            levelno TEXT, \
-                                                            processName TEXT, \
-                                                            lineno INTEGER, \
-                                                            asctime TEXT, \
-                                                            msg TEXT, \
-                                                            args TEXT, \
-                                                            exc_text TEXT, \
-                                                            name TEXT, \
-                                                            thread BIGINT, \
-                                                            created FLOAT, \
-                                                            threadName TEXT, \
-                                                            msecs FLOAT, \
-                                                            pathname TEXT, \
-                                                            exc_info TEXT, \
-                                                            levelname TEXT, \
-                                                            hostname TEXT, \
-                                                            uuid TEXT, \
-                                                            plugin TEXT, \
-                                                            p_child TEXT)", noresult=True)
-            print "Table created"
-        except :
-            print "Table not created"
-            pass
+        print "connected"
+        # try:
+        # self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
+        #                                                     relativeCreated FLOAT, \
+        #                                                     process INTEGER, \
+        #                                                     module TEXT, \
+        #                                                     funcName TEXT, \
+        #                                                     message TEXT, \
+        #                                                     filename TEXT, \
+        #                                                     levelno TEXT, \
+        #                                                     processName TEXT, \
+        #                                                     lineno INTEGER, \
+        #                                                     asctime TEXT, \
+        #                                                     msg TEXT, \
+        #                                                     args TEXT, \
+        #                                                     exc_text TEXT, \
+        #                                                     name TEXT, \
+        #                                                     thread BIGINT, \
+        #                                                     created FLOAT, \
+        #                                                     threadName TEXT, \
+        #                                                     msecs FLOAT, \
+        #                                                     pathname TEXT, \
+        #                                                     exc_info TEXT, \
+        #                                                     levelname TEXT, \
+        #                                                     hostname TEXT, \
+        #                                                     uuid TEXT, \
+        #                                                     plugin TEXT, \
+        #                                                     p_child TEXT)", noresult=True)
+        #     print "Table created"
+        # except Exception:
+        #     print "Table not created"
+        #     pass
         self.store.commit()
         self.store.flush()
         self.connecting = False
@@ -95,6 +101,7 @@ class RecordSaverWorkerThread(threading.Thread):
         newRecord.levelname           = unicode(record.levelname)
 
         args = record.name.split('.')
+
         try:
             newRecord.hostname        = unicode(args[0])
         except:
@@ -122,9 +129,16 @@ class RecordSaverWorkerThread(threading.Thread):
             print "Totally processed %s messages" % self.counter
 
     def work(self):
-        print "worker starts work"
         self.connect_db()
-        print "do loops ..."
+
+        while self.active:
+            try:
+                record = self.queue.get_nowait()
+                self.save_record(record)
+            except Queue.Empty:
+                time.sleep(0.5)
+                pass
+            # i must be able to exit
         pass
 
     def run(self):
@@ -132,7 +146,7 @@ class RecordSaverWorkerThread(threading.Thread):
         self.on_exit(result)
 
     def on_exit(self, result):
-        print "worker on_exit"
+        print "DB Worker exited"
         pass
 
 
@@ -166,15 +180,12 @@ class StormLogEntry(object):
     plugin          = Unicode()
     p_child         = Unicode()
 
-class LogServerHandler(object):
-    def handle_log_record(self, record):
-        pass
-
-class RecordSaver(LogServerHandler):
+class RecordSaver(logserver.LogServerHandler):
     def __init__(self, config):
         self.config = config
         self.queue = Queue.Queue()
-        self.db_thread = RecordSaverWorkerThread(self.queue, self.config)
+        self.worker_lock = threading.Lock()
+        self.db_thread = RecordSaverWorkerThread(self, self.queue, self.config)
         print "starting thread"
         self.db_thread.start()
         print "started thread"
@@ -185,7 +196,7 @@ class RecordSaver(LogServerHandler):
             print "add record to queue"
             self.queue.put(record)
 
-class RecordShower(LogServerHandler):
+class RecordShower(logserver.LogServerHandler):
     def __init__(self):
         self.logger = logging.getLogger()
         logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")

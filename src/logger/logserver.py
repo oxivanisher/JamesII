@@ -5,6 +5,12 @@ import logging.handlers
 import SocketServer
 import struct
 
+
+class LogServerHandler(object):
+    def handle_log_record(self, record):
+        pass
+
+
 class LogServerRequestHandler(SocketServer.StreamRequestHandler):
     """Handler for a streaming logging request.
 

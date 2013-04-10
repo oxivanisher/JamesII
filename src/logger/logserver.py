@@ -4,16 +4,6 @@ import logging
 import logging.handlers
 import SocketServer
 import struct
-import threading
-
-class LogWorkerThread(threading.thread):
-    def __init__(self):
-        super(LogWorkerThread, self).__init__()
-        self.blah
-
-class LogServerHandler(object):
-    def handle_log_record(self, record):
-        pass
 
 class LogServerRequestHandler(SocketServer.StreamRequestHandler):
     """Handler for a streaming logging request.

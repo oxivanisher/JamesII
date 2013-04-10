@@ -7,10 +7,6 @@ import yaml
 import signal
 import sys
 
-
-# branch test juhui
-
-
 import james.config
 import logger
 
@@ -24,7 +20,11 @@ def main():
     signal.signal(signal.SIGQUIT,on_kill_sig)
 
     hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()
-    tcpserver = logger.logserver.LogServer(host=hostip)
+    try:
+        tcpserver = logger.logserver.LogServer(host=hostip)
+    except Exception as e:
+        print "Socket Error: %s" % e
+        sys.exit(1)
 
     try:
         myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
@@ -32,13 +32,12 @@ def main():
         if myconfig['saver_active']:
             tcpserver.add_handler(logger.loghandler.RecordShower())
         if myconfig['shower_active']:
-            # tcpserver.add_handler(logger.loghandler.RecordSaver())
-            pass
+            tcpserver.add_handler(logger.loghandler.RecordSaver(myconfig))
     except IOError:
         print "No config found. Starting viewer mode only."
         tcpserver.add_handler(logger.loghandler.RecordShower())
 
-    print "About to start TCP server"
+    print "About to start TCP Log server reciever"
     tcpserver.serve_until_stopped()
 
 if __name__ == "__main__":

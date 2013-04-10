@@ -2,95 +2,26 @@
 import logging
 import logging.handlers
 import time
+import threading
+import Queue
 
 from storm.locals import *
 
-class StormLogEntry(object):
-    __storm_table__ = "log_entries"
-    id              = Int(primary=True)
-    relativeCreated = Float()
-    process         = Int()
-    module          = Unicode()
-    funcName        = Unicode()
-    message         = Unicode()
-    filename        = Unicode()
-    levelno         = Int()
-    processName     = Unicode()
-    lineno          = Int()
-    asctime         = Unicode()
-    msg             = Unicode()
-    args            = Unicode()
-    exc_text        = Unicode()
-    name            = Unicode()
-    thread          = Int()
-    created         = Float()
-    threadName      = Unicode()
-    msecs           = Float()
-    pathname        = Unicode()
-    exc_info        = Unicode()
-    levelname       = Unicode()
-
-    hostname        = Unicode()
-    uuid            = Unicode()
-    plugin          = Unicode()
-    p_child         = Unicode()
-
-
-# http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
-
-#FIXME: baseclass mit handleRecord
-#    handler -> [] 
-
-
-class RecordSaver(object):
-    #FIXME: erbt von angerer viewer
-    #FIXME: thread, queue (worker)
-
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(RecordSaver, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
-
-    def __init__(self, record = None):
-        try:
-            self.active
-        except:
-            self.active = False
-            pass
-
-        if not self.active:
-            return
-
-        try:
-            self.connecting
-            while self.connecting:
-                time.sleep(0.1)
-        except:
-            pass
-
-        try:
-            self.store
-        except:
-            self.connecting = True
-            self.connect_db()
-            pass
-
-        if record:
-            self.save_record(record)
-
-    def set_active(self, state):
-        self.active = state
+class RecordSaverWorkerThread(threading.Thread):
+    def __init__(self, queue, config):
+        super(RecordSaverWorkerThread, self).__init__()
+        print "worker init ..."
+        self.config = config
+        self.queue = queue
 
     def connect_db(self):
         self.counter = 0
 
         print "Connecting to db"
-        # myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
-        if not myconfig['port']:
-            myconfig['port'] = 3306
-        self.database = create_database("%s://%s:%s@%s:%s/%s" % (myconfig['schema'], myconfig['user'], myconfig['password'], myconfig['host'], myconfig['port'], myconfig['database']))
+        # self.config = james.config.YamlConfig("../config/netlogger.yaml").get_values()
+        if not self.config['port']:
+            self.config['port'] = 3306
+        self.database = create_database("%s://%s:%s@%s:%s/%s" % (self.config['schema'], self.config['user'], self.config['password'], self.config['host'], self.config['port'], self.config['database']))
         self.store = Store(self.database)
         self.last_store = 0.0
         try:
@@ -187,8 +118,69 @@ class RecordSaver(object):
         if (self.counter % 50) == 0:
             print "Totally processed %s messages" % self.counter
 
-class RecordShower(object):
-    #FIXME: nicht erben von LogServerHandler??
+    def work(self):
+        # self.connect_db()
+        print "worker work"
+        pass
+
+    def run(self):
+        result = self.work()
+        self.on_exit(result)
+
+    def on_exit(self, result):
+        print "worker on_exit"
+        pass
+
+
+class StormLogEntry(object):
+    __storm_table__ = "log_entries"
+    id              = Int(primary=True)
+    relativeCreated = Float()
+    process         = Int()
+    module          = Unicode()
+    funcName        = Unicode()
+    message         = Unicode()
+    filename        = Unicode()
+    levelno         = Int()
+    processName     = Unicode()
+    lineno          = Int()
+    asctime         = Unicode()
+    msg             = Unicode()
+    args            = Unicode()
+    exc_text        = Unicode()
+    name            = Unicode()
+    thread          = Int()
+    created         = Float()
+    threadName      = Unicode()
+    msecs           = Float()
+    pathname        = Unicode()
+    exc_info        = Unicode()
+    levelname       = Unicode()
+
+    hostname        = Unicode()
+    uuid            = Unicode()
+    plugin          = Unicode()
+    p_child         = Unicode()
+
+class LogServerHandler(object):
+    def handle_log_record(self, record):
+        pass
+
+class RecordSaver(LogServerHandler):
+    def __init__(self, config):
+        self.config = config
+        self.queue = Queue.Queue()
+        self.db_thread = RecordSaverWorkerThread(self.queue, self.config)
+        print "starting thread"
+        self.db_thread.start()
+        print "started thread"
+        pass
+
+    def handle_log_record(self, record):
+        if record:
+            print "add record to queue"
+
+class RecordShower(LogServerHandler):
     def __init__(self):
         self.logger = logging.getLogger()
         logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")

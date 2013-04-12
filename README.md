@@ -29,7 +29,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 ### Core functionality:
 * Integrated help. Just type help in interfaces
 * Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"
-* Logger facility with network functionality (netlog_monitor.py)
+* Logger facility with network functionality (netlogger.py)
 
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)

@@ -29,9 +29,9 @@ def main():
     try:
         myconfig = james.config.YamlConfig("../config/netlogger.yaml").get_values()
         print "Saver active: %s; Shower active: %s" % (myconfig['saver_active'], myconfig['shower_active'])
-        if myconfig['saver_active']:
-            tcpserver.add_handler(logger.loghandler.RecordShower())
         if myconfig['shower_active']:
+            tcpserver.add_handler(logger.loghandler.RecordShower())
+        if myconfig['saver_active']:
             tcpserver.add_handler(logger.loghandler.RecordSaver(myconfig))
     except IOError:
         print "No config found. Starting viewer mode only."

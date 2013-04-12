@@ -75,10 +75,12 @@ Module documentation nightly updated: <a href="http://oxi.ch/JamesII/">http://ox
 <ul>
 <li>Integrated help. Just type help in interfaces</li>
 <li>Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"</li>
-<li>Logger facility with network functionality (netlog_monitor.py)</li>
+<li>Logger facility with network functionality (netlogger.py)</li>
 </ul><h3>Not yet done:</h3>
 
 <ul>
+<li>@hostname1,hostname2 for running commands only on choosen hosts</li>
+<li>&amp;&amp; to split commands (will not wait for the first command to exit)</li>
 <li>HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)</li>
 <li>Lirc (managed) to control or be controlled via infrared</li>
 <li>YAML Schema to detect wrong config files</li>
@@ -234,6 +236,16 @@ Checkout and read (!) include/install_wiring_pi.sh
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-40101021-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>

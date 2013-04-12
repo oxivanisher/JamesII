@@ -48,8 +48,11 @@ class Plugin(object):
         pass
 
     def send_command(self, args):
-        """ Sends a command to the queue. """
-        self.send_request(self.uuid, 'cmd', args)
+        """ Sends a command to the queue. Splits it into multiple commands with && as splitter. """
+
+        tmpArgsStr = ' '.join(args)
+        for tmpCommandStr in tmpArgsStr.split('&&'):
+            self.send_request(self.uuid, 'cmd', tmpCommandStr.split())
 
     def send_data_command(self, args):
         """ Sends a data command to the queue. """
@@ -62,28 +65,37 @@ class Plugin(object):
         self.core.send_response(uuid, name, body, self.core.hostname, self.name)
 
     def handle_request(self, uuid, name, body, host, plugin):
-        if name == 'cmd':
-            args = self.core.utils.list_unicode_cleanup(body)
+        runCommand = True
+        if body[0][0] == '@':
+            runCommand = False
+            hosts = body[0].replace('@', '').split(',')
+            if self.core.hostname in hosts:
+                body = body[1:]
+                runCommand = True
 
-            try:
-                if self.command == args[0]:
-                    self.logger.info('Processing command request (%s)' % ' '.join(args))
-                    res = self.core.commands.process_args(args)
-                    if res:
-                        self.send_response(uuid, name, res)
-            except KeyError:
-                pass
-        elif name == 'data':
-            args = self.core.utils.list_unicode_cleanup(body)
+        if runCommand:
+            if name == 'cmd':
+                args = self.core.utils.list_unicode_cleanup(body)
 
-            try:
-                if self.command == args[0]:
-                    self.logger.info('Processing data command (%s)' % ' '.join(args))
-                    res = self.core.data_commands.process_args(args)
-                    if res:
-                        self.send_response(uuid, name, res)
-            except KeyError:
-                pass
+                try:
+                    if self.command == args[0]:
+                        self.logger.info('Processing command request (%s)' % ' '.join(args))
+                        res = self.core.commands.process_args(args)
+                        if res:
+                            self.send_response(uuid, name, res)
+                except KeyError:
+                    pass
+            elif name == 'data':
+                args = self.core.utils.list_unicode_cleanup(body)
+
+                try:
+                    if self.command == args[0]:
+                        self.logger.info('Processing data command (%s)' % ' '.join(args))
+                        res = self.core.data_commands.process_args(args)
+                        if res:
+                            self.send_response(uuid, name, res)
+                except KeyError:
+                    pass
 
     def handle_response(self, uuid, name, body, host, plugin):
         args = body

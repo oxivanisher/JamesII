@@ -29,11 +29,12 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 ### Core functionality:
 * Integrated help. Just type help in interfaces
 * Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"
-* Logger facility with network functionality (netlogger.py)
+* Logger facility with network functionality who also can log to mysql (netlogger.py)
+* @hostname1,hostname2 for running commands only on choosen host(s)
+* && to split commands (will not wait for the first command to exit, will send them right after each other)
 
 ### Not yet done:
-* @hostname1,hostname2 for running commands only on choosen hosts
-* && to split commands (will not wait for the first command to exit)
+# move all/most commands on events to config from source code
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
 * Lirc (managed) to control or be controlled via infrared
 * YAML Schema to detect wrong config files

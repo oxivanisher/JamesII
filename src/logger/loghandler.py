@@ -11,7 +11,6 @@ from storm.locals import *
 class RecordSaverWorkerThread(threading.Thread):
     def __init__(self, recordsaver, queue, config):
         super(RecordSaverWorkerThread, self).__init__()
-        print "worker init ..."
         self.config = config
         self.queue = queue
         self.database = None
@@ -30,42 +29,42 @@ class RecordSaverWorkerThread(threading.Thread):
         self.database = create_database(dbConnectionString)
         self.database.connect()
         self.store = Store(self.database)
-        print "connected"
-        # try:
-        # self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-        #                                                     relativeCreated FLOAT, \
-        #                                                     process INTEGER, \
-        #                                                     module TEXT, \
-        #                                                     funcName TEXT, \
-        #                                                     message TEXT, \
-        #                                                     filename TEXT, \
-        #                                                     levelno TEXT, \
-        #                                                     processName TEXT, \
-        #                                                     lineno INTEGER, \
-        #                                                     asctime TEXT, \
-        #                                                     msg TEXT, \
-        #                                                     args TEXT, \
-        #                                                     exc_text TEXT, \
-        #                                                     name TEXT, \
-        #                                                     thread BIGINT, \
-        #                                                     created FLOAT, \
-        #                                                     threadName TEXT, \
-        #                                                     msecs FLOAT, \
-        #                                                     pathname TEXT, \
-        #                                                     exc_info TEXT, \
-        #                                                     levelname TEXT, \
-        #                                                     hostname TEXT, \
-        #                                                     uuid TEXT, \
-        #                                                     plugin TEXT, \
-        #                                                     p_child TEXT)", noresult=True)
-        #     print "Table created"
-        # except Exception:
-        #     print "Table not created"
-        #     pass
+        # print "Connected"
+        try:
+            print self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
+                                                            relativeCreated FLOAT, \
+                                                            process INTEGER, \
+                                                            module TEXT, \
+                                                            funcName TEXT, \
+                                                            message TEXT, \
+                                                            filename TEXT, \
+                                                            levelno TEXT, \
+                                                            processName TEXT, \
+                                                            lineno INTEGER, \
+                                                            asctime TEXT, \
+                                                            msg TEXT, \
+                                                            args TEXT, \
+                                                            exc_text TEXT, \
+                                                            name TEXT, \
+                                                            thread BIGINT, \
+                                                            created FLOAT, \
+                                                            threadName TEXT, \
+                                                            msecs FLOAT, \
+                                                            pathname TEXT, \
+                                                            exc_info TEXT, \
+                                                            levelname TEXT, \
+                                                            hostname TEXT, \
+                                                            uuid TEXT, \
+                                                            plugin TEXT, \
+                                                            p_child TEXT)", noresult=True)
+            # print "Table created"
+        except Exception as e:
+            # print "Table not created"
+            pass
         self.store.commit()
         self.store.flush()
         self.connecting = False
-        print "connecting ended"
+        print "Connecting ended. Starting to store records."
 
     def commit_store(self):
         now = time.time()
@@ -126,7 +125,7 @@ class RecordSaverWorkerThread(threading.Thread):
         self.store.add(newRecord)
         self.commit_store()
         if (self.counter % 50) == 0:
-            print "Totally processed %s messages" % self.counter
+            print "Totally stored records: %10s" % self.counter
 
     def work(self):
         self.connect_db()
@@ -186,14 +185,11 @@ class RecordSaver(logserver.LogServerHandler):
         self.queue = Queue.Queue()
         self.worker_lock = threading.Lock()
         self.db_thread = RecordSaverWorkerThread(self, self.queue, self.config)
-        print "starting thread"
         self.db_thread.start()
-        print "started thread"
         pass
 
     def handle_log_record(self, record):
         if record:
-            print "add record to queue"
             self.queue.put(record)
 
 class RecordShower(logserver.LogServerHandler):

@@ -505,7 +505,9 @@ class Core(object):
             if p.commands:
                 self.discovery_channel.send(['commands', p.commands.serialize()])
 
-        if not self.passive:
+        if self.passive:
+            self.logger.debug(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
+        else:
             self.logger.info(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
         for p in self.plugins:
             p.start()
@@ -561,7 +563,10 @@ class Core(object):
             file.close()
             self.logger.debug("Saving proximity status to %s" % (self.proximity_state_file))
         except IOError:
-            self.logger.warning("Could not safe proximity status to file")
+            if self.passive:
+                self.logger.debug("Could not safe proximity status to file")
+            else:
+                self.logger.warning("Could not safe proximity status to file")
         self.terminated = True
 
     # threading methods

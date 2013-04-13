@@ -96,7 +96,13 @@ class MotionPlugin(Plugin):
             try:
                 if self.watch_mode:
                     self.logger.info('Motion Watching starts mpd radio on')
-                    self.send_command(['mpd', 'radio', 'on'])
+                    try:
+                        command = self.core.utils.list_unicode_cleanup(self.core.config['motion'][self.core.hostname]['watch_cmd'])
+                        self.send_command(command)
+                    except Exception:
+                        pass
+
+                    # self.send_command(['mpd', 'radio', 'on'])
                 self.watch_mode = False
                 os.remove(args[0])
                 self.logger.info('Motion video file removed')

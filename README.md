@@ -34,7 +34,6 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * && to split commands (will not wait for the first command to exit, will send them right after each other)
 
 ### Not yet done:
-# move all/most commands on events to config from source code
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
 * Lirc (managed) to control or be controlled via infrared
 * YAML Schema to detect wrong config files

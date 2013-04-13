@@ -141,6 +141,10 @@ class JamesUtils(object):
         except Exception as e:
             return False
 
+    def get_time_string(self):
+        now = datetime.datetime.now()
+        return "%s:%s" % (now.hour, now.minute)
+
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019
         symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')

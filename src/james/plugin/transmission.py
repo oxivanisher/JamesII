@@ -10,10 +10,10 @@ class TransmissionPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(TransmissionPlugin, self).__init__(core, descriptor)
 
-        self.muted_words = self.core.utils.list_unicode_cleanup(self.core.config['transmission']['dont_say'])
-        self.server_string = "%s@%s:%s" % (self.core.config['transmission']['nodes'][self.core.hostname]['username'],
-                                           self.core.config['transmission']['nodes'][self.core.hostname]['host'],
-                                           self.core.config['transmission']['nodes'][self.core.hostname]['port'])
+        self.muted_words = self.core.utils.list_unicode_cleanup(self.config['dont_say'])
+        self.server_string = "%s@%s:%s" % (self.config['nodes'][self.core.hostname]['username'],
+                                           self.config['nodes'][self.core.hostname]['host'],
+                                           self.config['nodes'][self.core.hostname]['port'])
 
         self.tr_conn = None
 
@@ -26,10 +26,10 @@ class TransmissionPlugin(Plugin):
 
     def connect(self):
         try:
-            self.tr_conn = transmissionrpc.Client(address=self.core.config['transmission']['nodes'][self.core.hostname]['host'],
-                                                  port=self.core.config['transmission']['nodes'][self.core.hostname]['port'],
-                                                  user=self.core.config['transmission']['nodes'][self.core.hostname]['username'],
-                                                  password=self.core.config['transmission']['nodes'][self.core.hostname]['password'],
+            self.tr_conn = transmissionrpc.Client(address=self.config['nodes'][self.core.hostname]['host'],
+                                                  port=self.config['nodes'][self.core.hostname]['port'],
+                                                  user=self.config['nodes'][self.core.hostname]['username'],
+                                                  password=self.config['nodes'][self.core.hostname]['password'],
                                                   timeout=5)
             return True
         except Exception as e:
@@ -174,7 +174,7 @@ class TransmissionPlugin(Plugin):
                     self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
                 except transmissionrpc.error.TransmissionError as e:
                     self.logger.warning("TransmissionError occured: %s" % e)
-        self.core.add_timeout(self.core.config['transmission']['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
+        self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):
         if self.connection_ok():

@@ -261,18 +261,20 @@ class MpdClientPlugin(Plugin):
 
         self.myhost = 'localhost'
         self.myport = 6600
-        if self.core.config['mpd-client']['nodes'][self.core.hostname]['host']:
-            self.myhost = self.core.config['mpd-client']['nodes'][self.core.hostname]['host']
-        if self.core.config['mpd-client']['nodes'][self.core.hostname]['port']:
-            self.myport = self.core.config['mpd-client']['nodes'][self.core.hostname]['port']
-        # self.mypassword = self.core.config['mpd-client']['nodes'][self.core.hostname]['password']
+        if self.config['nodes'][self.core.hostname]['host']:
+            self.myhost = self.config['nodes'][self.core.hostname]['host']
+        if self.config['nodes'][self.core.hostname]['port']:
+            self.myport = self.config['nodes'][self.core.hostname]['port']
+        # self.mypassword = self.config['nodes'][self.core.hostname]['password']
 
         self.client_worker = MpdClientWorker(self, self.myhost, self.myport)
         self.fade_in_progress = False
         self.thread = None
-        self.talkover_volume = self.core.config['mpd-client']['norm_volume']
+        self.talkover_volume = self.config['norm_volume']
+        self.stations = {}
 
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
+
 
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_command.create_subcommand('on', 'Turn the radio on', self.radio_on)
@@ -287,6 +289,13 @@ class MpdClientPlugin(Plugin):
 
         status_command = self.commands.create_subcommand('status', 'Shows the current MPD status', self.show_status)
 
+        station_command =  self.commands.create_subcommand('station', 'Radio station control', None)
+        station_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
+        play_station_command = station_command.create_subcommand('play', 'Plays a choosen station', None)
+
+        for station in self.config['stations'].keys():
+            self.stations[station] = self.config['stations'][station]
+            # play_station_command.create_subcommand(station, 'Plays radio station ' + station, self.radio_on(self.config['stations'][station]))
     def terminate(self):
         self.client_worker.lock()
         self.fade_in_progress = False
@@ -296,9 +305,9 @@ class MpdClientPlugin(Plugin):
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')
         status = self.client_worker.status()
-        if status['volume'] != self.core.config['mpd-client']['talk_volume']:
+        if status['volume'] != self.config['talk_volume']:
             self.talkover_volume = int(status['volume'])
-        if self.client_worker.setvol(self.core.config['mpd-client']['talk_volume']):
+        if self.client_worker.setvol(self.config['talk_volume']):
             return (["Activate talkover"])
         else:
             return (["Unable to connect to MPD"])
@@ -309,6 +318,14 @@ class MpdClientPlugin(Plugin):
             return (["Deactivate talkover"])
         else:
             return (["Unable to connect to MPD"])
+
+    def cmd_list_stations(self, args):
+        ret = []
+        for station in self.stations.keys():
+            ret.append("%-12s %s" % (station, self.stations[station]))
+        return ret
+
+
 
     def show_status(self, args):
         self.logger.debug('Showing status')
@@ -342,13 +359,25 @@ class MpdClientPlugin(Plugin):
             return (["Unable to connect to MPD"])
 
     def radio_on(self, args):
-        self.logger.debug('Radio on')
+        print "args: %s" % args
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
-        if self.client_worker.play_url(self.core.config['mpd-client']['radio_url'],
-                                    self.core.config['mpd-client']['norm_volume']):
-            return (["Radio on"])
+
+        radio_name = self.config['default_st']
+        radio_url = self.config['stations'][radio_name]
+        try:
+            self.stations[args[0]]
+            radio_name = args[0]
+        except IndexError:
+            print "index error"
+            pass
+
+        self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
+
+        if self.client_worker.play_url(radio_url,
+                                    self.config['norm_volume']):
+            return (["Playing station %s" % radio_name])
         else:
             return (["Unable to connect to MPD"])
 
@@ -386,12 +415,12 @@ class MpdClientPlugin(Plugin):
                 self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
             else:
                 self.radio_off(None)
-                self.client_worker.play_url(self.core.config['mpd-client']['sleep_url'],
-                                        int(self.core.config['mpd-client']['norm_volume']) - 30)
+                self.client_worker.play_url(self.config['sleep_url'],
+                                        int(self.config['norm_volume']) - 30)
 
                 self.thread = FadeThread(self,
                                          self.client_worker,
-                                         self.core.config['mpd-client']['sleep_fade'],
+                                         self.config['sleep_fade'],
                                          0)
                 self.thread.start()
                 self.logger.info("MPD Sleep mode activated")
@@ -405,12 +434,12 @@ class MpdClientPlugin(Plugin):
                 self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
             else:
                 self.radio_off(None)
-                self.client_worker.play_url(self.core.config['mpd-client']['wakeup_url'], 0)
+                self.client_worker.play_url(self.config['wakeup_url'], 0)
 
                 self.thread = FadeThread(self,
                                          self.client_worker,
-                                         self.core.config['mpd-client']['wakeup_fade'],
-                                         self.core.config['mpd-client']['norm_volume'])
+                                         self.config['wakeup_fade'],
+                                         self.config['norm_volume'])
                 self.thread.start()
                 self.logger.info("MPD Wakeup mode activated")
         else:

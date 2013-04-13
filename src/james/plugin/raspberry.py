@@ -186,7 +186,7 @@ class RaspberryPlugin(Plugin):
         self.button_pins = []
         self.button_commands = {}
         try:
-            for command in self.core.utils.convert_from_unicode(self.core.config['raspberry']['nodes'][self.core.hostname]['buttons']):
+            for command in self.core.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['buttons']):
                 self.button_commands[(command['pin'], command['seconds'])] = command['command'].split()
                 self.button_pins.append(command['pin'])
         except Exception as e:
@@ -195,7 +195,7 @@ class RaspberryPlugin(Plugin):
         self.switch_pins = []
         self.switch_commands = {}
         try:
-            for command in self.core.utils.convert_from_unicode(self.core.config['raspberry']['nodes'][self.core.hostname]['switches']):
+            for command in self.core.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['switches']):
                 self.switch_commands[(command['pin'], True)] = command['cmd_on'].split()
                 self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
                 self.switch_pins.append(command['pin'])

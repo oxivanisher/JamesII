@@ -365,7 +365,7 @@ class JabberPlugin(Plugin):
             jid_data = str(message.getFrom()).split('/')
             jid_from = jid_data[1]
             # ignore my own messages
-            if not jid_from == self.core.config['jabber']['muc_nick']:
+            if not jid_from == self.config['muc_nick']:
                 try:
                     jid_ress = jid_data[1]
 
@@ -479,10 +479,10 @@ class JabberPlugin(Plugin):
 
         self.rasp_thread = JabberThread(self,
                                         cleaned_users,
-                                        self.core.config['jabber']['jid'],
-                                        self.core.config['jabber']['password'],
-                                        self.core.config['jabber']['muc_room'],
-                                        self.core.config['jabber']['muc_nick'])
+                                        self.config['jid'],
+                                        self.config['password'],
+                                        self.config['muc_room'],
+                                        self.config['muc_nick'])
         self.rasp_thread.start()
         self.logger.info('XMPP worker starting')
         return 'XMPP worker starting'

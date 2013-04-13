@@ -95,7 +95,7 @@ class MotionPlugin(Plugin):
             # somebody is at home. delete the file and deactivate motion
             try:
                 if self.watch_mode:
-                    command = self.core.config['motion']['nodes'][self.core.hostname]['watch_cmd']
+                    command = self.config['nodes'][self.core.hostname]['watch_cmd']
                     self.logger.info('Motion Watching starts command: %s' % command)
                     self.send_command(command.split())
                 self.watch_mode = False
@@ -112,7 +112,7 @@ class MotionPlugin(Plugin):
                 return (["Please add the path to the file (%s)" % (e)])
 
             file_name = ntpath.basename(file_path)
-            if self.move_file(file_path, self.core.config['motion']['target-dir']):
+            if self.move_file(file_path, self.config['target-dir']):
                 self.logger.info('Motion: New Video file %s' % file_name)
 
     def cmd_img(self, args):
@@ -137,11 +137,11 @@ class MotionPlugin(Plugin):
             message.level = 2
             message.header = ("Movement detected at %s" % (self.core.location))
 
-            if self.move_file(file_path, self.core.config['motion']['dropbox-dir']):
-                message.body = ("%s/%s" % (self.core.config['motion']['dropbox-url'], file_name))
+            if self.move_file(file_path, self.config['dropbox-dir']):
+                message.body = ("%s/%s" % (self.config['dropbox-url'], file_name))
             message.send()
 
-            if self.move_file(file_path, self.core.config['motion']['target-dir']):
+            if self.move_file(file_path, self.config['target-dir']):
                 self.logger.info('Motion: New Image file %s' % file_name)
 
     def move_file(self, src_file, dst_path):

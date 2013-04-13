@@ -39,6 +39,12 @@ class Plugin(object):
         except KeyError:
             pass
 
+        try:
+            self.config = self.core.config[self.name]
+        except KeyError:
+            self.config = None
+            pass
+
     def start(self):
         pass
 
@@ -158,6 +164,7 @@ class PluginThread(threading.Thread):
         self.plugin = plugin
         self.logger = self.plugin.core.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
         self.logger.debug('Thread initialized')
+        self.config = self.plugin.config
 
     def work(self):
         """

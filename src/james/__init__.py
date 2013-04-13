@@ -57,6 +57,7 @@ class Core(object):
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
+        self.passive = False
         self.uuid = str(uuid.uuid1())
         self.proximity_status = proximitystatus.ProximityStatus(self)
         self.location = 'home'
@@ -126,10 +127,11 @@ class Core(object):
         if passive:
             self.master = False
             self.config = None
+            self.passive = True
             mode_output = "passive"
 
         # Show welcome header
-        self.logger.info("JamesII starting up (%s mode)" % (mode_output))
+        self.logger.debug("JamesII starting up (%s mode)" % (mode_output))
 
         # Create global connection
         try:
@@ -174,6 +176,9 @@ class Core(object):
         # registring network logger handlers
         if self.config['netlogger']['nodes']:
             for target_host in self.config['netlogger']['nodes']:
+                # if target_host == self.hostname:
+                #     print "127.0.0.1"
+                #     target_host = '127.0.0.1'
                 self.logger.debug('Adding NetLogger host %s:%s' % (target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT))
                 socketHandler = logging.handlers.SocketHandler(target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
                 socketHandler.setLevel(logging.DEBUG)
@@ -218,7 +223,7 @@ class Core(object):
 
         self.logger.debug('Plugins available: %s' % loaded_plugins)
         for (plugin_name, plugin_error) in plugin_warnings:
-            self.logger.warning('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
+            self.logger.debug('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
         for plugin_name in plugin_descr_error:
             self.logger.error('Plugin %s has no valid descriptor' % plugin_name)
 
@@ -500,7 +505,8 @@ class Core(object):
             if p.commands:
                 self.discovery_channel.send(['commands', p.commands.serialize()])
 
-        self.logger.info(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
+        if not self.passive:
+            self.logger.info(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
         for p in self.plugins:
             p.start()
 
@@ -540,7 +546,7 @@ class Core(object):
         Terminate the core. This method will first call the terminate() on each plugin.
         """
         self.returncode = returncode
-        self.logger.info("Core.terminate() called. I shall die now.")
+        self.logger.debug("Core.terminate() called. I shall die now.")
 
         try:
             self.discovery_channel.send(['byebye', self.hostname, self.uuid])

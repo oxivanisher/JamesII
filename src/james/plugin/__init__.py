@@ -121,11 +121,11 @@ class Plugin(object):
         return self.core.hostname + ' ' + self.name
 
     def cmd_activate_debug(self, args):
-        self.logger.info('Activating debug')
+        self.logger.debug('Activating debug')
         self.logger.setLevel(logging.DEBUG)
 
     def cmd_deactivate_debug(self, args):
-        self.logger.info('Deactivating debug')
+        self.logger.debug('Deactivating debug')
         self.logger.setLevel(logging.INFO)
 
     # message methods

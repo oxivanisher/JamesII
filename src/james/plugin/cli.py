@@ -58,7 +58,10 @@ class ConsoleThread(threading.Thread):
                 # http://bytes.com/topic/python/answers/43936-canceling-interrupting-raw_input
                 self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
-                sys.quit()
+                break
+            except EOFError:
+                self.plugin.core.add_timeout(0, self.plugin.core.terminate)
+                self.terminated = True
                 break
 
             line = line.strip()
@@ -144,8 +147,9 @@ class CliPlugin(Plugin):
 
     def start(self):
         if self.cmd_line_mode:
+            self.logger.info('Sending command: %s' % ' '.join(sys.argv[1:]))
             self.send_command(sys.argv[1:])
-            self.core.add_timeout(2, self.timeout_handler)
+            self.core.add_timeout(0, self.timeout_handler)
         else:
             self.console_thread = ConsoleThread(self)
             self.console_thread.start()

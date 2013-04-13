@@ -31,6 +31,13 @@ class Plugin(object):
         debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
 
         self.logger = self.core.utils.getLogger(self.name, self.core.logger)
+        try:
+            if self.core.config[self.name]['debug']:
+                self.cmd_activate_debug([])
+        except AttributeError:
+            pass
+        except KeyError:
+            pass
 
     def start(self):
         pass

@@ -21,6 +21,7 @@ core:
   nom        : espeak say nom nom nom nom nom nom nom nom nom
   get        : tr add
   say        : espeak say
+  time       : espeak time
 
 persons:
 # cofigure the persons recognized by JamesII

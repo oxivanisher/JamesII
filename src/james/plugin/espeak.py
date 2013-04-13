@@ -114,7 +114,8 @@ class EspeakPlugin(Plugin):
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.speak('Welcome. It is now %s.' % (nicetime))
+            self.speak('Welcome.')
+            self.espeak_time()
 
         if len(self.archived_messages) > 0:
         # reading the log

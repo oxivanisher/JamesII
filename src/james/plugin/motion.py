@@ -95,12 +95,12 @@ class MotionPlugin(Plugin):
             # somebody is at home. delete the file and deactivate motion
             try:
                 if self.watch_mode:
-                    self.logger.info('Motion Watching starts mpd radio on')
+                    command = self.core.config['motion']['nodes'][self.core.hostname]['watch_cmd']
+                    self.logger.info('Motion Watching starts command: %s' % command)
                     # try:
                     print self.core.config['motion']['nodes'][self.core.hostname]['watch_cmd']
-                    command = self.core.config['motion']['nodes'][self.core.hostname]['watch_cmd']
                     print command
-                    self.send_command(command)
+                    self.send_command(command.split())
                     # except Exception:
                     #     pass
 

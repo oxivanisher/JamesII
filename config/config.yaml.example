@@ -57,7 +57,8 @@ motion:
  dropbox-dir: '/home/you/Dropbox/Public/Proximity/'
  dropbox-url: 'https://dl.dropbox.com/u/your_dropbox_id/Proximity/'
  nodes:
-  - node_name
+  node_name:
+    watch_cmd : 'say good morning && mpd radio on'
 
 xbmc:
  nodes:

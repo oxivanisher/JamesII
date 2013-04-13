@@ -2,7 +2,7 @@
 
 # needs packages: python-mysqldb python-storm
 
-import commands
+# import commands
 import yaml
 import signal
 import sys
@@ -19,9 +19,8 @@ def main():
     signal.signal(signal.SIGTERM,on_kill_sig)
     signal.signal(signal.SIGQUIT,on_kill_sig)
 
-    hostip=commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()
     try:
-        tcpserver = logger.logserver.LogServer(host=hostip)
+        tcpserver = logger.logserver.LogServer(host='0.0.0.0')
     except Exception as e:
         print "Socket Error: %s" % e
         sys.exit(1)

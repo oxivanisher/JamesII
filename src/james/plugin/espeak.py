@@ -53,7 +53,7 @@ class EspeakPlugin(Plugin):
     def espeak_say(self, args):
         text = ' '.join(args)
         if text != '':
-            self.speak(text)
+            self.speak(text + '.')
             return(["Espeak will speak: '%s'" % (text)])
         return "No text entered for espeak"
 

@@ -21,6 +21,7 @@ class EspeakPlugin(Plugin):
         self.talkover = False
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
+        self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
@@ -55,6 +56,10 @@ class EspeakPlugin(Plugin):
             self.speak(text)
             return(["Espeak will speak: '%s'" % (text)])
         return "No text entered for espeak"
+
+    def espeak_time(self, args):
+        self.speak('It is now %s' % self.core.utils.get_time_string())
+        return "Espeak will speak the time"
 
     def cmd_waiting(self, args):
         # listing waiting messages

@@ -96,13 +96,13 @@ class MotionPlugin(Plugin):
             try:
                 if self.watch_mode:
                     self.logger.info('Motion Watching starts mpd radio on')
-                    try:
-                        print self.core.utils.list_unicode_cleanup(self.core.config['motion'][self.core.hostname]['watch_cmd'])
-                        command = self.core.utils.list_unicode_cleanup(self.core.config['motion'][self.core.hostname]['watch_cmd'])
-                        print command
-                        self.send_command(command)
-                    except Exception:
-                        pass
+                    # try:
+                    print self.core.utils.list_unicode_cleanup(self.core.config['motion'][self.core.hostname]['watch_cmd'])
+                    command = self.core.utils.list_unicode_cleanup(self.core.config['motion'][self.core.hostname]['watch_cmd'])
+                    print command
+                    self.send_command(command)
+                    # except Exception:
+                    #     pass
 
                     # self.send_command(['mpd', 'radio', 'on'])
                 self.watch_mode = False

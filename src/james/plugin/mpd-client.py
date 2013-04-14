@@ -277,11 +277,11 @@ class MpdClientPlugin(Plugin):
 
 
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
-        radio_command.create_subcommand('on', 'Turn the radio on [station]', self.radio_on)
+        radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
-        radio_command.create_subcommand('sleep', 'Start mpd sleep mode', self.mpd_sleep)
-        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode', self.mpd_wakeup)
+        radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'], self.mpd_sleep)
+        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'], self.mpd_wakeup)
         radio_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
 
         talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
@@ -290,12 +290,13 @@ class MpdClientPlugin(Plugin):
 
         status_command = self.commands.create_subcommand('status', 'Shows the current MPD status', self.show_status)
 
-        # station_command =  self.commands.create_subcommand('station', 'Radio station control', None)
-        # play_station_command = station_command.create_subcommand('play', 'Plays a choosen station', None)
-
         for station in self.config['stations'].keys():
             self.stations[station] = self.config['stations'][station]
-            # play_station_command.create_subcommand(station, 'Plays radio station ' + station, self.radio_on(self.config['stations'][station]))
+            # methodName = 'tuneToStation_' + station
+            # def methodName(self):
+            #     print "baem"
+            #     self.radio_on(self.config['stations'][station])
+            radio_on_command.create_subcommand(station, self.config['stations'][station], None)
 
     def terminate(self):
         self.client_worker.lock()
@@ -360,7 +361,6 @@ class MpdClientPlugin(Plugin):
             return (["Unable to connect to MPD"])
 
     def radio_on(self, args):
-        print "args: %s" % args
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()

@@ -4,6 +4,7 @@ import logging
 import logging.handlers
 import SocketServer
 import struct
+import socket
 
 
 class LogServerHandler(object):
@@ -59,14 +60,24 @@ class LogServer(SocketServer.ThreadingTCPServer):
 
     def serve_until_stopped(self):
         import select
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         abort = 0
         while not abort:
+            # print "loop: %s" % abort
+            # try:
             rd, wr, ex = select.select([self.socket.fileno()],
                                        [], [],
                                        self.timeout)
             if rd:
                 self.handle_request()
             abort = self.abort
+            # except KeyboardInterrupt:
+            #     print "i must exit!"
+                # abort = 1
+        # print "aborted"
+        self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
+        self.server_close()
 
     def add_handler(self, handler):
         self.handlers.append(handler)

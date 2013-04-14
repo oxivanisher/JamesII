@@ -137,8 +137,13 @@ class RecordSaverWorkerThread(threading.Thread):
             except Queue.Empty:
                 time.sleep(0.5)
                 pass
-            # i must be able to exit
-        pass
+
+            self.recordsaver.worker_lock.acquire()
+            if self.recordsaver.workerMustExit:
+                self.active = False
+                self.last_store = 0.0
+                self.commit_store()
+            self.recordsaver.worker_lock.release()
 
     def run(self):
         result = self.work()
@@ -184,6 +189,7 @@ class RecordSaver(logserver.LogServerHandler):
         self.config = config
         self.queue = Queue.Queue()
         self.worker_lock = threading.Lock()
+        self.workerMustExit = False
         self.db_thread = RecordSaverWorkerThread(self, self.queue, self.config)
         self.db_thread.start()
         pass

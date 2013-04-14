@@ -12,12 +12,13 @@ import logger
 
 def on_kill_sig(signal, frame):
     print "Exiting..."
+    tcpserver.abort = 1
     sys.exit(0)
 
 def main():
-    signal.signal(signal.SIGINT,on_kill_sig)
-    signal.signal(signal.SIGTERM,on_kill_sig)
-    signal.signal(signal.SIGQUIT,on_kill_sig)
+    # signal.signal(signal.SIGINT,on_kill_sig)
+    # signal.signal(signal.SIGTERM,on_kill_sig)
+    # signal.signal(signal.SIGQUIT,on_kill_sig)
 
     try:
         tcpserver = logger.logserver.LogServer(host='0.0.0.0')
@@ -38,6 +39,16 @@ def main():
 
     print "About to start TCP Log server reciever"
     tcpserver.serve_until_stopped()
+    print "Main process ending"
+
+    print "Closing server"
+    tcpserver.server_close()
+
+    print "Shutting server down"
+    tcpserver.shutdown()
+
+    print "Main process ended"
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()

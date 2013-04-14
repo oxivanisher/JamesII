@@ -113,11 +113,30 @@ proximity:
   - node_name
 
 mpd-client:
+ stations:
+ # http://www.listenlive.eu/switzerland.html
+  srf1_ag   : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
+  srf1_be   : http://stream.srg-ssr.ch/regi_be_fr_vs/mp3_128.m3u
+  srf1_zh   : http://stream.srg-ssr.ch/regi_zh_sh/mp3_128.m3u
+  srf2      : http://stream.srg-ssr.ch/drs2/mp3_128.m3u
+  srf3      : http://stream.srg-ssr.ch/drs3/mp3_128.m3u
+  srf4      : http://stream.srg-ssr.ch/drs4news/mp3_128.m3u
+  srfvirus  : http://stream.srg-ssr.ch/drsvirus/mp3_128.m3u
+  chjazz    : http://www.radioswissjazz.ch/live/aacp.m3u
+  chpop     : http://www.radioswisspop.ch/live/aacp.m3u
+  chclassic : http://www.radioswissclassic.ch/live/aacp.m3u
+  chillout  : http://www.oxi.ch/chillout.m3u
+  capitalfm : http://broadcast.infomaniak.ch/capitalfm-high.mp3.m3u
+  lounge    : http://stream-02.zic-network.ch:8000/neo1.m3u
+  radio1    : http://mp3.radio.ch/128k.m3u
+  rabe      : http://stream.rabe.ch:8000/livestream/rabe-mid.mp3.m3u
+
 # configure your basic radio stations
- radio_url  : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
- wakeup_url : http://www.radioswissjazz.ch/live/aacp.m3u
- sleep_url  : http://www.oxi.ch/chillout.m3u
- # fade time in minutes for the wakeup and sleep timers
+ default_st : srf1
+ wakeup_st  : srf1
+ sleep_st   : chillout
+
+ # fade time in seconds for the wakeup and sleep timers
  wakeup_fade: 900
  sleep_fade : 1800
  # max and talkover (for espeak) volume for mpd

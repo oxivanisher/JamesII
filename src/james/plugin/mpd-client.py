@@ -277,11 +277,12 @@ class MpdClientPlugin(Plugin):
 
 
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
-        radio_command.create_subcommand('on', 'Turn the radio on', self.radio_on)
+        radio_command.create_subcommand('on', 'Turn the radio on [station]', self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
         radio_command.create_subcommand('sleep', 'Start mpd sleep mode', self.mpd_sleep)
         radio_command.create_subcommand('wakeup', 'Start mpd wakup mode', self.mpd_wakeup)
+        radio_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
 
         talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
         talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
@@ -289,13 +290,13 @@ class MpdClientPlugin(Plugin):
 
         status_command = self.commands.create_subcommand('status', 'Shows the current MPD status', self.show_status)
 
-        station_command =  self.commands.create_subcommand('station', 'Radio station control', None)
-        station_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
-        play_station_command = station_command.create_subcommand('play', 'Plays a choosen station', None)
+        # station_command =  self.commands.create_subcommand('station', 'Radio station control', None)
+        # play_station_command = station_command.create_subcommand('play', 'Plays a choosen station', None)
 
         for station in self.config['stations'].keys():
             self.stations[station] = self.config['stations'][station]
             # play_station_command.create_subcommand(station, 'Plays radio station ' + station, self.radio_on(self.config['stations'][station]))
+
     def terminate(self):
         self.client_worker.lock()
         self.fade_in_progress = False
@@ -364,21 +365,25 @@ class MpdClientPlugin(Plugin):
         self.fade_in_progress = False
         self.client_worker.unlock()
 
-        radio_name = self.config['default_st']
-        radio_url = self.config['stations'][radio_name]
+        station = True
         try:
-            self.stations[args[0]]
-            radio_name = args[0]
-        except IndexError:
-            print "index error"
+            self.config['stations'][args[0]]
+        except Exception as e:
+            station = False
             pass
 
-        self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
+        if station:
+            radio_name = args[0]
+            radio_url = self.stations[args[0]]
+        else:
+            radio_name = self.config['default_st']
+            radio_url = self.stations[radio_name]
 
-        if self.client_worker.play_url(radio_url,
-                                    self.config['norm_volume']):
+        if self.client_worker.play_url(radio_url, self.config['norm_volume']):
+            self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
             return (["Playing station %s" % radio_name])
         else:
+            self.logget.debug("Unable to connect to MPD")
             return (["Unable to connect to MPD"])
 
     def radio_toggle(self, args):
@@ -415,7 +420,7 @@ class MpdClientPlugin(Plugin):
                 self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
             else:
                 self.radio_off(None)
-                self.client_worker.play_url(self.config['sleep_url'],
+                self.client_worker.play_url(self.stations[self.config['sleep_st']],
                                         int(self.config['norm_volume']) - 30)
 
                 self.thread = FadeThread(self,
@@ -434,7 +439,7 @@ class MpdClientPlugin(Plugin):
                 self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
             else:
                 self.radio_off(None)
-                self.client_worker.play_url(self.config['wakeup_url'], 0)
+                self.client_worker.play_url(self.stations[self.config['wakeup_st']], 0)
 
                 self.thread = FadeThread(self,
                                          self.client_worker,

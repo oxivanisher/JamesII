@@ -115,7 +115,7 @@ class EspeakPlugin(Plugin):
 
         if (time.time() - self.core.startup_timestamp) > 10:
             self.speak('Welcome.')
-            self.espeak_time()
+            self.espeak_time([])
 
         if len(self.archived_messages) > 0:
         # reading the log

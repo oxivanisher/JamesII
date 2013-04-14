@@ -90,10 +90,14 @@ class MpdClientWorker(object):
             self.client.clear()
 
             url_found = False
-            for source in urllib2.urlopen(uri):
-                if source != "":
-                    self.client.add(source.strip())
-                    url_found = True
+            try:
+                for source in urllib2.urlopen(uri):
+                    if source != "":
+                        self.client.add(source.strip())
+                        url_found = True
+            except Exception as e:
+                self.logger.warning('Unable to open URL (%s): %s' % (uri, e))
+                pass
 
             if url_found:
                 self.client.play()

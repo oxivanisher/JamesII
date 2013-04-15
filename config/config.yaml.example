@@ -132,8 +132,8 @@ mpd-client:
   rabe      : http://stream.rabe.ch:8000/livestream/rabe-mid.mp3.m3u
 
 # configure your basic radio stations
- default_st : srf1
- wakeup_st  : srf1
+ default_st : srf1_be
+ wakeup_st  : srf1_be
  sleep_st   : chillout
 
  # fade time in seconds for the wakeup and sleep timers

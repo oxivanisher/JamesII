@@ -151,21 +151,8 @@ class EspeakPlugin(Plugin):
             self.greet_homecomer()
 
     def terminate(self):
-        allDone = False
-        messageShowed = False
-        while not allDone:
-            allDone = True
-            for thread in self.worker_threads:
-                if thread.is_alive():
-                    allDone = False
+        self.wait_for_threads(self.worker_threads)
 
-            if not allDone:
-                if not messageShowed:
-                    self.logger.info("Waiting for threads to exit")
-                    messageShowed = True
-                time.sleep(1)
-        if messageShowed:
-            self.logger.info("All threads ended")
 
 descriptor = {
     'name' : 'espeak',

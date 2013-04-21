@@ -134,6 +134,22 @@ class Plugin(object):
         self.logger.debug('Deactivating debug')
         self.logger.setLevel(logging.INFO)
 
+    def wait_for_threads(self, threadList):
+        allDone = False
+        messageShowed = False
+        while not allDone:
+            allDone = True
+            for thread in threadList:
+                if thread.is_alive():
+                    if not messageShowed:
+                        self.logger.info("Waiting for threads to exit")
+                        thread.join()
+                        messageShowed = True
+                    allDone = False
+
+        if messageShowed:
+            self.logger.info("All threads ended")
+
     # message methods
     def process_message(self, message):
         pass

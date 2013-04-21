@@ -37,6 +37,8 @@ class MotionPlugin(Plugin):
         else:
             self.core.add_timeout(0, self.cam_control, True)
 
+        self.worker_threads = []
+
     def load_saved_state(self):
         try:
             file = open(self.log_file, 'r')
@@ -57,8 +59,23 @@ class MotionPlugin(Plugin):
         except IOError:
             self.logger.warning("Could not save motion events to file!")
 
+
     def terminate(self):
-        pass
+        allDone = False
+        messageShowed = False
+        while not allDone:
+            allDone = True
+            for thread in self.worker_threads:
+                if thread.is_alive():
+                    allDone = False
+
+            if not allDone:
+                if not messageShowed:
+                    self.logger.info("Waiting for threads to exit")
+                    messageShowed = True
+                time.sleep(1)
+        if messageShowed:
+            self.logger.info("All threads ended")
 
     def log_event(self, message, file_name):
         self.log.insert(0, (int(time.time()), message, file_name))
@@ -164,19 +181,19 @@ class MotionPlugin(Plugin):
         if switch_on:
             self.logger.info('Motion is starting')
 
-            self.core.spawnSubprocess(self.cam_on,
+            self.worker_threads.append(self.core.spawnSubprocess(self.cam_on,
                                       self.on_cam_controll_callback,
                                       None,
-                                      self.logger)
+                                      self.logger))
 
         else:
             self.logger.info('Motion is stopping')
             self.watch_mode = False
 
-            self.core.spawnSubprocess(self.cam_off,
+            self.worker_threads.append(self.core.spawnSubprocess(self.cam_off,
                                       self.on_cam_controll_callback,
                                       None,
-                                      self.logger)
+                                      self.logger))
 
     def cam_on(self):
         self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])

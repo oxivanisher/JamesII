@@ -34,6 +34,7 @@ class ProximityPlugin(Plugin):
         self.persons_status_file = os.path.join(os.path.expanduser("~"), ".james_persons_status")
         self.proxy_send_lock = False
         self.load_saved_state()
+        self.worker_threads = []
 
     def start(self):
         if self.core.os_username == 'root':
@@ -102,10 +103,10 @@ class ProximityPlugin(Plugin):
         self.core.add_timeout(sleep, self.proximity_check_daemon)
 
     def proximity_check(self, args):
-        self.core.spawnSubprocess(self.proximity_check_worker,
+        self.worker_threads.append(self.core.spawnSubprocess(self.proximity_check_worker,
                                   self.proximity_check_callback,
                                   None,
-                                  self.logger)
+                                  self.logger))
 
     def proximity_check_worker(self):
         self.logger.debug('Starting proximity scan')
@@ -211,6 +212,24 @@ class ProximityPlugin(Plugin):
         self.logger.debug('Publishing proximity event')
         self.proxy_send_lock = False
         self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
+
+
+    def terminate(self):
+        allDone = False
+        messageShowed = False
+        while not allDone:
+            allDone = True
+            for thread in self.worker_threads:
+                if thread.is_alive():
+                    allDone = False
+
+            if not allDone:
+                if not messageShowed:
+                    self.logger.info("Waiting for threads to exit")
+                    messageShowed = True
+                time.sleep(1)
+        if messageShowed:
+            self.logger.info("All threads ended")
 
 descriptor = {
     'name' : 'proximity',

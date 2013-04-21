@@ -27,7 +27,8 @@ class EspeakPlugin(Plugin):
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
 
-        self.speak_lock = threading.RLock()
+        self.speak_lock = threading.Lock()
+        self.worker_threads = []
 
     def start(self):
         # wait 1 seconds befor working
@@ -81,11 +82,11 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         self.core.utils.popenAndWait(self.espeak_command + [msg])
-        self.logger.info('Espeak spoke: %s' % (msg.rstrip()))
+        self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
 
     def speak_hook(self, args = None):
-        self.speak_lock.acquire()
         if len(self.message_cache) > 0:
+            self.speak_lock.acquire()
             msg = ''
             for message in self.message_cache:
                 end = message[-1]
@@ -98,8 +99,9 @@ class EspeakPlugin(Plugin):
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])
             except Exception:
                 pass
-            self.logger.debug('Espeak will say: %s' % msg)
-            self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg, self.logger)
+            self.speak_lock.release()
+            self.logger.info('Espeak will say: %s' % msg.rstrip())
+            self.worker_threads.append(self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg, self.logger))
         else:
             if self.talkover:
                 self.talkover = False
@@ -109,7 +111,6 @@ class EspeakPlugin(Plugin):
                     pass
             self.core.add_timeout(1, self.speak_hook)
 
-        self.speak_lock.release()
         return
 
     def process_message(self, message):
@@ -148,6 +149,23 @@ class EspeakPlugin(Plugin):
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
             self.greet_homecomer()
+
+    def terminate(self):
+        allDone = False
+        messageShowed = False
+        while not allDone:
+            allDone = True
+            for thread in self.worker_threads:
+                if thread.is_alive():
+                    allDone = False
+
+            if not allDone:
+                if not messageShowed:
+                    self.logger.info("Waiting for threads to exit")
+                    messageShowed = True
+                time.sleep(1)
+        if messageShowed:
+            self.logger.info("All threads ended")
 
 descriptor = {
     'name' : 'espeak',

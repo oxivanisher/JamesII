@@ -3,7 +3,8 @@ import sys
 import atexit
 import json
 import time
-
+import threading
+threading
 from james.plugin import *
 
 class EspeakPlugin(Plugin):
@@ -25,6 +26,8 @@ class EspeakPlugin(Plugin):
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
+
+        self.speak_lock = threading.RLock()
 
     def start(self):
         # wait 1 seconds befor working
@@ -72,13 +75,16 @@ class EspeakPlugin(Plugin):
         return ret
 
     def speak(self, msg):
+        self.speak_lock.acquire()
         self.message_cache.append(msg)
+        self.speak_lock.release()
 
     def speak_worker(self, msg):
         self.core.utils.popenAndWait(self.espeak_command + [msg])
-        self.logger.info('Espeak spoke: %s' % (msg))
+        self.logger.info('Espeak spoke: %s' % (msg.rstrip()))
 
     def speak_hook(self, args = None):
+        self.speak_lock.acquire()
         if len(self.message_cache) > 0:
             msg = ''
             for message in self.message_cache:
@@ -103,6 +109,7 @@ class EspeakPlugin(Plugin):
                     pass
             self.core.add_timeout(1, self.speak_hook)
 
+        self.speak_lock.release()
         return
 
     def process_message(self, message):
@@ -114,29 +121,27 @@ class EspeakPlugin(Plugin):
                 self.archived_messages.append((time.time(), message.header))
 
     def greet_homecomer(self):
+        self.speak_lock.acquire()
+
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.speak('Welcome')
-            self.espeak_time([])
+            self.message_cache.append('Welcome, it is now %s' % self.core.utils.get_time_string())
 
         if len(self.archived_messages) > 0:
         # reading the log
-            speak_text = 'While we where apart, the following things happend:\n'
+            self.message_cache.append('While we where apart, the following %s things happend:' % len(self.archived_messages))
             work_archived_messages = self.archived_messages
             self.archived_messages = []
             for (timestamp, message) in work_archived_messages:
-                end = message[-1]
-                if end != "." and end != ":" and end != "!" and end != "?":
-                    message += "."
-                speak_text += self.core.utils.get_nice_age(int(timestamp)) + ", " + message + "\n"
+                self.message_cache.append(self.core.utils.get_nice_age(int(timestamp)) + ", " + message)
 
-            speak_text += "End of Log"
-
-            self.speak(speak_text)
+            self.message_cache.append("End of Log")
             
         else:
-            self.speak('Nothing happend while we where apart.')
+            self.message_cache.append('Nothing happend while we where apart.')
+
+        self.speak_lock.release()
 
     def process_proximity_event(self, newstatus):
         self.logger.debug("Espeak Processing proximity event")

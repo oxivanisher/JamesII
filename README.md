@@ -69,9 +69,9 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 
 #### Debian/Ubuntu:
-	apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
+	apt-get install bluetooth espeak motion python-xmpp python-dbus \
 	python-transmissionrpc python-pylirc python-pip
-	pip install jsonrpclib
+	pip install jsonrpclib python-mpd2
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser"

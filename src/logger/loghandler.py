@@ -17,8 +17,9 @@ class RecordSaverWorkerThread(threading.Thread):
         self.store = None
         self.last_store = 0.0
         self.counter = 0
-        self.active = True
         self.recordsaver = recordsaver
+        self.terminated = False
+        self.connecting = True
 
     def connect_db(self):
         if not self.config['port']:
@@ -27,8 +28,12 @@ class RecordSaverWorkerThread(threading.Thread):
         print "Connecting to db: %s" % dbConnectionString
         
         self.database = create_database(dbConnectionString)
-        self.database.connect()
-        self.store = Store(self.database)
+        try:
+            self.database.connect()
+            self.store = Store(self.database)
+        except Exception as e:
+            print "Unable to connect to MySql server: %s" % e
+            return
         # print "Connected"
         try:
             print self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
@@ -70,8 +75,11 @@ class RecordSaverWorkerThread(threading.Thread):
         now = time.time()
         if now > self.last_store + 2:
             self.last_store = time.time()
-            self.store.commit()
-            self.store.flush()
+            try:
+                self.store.commit()
+                self.store.flush()
+            except Exception as e:
+                print "MySql connection error: %s" % e
 
     def save_record(self, record):
         self.counter += 1
@@ -122,37 +130,31 @@ class RecordSaverWorkerThread(threading.Thread):
             newRecord.p_child         = unicode("")
             pass
 
-        self.store.add(newRecord)
-        self.commit_store()
+        if self.connecting:
+            self.connect_db()
+
+        if not self.connecting:
+            self.store.add(newRecord)
+            self.commit_store()
+
         if (self.counter % 50) == 0:
             print "Totally stored records: %10s" % self.counter
 
-    def work(self):
+    def run(self):
         self.connect_db()
 
-        while self.active:
+        while not self.terminated:
             try:
-                record = self.queue.get_nowait()
+                record = self.queue.get(True, 1)
                 self.save_record(record)
+                self.commit_store()
             except Queue.Empty:
-                time.sleep(0.5)
                 pass
 
-            self.recordsaver.worker_lock.acquire()
-            if self.recordsaver.workerMustExit:
-                self.active = False
-                self.last_store = 0.0
-                self.commit_store()
-            self.recordsaver.worker_lock.release()
-
-    def run(self):
-        result = self.work()
-        self.on_exit(result)
-
-    def on_exit(self, result):
-        print "DB Worker exited"
-        pass
-
+    def terminate(self):
+        self.terminated = True
+        self.join()
+        print "worker exiting"
 
 class StormLogEntry(object):
     __storm_table__ = "log_entries"
@@ -197,6 +199,9 @@ class RecordSaver(logserver.LogServerHandler):
     def handle_log_record(self, record):
         if record:
             self.queue.put(record)
+
+    def terminate(self):
+        self.db_thread.terminate()
 
 class RecordShower(logserver.LogServerHandler):
     def __init__(self):

@@ -16,10 +16,6 @@ def on_kill_sig(signal, frame):
     sys.exit(0)
 
 def main():
-    # signal.signal(signal.SIGINT,on_kill_sig)
-    # signal.signal(signal.SIGTERM,on_kill_sig)
-    # signal.signal(signal.SIGQUIT,on_kill_sig)
-
     try:
         tcpserver = logger.logserver.LogServer(host='0.0.0.0')
     except Exception as e:
@@ -38,17 +34,10 @@ def main():
         tcpserver.add_handler(logger.loghandler.RecordShower())
 
     print "About to start TCP Log server reciever"
-    tcpserver.serve_until_stopped()
-    print "Main process ending"
-
-    print "Closing server"
-    tcpserver.server_close()
-
-    print "Shutting server down"
-    tcpserver.shutdown()
+    tcpserver.run()
 
     print "Main process ended"
-    sys.exit(0)
+    return 0
 
 if __name__ == "__main__":
     main()

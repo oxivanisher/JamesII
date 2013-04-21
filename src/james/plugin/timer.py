@@ -116,10 +116,13 @@ class TimerPlugin(Plugin):
         ret = "Command not found"
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
-            if timestamp == int(args[0]) and command == args[1:]:
-                ret = (['Removed Command %s' % (' '.join(args))])
-            else:
-                saved_commands_new.append((timestamp, command))
+            try:
+                if timestamp == int(args[0]) and command == args[1:]:
+                    ret = (['Removed Command %s' % (' '.join(args))])
+                else:
+                    saved_commands_new.append((timestamp, command))
+            except IndexError:
+                ret = (['Command (%s) not found. Use syntax: mcp remove TIMESTAMP COMMAND'])
         self.saved_commands = saved_commands_new
         return ret
 

@@ -58,13 +58,33 @@ class JamesUtils(object):
 
         #FIXME 2 if bloecke fuer zukunft und vergangenheit
         elif age < 60 and age >= 0:
-            return '%s seconds ago' % (age)
+            if age == 1:
+                return '%s second ago' % (age)
+            else:
+                return '%s seconds ago' % (age)
         elif age < 3600 and age >= 0:
-            return '%s minutes ago' % (int(age / 60))
+            if (int(age / 60)) == 1:
+                return '%s minute ago' % (int(age / 60))
+            else:
+                return '%s minutes ago' % (int(age / 60))
         elif intime < 60 and intime >= 0:
-            return 'in %s seconds' % (intime)
+            if intime == 1:
+                return 'in %s second' % (intime)
+            else:
+                return 'in %s seconds' % (intime)
         elif intime < 3600 and intime >= 0:
-            return 'in %s minutes and %s seconds' % (int(intime / 60), int(intime % 60))
+            if int(intime / 60) == 1:
+                minute_str = 'minute'
+            else:
+                minute_str = 'minutes'
+
+            if int(intime % 60) == 1:
+                second_str = 'second'
+            else:
+                second_str = 'seconds'
+
+            return 'in %s %s and %s %s' % (int(intime / 60), minute_str, int(intime % 60), second_str)
+
         elif event_timestamp > last_midnight_timestamp and event_timestamp < (last_midnight_timestamp + 86400):
             return 'today at %s:%s:%s' % (event.strftime('%H'),
                                           event.strftime('%M'),

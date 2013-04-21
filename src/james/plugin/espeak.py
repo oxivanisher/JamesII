@@ -58,7 +58,7 @@ class EspeakPlugin(Plugin):
         return "No text entered for espeak"
 
     def espeak_time(self, args):
-        self.speak('It is now %s' % self.core.utils.get_time_string())
+        self.speak('It is now %s. ' % self.core.utils.get_time_string())
         return "Espeak will speak the time"
 
     def cmd_waiting(self, args):
@@ -114,7 +114,7 @@ class EspeakPlugin(Plugin):
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.speak('Welcome.\n')
+            self.speak('Welcome. ')
             self.espeak_time([])
 
         if len(self.archived_messages) > 0:
@@ -123,9 +123,9 @@ class EspeakPlugin(Plugin):
             work_archived_messages = self.archived_messages
             self.archived_messages = []
             for (timestamp, message) in work_archived_messages:
-                speak_text += "\n" + self.core.utils.get_nice_age(int(timestamp)) + ", " + message + "."
+                speak_text += self.core.utils.get_nice_age(int(timestamp)) + ", " + message + ". "
 
-            speak_text += "\nEnd of Log"
+            speak_text += "End of Log"
 
             self.speak(speak_text)
             

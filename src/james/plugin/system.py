@@ -133,6 +133,7 @@ class SystemPlugin(Plugin):
         ret['platform'] = sys.platform
         ret['os_username'] = self.core.os_username
         ret['now'] = time.time()
+        ret['proximity_status'] = self.core.proximity_status.get_status_here()
         return ret
 
 

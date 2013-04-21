@@ -187,11 +187,12 @@ class CliPlugin(Plugin):
             display_data.append(('James Startup', startup))
             display_data.append(('Delay', '%s seconds' % timedelay))
             display_data.append(('Location', args['location']))
+            display_data.append(('Proximity Status', args['proximity_status']))
             display_data.append(('Platform', args['platform']))
             display_data.append(('OS Username', args['os_username']))
 
             for (key, value) in display_data:
-                print "%-14s %s" % (key, value)
+                print "%-20s %s" % (key, value)
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:

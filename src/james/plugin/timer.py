@@ -20,7 +20,7 @@ class TimerPlugin(Plugin):
         self.commands.create_subcommand('in', 'Runs a command in given time (sec|1s2m3h4d5w)', self.cmd_timer_in)
         self.commands.create_subcommand('show', 'Returns a list of commands', self.cmd_timer_show)
 
-        self.command_cache_file = os.path.join(os.path.expanduser("~"), ".james_saved_commands")
+        self.command_cache_file = os.path.join(os.path.expanduser("~"), ".james_timer_store")
         atexit.register(self.save_commands)
 
         self.saved_commands = []

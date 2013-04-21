@@ -58,7 +58,7 @@ class EspeakPlugin(Plugin):
         return "No text entered for espeak"
 
     def espeak_time(self, args):
-        self.speak('It is now %s. ' % self.core.utils.get_time_string())
+        self.speak('It is now %s' % self.core.utils.get_time_string())
         return "Espeak will speak the time"
 
     def cmd_waiting(self, args):
@@ -80,10 +80,13 @@ class EspeakPlugin(Plugin):
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:
-            msg = '\n'.join(self.message_cache)
+            msg = ''
+            for message in self.message_cache:
+                end = message[-1]
+                if end != "." and end != ":" and end != "!" and end != "?":
+                    message += "."
+                msg += message + "\n"
             self.message_cache = []
-            # msg = self.message_cache[0]
-            # self.message_cache.pop(0)
             self.talkover = True
             try:
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])
@@ -114,16 +117,19 @@ class EspeakPlugin(Plugin):
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.speak('Welcome. ')
+            self.speak('Welcome')
             self.espeak_time([])
 
         if len(self.archived_messages) > 0:
         # reading the log
-            speak_text = 'While we where apart, the following things happend:'
+            speak_text = 'While we where apart, the following things happend:\n'
             work_archived_messages = self.archived_messages
             self.archived_messages = []
             for (timestamp, message) in work_archived_messages:
-                speak_text += self.core.utils.get_nice_age(int(timestamp)) + ", " + message + ". "
+                end = message[-1]
+                if end != "." and end != ":" and end != "!" and end != "?":
+                    message += "."
+                speak_text += self.core.utils.get_nice_age(int(timestamp)) + ", " + message + "\n"
 
             speak_text += "End of Log"
 

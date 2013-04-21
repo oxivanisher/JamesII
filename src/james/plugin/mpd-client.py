@@ -178,17 +178,18 @@ class MpdClientWorker(object):
             self.logger.debug('Unable setting volume')
             return False
 
-    def disconnect(self):
+    def terminate(self):
         self.lock()
         self.fade_in_progress = False
         self.connected = False
+        self.unlock()
         try:
             self.client.close()
             self.client.disconnect()
         except mpd.ConnectionError:
+            self.logger.debug("Could not disconnect because we are not connected.")
             pass
-        self.unlock()
-        self.logger.debug("Disconnected")
+        self.logger.debug("Disconnected, worker exititing")
 
 
 class FadeThread(PluginThread):
@@ -303,10 +304,7 @@ class MpdClientPlugin(Plugin):
             radio_on_command.create_subcommand(station, self.config['stations'][station], None)
 
     def terminate(self):
-        self.client_worker.lock()
-        self.fade_in_progress = False
-        self.client_worker.unlock()
-        self.client_worker.disconnect()
+        self.client_worker.terminate()
 
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')

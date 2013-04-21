@@ -102,7 +102,11 @@ class MpdClientWorker(object):
             if url_found:
                 self.client.play()
 
-            self.client.command_list_end()
+            try:
+                self.client.command_list_end()
+            except Exception as e:
+                self.logger.warning('MPD Warning: %s' % e)
+
             self.unlock()
 
             if url_found:

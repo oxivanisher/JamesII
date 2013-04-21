@@ -75,12 +75,12 @@ Module documentation nightly updated: <a href="http://oxi.ch/JamesII/">http://ox
 <ul>
 <li>Integrated help. Just type help in interfaces</li>
 <li>Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"</li>
-<li>Logger facility with network functionality (netlogger.py)</li>
+<li>Logger facility with network functionality who also can log to mysql (netlogger.py)</li>
+<li>@hostname1,hostname2 for running commands only on choosen host(s)</li>
+<li>&amp;&amp; to split commands (will not wait for the first command to exit, will send them right after each other)</li>
 </ul><h3>Not yet done:</h3>
 
 <ul>
-<li>@hostname1,hostname2 for running commands only on choosen hosts</li>
-<li>&amp;&amp; to split commands (will not wait for the first command to exit)</li>
 <li>HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)</li>
 <li>Lirc (managed) to control or be controlled via infrared</li>
 <li>YAML Schema to detect wrong config files</li>
@@ -122,9 +122,9 @@ sudo pip-2.7 install pytz
 <li>python-pylirc (lirc plugin, <a href="http://aron.ws/projects/lirc_rpi/">http://aron.ws/projects/lirc_rpi/</a>)</li>
 </ul><h4>Debian/Ubuntu:</h4>
 
-<pre><code>apt-get install bluetooth espeak motion python-mpd2 python-xmpp python-dbus \
+<pre><code>apt-get install bluetooth espeak motion python-xmpp python-dbus \
 python-transmissionrpc python-pylirc python-pip
-pip install jsonrpclib
+pip install jsonrpclib python-mpd2
 </code></pre>
 
 <h2>Installation:</h2>

@@ -29,7 +29,7 @@ class LogServerRequestHandler(SocketServer.StreamRequestHandler):
         according to whatever policy is configured locally.
         """
 
-        print "handle"
+        # print "handle"
         while True:
             # chunk = self.request.recv(4)
             # if len(chunk) < 4:

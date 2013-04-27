@@ -36,6 +36,22 @@ persons:
    none      : 00:00:00:00:00:00
 
 # plugin configurations "under construction"
+lirc-client:
+ nodes:
+  node_name:
+   proximityToggle:
+#    - logitech_z906: KEY_POWER
+   proximityHome:
+    # - logitech_z906: KEY_POWER
+   proximityGone:
+    # - logitech_z906: KEY_POWER
+   rcvCommands:
+#    atv_remote:
+#     - KEY_ENTER: 'mpd radio toggle'
+   sendCommands:
+#    logitech_z906:
+#     - KEY_POWER
+
 http-server:
  nodes:
   node_name:

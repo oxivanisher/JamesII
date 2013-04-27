@@ -20,6 +20,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server
 * Wakeonlan (managed) to wake up devices when you come home for example
 * Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)
+* LIRC (managed) to control or be controlled by IR devices
 
 #### Plugin modes explanation:
 * Manual: Passive plugins are run exclusively, normally with a separate bash command
@@ -35,7 +36,6 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
-* Lirc (managed) to control or be controlled via infrared
 * YAML Schema to detect wrong config files
 * Doorbell extension for RaspberryPi Plugin
 * plugin requirement checks before load for external files

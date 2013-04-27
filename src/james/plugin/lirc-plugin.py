@@ -1,8 +1,10 @@
+# Sources:
 # http://alexba.in/blog/2013/01/06/setting-up-lirc-on-the-raspberrypi/
+# http://alexba.in/blog/2013/02/23/controlling-lirc-from-the-web/
 # http://aron.ws/projects/lirc_rpi/
 # https://github.com/slimjim777/web-irsend
 # http://pylirc.cvs.sourceforge.net/viewvc/pylirc/pylirc/doc/simple.txt?revision=1.4&view=markup
-# http://alexba.in/blog/2013/02/23/controlling-lirc-from-the-web/
+# https://code.fluendo.com/remotecontrol/trac/browser/trunk/test/test-pylirc.py
 
 import pylirc
 import time

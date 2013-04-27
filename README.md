@@ -36,6 +36,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
+* Google Calendar integration
 * YAML Schema to detect wrong config files
 * Doorbell extension for RaspberryPi Plugin
 * plugin requirement checks before load for external files

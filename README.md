@@ -20,7 +20,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server
 * Wakeonlan (managed) to wake up devices when you come home for example
 * Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)
-* LIRC (managed) to control or be controlled by IR devices
+* LIRC (managed) to control or be controlled by IR devices (you have to configure your /etc/lirc/lircd.conf yourself!)
 
 #### Plugin modes explanation:
 * Manual: Passive plugins are run exclusively, normally with a separate bash command

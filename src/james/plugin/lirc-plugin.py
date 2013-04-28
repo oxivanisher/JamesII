@@ -179,13 +179,13 @@ class LircPlugin(Plugin):
         self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_send(self, args):
-        count = 1
+        try:
+            count = int(args[2])
+        except Exception:
+            count = 1
+        
         try:
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
-                try:
-                    count = int(args[2])
-                except Exception:
-                    pass
                 self.lircParse.send_once(args[0], args[1], count)
                 self.logger.info('IR Send Remote: %s Command: %s' % (args[0], args[1]))
                 return 'IR Send Remote: %s Command: %s' % (args[0], args[1])

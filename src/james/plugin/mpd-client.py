@@ -184,7 +184,7 @@ class MpdClientWorker(object):
 
     def terminate(self):
         self.lock()
-        self.fade_in_progress = False
+        self.plugin.fade_in_progress = False
         self.connected = False
         self.unlock()
         try:

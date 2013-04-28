@@ -133,10 +133,10 @@ class Lirc:
                 self.codes[remote_name][fields[0]] = fields[-1]
 
             elif remote_name and l.strip()=='begin raw_codes':
-                code_section = True
+                raw_code_section = True
 
             elif remote_name and l.strip()=='end raw_codes':
-                code_section = False
+                raw_code_section = False
 
             elif remote_name and raw_code_section:
                 # Got a raw key code block. Search for name lines...

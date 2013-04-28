@@ -145,11 +145,11 @@ class Lirc:
                     self.codes[remote_name][fields[1]] = 'raw'
 
 
-    def send_once(self, device_id, message):
+    def send_once(self, device_id, message, count = 1):
         """
         Send single call to IR LED.
         """
-        call(['irsend', 'SEND_ONCE', device_id, message])
+        call(['irsend', 'SEND_ONCE', '--count', count, device_id, message])
 
 
 class LircPlugin(Plugin):
@@ -179,9 +179,12 @@ class LircPlugin(Plugin):
         self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_send(self, args):
+        count = 1
         try:
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
-                self.lircParse.send_once(args[0], args[1])
+                if isinstance( int(args[2], int ):
+                    count = int(args[2])
+                self.lircParse.send_once(args[0], args[1], count)
                 self.logger.info('IR Send Remote: %s Command: %s' % (args[0], args[1]))
                 return 'IR Send Remote: %s Command: %s' % (args[0], args[1])
         except Exception:

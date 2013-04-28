@@ -99,6 +99,7 @@ class Lirc:
         """
         remote_name = None
         code_section = False
+        raw_code_section = False
 
         for line in self.conf:
             # Convert tabs to spaces
@@ -130,6 +131,18 @@ class Lirc:
                 # Got a code key/value pair... probably
                 fields = l.strip().split(' ')
                 self.codes[remote_name][fields[0]] = fields[-1]
+
+            elif remote_name and l.strip()=='begin raw_codes':
+                code_section = True
+
+            elif remote_name and l.strip()=='end raw_codes':
+                code_section = False
+
+            elif remote_name and raw_code_section:
+                # Got a raw key code block. Search for name lines...
+                fields = l.strip().split(' ')
+                if fields[0] == 'name':
+                    self.codes[remote_name][fields[1]] = 'raw'
 
 
     def send_once(self, device_id, message):

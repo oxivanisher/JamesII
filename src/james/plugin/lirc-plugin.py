@@ -182,8 +182,9 @@ class LircPlugin(Plugin):
         count = 1
         try:
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
-                if isinstance( int(args[2]), int ):
-                    count = int(args[2])
+                if args[2]:
+                    if isinstance( args[2], int ):
+                        count = int(args[2])
                 self.lircParse.send_once(args[0], args[1], count)
                 self.logger.info('IR Send Remote: %s Command: %s' % (args[0], args[1]))
                 return 'IR Send Remote: %s Command: %s' % (args[0], args[1])

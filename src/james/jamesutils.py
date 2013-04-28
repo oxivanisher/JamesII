@@ -163,7 +163,8 @@ class JamesUtils(object):
 
     def get_time_string(self):
         now = datetime.datetime.now()
-        return "%s:%s" % (now.hour, now.minute)
+        
+        return "%s:%02d" % (now.hour, now.minute)
 
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019

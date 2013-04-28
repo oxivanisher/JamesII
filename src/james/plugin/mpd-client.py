@@ -93,7 +93,7 @@ class MpdClientWorker(object):
             try:
                 for source in urllib2.urlopen(uri):
                     if source != "":
-                        self.client.add(source.strip())
+                        self.client.add(source.strip().replace('icy://', 'http://'))
                         url_found = True
             except Exception as e:
                 self.logger.warning('Unable to open URL (%s): %s' % (uri, e))

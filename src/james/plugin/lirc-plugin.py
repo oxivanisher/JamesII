@@ -142,7 +142,7 @@ class Lirc:
                 # Got a raw key code block. Search for name lines...
                 fields = l.strip().split(' ')
                 if fields[0] == 'name':
-                    self.codes[remote_name][fields[1]] = 'raw'
+                    self.codes[remote_name][fields[1]] = 'RAW CODE'
 
 
     def send_once(self, device_id, message, count = 1):
@@ -183,12 +183,13 @@ class LircPlugin(Plugin):
             count = int(args[2])
         except Exception:
             count = 1
-        
+
         try:
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
+                print "found"
                 self.lircParse.send_once(args[0], args[1], count)
-                self.logger.info('IR Send Remote: %s Command: %s' % (args[0], args[1]))
-                return 'IR Send Remote: %s Command: %s' % (args[0], args[1])
+                self.logger.info('IR Send Remote: %s Command: %s Count: %s' % (args[0], args[1], count))
+                return 'IR Send Remote: %s Command: %s Count: %s' % (args[0], args[1], count)
         except Exception:
             pass
 

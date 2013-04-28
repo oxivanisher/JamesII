@@ -142,10 +142,10 @@ class Lirc:
                 # Got a raw key code block. Search for name lines...
                 fields = l.strip().split(' ')
                 if fields[0] == 'name':
-                    self.codes[remote_name][fields[1]] = 'RAW CODE'
+                    self.codes[remote_name][fields[1]] = 'raw'
 
 
-    def send_once(self, device_id, message, count = 1):
+    def send_once(self, device_id, message, count = '1'):
         """
         Send single call to IR LED.
         """
@@ -172,7 +172,6 @@ class LircPlugin(Plugin):
 
         self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
         self.lirc_thread.start()
-        # atexit.register(self.save_log)
 
     def send_ir_command(self, command):
         self.logger.info('IR Received command request (%s)' % command)
@@ -180,13 +179,12 @@ class LircPlugin(Plugin):
 
     def cmd_send(self, args):
         try:
-            count = int(args[2])
+            count = args[2]
         except Exception:
-            count = 1
-
+            count = '1'
+        
         try:
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
-                print "found"
                 self.lircParse.send_once(args[0], args[1], count)
                 self.logger.info('IR Send Remote: %s Command: %s Count: %s' % (args[0], args[1], count))
                 return 'IR Send Remote: %s Command: %s Count: %s' % (args[0], args[1], count)
@@ -195,6 +193,7 @@ class LircPlugin(Plugin):
 
         self.logger.warning('Unknown IR Remote/Command: (%s)' % (' '.join(args)))
         return 'Unknown IR Remote/Command: (%s)' % (' '.join(args))
+
 
     def cmd_list_send(self, args):
         ret = []

@@ -69,37 +69,85 @@ class SysstatPlugin(Plugin):
         return return_str
 
     def sysstat_mem(self, args):
-        mem_avail = True
-        try:
-            mem = psutil.virtual_memory()
-        except AttributeError as e:
-            mem_avail = False
-
-        swap_avail = True
-        try:
-            swap = psutil.swap_memory()
-        except AttributeError as e:
-            swap_avail = False
-        
+        data = self.get_sysstat_mem()
 
         return_str = []
 
-        if mem_avail:
+        if data['mem_avail']:
             return_str.append("memory used %s/%s %s%%; avail %s; free %s" % \
-                                (self.utils.bytes2human(mem.used),
-                                self.utils.bytes2human(mem.total),
-                                mem.percent,
-                                self.utils.bytes2human(mem.available),
-                                self.utils.bytes2human(mem.free)))
+                                (self.utils.bytes2human(data['mem'].used),
+                                self.utils.bytes2human(data['mem'].total),
+                                data['mem'].percent,
+                                self.utils.bytes2human(data['mem'].available),
+                                self.utils.bytes2human(data['mem'].free)))
 
-        if swap_avail:
+        if data['swap_avail']:
             return_str.append("swap used %s/%s %s%%; free %s" % \
-                                (self.utils.bytes2human(swap.used),
-                                self.utils.bytes2human(swap.total),
-                                swap.percent,
-                                self.utils.bytes2human(swap.free)))
+                                (self.utils.bytes2human(data['swap'].used),
+                                self.utils.bytes2human(data['swap'].total),
+                                data['swap'].percent,
+                                self.utils.bytes2human(data['swap'].free)))
 
         return return_str
+
+    def get_sysstat_mem(self):
+        ret = {}
+
+        ret['mem_avail'] = True
+        try:
+            ret['mem'] = psutil.virtual_memory()
+        except AttributeError as e:
+            ret['mem_avail'] = False
+
+        ret['swap_avail'] = True
+        try:
+            ret['swap'] = psutil.swap_memory()
+        except AttributeError as e:
+            ret['swap_avail'] = False
+        
+        return ret
+
+
+    def return_status(self):
+        ret = {}
+        ret['uptime'] = time.time() - psutil.BOOT_TIME
+
+        cpus = psutil.cpu_percent(interval=1, percpu=True)
+        ret['cpuThreadsLoad'] = []
+        total = float()
+        for cpu in cpus:
+            total += cpu
+            ret['cpuThreadsLoad'].append(cpu)
+        ret['cpuLoadAvg'] = int(total / psutil.NUM_CPUS)
+        ret['cpuThreads'] = len(cpus)
+
+        data = self.get_sysstat_mem()
+
+        if data['mem_avail']:
+            ret['ramTotal'] = data['mem'].total
+            ret['ramFree'] = data['mem'].free
+            ret['ramAvail'] = data['mem'].available
+            ret['ramUsed'] = data['mem'].used
+            ret['ramPercent'] = data['mem'].percent
+        else:
+            ret['ramTotal'] = 0
+            ret['ramFree'] = 0
+            ret['ramAvail'] = 0
+            ret['ramUsed'] = 0
+            ret['ramPercent'] = 0
+
+        if data['swap_avail']:
+            ret['swapTotal'] = data['swap'].total
+            ret['swapFree'] = data['swap'].free
+            ret['swapUsed'] = data['swap'].used
+            ret['swapPercent'] = data['swap'].percent
+        else:
+            ret['swapTotal'] = 0
+            ret['swapFree'] = 0
+            ret['swapUsed'] = 0
+            ret['swapPercent'] = 0
+
+        return ret
 
 descriptor = {
     'name' : 'sysstat',
@@ -107,6 +155,18 @@ descriptor = {
     'command' : 'stat',
     'mode' : PluginMode.AUTOLOAD,
     'class' : SysstatPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'uptime' : "System uptime",
+                       'cpuLoadAvg' : "Cpu load average",
+                       'cpuThreads' : "Cpu threads",
+                       'cpuThreadsLoad' : "Cpu threads Load",
+                       'ramTotal' : "Ram total",
+                       'ramFree' : "Ram free",
+                       'ramAvail' : "Ram available",
+                       'ramUsed' : "Ram used",
+                       'ramPercent' : "Ram used percent",
+                       'swapTotal' : "Swap total",
+                       'swapFree' : "Swap free",
+                       'swapUsed' : "Swap used",
+                       'swapPercent' : "Swap used percent"}
 }
 

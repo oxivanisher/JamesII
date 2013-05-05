@@ -286,12 +286,17 @@ class CronPlugin(Plugin):
         seconds = int(time.time() % 60)
         self.core.add_timeout((60 - seconds), self.crontab_daemon_loop)
 
+    def return_status(self):
+        ret = {}
+        ret['jobs'] = len(self.crontab.events)
+        return ret
+
 descriptor = {
     'name' : 'cron',
     'help' : 'Cron daemon implementation',
     'command' : 'cron',
     'mode' : PluginMode.MANAGED,
     'class' : CronPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'jobs' : "Jobs" }
 }
 

@@ -233,6 +233,6 @@ descriptor = {
     'command' : 'prox',
     'mode' : PluginMode.MANAGED,
     'class' : ProximityPlugin,
-    'detailsNames' : { 'proximityChecks' : "Amount of run proximity checks",
-                       'proximityUpdates' : "Amount of proximity status changes" }
+    'detailsNames' : { 'proximityChecks' : "Run proximity checks",
+                       'proximityUpdates' : "Proximity status changes" }
 }

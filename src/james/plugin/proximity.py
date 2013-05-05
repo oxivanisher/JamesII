@@ -39,6 +39,7 @@ class ProximityPlugin(Plugin):
         self.proximityUpdates = 0
         self.lastProximityCheckStart = 0
         self.lastProximityCheckEnd = 0
+        self.lastProximityCheckDuration = 0
 
     def start(self):
         if self.core.os_username == 'root':
@@ -135,6 +136,7 @@ class ProximityPlugin(Plugin):
         self.logger.debug('Proximity scan finished')
         self.proximityChecks += 1
         self.lastProximityCheckEnd = time.time()
+        self.lastProximityCheckDuration = self.lastProximityCheckEnd - self.lastProximityCheckStart
         self.oldstatus = self.status
         self.status = False
         old_hosts_online = self.hosts_online
@@ -231,6 +233,7 @@ class ProximityPlugin(Plugin):
         ret['proximityUpdates'] = self.proximityUpdates
         ret['lastProximityCheckStart'] = self.lastProximityCheckStart
         ret['lastProximityCheckEnd'] = self.lastProximityCheckEnd
+        ret['lastProximityCheckDuration'] = self.lastProximityCheckDuration
         return ret
 
 descriptor = {
@@ -242,5 +245,6 @@ descriptor = {
     'detailsNames' : { 'proximityChecks' : "Run proximity checks",
                        'proximityUpdates' : "Proximity status changes",
                        'lastProximityCheckStart' : "Last Proximity check start",
-                       'lastProximityCheckEnd' : "Last Proximity check end" }
+                       'lastProximityCheckEnd' : "Last Proximity check end",
+                       'lastProximityCheckDuration' : "Last Proximity check duration" }
 }

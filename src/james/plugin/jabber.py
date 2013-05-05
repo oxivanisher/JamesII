@@ -264,6 +264,15 @@ class JabberPlugin(Plugin):
         self.start_time = int(time.time())
         self.last_xmpp_status_message = ''
 
+        self.recievedMuc = 0
+        self.recievedChat = 0
+        self.sentMuc = 0
+        self.sentChat = 0
+        self.commandsRunMuc = 0
+        self.commandsRunChat = 0
+        self.statusChanges = 0
+        self.unauthMessages = 0
+
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
         broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
         broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
@@ -307,16 +316,19 @@ class JabberPlugin(Plugin):
 
     # methods for worker process
     def send_xmpp_message(self, message_head = [], message_body = [], to = None):
+        self.sentChat += 1
         self.worker_lock.acquire()
         self.waiting_messages.append((message_head, message_body, to))
         self.worker_lock.release()
 
     def send_xmpp_muc_message(self, message_head = [], message_body = []):
+        self.sentMuc += 1
         self.worker_lock.acquire()
         self.waiting_muc_messages.append((message_head, message_body))
         self.worker_lock.release()
 
     def change_xmpp_status_message(self, new_message):
+        self.statusChanges += 1
         self.worker_lock.acquire()
         self.jabber_status_string = new_message
         self.worker_lock.release()
@@ -340,10 +352,12 @@ class JabberPlugin(Plugin):
         # for the first 3 seconds, ignore groupchat messages
         # (the server sends the last X messages, so do not process them multiple times)
         if (self.start_time + 3) < int(time.time()):
+            self.unauthMessages += 1
             bad_user = str(message.getFrom()).split('/')[1]
             self.send_xmpp_muc_message(['%s (%s), you are not authorized!' % (bad_user, realjid)])
 
     def on_chat_msg(self, message):
+        self.recievedChat += 1
         jid_data = str(message.getFrom()).split('/')
         jid_from = jid_data[0]
         try:
@@ -362,6 +376,7 @@ class JabberPlugin(Plugin):
         # for the first 3 seconds, ignore groupchat messages
         # (the server sends the last X messages, so do not process them multiple times)
         if (self.start_time + 3) < int(time.time()):
+            self.recievedMuc += 1
             jid_data = str(message.getFrom()).split('/')
             jid_from = jid_data[1]
             # ignore my own messages
@@ -383,6 +398,7 @@ class JabberPlugin(Plugin):
 
     # worker callback helper methods
     def run_command(self, command, jid_from):
+        self.commandsRunChat += 1
         if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
             self.send_xmpp_message(['Commands are:'], help_text, jid_from)
@@ -406,6 +422,7 @@ class JabberPlugin(Plugin):
                 self.send_command(command)
 
     def run_muc_command(self, command):
+        self.commandsRunMuc += 1
         if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
             help_text.append("%-20s %s" % ('+', 'Command Aliases'))
@@ -555,11 +572,30 @@ class JabberPlugin(Plugin):
             self.last_xmpp_status_message = message
 
 
+    def return_status(self):
+        ret = {}
+        ret['recievedMuc'] = self.recievedMuc
+        ret['recievedChat'] = self.recievedChat
+        ret['sentMuc'] = self.sentMuc
+        ret['sentChat'] = self.sentChat
+        ret['statusChanges'] = self.statusChanges
+        ret['unauthMessages'] = self.unauthMessages
+        ret['commandsRunMuc'] = self.commandsRunMuc
+        ret['commandsRunChat'] = self.commandsRunChat
+        return ret
+
 descriptor = {
     'name' : 'jabber',
     'help' : 'Interface to Jabber (XMPP))',
     'command' : 'jab',
     'mode' : PluginMode.MANAGED,
     'class' : JabberPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'recievedMuc' : "Recieved MUC messages",
+                       'recievedChat' : "Recieved chat messages",
+                       'sentMuc' : "Sent chat messages",
+                       'sentChat' : "Sent chat messages",
+                       'statusChanges' : "Status changes",
+                       'unauthMessages' : "Unauthorized messages",
+                       'commandsRunMuc' : "MUC commands run",
+                       'commandsRunChat' : "Chat commands run" }
 }

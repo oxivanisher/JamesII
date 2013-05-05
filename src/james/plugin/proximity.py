@@ -40,6 +40,7 @@ class ProximityPlugin(Plugin):
         self.lastProximityCheckStart = 0
         self.lastProximityCheckEnd = 0
         self.lastProximityCheckDuration = 0
+        self.currentProximitySleep = 0
 
     def start(self):
         if self.core.os_username == 'root':
@@ -105,6 +106,7 @@ class ProximityPlugin(Plugin):
         if self.status:
             sleep = self.config['sleep_long']
         self.logger.debug('Proximity scan sleeping for %s seconds' % sleep)
+        self.currentProximitySleep = sleep
         self.core.add_timeout(sleep, self.proximity_check_daemon)
 
     def proximity_check(self, args):
@@ -234,6 +236,7 @@ class ProximityPlugin(Plugin):
         ret['lastProximityCheckStart'] = self.lastProximityCheckStart
         ret['lastProximityCheckEnd'] = self.lastProximityCheckEnd
         ret['lastProximityCheckDuration'] = self.lastProximityCheckDuration
+        ret['currentProximitySleep'] = self.currentProximitySleep
         return ret
 
 descriptor = {
@@ -246,5 +249,6 @@ descriptor = {
                        'proximityUpdates' : "Proximity status changes",
                        'lastProximityCheckStart' : "Last Proximity check start",
                        'lastProximityCheckEnd' : "Last Proximity check end",
+                       'currentProximitySleep' : "Current sleep time",
                        'lastProximityCheckDuration' : "Last Proximity check duration" }
 }

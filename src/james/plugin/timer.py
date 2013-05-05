@@ -158,6 +158,6 @@ descriptor = {
     'command' : 'mcp',
     'mode' : PluginMode.MANAGED,
     'class' : TimerPlugin,
-    'detailsNames' : { 'waitingCommands' : "Amount of waiting commands" }
+    'detailsNames' : { 'waitingCommands' : "Waiting commands" }
 }
 

@@ -84,9 +84,6 @@ class Lirc:
         # Parse the config file
         self.parse()
         self.conf.close()
-        self.commandsRecieved = 0
-        self.commandsSent = 0
-
 
     def devices(self):
         """
@@ -171,6 +168,9 @@ class LircPlugin(Plugin):
 
         self.workerLock = threading.Lock()
         self.workerRunning = True
+
+        self.commandsRecieved = 0
+        self.commandsSent = 0
 
         self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
         self.lirc_thread.start()

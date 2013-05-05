@@ -32,9 +32,12 @@ class XbmcPlugin(Plugin):
         connection_string = "http://%s%s/jsonrpc" % (user_string, server_string)
         self.xbmc_conn = jsonrpclib.Server(connection_string)
 
+        self.updates = 0
+
     def cmd_update(self, args):
         try:
             self.xbmc_conn.VideoLibrary.Scan()
+            self.updates += 1
             return ["Video database is updating"]
         except Exception as e:
             return ["Could not send update command %s" % e]
@@ -82,12 +85,17 @@ class XbmcPlugin(Plugin):
             except Exception as e:
                 return ["Could not send notification %s" % e]
 
+    def return_status(self):
+        ret = {}
+        ret['updates'] = self.updates
+        return ret
+
 descriptor = {
     'name' : 'xbmc',
     'help' : 'Xbmc test module',
     'command' : 'xbmc',
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'updates' : "Amount of database updates initated"}
 }
 

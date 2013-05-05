@@ -18,6 +18,8 @@ class WakeOnLanPlugin(Plugin):
         self.commands.create_subcommand('list', 'Lists available wol target hosts', self.wol_list)
         self.commands.create_subcommand('wake', 'Wakes up a given host (hostname)', self.wol_wake)
 
+        self.wakeups = 0
+
     def wol_list(self, args):
         ret = []
         for (name, mac) in self.wol_devices:
@@ -35,6 +37,7 @@ class WakeOnLanPlugin(Plugin):
             return "no valid hostname given"
 
         if host:
+            self.wakeups += 1
             self.utils.wake_on_lan(host)
             return (["waking %s (%s)" % (args[0], host)])
 
@@ -48,12 +51,17 @@ class WakeOnLanPlugin(Plugin):
                     ret.append('WOL Woke host %s (%s)' % (name, mac))
                 self.logger.info(ret)
 
+    def return_status(self):
+        ret = {}
+        ret['wakeups'] = self.wakeups
+        return ret
+
 descriptor = {
     'name' : 'wakeonlan',
     'help' : 'Wake on lan plugin',
     'command' : 'wol',
     'mode' : PluginMode.MANAGED,
     'class' : WakeOnLanPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'wakeups' : self.wakeups }
 }
 

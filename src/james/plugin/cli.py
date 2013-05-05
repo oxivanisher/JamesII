@@ -143,7 +143,7 @@ class CliPlugin(Plugin):
         self.commands.create_subcommand('help', 'List this help', self.cmd_help)
         self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
         self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
-        self.commands.create_subcommand('sys_details', 'Request detailed node informations', self.cmd_request_nodes_details)
+        self.commands.create_subcommand('allstates', 'Request all node states', self.cmd_request_nodes_details)
 
     def start(self):
         if self.cmd_line_mode:

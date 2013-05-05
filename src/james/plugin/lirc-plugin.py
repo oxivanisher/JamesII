@@ -84,6 +84,8 @@ class Lirc:
         # Parse the config file
         self.parse()
         self.conf.close()
+        self.commandsRecieved = 0
+        self.commandsSent = 0
 
 
     def devices(self):
@@ -175,6 +177,7 @@ class LircPlugin(Plugin):
 
     def send_ir_command(self, command):
         self.logger.info('IR Received command request (%s)' % command)
+        self.commandsRecieved += 1
         self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_send(self, args):
@@ -187,6 +190,7 @@ class LircPlugin(Plugin):
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
                 self.lircParse.send_once(args[0], args[1], count)
                 self.logger.info('IR Send Remote: %s Command: %s Count: %s' % (args[0], args[1], count))
+                self.commandsSent += 1
                 return 'IR Send Remote: %s Command: %s Count: %s' % (args[0], args[1], count)
         except Exception:
             pass
@@ -209,7 +213,6 @@ class LircPlugin(Plugin):
         ret = []
         try:
             for remote in self.config['nodes'][self.core.hostname]['rcvCommands']:
-                print remote
                 for command in self.config['nodes'][self.core.hostname]['rcvCommands'][remote]:
                     for key in command.keys():
                         ret.append('%-15s %-15s %s' % (remote, key, command[key]))
@@ -229,6 +232,12 @@ class LircPlugin(Plugin):
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()
+
+    def return_status(self):
+        ret = {}
+        ret['commandsSent'] = self.commandsSent
+        ret['commandsRecieved'] = self.commandsRecieved
+        return ret
 
     # react on proximity events
     def process_proximity_event(self, newstatus):
@@ -262,5 +271,6 @@ descriptor = {
     'command' : 'lirc',
     'mode' : PluginMode.MANAGED,
     'class' : LircPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'commandsSent' : "IR Commands sent",
+                       'commandsRecieved' : "IR Commands recieved"}
 }

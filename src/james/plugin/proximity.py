@@ -35,6 +35,8 @@ class ProximityPlugin(Plugin):
         self.proxy_send_lock = False
         self.load_saved_state()
         self.worker_threads = []
+        self.proximityChecks = 0
+        self.proximityUpdates = 0
 
     def start(self):
         if self.core.os_username == 'root':
@@ -128,6 +130,7 @@ class ProximityPlugin(Plugin):
 
     def proximity_check_callback(self, values):
         self.logger.debug('Proximity scan finished')
+        self.proximityChecks += 1
         self.oldstatus = self.status
         self.status = False
         old_hosts_online = self.hosts_online
@@ -195,6 +198,7 @@ class ProximityPlugin(Plugin):
         self.persons_status = new_persons_status
 
         if self.status != self.core.proximity_status.get_status_here():
+            self.proximityUpdates += 1
             if self.status:
                 self.logger.info('You are now at home')
             else:
@@ -217,11 +221,18 @@ class ProximityPlugin(Plugin):
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
 
+    def return_status(self):
+        ret = {}
+        ret['proximityChecks'] = self.proximityChecks
+        ret['proximityUpdates'] = self.proximityUpdates
+        return ret
+
 descriptor = {
     'name' : 'proximity',
     'help' : 'Proximity detection plugin',
     'command' : 'prox',
     'mode' : PluginMode.MANAGED,
     'class' : ProximityPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'proximityChecks' : "Amount of run proximity checks",
+                       'proximityUpdates' : "Amount of proximity status changes" }
 }

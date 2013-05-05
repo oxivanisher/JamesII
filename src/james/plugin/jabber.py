@@ -251,7 +251,7 @@ class JabberPlugin(Plugin):
 
         super(JabberPlugin, self).__init__(core, descriptor)
 
-        self.rasp_thread = False
+        self.jabberThread = False
         self.worker_exit = False
         self.worker_lock = threading.Lock()
         self.waiting_messages = []
@@ -494,13 +494,13 @@ class JabberPlugin(Plugin):
         except RuntimeError:
             pass
 
-        self.rasp_thread = JabberThread(self,
+        self.jabberThread = JabberThread(self,
                                         cleaned_users,
                                         self.config['jid'],
                                         self.config['password'],
                                         self.config['muc_room'],
                                         self.config['muc_nick'])
-        self.rasp_thread.start()
+        self.jabberThread.start()
         self.logger.info('XMPP worker starting')
         return 'XMPP worker starting'
 
@@ -582,6 +582,12 @@ class JabberPlugin(Plugin):
         ret['unauthMessages'] = self.unauthMessages
         ret['commandsRunMuc'] = self.commandsRunMuc
         ret['commandsRunChat'] = self.commandsRunChat
+
+        ret['online'] = False
+        try:
+            ret['online'] = self.jabberThread.active
+        except Exception:
+            pass
         return ret
 
 descriptor = {
@@ -597,5 +603,6 @@ descriptor = {
                        'statusChanges' : "Status changes",
                        'unauthMessages' : "Unauthorized messages",
                        'commandsRunMuc' : "MUC commands run",
-                       'commandsRunChat' : "Chat commands run" }
+                       'commandsRunChat' : "Chat commands run",
+                       'online' : "Online" }
 }

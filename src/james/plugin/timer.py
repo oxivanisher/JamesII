@@ -147,12 +147,17 @@ class TimerPlugin(Plugin):
         self.saved_commands = saved_commands_new
         self.core.add_timeout(1, self.command_daemon_loop)
 
+    def return_status(self):
+        ret = {}
+        ret['waitingCommands'] = len(self.saved_commands)
+        return ret
+
 descriptor = {
     'name' : 'timer',
     'help' : 'MASTER CONTROL PROGRAM for timed functions',
     'command' : 'mcp',
     'mode' : PluginMode.MANAGED,
     'class' : TimerPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'waitingCommands' : "Amount of waiting commands" }
 }
 

@@ -37,6 +37,8 @@ class ProximityPlugin(Plugin):
         self.worker_threads = []
         self.proximityChecks = 0
         self.proximityUpdates = 0
+        self.lastProximityCheckStart = 0
+        self.lastProximityCheckEnd = 0
 
     def start(self):
         if self.core.os_username == 'root':
@@ -105,6 +107,7 @@ class ProximityPlugin(Plugin):
         self.core.add_timeout(sleep, self.proximity_check_daemon)
 
     def proximity_check(self, args):
+        self.lastProximityCheckStart = time.time()
         self.worker_threads.append(self.core.spawnSubprocess(self.proximity_check_worker,
                                   self.proximity_check_callback,
                                   None,
@@ -131,6 +134,7 @@ class ProximityPlugin(Plugin):
     def proximity_check_callback(self, values):
         self.logger.debug('Proximity scan finished')
         self.proximityChecks += 1
+        self.lastProximityCheckEnd = time.time()
         self.oldstatus = self.status
         self.status = False
         old_hosts_online = self.hosts_online
@@ -225,6 +229,8 @@ class ProximityPlugin(Plugin):
         ret = {}
         ret['proximityChecks'] = self.proximityChecks
         ret['proximityUpdates'] = self.proximityUpdates
+        ret['lastProximityCheckStart'] = self.self.lastProximityCheckStart
+        ret['lastProximityCheckEnd'] = self.self.lastProximityCheckEnd
         return ret
 
 descriptor = {
@@ -234,5 +240,7 @@ descriptor = {
     'mode' : PluginMode.MANAGED,
     'class' : ProximityPlugin,
     'detailsNames' : { 'proximityChecks' : "Run proximity checks",
-                       'proximityUpdates' : "Proximity status changes" }
+                       'proximityUpdates' : "Proximity status changes",
+                       'lastProximityCheckStart' : "Last Proximity check start",
+                       'lastProximityCheckEnd' : "Last Proximity check end" }
 }

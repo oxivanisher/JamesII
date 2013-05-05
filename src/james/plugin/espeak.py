@@ -19,6 +19,7 @@ class EspeakPlugin(Plugin):
         self.archived_messages = []
         self.message_cache = []
         self.talkover = False
+        self.messagesSpoke = 0
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
@@ -85,6 +86,7 @@ class EspeakPlugin(Plugin):
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:
+            self.messagesSpoke += len(self.message_cache)
             self.speak_lock.acquire()
             msg = ''
             for message in self.message_cache:
@@ -157,6 +159,7 @@ class EspeakPlugin(Plugin):
         ret['archivedMessage'] = len(self.archived_messages)
         ret['messagesCache'] = len(self.message_cache)
         ret['talkoverActive'] = self.talkover
+        ret['messagesSpoke'] = self.messagesSpoke
         return ret
 
 descriptor = {
@@ -167,5 +170,6 @@ descriptor = {
     'class' : EspeakPlugin,
     'detailsNames' : { 'archivedMessage' : "Archived messages",
                        'messagesCache' : "Currently cached messages",
+                       'messagesSpoke' : "Messages spoke",
                        'talkoverActive' : "Talkover currently active"}
 }

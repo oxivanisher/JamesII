@@ -170,6 +170,6 @@ descriptor = {
     'class' : EspeakPlugin,
     'detailsNames' : { 'archivedMessage' : "Archived messages",
                        'messagesCache' : "Currently cached messages",
-                       'messagesSpoke' : "Messages spoke",
+                       'messagesSpoke' : "Messages spoken",
                        'talkoverActive' : "Talkover currently active"}
 }

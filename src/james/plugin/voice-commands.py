@@ -7,18 +7,6 @@
 # sounds:
 # http://www.lcarscom.net/sounds.htm
 
-# arecord -f cd -t wav -d 3 -r 16000 | flac - -f --best --sample-rate 16000 -o /dev/shm/out.flac 1>/dev/null 2>/dev/null; wget -O - -o /dev/null --post-file /dev/shm/out.flac --header="Content-Type: audio/x-flac; rate=16000" http://www.google.com/speech-api/v1/recognize?lang=en
-
-# /x-flac; rate=16000" http://www.google.com/speech-api/v1/recognize?lang=en
-# {"status":0,"id":"62744b72320e6f9116a5eb4c12c909cb-1","hypotheses":[{"utterance":"this is a test","confidence":0.9501244}]}
-
-
-# sed -e 's/[{}]/''/g' \| 
-# awk -v k="text" '{n=split($0,a,",");
-
-# for (i=1; i<=n; i++) print a[i]; exit }' \| 
-# awk -F: 'NR==3 { print $3; exit }'
-
 # apt-get install python-poster python-pyaudio
 
 import pyaudio
@@ -28,112 +16,167 @@ import subprocess
 import struct
 import time
 import json
-# import tempfile
+import tempfile
+import os
 
-def process_wave_data_aksdhj(audioData, channels, rate):
-    URL = 'http://www.google.com/speech-api/v1/recognize?lang=en'
+from james.plugin import *
 
-    # print "\tprocessing wave (%s)" % len(audioData)
+class VoiceThread(PluginThread):
 
-    fname_wave = '/dev/shm/test.wav'
-    fname_flac = '/dev/shm/test.flac'
+    def __init__(self, plugin, core, threshold, lang, channels, rate):
+        super(VoiceThread, self).__init__(plugin)
 
-    wav_file = wave.open(fname_wave, "w")
-    wav_file.setparams((channels, 2, rate, len(audioData)/2, 'NONE', 'NOT COMPRESSED'))
-    wav_file.writeframesraw(audioData)
-    wav_file.close()
+        self.core = core
+        self.threshold = threshold
+        self.lang = lang
+        self.channels = channels
+        self.rate = rate
+        self.fnameWave = '/dev/shm/james-voice-command.wav'
+        self.fnameFlac = '/dev/shm/james-voice-command.flac'
+        self.lastTextDetected = 0
+        self.startupTime = 0
+       
 
-    subprocess.call(['/usr/bin/flac', '--totally-silent', '--delete-input-file', '-f', '--channels=1' '--best', '--sample-rate=16000', '-o', fname_flac, fname_wave]) #--delete-input-file
+    def process_wave_data(self, audioData):
+        URL = 'http://www.google.com/speech-api/v1/recognize?lang=' + self.lang
 
-    # --header="Content-Type: audio/x-flac; rate=16000" http://www.google.com/speech-api/v1/recognize?lang=en
-    # wget -O - -o /dev/null --post-file /dev/shm/out.flac --header="Content-Type: audio/x-flac; rate=16000" http://www.google.com/speech-api/v1/recognize?lang=en
-    # print ' '.join(['/usr/bin/wget', '-O', '-', '--post-file', fname_flac, '--header="Content-Type: audio/x-flac; rate=16000"', URL])
-    proc = subprocess.Popen(['/usr/bin/wget', '-O', '-', '-o', '/dev/null', '--post-file', fname_flac, '--header=Content-Type:audio/x-flac;rate=44100', URL], stdout=subprocess.PIPE)
-    return_code = proc.wait()
-    if return_code == 0:
-        jsonResult = proc.stdout.read()
-        return json.loads(jsonResult)
-    else:
-        print "\terror on wget or no output"
-        return False
+        wav_file = wave.open(self.fnameWave, "w")
+        wav_file.setparams((self.channels, 2, self.rate, len(audioData)/2, 'NONE', 'NOT COMPRESSED'))
+        wav_file.writeframesraw(audioData)
+        wav_file.close()
 
-def voice_worker(recordVolume):
-    CHANNELS = 1
-    RATE = 44100
-    # RATE = 16000
+        subprocess.call(['/usr/bin/flac', '--totally-silent', '--delete-input-file', '-f', '--channels=1' '--best', '--sample-rate=16000', '-o', self.fnameFlac, self.fnameWave])
 
-    chunk = 1024
-    p = pyaudio.PyAudio()
+        proc = subprocess.Popen(['/usr/bin/wget', '-O', '-', '-o', '/dev/null', '--post-file', self.fnameFlac, '--header=Content-Type:audio/x-flac;rate=44100', URL], stdout=subprocess.PIPE)
+        return_code = proc.wait()
+        os.unlink(self.fnameFlac)
+        if return_code == 0:
+            jsonResult = proc.stdout.read()
+            return json.loads(jsonResult)
+        else:
+            return False
 
-    stream = p.open(format = pyaudio.paInt16,
-                    channels = CHANNELS, 
-                    rate = RATE, 
-                    input = True,
-                    output = True,
-                    frames_per_buffer = chunk)
+    def work(self):
+        chunk = 1024
+        p = pyaudio.PyAudio()
 
-    loudTs = 0.0
-    rms = 0
-    working = True
-    recording = False
-    recordStartTs = 0
-    returnData = ''
-    print "* starting"
-    while (working):
-        data = stream.read(chunk)
-        # if len(data) % 2 != 0:
-        #     print "alert"
-        for j in range(0, chunk / 2):
-            sample = struct.unpack('h', data[j*2:j*2+2])[0]
-            x = abs(sample / float(2**15-1))
-            ratio = 0.1
-            rms = (1 - ratio) * rms + ratio * x
+        stream = p.open(format = pyaudio.paInt16,
+                        channels = self.channels, 
+                        rate = self.rate, 
+                        input = True,
+                        output = True,
+                        frames_per_buffer = chunk)
 
-            if (rms > recordVolume):
-                loudTs = time.time()
-                if not recording:
-                    print "listening"
-                    recordStartTs = time.time()
-                    recording = True
+        loudTs = 0.0
+        rms = 0
+        run = True
+        recording = False
+        working = False
+        recordStartTs = 0
+        returnData = ''
+        while (run):
+            if working:
+                data = stream.read(chunk)
+                if len(data) % 2 != 0:
+                    self.logger.warning("Recieved invalid data from audio stream")
+                for j in range(0, chunk / 2):
+                    sample = struct.unpack('h', data[j*2:j*2+2])[0]
+                    x = abs(sample / float(2**15-1))
+                    ratio = 0.1
+                    rms = (1 - ratio) * rms + ratio * x
 
-        if recording:
-            returnData += data
+                    if (rms > self.threshold):
+                        loudTs = time.time()
+                        if not recording:
+                            self.logger.debug("Started listening")
+                            recordStartTs = time.time()
+                            recording = True
 
-        recordDuration = time.time() - recordStartTs
-        lastNoise = time.time() - loudTs
+                if recording:
+                    returnData += data
 
-        if lastNoise > 2 and recording:
-            print recordDuration
-            recording = False
+                recordDuration = time.time() - recordStartTs
+                lastNoise = time.time() - loudTs
 
-            print "stop listening"
-            if recordDuration < 2.2:
-                print "too short sound found"
-            else:
-                print "processing wave data"
-                voiceCommand = process_wave_data_aksdhj(returnData, CHANNELS, RATE)
-                if voiceCommand:
-                    print "got command: %s" % voiceCommand
-                else:
-                    print "no voice command found"
+                if lastNoise > 2 and recording:
+                    recording = False
 
-            returnData = ''
+                    self.logger.debug("Stopped listening")
+                    if recordDuration < 2.1:
+                        self.logger.debug("Too short to be a command")
+                    else:
+                        self.logger.debug("Processing audio data")
+                        voiceCommand = self.process_wave_data(returnData)
+                        if voiceCommand:
+                            lastTextDetected = time.time()
+                            self.logger.debug("Detection data: %s" % voiceCommand)
+                            self.core.add_timeout(0, self.plugin.on_text_detected, voiceCommand)
+                        else:
+                            self.logger.debug("No text detected")
 
-    print "* done"
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
+                    returnData = ''
 
-if __name__ == '__main__':
-    recordVolume = 0.25
-    voice_worker(recordVolume)
+            self.plugin.workerLock.acquire()
+            run = self.plugin.workerRunning
+            working = self.plugin.workerWorking
+            self.plugin.workerLock.release()
 
-# from poster.encode import multipart_encode
-# from poster.streaminghttp import register_openers
-# import urllib2
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+        self.logger.debug('Exited')
 
-# datagen, headers = multipart_encode({"name": open('/tmp/test.flac', "rb")})
-# # Create the Request object
-# request = urllib2.Request(URL, datagen, headers)
-# # Actually do the request, and get the response
-# print urllib2.urlopen(request).read()
+
+class VoiceCommandsPlugin(Plugin):
+
+    def __init__(self, core, descriptor):
+        super(VoiceCommandsPlugin, self).__init__(core, descriptor)
+
+        self.commands.create_subcommand('start', ('Starts voice detection'), self.cmd_start_thread)
+        self.commands.create_subcommand('stop', ('Stopps voice detection'), self.cmd_stop_thread)
+        self.commands.create_subcommand('status', ('Shows if the voice detection is running'), self.cmd_thread_status)
+
+        self.workerLock = threading.Lock()
+        self.workerRunning = True
+        self.workerWorking = True
+        
+        self.lirc_thread = VoiceThread(self,
+                                       self.core,
+                                       self.config['nodes'][self.core.hostname]['threshold'],
+                                       self.config['nodes'][self.core.hostname]['lang'],
+                                       1,
+                                       44100,)
+        self.lirc_thread.start()
+
+    def terminate(self):
+        self.workerLock.acquire()
+        self.workerRunning = False
+        self.workerLock.release()
+
+    def cmd_thread_status(self, args):
+        self.workerLock.acquire()
+        status = self.workerWorking
+        self.workerLock.release()
+        return [status]
+
+    def cmd_stop_thread(self,args):
+        self.workerLock.acquire()
+        self.workerWorking = False
+        self.workerLock.release()
+
+    def cmd_start_thread(self, args):
+        self.workerLock.acquire()
+        self.workerWorking = True
+        self.workerLock.release()
+
+    def on_text_detected(self, textData):
+        self.logger.info("Processing text data")
+        print "text tetected callback:\n%s" % textData
+
+descriptor = {
+    'name' : 'voice-commands',
+    'help' : 'Voice command interface',
+    'command' : 'voice',
+    'mode' : PluginMode.MANAGED,
+    'class' : VoiceCommandsPlugin
+}

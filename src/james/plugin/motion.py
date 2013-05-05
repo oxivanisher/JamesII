@@ -21,6 +21,11 @@ class MotionPlugin(Plugin):
         self.log = []
         self.watch_mode = False
 
+        self.watches = 0
+        self.camLosts = 0
+        self.movementsDetected = 0
+        self.lastEvent = 0
+
         self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
         self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
         self.commands.create_subcommand('cam_lost', ('Will be called when motion loses the camera'), self.cmd_cam_lost, True)
@@ -71,6 +76,7 @@ class MotionPlugin(Plugin):
 
     def cmd_watch_on(self, args):
         if self.core.proximity_status.get_status_here():
+            self.watches += 1
             self.watch_mode = True
             self.cam_control(True)
         else:
@@ -86,6 +92,7 @@ class MotionPlugin(Plugin):
         return ret
 
     def cmd_cam_lost(self, args):
+        self.camLosts += 1
         message = self.core.new_message(self.name)
         message.level = 3
         message.header = ("Cam disconnected!")
@@ -135,6 +142,9 @@ class MotionPlugin(Plugin):
 
             file_name = ntpath.basename(file_path)
             self.logger.info('Motion: New image file %s' % file_name)
+
+            self.lastEvent = time.time()
+            self.movementsDetected += 1
 
             message = self.core.new_message(self.name)
             message.level = 2
@@ -203,11 +213,24 @@ class MotionPlugin(Plugin):
             self.cmd_on(None)
         return True
 
+    def return_status(self):
+        ret = {}
+        ret['watches'] = self.watches
+        ret['movementsDetected'] = self.movementsDetected
+        ret['lastEvent'] = self.lastEvent
+        ret['camLosts'] = self.camLosts
+        ret['watchMode'] = self.watch_mode
+        return ret
+
 descriptor = {
     'name' : 'motion',
     'help' : 'Interface to motion',
     'command' : 'motion',
     'mode' : PluginMode.MANAGED,
     'class' : MotionPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'watches' : "Watch mode counter",
+                       'movementsDetected' : "Movements detected",
+                       'camLosts' : "Cam losts",
+                       'watchMode' : "Watch mode active",
+                       'lastEvent' : "Last movenet event" }
 }

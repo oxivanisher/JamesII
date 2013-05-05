@@ -239,6 +239,7 @@ class ProximityPlugin(Plugin):
         ret['lastProximityCheckDuration'] = self.lastProximityCheckDuration
         ret['currentProximitySleep'] = self.currentProximitySleep
         ret['currentProximityState'] = self.status
+        ret['nextCheckIn'] = self.lastProximityCheckEnd + self.currentProximitySleep
         return ret
 
 descriptor = {
@@ -253,5 +254,6 @@ descriptor = {
                        'lastProximityCheckEnd' : "Last Proximity check end",
                        'currentProximitySleep' : "Current sleep time",
                        'currentProximityState' : "Current proximity state",
+                       'nextCheckIn' : "Next check in",
                        'lastProximityCheckDuration' : "Last Proximity check duration" }
 }

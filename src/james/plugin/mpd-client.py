@@ -297,6 +297,11 @@ class MpdClientPlugin(Plugin):
         talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
         talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
 
+        self.radioStarted = 0
+        self.wakeups = 0
+        self.sleeps = 0
+        self.fades = 0
+
         for station in self.config['stations'].keys():
             self.stations[station] = self.config['stations'][station]
             # methodName = 'tuneToStation_' + station
@@ -331,37 +336,6 @@ class MpdClientPlugin(Plugin):
             ret.append("%-12s %s" % (station, self.stations[station]))
         return ret
 
-    def return_status(self):
-        self.logger.debug('Showing status')
-        status = self.client_worker.status()
-        currentsong = self.client_worker.currentsong()
-
-        name = ""
-        title = ""
-        str_status = "Disconnected"
-        volume = ''
-        
-        if status:
-            str_status = status['state']
-            volume = status['volume']
-
-            if status['state'] == "play":
-                str_status = "Playing"
-                title = currentsong['title']
-                name = currentsong['name']
-            elif status['state'] == "stop":
-                str_status = "Stopped"
-            elif status['state'] == "pause":
-                str_status = "Paused"
-                name = currentsong['name']
-
-        ret = {}
-        ret['state'] = str_status
-        ret['title'] = title
-        ret['name'] = name
-        ret['volume'] = volume
-        return ret
-
     def radio_off(self, args):
         self.logger.debug('Radio off')
         if self.client_worker.stop():
@@ -390,6 +364,7 @@ class MpdClientPlugin(Plugin):
             radio_url = self.stations[radio_name]
 
         if self.client_worker.play_url(radio_url, self.config['norm_volume']):
+            self.radioStarted += 1
             self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
             return (["Playing station %s" % radio_name])
         else:
@@ -424,6 +399,7 @@ class MpdClientPlugin(Plugin):
         return (["Unable to set the volume to: %s" % volume])
 
     def mpd_sleep(self, args):
+        self.sleeps += 1
         self.logger.debug('Activating sleep mode')
         if self.core.proximity_status.get_status_here():
             if self.fade_in_progress:
@@ -443,6 +419,7 @@ class MpdClientPlugin(Plugin):
             self.logger.info("MPD Sleep mode not activated. You are not here.")
 
     def mpd_wakeup(self, args):
+        self.wakeups += 1
         self.logger.debug('Activating wakeup mode')
         if self.core.proximity_status.get_status_here():
             if self.fade_in_progress:
@@ -461,6 +438,7 @@ class MpdClientPlugin(Plugin):
             self.logger.info("Wakeup not activated. You are not here.")
 
     def fade_ended(self):
+        self.fades += 1
         self.logger.debug("Fade ending")
         self.client_worker.lock()
         self.fade_in_progress = False
@@ -479,6 +457,41 @@ class MpdClientPlugin(Plugin):
             else:
                 self.radio_off(None)
 
+    def return_status(self):
+        self.logger.debug('Showing status')
+        status = self.client_worker.status()
+        currentsong = self.client_worker.currentsong()
+
+        name = ""
+        title = ""
+        str_status = "Disconnected"
+        volume = ''
+        
+        if status:
+            str_status = status['state']
+            volume = status['volume']
+
+            if status['state'] == "play":
+                str_status = "Playing"
+                title = currentsong['title']
+                name = currentsong['name']
+            elif status['state'] == "stop":
+                str_status = "Stopped"
+            elif status['state'] == "pause":
+                str_status = "Paused"
+                name = currentsong['name']
+
+        ret = {}
+        ret['state'] = str_status
+        ret['title'] = title
+        ret['name'] = name
+        ret['volume'] = volume
+        ret['radioStarted'] = self.radioStarted
+        ret['wakeups'] = self.wakeups
+        ret['sleeps'] = self.sleeps
+        ret['fades'] = self.fades
+        return ret
+
 descriptor = {
     'name' : 'mpd-client',
     'help' : 'Interface to mpd via python-mpc2 lib',
@@ -488,5 +501,9 @@ descriptor = {
     'detailsNames' : { 'state' : "Player status",
                        'title'  : "Title",
                        'name'  : "Name",
-                       'volume' : "Volume" }
+                       'volume' : "Volume",
+                       'radioStarted' : "Radio started",
+                       'wakeups' : "Wakeups",
+                       'sleeps' : "Sleeps",
+                       'fades' : "Fades" }
 }

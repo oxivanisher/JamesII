@@ -34,7 +34,8 @@ class SystemPlugin(Plugin):
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
-        self.data_commands.create_subcommand('details', 'Returns detailed node informations', self.get_data_details)
+        self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
+        self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
 
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -122,21 +123,28 @@ class SystemPlugin(Plugin):
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
-    def get_data_details(self, args):
-        coreData = {}
-        coreData['master'] = self.core.master
-        coreData['uuid'] = self.core.uuid
-        coreData['ip'] = self.get_ip([])
-        coreData['startup_timestamp'] = self.core.startup_timestamp
-        coreData['fqdn'] = socket.getfqdn()
-        coreData['location'] = self.core.location
-        coreData['platform'] = sys.platform
-        coreData['os_username'] = self.core.os_username
-        coreData['now'] = time.time()
-        coreData['proximity_status'] = self.core.proximity_status.get_status_here()
+    def cmd_get_details(self, args):
+        # if plugin == 'system':
+        ret = []
+        displayData = []
+        allData = self.get_data_details([])
+        for pluginName in sorted(allData.keys()):
+            pluginData = []
+            if allData[pluginName]:
+                args = allData[pluginName]
+                for key in sorted(args.keys()):
+                    pluginData.append((Factory.descriptors[pluginName]['detailsNames'][key], args[key]))
+                
+                displayData.append((pluginName, pluginData))
 
+        for (plugin, pluginData) in displayData:
+            for (key, value) in pluginData:
+                ret.append("%-15s %-30s %s" % (plugin, key, value))
+
+        return ret
+
+    def get_data_details(self, args):
         ret = {}
-        ret['core'] = coreData
 
         for plugin in self.core.plugins:
             pluginData = plugin.return_status()
@@ -190,11 +198,34 @@ class SystemPlugin(Plugin):
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
                 pass
 
+    def return_status(self):
+        coreData = {}
+        coreData['master'] = self.core.master
+        coreData['uuid'] = self.core.uuid
+        coreData['ip'] = self.get_ip([])
+        coreData['startupTimestamp'] = self.core.startup_timestamp
+        coreData['fqdn'] = socket.getfqdn()
+        coreData['location'] = self.core.location
+        coreData['platform'] = sys.platform
+        coreData['osUsername'] = self.core.os_username
+        coreData['now'] = time.time()
+        coreData['proximityStatus'] = self.core.proximity_status.get_status_here()
+        return coreData
+
 descriptor = {
     'name' : 'system',
     'help' : 'JamesII system commands',
     'command' : 'sys',
     'mode' : PluginMode.AUTOLOAD,
     'class' : SystemPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'master' : "Master mode",
+                       'uuid' : "UUID",
+                       'ip' : "IPs",
+                       'startupTimestamp' : "JamesII Startup",
+                       'fqdn' : "Fully qualified domainname",
+                       'location' : "Proximity location",
+                       'platform' : "Platform",
+                       'osUsername' : "OS Username",
+                       'now' : "Now Timestamp",
+                       'proximityStatus' : "Proximity status on location" }
 }

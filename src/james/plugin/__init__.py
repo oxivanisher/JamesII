@@ -27,6 +27,7 @@ class Plugin(object):
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
         self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
+        self.data_commands.create_subcommand('status', 'Returns status informations', self.return_status)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)

@@ -140,6 +140,8 @@ class CronPlugin(Plugin):
         self.load_saved_commands()
         atexit.register(self.save_commands)
 
+        self.jobsRun = 0
+
     def start(self):
         # wait 3 seconds befor working
         self.core.add_timeout(1, self.crontab_daemon_loop)
@@ -278,6 +280,7 @@ class CronPlugin(Plugin):
 
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
+        self.jobsRun += 1
         self.logger.info('Running Command (%s)' % (' '.join(args)))
         self.send_command(args)
 
@@ -289,6 +292,7 @@ class CronPlugin(Plugin):
     def return_status(self):
         ret = {}
         ret['jobs'] = len(self.crontab.events)
+        ret['jobsRun'] = self.jobsRun
         return ret
 
 descriptor = {
@@ -297,6 +301,7 @@ descriptor = {
     'command' : 'cron',
     'mode' : PluginMode.MANAGED,
     'class' : CronPlugin,
-    'detailsNames' : { 'jobs' : "Jobs" }
+    'detailsNames' : { 'jobs' : "Jobs",
+                       'jobsRun' : "Jobs run" }
 }
 

@@ -26,6 +26,8 @@ class TimerPlugin(Plugin):
         self.saved_commands = []
         self.load_saved_commands()
 
+        self.commandsRun = 0
+
     def start(self):
         # wait 3 seconds befor working
         self.core.add_timeout(3, self.command_daemon_loop)
@@ -139,6 +141,7 @@ class TimerPlugin(Plugin):
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
             if timestamp <= now:
+                self.commandsRun += 1
                 self.send_command(command)
                 self.logger.info('Running timed command (%s)' % (' '.join(command)))
             else:
@@ -150,6 +153,7 @@ class TimerPlugin(Plugin):
     def return_status(self):
         ret = {}
         ret['waitingCommands'] = len(self.saved_commands)
+        ret['commandsRun'] = self.commandsRun
         return ret
 
 descriptor = {
@@ -158,6 +162,7 @@ descriptor = {
     'command' : 'mcp',
     'mode' : PluginMode.MANAGED,
     'class' : TimerPlugin,
-    'detailsNames' : { 'waitingCommands' : "Waiting commands" }
+    'detailsNames' : { 'waitingCommands' : "Waiting commands",
+                       'commandsRun' : "Commands run" }
 }
 

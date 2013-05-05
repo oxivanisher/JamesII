@@ -4,7 +4,7 @@ import atexit
 import json
 import time
 import threading
-threading
+
 from james.plugin import *
 
 class EspeakPlugin(Plugin):

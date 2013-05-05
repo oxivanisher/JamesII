@@ -16,6 +16,7 @@ class TransmissionPlugin(Plugin):
                                            self.config['nodes'][self.core.hostname]['port'])
 
         self.tr_conn = None
+        self.addedTorrents = 0
 
         self.commands.create_subcommand('show', 'Shows a list current torrents', self.cmd_show)
         self.commands.create_subcommand('add', 'Adds a URL to download', self.cmd_add)
@@ -90,10 +91,11 @@ class TransmissionPlugin(Plugin):
             message.level = 2
             try:
                 self.tr_conn.add_uri(args[0])
+                self.addedTorrents += 1
                 self.logger.info('Download of (%s) starting' % args[0])
                 message.header = ("Torrent download started")
                 message.body = args[0]
-                message.send()            
+                message.send()
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:
                 self.logger.warning('Torrent download not started due error (%s)' % args[0])
@@ -195,11 +197,21 @@ class TransmissionPlugin(Plugin):
                 new_words.append(word)
         return ' '.join(new_words)
 
+
+    def return_status(self):
+        ret = {}
+        ret['connected'] = False
+        if self.connection_ok():
+            ret['connected'] = True
+        ret['addedTorrents'] = self.addedTorrents
+        return ret
+
 descriptor = {
     'name' : 'transmission',
     'help' : 'Transmission control plugin',
     'command' : 'tr',
     'mode' : PluginMode.MANAGED,
     'class' : TransmissionPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'connected' : "Connected",
+                       'addedTorrents' : "Amount of added torrents" }
 }

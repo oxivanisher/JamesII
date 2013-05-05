@@ -26,7 +26,7 @@ class Plugin(object):
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
-        self.commands.create_subcommand('details', "Shows detailed plugin status details", self.cmd_show_plugin_details, True)
+        self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
@@ -179,7 +179,7 @@ class Plugin(object):
     def return_status(self):
         return {}
 
-    def cmd_show_plugin_details(self, args):
+    def cmd_show_plugin_status(self, args):
         ret = []
         data = self.return_status()
         for key in self.return_status().keys():

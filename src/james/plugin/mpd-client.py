@@ -35,8 +35,8 @@ class MpdClientWorker(object):
 
     def connect(self):
         self.logger.debug('Connecting to MPD server')
+        self.lock()
         try:
-            self.lock()
             signal.alarm(5)
             self.client.connect(self.myhost, self.myport)
             self.unlock()
@@ -297,8 +297,6 @@ class MpdClientPlugin(Plugin):
         talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
         talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
 
-        status_command = self.commands.create_subcommand('status', 'Shows the current MPD status', self.show_status)
-
         for station in self.config['stations'].keys():
             self.stations[station] = self.config['stations'][station]
             # methodName = 'tuneToStation_' + station
@@ -333,30 +331,36 @@ class MpdClientPlugin(Plugin):
             ret.append("%-12s %s" % (station, self.stations[station]))
         return ret
 
-
-
-    def show_status(self, args):
+    def return_status(self):
         self.logger.debug('Showing status')
         status = self.client_worker.status()
         currentsong = self.client_worker.currentsong()
-        if not status and not currentsong:
-            return (["Unable to connect to MPD"])
 
-        str_status = status['state']
-        name = "Nothing"
+        name = ""
         title = ""
+        str_status = "Disconnected"
+        volume = ''
+        
+        if status:
+            str_status = status['state']
+            volume = status['volume']
 
-        if status['state'] == "play":
-            str_status = "Playing"
-            title = currentsong['title']
-            name = " (" + currentsong['name'] + ")"
-        elif status['state'] == "stop":
-            str_status = "Stopped"
-        elif status['state'] == "pause":
-            str_status = "Paused"
-            name = currentsong['name']
+            if status['state'] == "play":
+                str_status = "Playing"
+                title = currentsong['title']
+                name = currentsong['name']
+            elif status['state'] == "stop":
+                str_status = "Stopped"
+            elif status['state'] == "pause":
+                str_status = "Paused"
+                name = currentsong['name']
 
-        return ("[%s@%s%%] %s%s" % (str_status, status['volume'], title, name))
+        ret = {}
+        ret['state'] = str_status
+        ret['title'] = title
+        ret['name'] = name
+        ret['volume'] = volume
+        return ret
 
     def radio_off(self, args):
         self.logger.debug('Radio off')
@@ -481,5 +485,8 @@ descriptor = {
     'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
     'class' : MpdClientPlugin,
-    'detailsNames' : {}
+    'detailsNames' : { 'state' : "Player status",
+                       'title'  : "Title",
+                       'name'  : "Name",
+                       'volume' : "Volume" }
 }

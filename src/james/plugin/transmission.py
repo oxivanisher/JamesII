@@ -22,7 +22,7 @@ class TransmissionPlugin(Plugin):
         self.commands.create_subcommand('start', 'Restart a torrent', self.cmd_start)
         self.commands.create_subcommand('stop', 'Stopps a torrent', self.cmd_stop)
         self.commands.create_subcommand('remove', 'Removes a torrent', self.cmd_remove)
-        self.commands.create_subcommand('status', 'Checks if the connection to the transmission host is working', self.cmd_test_connection)
+        self.commands.create_subcommand('test', 'Checks if the connection to the transmission host is working', self.cmd_test_connection)
 
     def connect(self):
         try:

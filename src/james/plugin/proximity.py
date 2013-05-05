@@ -229,8 +229,8 @@ class ProximityPlugin(Plugin):
         ret = {}
         ret['proximityChecks'] = self.proximityChecks
         ret['proximityUpdates'] = self.proximityUpdates
-        ret['lastProximityCheckStart'] = self.self.lastProximityCheckStart
-        ret['lastProximityCheckEnd'] = self.self.lastProximityCheckEnd
+        ret['lastProximityCheckStart'] = self.lastProximityCheckStart
+        ret['lastProximityCheckEnd'] = self.lastProximityCheckEnd
         return ret
 
 descriptor = {

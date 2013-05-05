@@ -291,6 +291,7 @@ descriptor = {
     'help' : 'Cron daemon implementation',
     'command' : 'cron',
     'mode' : PluginMode.MANAGED,
-    'class' : CronPlugin
+    'class' : CronPlugin,
+    'detailsNames' : {}
 }
 

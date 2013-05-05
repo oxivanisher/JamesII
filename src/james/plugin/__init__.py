@@ -26,6 +26,7 @@ class Plugin(object):
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
+        self.commands.create_subcommand('details', "Shows detailed plugin status details", self.cmd_show_plugin_details, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
@@ -174,6 +175,17 @@ class Plugin(object):
     def send_broadcast(self, message):
         self.core.add_timeout(0, self.send_response, self.uuid, 'broadcast', message)
 
+    # return plugin data
+    def return_status(self):
+        return {}
+
+    def cmd_show_plugin_details(self, args):
+        ret = []
+        data = self.return_status()
+        for key in self.return_status().keys():
+            ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
+        return ret
+
 class PluginThread(threading.Thread):
 
     def __init__(self, plugin):
@@ -213,13 +225,15 @@ class Factory(object):
         if not 'name' in descriptor.keys():
             raise Exception("Plugin descriptor has no name field")
         if not 'help' in descriptor.keys():
-            raise Exception("Plugin descriptor has no help field")
+            raise Exception("Plugin descriptor of %s has no help field" % descriptor['name'])
         if not 'command' in descriptor.keys():
-            raise Exception("Plugin descriptor has no command field")
+            raise Exception("Plugin descriptor of %s has no command field" % descriptor['name'])
         if not 'mode' in descriptor.keys():
-            raise Exception("Plugin descriptor has no mode field")
+            raise Exception("Plugin descriptor of %s has no mode field" % descriptor['name'])
         if not 'class' in descriptor.keys():
-            raise Exception("Plugin descriptor has no class field")
+            raise Exception("Plugin descriptor of %s has no class field" % descriptor['name'])
+        if not 'detailsNames' in descriptor.keys():
+            raise Exception("Plugin descriptor of %s has no detailsNames field" % descriptor['name'])
 
         cls.descriptors[descriptor['name']] = descriptor
 

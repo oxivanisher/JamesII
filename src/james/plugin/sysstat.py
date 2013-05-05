@@ -106,6 +106,7 @@ descriptor = {
     'help' : 'Psutil system information',
     'command' : 'stat',
     'mode' : PluginMode.AUTOLOAD,
-    'class' : SysstatPlugin
+    'class' : SysstatPlugin,
+    'detailsNames' : {}
 }
 

@@ -152,11 +152,20 @@ class EspeakPlugin(Plugin):
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
 
+    def return_status(self):
+        ret = {}
+        ret['archivedMessage'] = len(self.archived_messages)
+        ret['messagesCache'] = len(self.message_cache)
+        ret['talkoverActive'] = self.talkover
+        return ret
 
 descriptor = {
     'name' : 'espeak',
     'help' : 'Interface to espeak',
     'command' : 'espeak',
     'mode' : PluginMode.MANAGED,
-    'class' : EspeakPlugin
+    'class' : EspeakPlugin,
+    'detailsNames' : { 'archivedMessage' : "Archived messages",
+                       'messagesCache' : "Currently cached messages",
+                       'talkoverActive' : "Is talkover currently active"}
 }

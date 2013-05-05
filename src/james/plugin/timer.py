@@ -152,6 +152,7 @@ descriptor = {
     'help' : 'MASTER CONTROL PROGRAM for timed functions',
     'command' : 'mcp',
     'mode' : PluginMode.MANAGED,
-    'class' : TimerPlugin
+    'class' : TimerPlugin,
+    'detailsNames' : {}
 }
 

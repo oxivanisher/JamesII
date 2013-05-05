@@ -87,6 +87,7 @@ descriptor = {
     'help' : 'Xbmc test module',
     'command' : 'xbmc',
     'mode' : PluginMode.MANAGED,
-    'class' : XbmcPlugin
+    'class' : XbmcPlugin,
+    'detailsNames' : {}
 }
 

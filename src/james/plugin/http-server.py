@@ -36,5 +36,6 @@ descriptor = {
     'help' : 'Webfrontend for JamesII',
     'command' : 'http',
     'mode' : PluginMode.MANAGED,
-    'class' : HttpServerPlugin
+    'class' : HttpServerPlugin,
+    'detailsNames' : {}
 }

@@ -560,5 +560,6 @@ descriptor = {
     'help' : 'Interface to Jabber (XMPP))',
     'command' : 'jab',
     'mode' : PluginMode.MANAGED,
-    'class' : JabberPlugin
+    'class' : JabberPlugin,
+    'detailsNames' : {}
 }

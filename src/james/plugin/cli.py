@@ -143,7 +143,7 @@ class CliPlugin(Plugin):
         self.commands.create_subcommand('help', 'List this help', self.cmd_help)
         self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
         self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
-        self.commands.create_subcommand('details', 'Request detailed node informations', self.cmd_request_nodes_details)
+        self.commands.create_subcommand('sys_details', 'Request detailed node informations', self.cmd_request_nodes_details)
 
     def start(self):
         if self.cmd_line_mode:
@@ -169,29 +169,44 @@ class CliPlugin(Plugin):
         for line in args:
             print ("D%11s@%-10s > %s" % (plugin, host, line))
 
-    def process_data_response(self, args, host, plugin):
+    def process_data_response(self, allData, host, plugin):
         print "*** Processing data response from %s@%s ***" % (plugin, host)
         if plugin == 'system':
-            display_data = []
-            mode = "Slave"
-            if args['master']:
-                mode = "Master"
+            displayData = []
+            for pluginName in allData.keys(): 
+                pluginData = []
+                if pluginName == 'core':
+                    args = allData['core']
 
-            startup = self.utils.get_nice_age(int(args['startup_timestamp']))
-            timedelay = time.time() - args['now']
+                    mode = "Slave"
+                    if args['master']:
+                        mode = "Master"
 
-            display_data.append(('FQDN', args['fqdn']))
-            display_data.append(('Mode', mode))
-            display_data.append(('UUID', args['uuid']))
-            display_data.append(('IP', args['ip'][0]))
-            display_data.append(('James Startup', startup))
-            display_data.append(('Delay', '%s seconds' % timedelay))
-            display_data.append(('Location (status)', '%s (%s)' % (args['location'], args['proximity_status'])))
-            display_data.append(('Platform', args['platform']))
-            display_data.append(('OS Username', args['os_username']))
+                    startup = self.utils.get_nice_age(int(args['startup_timestamp']))
+                    timedelay = time.time() - args['now']
 
-            for (key, value) in display_data:
-                print "%-20s %s" % (key, value)
+                    pluginData.append(('FQDN', args['fqdn']))
+                    pluginData.append(('Mode', mode))
+                    pluginData.append(('UUID', args['uuid']))
+                    pluginData.append(('IP', args['ip'][0]))
+                    pluginData.append(('James Startup', startup))
+                    pluginData.append(('Delay', '%s seconds' % timedelay))
+                    pluginData.append(('Location (status)', '%s (%s)' % (args['location'], args['proximity_status'])))
+                    pluginData.append(('Platform', args['platform']))
+                    pluginData.append(('OS Username', args['os_username']))
+
+                    displayData.append(('core', pluginData))
+                else:
+                    if allData[pluginName]:
+                        args = self.utils.convert_from_unicode(allData[pluginName])
+                        for key in args.keys():
+                            pluginData.append((Factory.descriptors[pluginName]['detailsNames'][key], args[key]))
+                        
+                        displayData.append((pluginName, pluginData))
+
+            for (plugin, pluginData) in displayData:
+                for (key, value) in pluginData:
+                    print "%-15s %-30s %s" % (plugin, key, value)
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:
@@ -274,5 +289,6 @@ descriptor = {
     'help' : 'Command line interface plugin',
     'command' : 'cli',
     'mode' : PluginMode.MANUAL,
-    'class' : CliPlugin
+    'class' : CliPlugin,
+    'detailsNames' : {}
 }

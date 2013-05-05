@@ -200,5 +200,6 @@ descriptor = {
     'help' : 'Transmission control plugin',
     'command' : 'tr',
     'mode' : PluginMode.MANAGED,
-    'class' : TransmissionPlugin
+    'class' : TransmissionPlugin,
+    'detailsNames' : {}
 }

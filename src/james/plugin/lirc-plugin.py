@@ -261,5 +261,6 @@ descriptor = {
     'help' : 'Interface to LIRC',
     'command' : 'lirc',
     'mode' : PluginMode.MANAGED,
-    'class' : LircPlugin
+    'class' : LircPlugin,
+    'detailsNames' : {}
 }

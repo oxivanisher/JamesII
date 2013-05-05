@@ -23,11 +23,12 @@ from james.plugin import *
 
 class VoiceThread(PluginThread):
 
-    def __init__(self, plugin, core, threshold, lang, channels, rate):
+    def __init__(self, plugin, core, threshold, lang, timeout, channels, rate):
         super(VoiceThread, self).__init__(plugin)
 
         self.core = core
         self.threshold = threshold
+        self.timeout = timeout
         self.lang = lang
         self.channels = channels
         self.rate = rate
@@ -35,19 +36,23 @@ class VoiceThread(PluginThread):
         self.fnameFlac = '/dev/shm/james-voice-command.flac'
         self.lastTextDetected = 0
         self.startupTime = 0
-       
 
     def process_wave_data(self, audioData):
         URL = 'http://www.google.com/speech-api/v1/recognize?lang=' + self.lang
 
         # FIXME: track total upload size
-        
+
         wav_file = wave.open(self.fnameWave, "w")
         wav_file.setparams((self.channels, 2, self.rate, len(audioData)/2, 'NONE', 'NOT COMPRESSED'))
         wav_file.writeframesraw(audioData)
         wav_file.close()
 
         subprocess.call(['/usr/bin/flac', '--totally-silent', '--delete-input-file', '-f', '--channels=1' '--best', '--sample-rate=16000', '-o', self.fnameFlac, self.fnameWave])
+
+
+        self.plugin.workerLock.acquire()
+        self.plugin.bytesSubmitted += os.path.getsize(self.fnameFlac)
+        self.plugin.workerLock.release()
 
         proc = subprocess.Popen(['/usr/bin/wget', '-O', '-', '-o', '/dev/null', '--post-file', self.fnameFlac, '--header=Content-Type:audio/x-flac;rate=44100', URL], stdout=subprocess.PIPE)
         return_code = proc.wait()
@@ -75,6 +80,7 @@ class VoiceThread(PluginThread):
         recording = False
         working = False
         recordStartTs = 0
+        recordStoppedTs = 0
         returnData = ''
         while (run):
             data = stream.read(chunk)
@@ -101,6 +107,7 @@ class VoiceThread(PluginThread):
                 lastNoise = time.time() - loudTs
 
                 if lastNoise > 2 and recording:
+                    recordStoppedTs = time.time()
                     recording = False
 
                     self.logger.debug("Stopped listening")
@@ -116,6 +123,14 @@ class VoiceThread(PluginThread):
                         else:
                             self.logger.debug("No text detected")
 
+                    returnData = ''
+
+                elif (time.time() - recordStoppedTs) > self.timeout and recordStoppedTs != 0:
+                    recordStoppedTs = 0
+                    self.logger.debug("Timeout reached. Disabling voice commands.")
+                    self.plugin.workerLock.acquire()
+                    self.plugin.workerWorking = False
+                    self.plugin.workerLock.release()
                     returnData = ''
 
             self.plugin.workerLock.acquire()
@@ -136,30 +151,33 @@ class VoiceCommandsPlugin(Plugin):
 
         self.commands.create_subcommand('start', ('Starts voice detection'), self.cmd_start_thread)
         self.commands.create_subcommand('stop', ('Stopps voice detection'), self.cmd_stop_thread)
-        self.commands.create_subcommand('status', ('Shows if the voice detection is running'), self.cmd_thread_status)
 
         self.workerLock = threading.Lock()
         self.workerRunning = True
-        self.workerWorking = True
+        self.workerWorking = False
+        self.bytesSubmitted = 0
         
-        self.lirc_thread = VoiceThread(self,
+        self.voiceThread = VoiceThread(self,
                                        self.core,
                                        self.config['nodes'][self.core.hostname]['threshold'],
                                        self.config['nodes'][self.core.hostname]['lang'],
+                                       self.config['nodes'][self.core.hostname]['timeout'],
                                        1,
                                        44100,)
-        self.lirc_thread.start()
+        self.voiceThread.start()
 
     def terminate(self):
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()
 
-    def cmd_thread_status(self, args):
+    def return_status(self):
+        ret = {}
         self.workerLock.acquire()
-        status = self.workerWorking
+        ret['nowRecording'] = self.workerWorking
+        ret['bytesSubmitted'] = self.bytesSubmitted
         self.workerLock.release()
-        return [status]
+        return ret
 
     def cmd_stop_thread(self,args):
         self.workerLock.acquire()
@@ -174,12 +192,18 @@ class VoiceCommandsPlugin(Plugin):
     def on_text_detected(self, textData):
         self.logger.info("Processing text data")
         niceData = self.utils.convert_from_unicode(textData)
-        print "text tetected callback:\n%s" % niceData
+        for decodedTextData in niceData['hypotheses']:
+            confidence = decodedTextData['confidence']
+            text = decodedTextData['utterance']
+            print "text: %s (%s)" % (text, confidence)
+        # print "text tetected callback:\n%s" % niceData
 
 descriptor = {
     'name' : 'voice-commands',
     'help' : 'Voice command interface',
     'command' : 'voice',
     'mode' : PluginMode.MANAGED,
-    'class' : VoiceCommandsPlugin
+    'class' : VoiceCommandsPlugin,
+    'detailsNames' : { 'nowRecording' : "Currently recording",
+                       'bytesSubmitted' : "Bytes submitted to google" }
 }

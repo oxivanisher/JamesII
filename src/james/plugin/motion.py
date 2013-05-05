@@ -208,5 +208,6 @@ descriptor = {
     'help' : 'Interface to motion',
     'command' : 'motion',
     'mode' : PluginMode.MANAGED,
-    'class' : MotionPlugin
+    'class' : MotionPlugin,
+    'detailsNames' : {}
 }

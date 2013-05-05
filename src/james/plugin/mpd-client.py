@@ -480,5 +480,6 @@ descriptor = {
     'help' : 'Interface to mpd via python-mpc2 lib',
     'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
-    'class' : MpdClientPlugin
+    'class' : MpdClientPlugin,
+    'detailsNames' : {}
 }

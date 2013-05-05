@@ -53,6 +53,7 @@ descriptor = {
     'help' : 'Wake on lan plugin',
     'command' : 'wol',
     'mode' : PluginMode.MANAGED,
-    'class' : WakeOnLanPlugin
+    'class' : WakeOnLanPlugin,
+    'detailsNames' : {}
 }
 

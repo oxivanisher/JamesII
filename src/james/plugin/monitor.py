@@ -114,5 +114,6 @@ descriptor = {
     'help' : 'Console monitor plugin',
     'command' : 'mon',
     'mode' : PluginMode.MANAGED,
-    'class' : MonitorPlugin
+    'class' : MonitorPlugin,
+    'detailsNames' : {}
 }

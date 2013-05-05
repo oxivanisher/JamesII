@@ -222,5 +222,6 @@ descriptor = {
     'help' : 'Proximity detection plugin',
     'command' : 'prox',
     'mode' : PluginMode.MANAGED,
-    'class' : ProximityPlugin
+    'class' : ProximityPlugin,
+    'detailsNames' : {}
 }

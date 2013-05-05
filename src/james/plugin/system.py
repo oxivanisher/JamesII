@@ -34,7 +34,7 @@ class SystemPlugin(Plugin):
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
-        self.data_commands.create_subcommand('details', 'Returns detailed node informations', self.get_data_core_details)
+        self.data_commands.create_subcommand('details', 'Returns detailed node informations', self.get_data_details)
 
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -122,18 +122,27 @@ class SystemPlugin(Plugin):
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
-    def get_data_core_details(self, args):
+    def get_data_details(self, args):
+        coreData = {}
+        coreData['master'] = self.core.master
+        coreData['uuid'] = self.core.uuid
+        coreData['ip'] = self.get_ip([])
+        coreData['startup_timestamp'] = self.core.startup_timestamp
+        coreData['fqdn'] = socket.getfqdn()
+        coreData['location'] = self.core.location
+        coreData['platform'] = sys.platform
+        coreData['os_username'] = self.core.os_username
+        coreData['now'] = time.time()
+        coreData['proximity_status'] = self.core.proximity_status.get_status_here()
+
         ret = {}
-        ret['master'] = self.core.master
-        ret['uuid'] = self.core.uuid
-        ret['ip'] = self.get_ip([])
-        ret['startup_timestamp'] = self.core.startup_timestamp
-        ret['fqdn'] = socket.getfqdn()
-        ret['location'] = self.core.location
-        ret['platform'] = sys.platform
-        ret['os_username'] = self.core.os_username
-        ret['now'] = time.time()
-        ret['proximity_status'] = self.core.proximity_status.get_status_here()
+        ret['core'] = coreData
+
+        for plugin in self.core.plugins:
+            pluginData = plugin.return_status()
+            if pluginData:
+                ret[plugin.name] = pluginData
+
         return ret
 
 
@@ -186,5 +195,6 @@ descriptor = {
     'help' : 'JamesII system commands',
     'command' : 'sys',
     'mode' : PluginMode.AUTOLOAD,
-    'class' : SystemPlugin
+    'class' : SystemPlugin,
+    'detailsNames' : {}
 }

@@ -347,5 +347,6 @@ descriptor = {
     'help' : 'Interface to RaspberryPi',
     'command' : 'rasp',
     'mode' : PluginMode.MANAGED,
-    'class' : RaspberryPlugin
+    'class' : RaspberryPlugin,
+    'detailsNames' : {}
 }

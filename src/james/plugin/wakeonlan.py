@@ -62,6 +62,6 @@ descriptor = {
     'command' : 'wol',
     'mode' : PluginMode.MANAGED,
     'class' : WakeOnLanPlugin,
-    'detailsNames' : { 'wakeups' : "Amount of sent wakeups" }
+    'detailsNames' : { 'wakeups' : "Sent wakeups" }
 }
 

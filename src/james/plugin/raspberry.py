@@ -186,7 +186,7 @@ class RaspberryPlugin(Plugin):
         self.button_pins = []
         self.button_commands = {}
         try:
-            for command in self.core.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['buttons']):
+            for command in self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['buttons']):
                 self.button_commands[(command['pin'], command['seconds'])] = command['command'].split()
                 self.button_pins.append(command['pin'])
         except Exception as e:
@@ -195,7 +195,7 @@ class RaspberryPlugin(Plugin):
         self.switch_pins = []
         self.switch_commands = {}
         try:
-            for command in self.core.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['switches']):
+            for command in self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['switches']):
                 self.switch_commands[(command['pin'], True)] = command['cmd_on'].split()
                 self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
                 self.switch_pins.append(command['pin'])
@@ -245,7 +245,7 @@ class RaspberryPlugin(Plugin):
         return ret
 
     def cmd_led_on(self, args):
-        args = self.core.utils.list_unicode_cleanup(args)
+        args = self.utils.list_unicode_cleanup(args)
         try:
             pin = int(args[0])
             self.turn_on_led(pin)
@@ -254,7 +254,7 @@ class RaspberryPlugin(Plugin):
             return(["Syntax error (%s)" % (e)])
 
     def cmd_led_off(self, args):
-        args = self.core.utils.list_unicode_cleanup(args)
+        args = self.utils.list_unicode_cleanup(args)
         try:
             pin = int(args[0])
             self.turn_off_led(pin)

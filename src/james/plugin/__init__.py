@@ -21,6 +21,7 @@ class Plugin(object):
         self.uuid = str(uuid.uuid1()) 
         self.name = descriptor['name']
         self.core = core
+        self.utils = self.core.utils
         self.command = descriptor['command']
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
@@ -30,7 +31,7 @@ class Plugin(object):
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
         debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
 
-        self.logger = self.core.utils.getLogger(self.name, self.core.logger)
+        self.logger = self.utils.getLogger(self.name, self.core.logger)
         try:
             if self.core.config[self.name]['debug']:
                 self.cmd_activate_debug([])
@@ -88,7 +89,7 @@ class Plugin(object):
 
         if runCommand:
             if name == 'cmd':
-                args = self.core.utils.list_unicode_cleanup(body)
+                args = self.utils.list_unicode_cleanup(body)
 
                 try:
                     if self.command == args[0]:
@@ -99,7 +100,7 @@ class Plugin(object):
                 except KeyError:
                     pass
             elif name == 'data':
-                args = self.core.utils.list_unicode_cleanup(body)
+                args = self.utils.list_unicode_cleanup(body)
 
                 try:
                     if self.command == args[0]:
@@ -178,9 +179,10 @@ class PluginThread(threading.Thread):
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
-        self.logger = self.plugin.core.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
-        self.logger.debug('Thread initialized')
         self.config = self.plugin.config
+        self.utils = self.plugin.utils
+        self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger.debug('Thread initialized')
 
     def work(self):
         """

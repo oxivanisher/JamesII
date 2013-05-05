@@ -33,7 +33,7 @@ class TimerPlugin(Plugin):
     def load_saved_commands(self):
         try:
             file = open(self.command_cache_file, 'r')
-            # self.saved_commands = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.saved_commands = self.utils.convert_from_unicode(json.loads(file.read()))
             self.saved_commands = json.loads(file.read())
             file.close()
             self.logger.debug("Loading timed commands from %s" % (self.command_cache_file))
@@ -52,7 +52,7 @@ class TimerPlugin(Plugin):
 
     # command methods
     def cmd_timer_in(self, args):
-        seconds = self.core.utils.duration_string2seconds(args)
+        seconds = self.utils.duration_string2seconds(args)
         if seconds > 0:
             target_time = int(time.time()) + seconds
             return [self.timer_at(target_time, args[1:])]
@@ -74,7 +74,7 @@ class TimerPlugin(Plugin):
 
         if not target_timestamp:
             try:
-                time_sec = self.core.utils.time_string2seconds(args[0])
+                time_sec = self.utils.time_string2seconds(args[0])
                 hour = int(time_sec / 3600)
                 minute = int((time_sec - hour * 3600) / 60)
                 second = int(time_sec % 60)
@@ -86,7 +86,7 @@ class TimerPlugin(Plugin):
                 pass
 
             try:
-                time_date = self.core.utils.date_string2values(args[0])
+                time_date = self.utils.date_string2values(args[0])
                 target_time = target_time.replace(year  = time_date[0])
                 target_time = target_time.replace(month = time_date[1])
                 target_time = target_time.replace(day   = time_date[2])
@@ -105,7 +105,7 @@ class TimerPlugin(Plugin):
         ret = []
         for (timestamp, command) in self.saved_commands:
             ret.append("(%s) %s: %s" % (timestamp,
-                                        self.core.utils.get_nice_age(timestamp),
+                                        self.utils.get_nice_age(timestamp),
                                         ' '.join(command)))
         if len(ret) > 0:
             return ret
@@ -128,11 +128,11 @@ class TimerPlugin(Plugin):
 
     # internal timer methods
     def timer_at(self, timestamp, command):
-        # self.saved_commands.append(( timestamp, self.core.utils.list_unicode_cleanup(command) ))
-        self.logger.info('Saved command (%s) %s with timestamp (%s)' % (' '.join(command), self.core.utils.get_nice_age(timestamp), timestamp))
+        # self.saved_commands.append(( timestamp, self.utils.list_unicode_cleanup(command) ))
+        self.logger.info('Saved command (%s) %s with timestamp (%s)' % (' '.join(command), self.utils.get_nice_age(timestamp), timestamp))
         self.saved_commands.append(( timestamp, command ))
         return("Saved Command (%s) %s" % (' '.join(command),
-                                          self.core.utils.get_nice_age(timestamp)))
+                                          self.utils.get_nice_age(timestamp)))
 
     def command_daemon_loop(self):
         now = int(time.time())

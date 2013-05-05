@@ -29,8 +29,8 @@ class SysstatPlugin(Plugin):
 
     def sysstat_uptime(self, args):
         return (['The System started %s, JamesII %s.' % \
-                (self.core.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))), 
-                self.core.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))])
+                (self.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))), 
+                self.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))])
 
     def sysstat_net(self, args):
         interfaces = psutil.network_io_counters(pernic=True)
@@ -40,8 +40,8 @@ class SysstatPlugin(Plugin):
                 netif = interfaces[interface]
                 return_str.append("%-5s Sent: %-8s Recv: %-8s" % \
                                     (interface, 
-                                    self.core.utils.bytes2human(netif.bytes_sent),
-                                    self.core.utils.bytes2human(netif.bytes_recv)))
+                                    self.utils.bytes2human(netif.bytes_sent),
+                                    self.utils.bytes2human(netif.bytes_recv)))
         return return_str
 
     def sysstat_who(self, args):
@@ -51,7 +51,7 @@ class SysstatPlugin(Plugin):
             return_str.append("%-15s %-15s %s (%s)" % \
                                 (user.name,
                                 user.terminal or '-',
-                                self.core.utils.get_short_age(user.started),
+                                self.utils.get_short_age(user.started),
                                 #datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
                                 user.host)
             )
@@ -86,18 +86,18 @@ class SysstatPlugin(Plugin):
 
         if mem_avail:
             return_str.append("memory used %s/%s %s%%; avail %s; free %s" % \
-                                (self.core.utils.bytes2human(mem.used),
-                                self.core.utils.bytes2human(mem.total),
+                                (self.utils.bytes2human(mem.used),
+                                self.utils.bytes2human(mem.total),
                                 mem.percent,
-                                self.core.utils.bytes2human(mem.available),
-                                self.core.utils.bytes2human(mem.free)))
+                                self.utils.bytes2human(mem.available),
+                                self.utils.bytes2human(mem.free)))
 
         if swap_avail:
             return_str.append("swap used %s/%s %s%%; free %s" % \
-                                (self.core.utils.bytes2human(swap.used),
-                                self.core.utils.bytes2human(swap.total),
+                                (self.utils.bytes2human(swap.used),
+                                self.utils.bytes2human(swap.total),
                                 swap.percent,
-                                self.core.utils.bytes2human(swap.free)))
+                                self.utils.bytes2human(swap.free)))
 
         return return_str
 

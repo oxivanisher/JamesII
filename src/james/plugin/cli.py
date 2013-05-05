@@ -17,7 +17,7 @@ class ConsoleThread(threading.Thread):
         super(ConsoleThread, self).__init__()
         self.plugin = plugin
         self.terminated = False
-        self.logger = self.plugin.core.utils.getLogger('thread', self.plugin.logger)
+        self.logger = self.plugin.utils.getLogger('thread', self.plugin.logger)
     
         self.keywords = []
 
@@ -177,7 +177,7 @@ class CliPlugin(Plugin):
             if args['master']:
                 mode = "Master"
 
-            startup = self.core.utils.get_nice_age(int(args['startup_timestamp']))
+            startup = self.utils.get_nice_age(int(args['startup_timestamp']))
             timedelay = time.time() - args['now']
 
             display_data.append(('FQDN', args['fqdn']))

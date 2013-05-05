@@ -60,10 +60,10 @@ class XbmcPlugin(Plugin):
                                                              message.sender_name,
                                                              message.sender_host)
             body_list = []
-            for line in self.core.utils.list_unicode_cleanup([message.header]):
+            for line in self.utils.list_unicode_cleanup([message.header]):
                 body_list.append(line)
             try:
-                for line in self.core.utils.list_unicode_cleanup([message.body]):
+                for line in self.utils.list_unicode_cleanup([message.body]):
                     body_list.append(line)
             except Exception:
                 pass
@@ -76,7 +76,7 @@ class XbmcPlugin(Plugin):
     def process_broadcast_command_response(self, args, host, plugin):
         if self.show_broadcast:
             header = "Broadcast from %s@%s" % (plugin, host)
-            body = '\n'.join(self.core.utils.convert_from_unicode(args))
+            body = '\n'.join(self.utils.convert_from_unicode(args))
             try:
                 self.xbmc_conn.GUI.ShowNotification(header, body)
             except Exception as e:

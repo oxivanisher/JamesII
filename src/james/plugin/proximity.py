@@ -44,7 +44,7 @@ class ProximityPlugin(Plugin):
     def load_saved_state(self):
         try:
             file = open(self.persons_status_file, 'r')
-            # self.persons_status = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.persons_status = self.utils.convert_from_unicode(json.loads(file.read()))
             self.persons_status = json.loads(file.read())
             file.close()
             self.logger.debug("Loading persons status from %s" % (self.persons_status_file))
@@ -64,8 +64,8 @@ class ProximityPlugin(Plugin):
     # command methods
     def test(self, args):
         devices = {}
-        lines = self.core.utils.popenAndWait(['hcitool', 'dev'])
-        lines = self.core.utils.list_unicode_cleanup(lines)
+        lines = self.utils.popenAndWait(['hcitool', 'dev'])
+        lines = self.utils.list_unicode_cleanup(lines)
         if len(lines) > 1:
             for line in lines[1:]:
                 values = line.split()
@@ -74,8 +74,8 @@ class ProximityPlugin(Plugin):
 
     def discover(self, args):
         self.logger.debug('Discovering bluetooth hosts...')
-        lines = self.core.utils.popenAndWait(['hcitool', 'scan'])
-        lines = self.core.utils.list_unicode_cleanup(lines)
+        lines = self.utils.popenAndWait(['hcitool', 'scan'])
+        lines = self.utils.list_unicode_cleanup(lines)
         hosts = {}
         if len(lines) > 1:
             for line in lines[1:]:
@@ -115,7 +115,7 @@ class ProximityPlugin(Plugin):
             if self.core.config['persons'][person]['bt_devices']:
                 for name in self.core.config['persons'][person]['bt_devices'].keys():
                     mac = self.core.config['persons'][person]['bt_devices'][name]
-                    ret = self.core.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
+                    ret = self.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
                     clear_list = filter(lambda s: s != '', ret)
                     try:
                         for line in clear_list:

@@ -36,7 +36,7 @@ class EspeakPlugin(Plugin):
     def load_archived_messages(self):
         try:
             file = open(self.message_archive_file, 'r')
-            # self.archived_messages = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.archived_messages = self.utils.convert_from_unicode(json.loads(file.read()))
             self.archived_messages = json.loads(file.read())
             file.close()
 
@@ -61,14 +61,14 @@ class EspeakPlugin(Plugin):
         return "No text entered for espeak"
 
     def espeak_time(self, args):
-        self.speak('It is now %s' % self.core.utils.get_time_string())
+        self.speak('It is now %s' % self.utils.get_time_string())
         return "Espeak will speak the time"
 
     def cmd_waiting(self, args):
         # listing waiting messages
         ret = []
         for (timestamp, message) in self.archived_messages:
-            ret.append("%-20s %s" % (self.core.utils.get_nice_age(int(timestamp)),
+            ret.append("%-20s %s" % (self.utils.get_nice_age(int(timestamp)),
                                      message))
         if not ret:
             ret.append("no messages waiting")
@@ -80,7 +80,7 @@ class EspeakPlugin(Plugin):
         self.speak_lock.release()
 
     def speak_worker(self, msg):
-        self.core.utils.popenAndWait(self.espeak_command + [msg])
+        self.utils.popenAndWait(self.espeak_command + [msg])
         self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
 
     def speak_hook(self, args = None):
@@ -126,7 +126,7 @@ class EspeakPlugin(Plugin):
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.message_cache.append('Welcome, it is now %s' % self.core.utils.get_time_string())
+            self.message_cache.append('Welcome, it is now %s' % self.utils.get_time_string())
 
         if len(self.archived_messages) > 0:
         # reading the log
@@ -134,7 +134,7 @@ class EspeakPlugin(Plugin):
             work_archived_messages = self.archived_messages
             self.archived_messages = []
             for (timestamp, message) in work_archived_messages:
-                self.message_cache.append(self.core.utils.get_nice_age(int(timestamp)) + ", " + message)
+                self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
 
             self.message_cache.append("End of Log")
             

@@ -23,7 +23,7 @@ class MpdClientWorker(object):
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
-        self.logger = self.plugin.core.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
         
         self.check_connection()
 

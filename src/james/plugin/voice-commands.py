@@ -40,6 +40,8 @@ class VoiceThread(PluginThread):
     def process_wave_data(self, audioData):
         URL = 'http://www.google.com/speech-api/v1/recognize?lang=' + self.lang
 
+        # FIXME: track total upload size
+        
         wav_file = wave.open(self.fnameWave, "w")
         wav_file.setparams((self.channels, 2, self.rate, len(audioData)/2, 'NONE', 'NOT COMPRESSED'))
         wav_file.writeframesraw(audioData)
@@ -75,8 +77,8 @@ class VoiceThread(PluginThread):
         recordStartTs = 0
         returnData = ''
         while (run):
+            data = stream.read(chunk)
             if working:
-                data = stream.read(chunk)
                 if len(data) % 2 != 0:
                     self.logger.warning("Recieved invalid data from audio stream")
                 for j in range(0, chunk / 2):
@@ -171,7 +173,8 @@ class VoiceCommandsPlugin(Plugin):
 
     def on_text_detected(self, textData):
         self.logger.info("Processing text data")
-        print "text tetected callback:\n%s" % textData
+        niceData = self.utils.convert_from_unicode(textData)
+        print "text tetected callback:\n%s" % niceData
 
 descriptor = {
     'name' : 'voice-commands',

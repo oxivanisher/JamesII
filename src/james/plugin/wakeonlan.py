@@ -35,7 +35,7 @@ class WakeOnLanPlugin(Plugin):
             return "no valid hostname given"
 
         if host:
-            self.core.utils.wake_on_lan(host)
+            self.utils.wake_on_lan(host)
             return (["waking %s (%s)" % (args[0], host)])
 
     def process_proximity_event(self, newstatus):
@@ -44,7 +44,7 @@ class WakeOnLanPlugin(Plugin):
                 self.logger.debug("Processing proximity event")
                 ret = []
                 for (name, mac) in self.wol_devices:
-                    self.core.utils.wake_on_lan(mac)
+                    self.utils.wake_on_lan(mac)
                     ret.append('WOL Woke host %s (%s)' % (name, mac))
                 self.logger.info(ret)
 

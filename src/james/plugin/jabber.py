@@ -72,7 +72,7 @@ class JabberThread(PluginThread):
             my_roster = self.conn.getRoster()
             for i in my_roster.getItems():
                 self.roster[i] = my_roster.getStatus(i)
-            self.roster = self.plugin.core.utils.convert_from_unicode(self.roster)
+            self.roster = self.plugin.utils.convert_from_unicode(self.roster)
 
             # self.logger.debug("Jabber worker roster: %s" % self.roster)
             return True
@@ -238,7 +238,7 @@ class JabberThread(PluginThread):
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
             if message.getJid():
-                src_jid = self.plugin.core.utils.convert_from_unicode(message.getJid()).split('/')
+                src_jid = self.plugin.utils.convert_from_unicode(message.getJid()).split('/')
                 self.muc_users[who] = src_jid[0]
 
     # called when the worker ends
@@ -349,7 +349,7 @@ class JabberPlugin(Plugin):
         try:
             jid_ress = jid_data[1]
 
-            command = self.core.utils.list_unicode_cleanup(message.getBody().split())
+            command = self.utils.list_unicode_cleanup(message.getBody().split())
             # compensate for first auto capital letter on many mobile devices
             command[0] = command[0].lower()
             self.run_command(command, jid_from)
@@ -369,7 +369,7 @@ class JabberPlugin(Plugin):
                 try:
                     jid_ress = jid_data[1]
 
-                    command = self.core.utils.list_unicode_cleanup(message.getBody().split())
+                    command = self.utils.list_unicode_cleanup(message.getBody().split())
                     # compensate for first auto capital letter on many mobile devices
                     command[0] = command[0].lower()
 
@@ -473,7 +473,7 @@ class JabberPlugin(Plugin):
 
         cleaned_users = self.users
         try:
-            cleaned_users = self.core.utils.convert_from_unicode(self.users)
+            cleaned_users = self.utils.convert_from_unicode(self.users)
         except RuntimeError:
             pass
 
@@ -522,10 +522,10 @@ class JabberPlugin(Plugin):
             message_text = ['Message with level %s from %s@%s:' % (message.level,
                                                                    message.sender_name,
                                                                    message.sender_host)]
-            for line in self.core.utils.list_unicode_cleanup([message.header]):
+            for line in self.utils.list_unicode_cleanup([message.header]):
                 message_text.append(line)
             try:
-                for line in self.core.utils.list_unicode_cleanup([message.body]):
+                for line in self.utils.list_unicode_cleanup([message.body]):
                     message_text.append(line)
             except Exception:
                 pass

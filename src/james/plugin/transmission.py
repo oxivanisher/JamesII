@@ -10,7 +10,7 @@ class TransmissionPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(TransmissionPlugin, self).__init__(core, descriptor)
 
-        self.muted_words = self.core.utils.list_unicode_cleanup(self.config['dont_say'])
+        self.muted_words = self.utils.list_unicode_cleanup(self.config['dont_say'])
         self.server_string = "%s@%s:%s" % (self.config['nodes'][self.core.hostname]['username'],
                                            self.config['nodes'][self.core.hostname]['host'],
                                            self.config['nodes'][self.core.hostname]['port'])
@@ -67,7 +67,7 @@ class TransmissionPlugin(Plugin):
                 else:
                     my_eta = torrent.eta
 
-                dl_rate = self.core.utils.bytes2human(torrent.rateDownload)
+                dl_rate = self.utils.bytes2human(torrent.rateDownload)
                 # with this code block you see all the attributes of the torrent
                 # for key, value in torrent.fields.iteritems():
                 #     self.logger.debug(key, value)
@@ -85,7 +85,7 @@ class TransmissionPlugin(Plugin):
 
     def cmd_add(self, args):
         if self.connection_ok():
-            args = self.core.utils.list_unicode_cleanup(args)
+            args = self.utils.list_unicode_cleanup(args)
             message = self.core.new_message(self.name)
             message.level = 2
             try:
@@ -110,7 +110,7 @@ class TransmissionPlugin(Plugin):
     def cmd_remove(self, args):
         ret = []
         if self.connection_ok():
-            args = self.core.utils.list_unicode_cleanup(args)
+            args = self.utils.list_unicode_cleanup(args)
             for t_id in args:
                 try:
                     self.tr_conn.remove(int(t_id))
@@ -125,7 +125,7 @@ class TransmissionPlugin(Plugin):
     def cmd_start(self, args):
         ret = []
         if self.connection_ok():
-            args = self.core.utils.list_unicode_cleanup(args)
+            args = self.utils.list_unicode_cleanup(args)
             for t_id in args:
                 try:
                     self.tr_conn.start(int(t_id))
@@ -143,7 +143,7 @@ class TransmissionPlugin(Plugin):
     def cmd_stop(self, args):
         ret = []
         if self.connection_ok():
-            args = self.core.utils.list_unicode_cleanup(args)
+            args = self.utils.list_unicode_cleanup(args)
             for t_id in args:
                 try:
                     self.tr_conn.stop(int(t_id))

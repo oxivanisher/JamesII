@@ -42,7 +42,7 @@ class MotionPlugin(Plugin):
     def load_saved_state(self):
         try:
             file = open(self.log_file, 'r')
-            # self.log = self.core.utils.convert_from_unicode(json.loads(file.read()))
+            # self.log = self.utils.convert_from_unicode(json.loads(file.read()))
             self.log = json.loads(file.read())
             file.close()
             self.logger.debug("Loading motion events from %s" % (self.log_file))
@@ -82,7 +82,7 @@ class MotionPlugin(Plugin):
         return var / var
         ret = []
         for (timestamp, message, file_name) in self.log:
-            ret.append("%-20s %s" % (self.core.utils.get_short_age(timestamp), message))
+            ret.append("%-20s %s" % (self.utils.get_short_age(timestamp), message))
         return ret
 
     def cmd_cam_lost(self, args):
@@ -182,11 +182,11 @@ class MotionPlugin(Plugin):
                                       self.logger))
 
     def cam_on(self):
-        self.core.utils.popenAndWait(['/etc/init.d/motion', 'start'])
+        self.utils.popenAndWait(['/etc/init.d/motion', 'start'])
         return "Motion started"
 
     def cam_off(self):
-        self.core.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
+        self.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
         return "Motion stopped"
 
     def on_cam_controll_callback(self, state):

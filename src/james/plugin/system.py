@@ -47,11 +47,11 @@ class SystemPlugin(Plugin):
             file.close()
             self.logger.debug("Checking for crash restart in %s" % (self.crash_detection_file))
             os.remove(self.crash_detection_file)
-            self.logger.info('JamesII started after crash %s' % (self.core.utils.get_nice_age(timestamp)))
+            self.logger.info('JamesII started after crash %s' % (self.utils.get_nice_age(timestamp)))
 
             message = self.core.new_message(self.name)
             message.level = 2
-            message.header = ("James crash detected on %s %s." % (self.core.hostname, self.core.utils.get_nice_age(timestamp)))
+            message.header = ("James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
             message.send()
 
         except IOError:
@@ -154,7 +154,7 @@ class SystemPlugin(Plugin):
     # only the master should process aliases
     def process_command_request_event(self, command):
         try:
-            request = self.core.utils.list_unicode_cleanup(command['body'])
+            request = self.utils.list_unicode_cleanup(command['body'])
         except Exception as e:
             request = False
             pass

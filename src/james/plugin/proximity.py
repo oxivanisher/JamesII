@@ -35,6 +35,7 @@ class ProximityPlugin(Plugin):
         self.proxy_send_lock = False
         self.load_saved_state()
         self.worker_threads = []
+
         self.proximityChecks = 0
         self.proximityUpdates = 0
         self.lastProximityCheckStart = 0
@@ -237,6 +238,7 @@ class ProximityPlugin(Plugin):
         ret['lastProximityCheckEnd'] = self.lastProximityCheckEnd
         ret['lastProximityCheckDuration'] = self.lastProximityCheckDuration
         ret['currentProximitySleep'] = self.currentProximitySleep
+        ret['currentProximityState'] = self.status
         return ret
 
 descriptor = {
@@ -250,5 +252,6 @@ descriptor = {
                        'lastProximityCheckStart' : "Last Proximity check start",
                        'lastProximityCheckEnd' : "Last Proximity check end",
                        'currentProximitySleep' : "Current sleep time",
+                       'currentProximityState' : "Current proximity state",
                        'lastProximityCheckDuration' : "Last Proximity check duration" }
 }

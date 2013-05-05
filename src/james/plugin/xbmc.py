@@ -96,6 +96,6 @@ descriptor = {
     'command' : 'xbmc',
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin,
-    'detailsNames' : { 'updates' : "Amount of database updates initated"}
+    'detailsNames' : { 'updates' : "Database updates initated"}
 }
 

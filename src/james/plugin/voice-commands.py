@@ -166,12 +166,12 @@ class VoiceThread(PluginThread):
 
                 elif (time.time() - recordStoppedTs) > self.timeout and recordStoppedTs != 0:
                     recordStoppedTs = 0
-                    self.play_herz_for(880, 0.1)
-                    self.play_herz_for(660, 0.1)
                     self.logger.info("Timeout reached. Disabling voice commands.")
                     self.plugin.workerLock.acquire()
                     self.plugin.workerWorking = False
                     self.plugin.workerLock.release()
+                    self.play_herz_for(880, 0.1)
+                    self.play_herz_for(660, 0.1)
                     returnData = ''
 
             self.plugin.workerLock.acquire()
@@ -183,16 +183,16 @@ class VoiceThread(PluginThread):
             self.plugin.playBeeps = []
             self.plugin.workerLock.release()
 
-            if working == False and newWorking == True:
-                self.play_herz_for(660, 0.1)
-                self.play_herz_for(880, 0.1)
-            working = newWorking
-
             for (herz, duration) in playSounds:
                 self.play_herz_for(herz, duration)
 
             for (herz, amount, duration) in playBeeps:
                 self.play_beep(herz, amount, duration)
+
+            if working == False and newWorking == True:
+                self.play_herz_for(660, 0.1)
+                self.play_herz_for(880, 0.1)
+            working = newWorking
 
         self.streamIn.stop_stream()
         self.streamIn.close()

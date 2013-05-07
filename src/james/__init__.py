@@ -212,6 +212,8 @@ class Core(object):
                 self.logger.debug("Loading proximity status from %s" % (self.proximity_state_file))
         except IOError:
             pass
+        except ValueError:
+            pass
 
         # publish our nodes_online list and start the loop
         self.master_send_nodes_online()

@@ -385,7 +385,7 @@ class Core(object):
             self.master_node = sender_uuid
 
             try:
-                self.location = self.config['locations'][self.hostname]
+                self.location = self.utils.convert_from_unicode(self.config['locations'][self.hostname])
             except Exception as e:
                 self.location = 'home'
         else:

@@ -38,6 +38,7 @@ class XbmcPlugin(Plugin):
         try:
             self.xbmc_conn.VideoLibrary.Scan()
             self.updates += 1
+            self.logger.info("Database updating")
             return ["Video database is updating"]
         except Exception as e:
             return ["Could not send update command %s" % e]
@@ -45,6 +46,7 @@ class XbmcPlugin(Plugin):
     def cmd_test(self, args):
         try:
             self.xbmc_conn.GUI.ShowNotification("test head", "test body")
+            self.logger.info("Test notification sent")
             return ["Notification sent"]
         except Exception as e:
             return ["Could not send notification %s" % e]
@@ -72,6 +74,7 @@ class XbmcPlugin(Plugin):
                 pass
             body = '\n'.join(body_list)
             try:
+                self.logger.debug("Showing message: header (%s) body (%s)" % (header, body))
                 self.xbmc_conn.GUI.ShowNotification(header, body)
             except Exception as e:
                 return ["Could not send notification %s" % e]
@@ -81,6 +84,7 @@ class XbmcPlugin(Plugin):
             header = "Broadcast from %s@%s" % (plugin, host)
             body = '\n'.join(self.utils.convert_from_unicode(args))
             try:
+                self.logger.debug("Showing broadcast message: header (%s) body (%s)" % (header, body))
                 self.xbmc_conn.GUI.ShowNotification(header, body)
             except Exception as e:
                 return ["Could not send notification %s" % e]

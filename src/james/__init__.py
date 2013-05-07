@@ -569,6 +569,9 @@ class Core(object):
                 self.logger.debug("Could not safe proximity status to file")
             else:
                 self.logger.warning("Could not safe proximity status to file")
+        except KeyError:
+            # no proximity state found for this location
+            pass
         self.terminated = True
 
     # threading methods

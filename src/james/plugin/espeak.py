@@ -90,10 +90,13 @@ class EspeakPlugin(Plugin):
             self.speak_lock.acquire()
             msg = ''
             for message in self.message_cache:
-                end = message[-1]
-                if end != "." and end != ":" and end != "!" and end != "?":
-                    message += "."
-                msg += message + "\n"
+                try:
+                    end = message[-1]
+                    if end != "." and end != ":" and end != "!" and end != "?":
+                        message += "."
+                    msg += message + "\n"
+                except IndexError:
+                    pass
             self.message_cache = []
             self.talkover = True
             try:

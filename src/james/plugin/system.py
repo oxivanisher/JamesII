@@ -150,9 +150,12 @@ class SystemPlugin(Plugin):
             pluginData = plugin.return_status()
             if pluginData:
                 ret[plugin.name] = pluginData
-
         return ret
 
+    def alert(self, args):
+        for plugin in self.core.plugins:
+            if plugin != self:
+                plugin.alert(args)
 
     def cmd_nodes_plugins(self, args):
         plugin_names = []

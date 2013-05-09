@@ -80,6 +80,9 @@ class XbmcPlugin(Plugin):
         else:
             return ["Could not send notification %s" % e]
 
+    def alert(self, args):
+        self.send_rpc_message(args)
+
     def process_message(self, message):
         if message.level > 0:
             header = 'Level %s Message from %s@%s:' % (message.level,

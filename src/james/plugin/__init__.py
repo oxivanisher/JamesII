@@ -27,11 +27,13 @@ class Plugin(object):
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
         self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
-        self.data_commands.create_subcommand('status', 'Returns status informations', self.return_status)
+        self.commands.create_subcommand('alert', "Alert some text (head) (body)", self.alert, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
         debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
+
+        self.data_commands.create_subcommand('status', 'Returns status informations', self.return_status)
 
         self.logger = self.utils.getLogger(self.name, self.core.logger)
         try:
@@ -186,6 +188,9 @@ class Plugin(object):
         for key in self.return_status().keys():
             ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
         return ret
+
+    def alert(self, args):
+        pass
 
 class PluginThread(threading.Thread):
 

@@ -61,6 +61,10 @@ class EspeakPlugin(Plugin):
             return(["Espeak will speak: '%s'" % (text)])
         return "No text entered for espeak"
 
+    def alert(self, args):
+        self.logger.debug('Alerting (%s)' % ' '.join(args))
+        self.espeak_say(args)
+
     def espeak_time(self, args):
         self.speak('It is now %s' % self.utils.get_time_string())
         return "Espeak will speak the time"

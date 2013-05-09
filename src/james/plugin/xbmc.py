@@ -29,7 +29,7 @@ class XbmcPlugin(Plugin):
             user_string = user_string + "@"
         server_string = "%s:%s" % (self.config['nodes'][self.core.hostname]['host'],
                                    self.config['nodes'][self.core.hostname]['port'])
-        connection_string = "http://%s%s/jsonrpc" % (user_string, server_string)
+        connection_string = "http://%s%s" % (user_string, server_string)
         self.xbmc_conn = jsonrpclib.Server(connection_string)
 
         self.updates = 0

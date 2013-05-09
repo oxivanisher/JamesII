@@ -52,7 +52,7 @@ class XbmcPlugin(Plugin):
                 self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
                 return False
         except Exception:
-            self.logger.info('Socket error catched')
+            self.logger.warning('Unable to connect to XBMC')
 
     def send_rpc_message(self, title, message):
         return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})

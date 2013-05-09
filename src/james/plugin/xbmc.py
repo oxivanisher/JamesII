@@ -41,15 +41,18 @@ class XbmcPlugin(Plugin):
         rawData = [{"jsonrpc":"2.0", 'id':id, 'method':method, 'params':params}]
 
         data = json.dumps(rawData)
-        h = httplib.HTTPConnection(self.connection_string)
-        h.request('POST', '/jsonrpc', data, headers)
-        r = h.getresponse()
-        rpcReturn = json.loads(r.read())[0]
-        if rpcReturn['result'] == 'OK':
-            return True
-        else:
-            self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
-            return False
+        try:
+            h = httplib.HTTPConnection(self.connection_string)
+            h.request('POST', '/jsonrpc', data, headers)
+            r = h.getresponse()
+            rpcReturn = json.loads(r.read())[0]
+            if rpcReturn['result'] == 'OK':
+                return True
+            else:
+                self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+                return False
+        except Exception as e:
+            self.logger.info('Socket error: (%s)' % e)
 
     def send_rpc_message(self, title, message):
         return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})
@@ -109,8 +112,8 @@ class XbmcPlugin(Plugin):
 
     def process_broadcast_command_response(self, args, host, plugin):
         if self.show_broadcast:
-            header = "Broadcast from %s@%s" % (plugin, host)
-            body = '\n'.join(self.utils.convert_from_unicode(args))
+            header = "%s@%s" % (plugin, host)
+            body = ' '.join(self.utils.convert_from_unicode(args))
             if self.send_rpc_message(header, body):
                 self.logger.debug("Showing broadcast message: header (%s) body (%s)" % (header, body))
             else:

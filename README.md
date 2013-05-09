@@ -19,8 +19,9 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Timer (autoload on core node) the all mighty MCP to time commands with "in" and "at"
 * Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server
 * Wakeonlan (managed) to wake up devices when you come home for example
-* Xbmc (managed) to trigger database updates and display onscreen messages (messages not tested and only xbmc 12 (frodo)!)
+* Xbmc (managed) to trigger database updates and display onscreen messages
 * LIRC (managed) to control or be controlled by IR devices (you have to configure your /etc/lirc/lircd.conf yourself!)
+* Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )
 
 #### Plugin modes explanation:
 * Manual: Passive plugins are run exclusively, normally with a separate bash command

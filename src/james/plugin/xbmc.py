@@ -14,6 +14,7 @@ class XbmcPlugin(Plugin):
         self.show_broadcast = False
 
         self.commands.create_subcommand('update', 'Initiates a Database update', self.cmd_update)
+        self.commands.create_subcommand('info', 'Shows information about current playback', self.cmd_info)
         self.commands.create_subcommand('pause', 'Pause current playback', self.cmd_pause)
         self.commands.create_subcommand('stop', 'Stop current playback', self.cmd_stop)
         self.commands.create_subcommand('toggle', 'Toggle current playback', self.cmd_toggle)
@@ -112,6 +113,13 @@ class XbmcPlugin(Plugin):
         else:
             self.logger.debug("Not update database because i am no updateNode")
 
+    def cmd_info(self, args):
+        status = self.return_status()
+        niceStatus = "Stopped"
+        if status['actId']:
+            niceStatus = "%s: %s %s" % (status['niceStatus'], status['niceName'], status['niceTime'])
+        return niceStatus
+
     def alert(self, args):
         data = ' '.join(args).split(";")
         if len(data) > 1:
@@ -195,10 +203,11 @@ class XbmcPlugin(Plugin):
         return False
 
     def get_episode_details(self, epId):
-        episodeDBRaw = self.send_rpc("VideoLibrary.GetEpisodeDetails", {"episodeid" : epId, "properties" : ["episode", "showtitle", "season"]})
+        episodeDBRaw = self.send_rpc("VideoLibrary.GetEpisodeDetails", {"episodeid" : epId, "properties" : ["episode", "showtitle", "season", "firstaired"]})
         return { 'label' : episodeDBRaw['result']['episodedetails']['label'],
                  'episode' : episodeDBRaw['result']['episodedetails']['episode'],
                  'showtitle' : episodeDBRaw['result']['episodedetails']['showtitle'],
+                 'firstaired' : episodeDBRaw['result']['episodedetails']['firstaired'],
                  'season' : episodeDBRaw['result']['episodedetails']['season'] }
 
     def get_movie_details(self, movieId):
@@ -238,7 +247,7 @@ class XbmcPlugin(Plugin):
 
             if actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
-                niceName = "%s S%02dE%02d %s" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'])
+                niceName = "%s S%02dE%02d %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
 
             elif actType == 'movie':
                 actDetails = self.get_movie_details(actFileId)

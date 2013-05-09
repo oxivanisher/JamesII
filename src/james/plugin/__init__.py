@@ -185,9 +185,12 @@ class Plugin(object):
     def cmd_show_plugin_status(self, args):
         ret = []
         data = self.return_status()
-        for key in self.return_status().keys():
-            ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
-        return ret
+        try:
+            for key in self.return_status().keys():
+                ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
+            return ret
+        except AttributeError:
+            self.logger.error("Error on cmd_show_plugin_status in %s" % self.name)
 
     def alert(self, args):
         pass

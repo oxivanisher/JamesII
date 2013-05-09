@@ -89,9 +89,9 @@ class XbmcPlugin(Plugin):
 
     def process_message(self, message):
         if message.level > 0:
-            header = 'Level %s Message from %s@%s:' % (message.level,
-                                                             message.sender_name,
-                                                             message.sender_host)
+            header = '%s@%s (%s)' % (message.sender_name,
+                                     message.sender_host,
+                                     message.level)
             body_list = []
             for line in self.utils.list_unicode_cleanup([message.header]):
                 body_list.append(line)

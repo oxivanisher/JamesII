@@ -1,11 +1,10 @@
 
-import jsonrpclib
+import json
+import uuid
+import urllib
+import httplib
 
 from james.plugin import *
-
-
-# http://forum.xbmc.org/showthread.php?tid=111772
-# https://github.com/joshmarshall/jsonrpclib/
 
 class XbmcPlugin(Plugin):
 
@@ -29,27 +28,28 @@ class XbmcPlugin(Plugin):
             user_string = user_string + "@"
         server_string = "%s:%s" % (self.config['nodes'][self.core.hostname]['host'],
                                    self.config['nodes'][self.core.hostname]['port'])
-        connection_string = "http://%s%s" % (user_string, server_string)
-        self.xbmc_conn = jsonrpclib.Server(connection_string)
+        self.connection_string = "%s%s" % (user_string, server_string)
 
         self.updates = 0
 
-    def cmd_update(self, args):
-        try:
-            self.xbmc_conn.VideoLibrary.Scan()
-            self.updates += 1
-            self.logger.info("Database updating")
-            return ["Video database is updating"]
-        except Exception as e:
-            return ["Could not send update command %s" % e]
+    def send_rpc(self, method, params = {}):
+        id = str(uuid.uuid1())
+        headers = { 'Content-Type': 'application/json' }
+        rawData = [{"jsonrpc":"2.0", 'id':id, 'method':method, 'params':params}]
 
-    def cmd_test(self, args):
-        try:
-            self.xbmc_conn.GUI.ShowNotification("test head", "test body")
-            self.logger.info("Test notification sent")
-            return ["Notification sent"]
-        except Exception as e:
-            return ["Could not send notification %s" % e]
+        data = json.dumps(rawData)
+        h = httplib.HTTPConnection(self.connection_string)
+        h.request('POST', '/jsonrpc', data, headers)
+        r = h.getresponse()
+        rpcReturn = json.loads(r.read())[0]
+        if rpcReturn['result'] == 'OK':
+            return True
+        else:
+            self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+            return False
+
+    def send_rpc_message(self, title, message):
+        return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})
 
     def cmd_broadcast_on(self, args):
         self.show_broadcast = True
@@ -58,6 +58,21 @@ class XbmcPlugin(Plugin):
     def cmd_broadcast_off(self, args):
         self.show_broadcast = False
         return ["Broadcast messages will no longer be shown"]
+
+    def cmd_update(self, args):
+        if self.send_rpc("VideoLibrary.Scan"):
+            self.updates += 1
+            self.logger.info("Database updating")
+            return ["Video database is updating"]
+        else:
+            return ["Could not send update command %s" % e]
+
+    def cmd_test(self, args):
+        if self.send_rpc_message("test head", "test body"):
+            self.logger.info("Test notification sent")
+            return ["Notification sent"]
+        else:
+            return ["Could not send notification %s" % e]
 
     def process_message(self, message):
         if message.level > 0:
@@ -73,20 +88,19 @@ class XbmcPlugin(Plugin):
             except Exception:
                 pass
             body = '\n'.join(body_list)
-            try:
+            
+            if self.send_rpc_message(header, body):
                 self.logger.debug("Showing message: header (%s) body (%s)" % (header, body))
-                self.xbmc_conn.GUI.ShowNotification(header, body)
-            except Exception as e:
+            else:
                 return ["Could not send notification %s" % e]
 
     def process_broadcast_command_response(self, args, host, plugin):
         if self.show_broadcast:
             header = "Broadcast from %s@%s" % (plugin, host)
             body = '\n'.join(self.utils.convert_from_unicode(args))
-            try:
+            if self.send_rpc_message(header, body):
                 self.logger.debug("Showing broadcast message: header (%s) body (%s)" % (header, body))
-                self.xbmc_conn.GUI.ShowNotification(header, body)
-            except Exception as e:
+            else:
                 return ["Could not send notification %s" % e]
 
     def return_status(self):

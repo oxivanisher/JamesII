@@ -66,13 +66,12 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-xmpp (jabber plugin)
 * python-dbus (dbus notification plugin)
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
-* python-jsonrpclib (xbmc plugin, https://github.com/joshmarshall/jsonrpclib/)
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \
 	python-transmissionrpc python-pylirc python-pip
-	pip install jsonrpclib python-mpd2
+	pip install python-mpd2
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser"

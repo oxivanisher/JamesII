@@ -100,7 +100,7 @@ class XbmcPlugin(Plugin):
                     body_list.append(line)
             except Exception:
                 pass
-            body = '\n'.join(body_list)
+            body = ' '.join(body_list)
             
             if self.send_rpc_message(header, body):
                 self.logger.debug("Showing message: header (%s) body (%s)" % (header, body))

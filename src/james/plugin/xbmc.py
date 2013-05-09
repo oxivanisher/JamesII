@@ -30,6 +30,9 @@ class XbmcPlugin(Plugin):
                                    self.config['nodes'][self.core.hostname]['port'])
         self.connection_string = "%s%s" % (user_string, server_string)
 
+        self.updateNode = False
+        if self.core.hostname in self.config['updatenodes']:
+            self.updateNode = True
         self.updates = 0
 
     def send_rpc(self, method, params = {}):
@@ -60,12 +63,15 @@ class XbmcPlugin(Plugin):
         return ["Broadcast messages will no longer be shown"]
 
     def cmd_update(self, args):
-        if self.send_rpc("VideoLibrary.Scan"):
-            self.updates += 1
-            self.logger.info("Database updating")
-            return ["Video database is updating"]
+        if self.updateNode:
+            if self.send_rpc("VideoLibrary.Scan"):
+                self.updates += 1
+                self.logger.info("Database updating")
+                return ["Video database is updating"]
+            else:
+                return ["Could not send update command %s" % e]
         else:
-            return ["Could not send update command %s" % e]
+            self.logger.debug("Not update database because i am no updateNode")
 
     def cmd_test(self, args):
         if self.send_rpc_message("test head", "test body"):
@@ -106,6 +112,7 @@ class XbmcPlugin(Plugin):
     def return_status(self):
         ret = {}
         ret['updates'] = self.updates
+        ret['updateNode'] = self.updateNode
         return ret
 
 descriptor = {
@@ -114,6 +121,7 @@ descriptor = {
     'command' : 'xbmc',
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin,
-    'detailsNames' : { 'updates' : "Database updates initated"}
+    'detailsNames' : { 'updates' : "Database updates initated",
+                       'updateNode' : "DB update node"}
 }
 

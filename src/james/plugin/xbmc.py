@@ -14,7 +14,9 @@ class XbmcPlugin(Plugin):
         self.show_broadcast = False
 
         self.commands.create_subcommand('update', 'Initiates a Database update', self.cmd_update)
-        self.commands.create_subcommand('test', 'test message', self.cmd_test)
+        self.commands.create_subcommand('pause', 'Pause current playback', self.cmd_pause)
+        self.commands.create_subcommand('stop', 'Stop current playback', self.cmd_stop)
+        self.commands.create_subcommand('toggle', 'Toggle current playback', self.cmd_toggle)
         broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
         broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
         broadcase_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
@@ -35,6 +37,8 @@ class XbmcPlugin(Plugin):
             self.updateNode = True
         self.updates = 0
 
+        self.commands.create_subcommand('test', 'test message', self.get_active_player_details)
+
     def send_rpc(self, method, params = {}):
         id = str(uuid.uuid1())
         headers = { 'Content-Type': 'application/json' }
@@ -46,7 +50,13 @@ class XbmcPlugin(Plugin):
             h.request('POST', '/jsonrpc', data, headers)
             r = h.getresponse()
             rpcReturn = json.loads(r.read())[0]
-            if rpcReturn['result'] == 'OK':
+            if 'error' in rpcReturn.keys():
+                self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+                return False
+            else:
+                return rpcReturn
+
+            if rpcReturn['error'] == 'OK':
                 return True
             else:
                 self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
@@ -56,6 +66,32 @@ class XbmcPlugin(Plugin):
 
     def send_rpc_message(self, title, message):
         return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})
+
+    def cmd_pause(self, args):
+        playerId = self.get_active_player()
+        pause = False
+        if playerId:
+            if self.get_active_player_details(playerId)['speed'] == 1:
+                pause = True
+        if pause:
+            self.send_rpc("Player.PlayPause", {"playerid" : playerId})
+            return ["Paused"]
+        return ["Not paused"]
+
+    def cmd_toggle(self, args):
+        playerId = self.get_active_player()
+        pause = False
+        if playerId:
+            self.send_rpc("Player.PlayPause", {"playtogglederid" : playerId})
+            return ["Toggled"]
+        return ["Not toggled"]
+
+    def cmd_stop(self, args):
+        playerId = self.get_active_player()
+        if playerId:
+            self.send_rpc("Player.STOP", {"playerid" : playerId})
+            return ["Stopped"]
+        return ["Not stopped"]
 
     def cmd_broadcast_on(self, args):
         self.show_broadcast = True
@@ -75,13 +111,6 @@ class XbmcPlugin(Plugin):
                 return ["Could not send update command %s" % e]
         else:
             self.logger.debug("Not update database because i am no updateNode")
-
-    def cmd_test(self, args):
-        if self.send_rpc_message("test head", "test body"):
-            self.logger.info("Test notification sent")
-            return ["Notification sent"]
-        else:
-            return ["Could not send notification %s" % e]
 
     def alert(self, args):
         data = ' '.join(args).split(";")
@@ -119,10 +148,133 @@ class XbmcPlugin(Plugin):
             else:
                 return ["Could not send notification %s" % e]
 
+    def get_active_player(self):
+        # get active player
+        activePlayer = False
+        activePlayerRaw = self.utils.convert_from_unicode(self.send_rpc("Player.GetActivePlayers"))
+        try:
+            for activePlayer in activePlayerRaw['result']:
+                if activePlayer['playerid']:
+                    return activePlayer['playerid']
+        except TypeError:
+            pass
+
+        return False
+
+    def get_active_file(self, player = None):
+        if not player:
+            player = self.get_active_player()
+
+        # get active item
+        if player:
+            playItemRaw = self.send_rpc("Player.GetItem", {"playerid" : player})
+            try:
+                return { 'label' : playItemRaw['result']['item']['label'],
+                         'type'  : playItemRaw['result']['item']['type'],
+                         'id'    : playItemRaw['result']['item']['id'] }
+                
+            except TypeError:
+                pass
+
+        return False
+
+    def get_active_player_details(self, player = None):
+        if not player:
+            player = self.get_active_player()
+
+        if player:
+            playItemRaw = self.send_rpc("Player.GetProperties", {"playerid" : player, "properties" : [ "speed", "percentage", "time", "totaltime" ] })
+            try:
+                return { 'speed' : playItemRaw['result']['speed'],
+                         'percentage' : playItemRaw['result']['percentage'],
+                         'time' : playItemRaw['result']['time'],
+                         'totaltime' : playItemRaw['result']['totaltime'] }
+            except TypeError:
+                pass            
+
+        return False
+
+    def get_episode_details(self, epId):
+        episodeDBRaw = self.send_rpc("VideoLibrary.GetEpisodeDetails", {"episodeid" : epId, "properties" : ["episode", "showtitle", "season"]})
+        return { 'label' : episodeDBRaw['result']['episodedetails']['label'],
+                 'episode' : episodeDBRaw['result']['episodedetails']['episode'],
+                 'showtitle' : episodeDBRaw['result']['episodedetails']['showtitle'],
+                 'season' : episodeDBRaw['result']['episodedetails']['season'] }
+
+    def get_movie_details(self, movieId):
+        movieDBRaw = self.send_rpc("VideoLibrary.GetMovieDetails", {"movieid" : movieId, "properties" : ["year", "originaltitle"]})
+        return { 'year' : movieDBRaw['result']['moviedetails']['year'],
+                 'originaltitle' : movieDBRaw['result']['moviedetails']['originaltitle'] }
+
+    def process_proximity_event(self, newstatus):
+        self.logger.debug("XBMC Processing proximity event")
+        if not newstatus['status'][self.core.location]:
+            self.cmd_stop(None)
+
     def return_status(self):
+        player = self.get_active_player()
+        actSpeed = ""
+        actPercentage = 0.0
+        actTime = {}
+        actTotaltime = {}
+        actFile = ""
+        actFileId = ""
+        actType = ""
+        niceName = ""
+        niceStatus = "Stopped"
+        niceTime = ""
+        actDetails = {}
+        if player:
+            actPlayerData = self.get_active_player_details(player)
+
+            actSpeed = actPlayerData['speed']
+            actPercentage = actPlayerData['percentage']
+            actTime = actPlayerData['time']
+            actTotaltime = actPlayerData['totaltime']
+
+            actFile = self.get_active_file(player)['label']
+            actType = self.get_active_file(player)['type']
+            actFileId = self.get_active_file(player)['id']
+
+            if actType == 'episode':
+                actDetails = self.get_episode_details(actFileId)
+                niceName = "%s S%02dE%02d %s" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'])
+
+            elif actType == 'movie':
+                actDetails = self.get_movie_details(actFileId)
+                if actDetails['year'] > 0:
+                    niceName = "%s (%s)" % (actDetails['originaltitle'], actDetails['year'])
+                else:
+                    niceName = actDetails['originaltitle']
+
+            niceTime = "%s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(actPercentage, 0),
+                                                           actTime['hours'],
+                                                           actTime['minutes'],
+                                                           actTime['seconds'],
+                                                           actTotaltime['hours'],
+                                                           actTotaltime['minutes'],
+                                                           actTotaltime['seconds'] )
+            if actSpeed == 0:
+                niceStatus = "Paused"
+            if actSpeed == 1:
+                niceStatus = "Playing"
+            else:
+                niceStatus = "Playing at %s" % actSpeed
+
         ret = {}
         ret['updates'] = self.updates
+        ret['niceName'] = niceName
         ret['updateNode'] = self.updateNode
+        ret['actFile'] = actFile
+        ret['actId'] = actFileId
+        ret['actType'] = actType
+        ret['actDetails'] = actDetails
+        ret['actSpeed'] = actSpeed
+        ret['actPercentage'] = actPercentage
+        ret['actTime'] = actTime
+        ret['actTotaltime'] = actTotaltime
+        ret['niceStatus'] = niceStatus
+        ret['niceTime'] = niceTime
         return ret
 
 descriptor = {
@@ -132,6 +284,17 @@ descriptor = {
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin,
     'detailsNames' : { 'updates' : "Database updates initated",
-                       'updateNode' : "DB update node"}
+                       'niceName' : "Active nice name",
+                       'niceTime' : "Active nice time",
+                       'niceStatus' : "Active nice status",
+                       'updateNode' : "DB update node",
+                       'actSpeed' : "Active speed",
+                       'actPercentage' : "Active percentage",
+                       'actTime' : "Active time",
+                       'actTotaltime' : "Active totaltime",
+                       'actFile' : "Active file",
+                       'actId' : "Active id",
+                       'actType' : "Active type",
+                       'actDetails' : "Active details" }
 }
 

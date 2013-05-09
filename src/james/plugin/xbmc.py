@@ -81,7 +81,11 @@ class XbmcPlugin(Plugin):
             return ["Could not send notification %s" % e]
 
     def alert(self, args):
-        self.send_rpc_message(args)
+        data = ' '.join(args).split(";")
+        if len(data) > 1:
+            self.send_rpc_message(data[0], data[1])
+        elif len(data) == 1:
+            self.send_rpc_message("JamesII Alert", data[0])
 
     def process_message(self, message):
         if message.level > 0:

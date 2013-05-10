@@ -68,6 +68,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-dbus (dbus notification plugin)
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
+* python-pyaudio (voice-commands plugin)
 
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \

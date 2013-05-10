@@ -118,6 +118,7 @@ class VoiceThread(PluginThread):
         recordStartTs = 0
         recordStoppedTs = 0
         returnData = ''
+        bufferData = []
         while (run):
             data = self.streamIn.read(chunk)
             if working:
@@ -135,6 +136,12 @@ class VoiceThread(PluginThread):
                             self.logger.debug("Started listening")
                             recordStartTs = time.time()
                             recording = True
+                            for bufferChunk in bufferData:
+                                returnData += bufferChunk
+                    elif not recording:
+                        bufferData.append(data)
+                        if len(bufferData) > 30:
+                            bufferData.pop()
 
                 if recording:
                     returnData += data
@@ -142,37 +149,43 @@ class VoiceThread(PluginThread):
                 recordDuration = time.time() - recordStartTs
                 lastNoise = time.time() - loudTs
 
-                if lastNoise > 2 and recording:
+                if lastNoise > self.timeout and recording:
                     recordStoppedTs = time.time()
                     recording = False
 
+
                     self.logger.debug("Stopped listening")
-                    if recordDuration < 2.1:
+                    if recordDuration < (self.timeout + 0.1):
                         self.logger.debug("Too short to be a command")
                     else:
                         self.logger.debug("Processing audio data")
                         voiceCommand = self.process_wave_data(returnData)
                         if voiceCommand:
                             lastTextDetected = time.time()
+                            self.play_herz_for(880, 0.1)
+                            self.play_herz_for(660, 0.1)
                             # self.play_beep(600, 2, 0.15)
                             self.logger.debug("Detection data: %s" % voiceCommand)
                             self.core.add_timeout(0, self.plugin.on_text_detected, voiceCommand)
+                            recording = False
+                            self.plugin.workerLock.acquire()
+                            self.plugin.workerWorking = False
+                            self.plugin.workerLock.release()
                         else:
                             self.logger.info("No text detected")
-                            self.play_herz_for(880, 0.1)
-                            self.play_herz_for(660, 0.1)
 
                     returnData = ''
 
-                elif (time.time() - recordStoppedTs) > self.timeout and recordStoppedTs != 0:
-                    recordStoppedTs = 0
-                    self.logger.info("Timeout reached. Disabling voice commands.")
-                    self.plugin.workerLock.acquire()
-                    self.plugin.workerWorking = False
-                    self.plugin.workerLock.release()
-                    self.play_herz_for(880, 0.1)
-                    self.play_herz_for(660, 0.1)
-                    returnData = ''
+                # elif (time.time() - recordStoppedTs) > self.timeout and recordStoppedTs != 0:
+                #     recordStoppedTs = 0
+                #     self.logger.info("Timeout reached. Disabling voice commands.")
+                #     recording = False
+                #     self.plugin.workerLock.acquire()
+                #     self.plugin.workerWorking = False
+                #     self.plugin.workerLock.release()
+                #     self.play_herz_for(880, 0.1)
+                #     self.play_herz_for(660, 0.1)
+                #     returnData = ''
 
             self.plugin.workerLock.acquire()
             run = self.plugin.workerRunning
@@ -211,6 +224,7 @@ class VoiceCommandsPlugin(Plugin):
         self.commands.create_subcommand('stop', ('Stopps voice detection'), self.cmd_stop_thread)
         self.commands.create_subcommand('playTone', 'Plays a tone (herz) (time)', self.cmd_play_herz_for)
         self.commands.create_subcommand('playBeep', 'Plays beeps (herz) (amount) (time)', self.cmd_play_beep)
+        self.commands.create_subcommand('unknown', 'Shows all unknown words', self.cmd_show_unknown)
 
         self.workerLock = threading.Lock()
         self.workerRunning = True
@@ -218,6 +232,7 @@ class VoiceCommandsPlugin(Plugin):
         self.bytesSubmitted = 0
         self.playSounds = []
         self.playBeeps = []
+        self.unknownWords = []
         
         self.voiceThread = VoiceThread(self,
                                        self.core,
@@ -238,6 +253,7 @@ class VoiceCommandsPlugin(Plugin):
         self.workerLock.acquire()
         ret['nowRecording'] = self.workerWorking
         ret['bytesSubmitted'] = self.bytesSubmitted
+        ret['unknownWords'] = self.unknownWords
         self.workerLock.release()
         return ret
 
@@ -254,33 +270,54 @@ class VoiceCommandsPlugin(Plugin):
     def on_text_detected(self, textData):
         # self.logger.info("Processing text data")
         niceData = self.utils.convert_from_unicode(textData)
+        replace = self.utils.convert_from_unicode(self.config['replace'])
+        keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
+        ignored = self.utils.convert_from_unicode(self.config['ignored'])
+        commands = self.utils.convert_from_unicode(self.config['commands'])
+
         for decodedTextData in niceData['hypotheses']:
             confidence = decodedTextData['confidence']
-            rawText = decodedTextData['utterance'].lower().split()
-            keyword = self.config['nodes'][self.core.hostname]['keyword'].lower()
-            text = []
-            try:
-                if rawText[0] == keyword:
-                    text = rawText[1:]
-            except IndexError:
-                pass
+            rawText = decodedTextData['utterance']
+            rawTextList = rawText.lower().split()
+            filteredList = []
+            keywordFound = False
+            print "a %s" % ' '.join(rawTextList)
+            for word in rawTextList:
+                if word in replace.keys():
+                    print "r %s %s" % (word, replace[word])
+                    word = replace[word]
 
-            try:
-                if rawText[1] == keyword:
-                    text = rawText[2:]
-            except IndexError:
-                pass
+                if word == keyword:
+                    print "k %s" % word
+                    keywordFound = True
+                elif word in ignored:
+                    print "i %s" % word
+                else:
+                    filteredList.append(word)
+                    if word not in replace.keys():
+                        if word not in commands.keys():
+                            self.unknownWords.append(word)
+                            print "u %s" % word
 
-            if len(text) == 0:
-                self.logger.info("No keyword and command detected in: %s" % ' '.join(rawText))
+
+            if len(filteredList) == 0:
+                self.logger.info("No command detected in: %s" % ' '.join(filteredList))
+                self.playBeeps.append((440, 3, 0.15))
+            elif not keywordFound:
+                self.logger.info("No keyword detected in: %s" % ' '.join(filteredList))
                 self.playBeeps.append((440, 3, 0.15))
             else:
-                print self.config['commands'] # [{u'it is time for tea': u'tea'}, {u'sleep well': u'gn8'}]
-                if ' '.join(text) in self.config['commands']:
-                    self.logger.info("Found command: %s" % ' '.join(text))
-                    self.playBeeps.append((880, 2, 0.1))
+                commandFound = None
+                for command in commands.keys():
+                    if command in filteredList:
+                        commandFound = commands[command]
+
+                if commandFound:
+                        self.logger.info("Found command (%s) in (%s)" % (commandFound, ' '.join(filteredList)))
+                        self.playBeeps.append((880, 2, 0.1))
+                        self.send_command(commandFound.split())
                 else:
-                    self.logger.info("Unknown command: %s" % ' '.join(text))
+                    self.logger.info("Unknown command: %s" % ' '.join(filteredList))
                     self.playBeeps.append((440, 2, 0.1))
 
         # print "text tetected callback:\n%s" % niceData
@@ -297,6 +334,8 @@ class VoiceCommandsPlugin(Plugin):
         else:
             return ["Syntax error. Use (herz) (amount) (duration)"]
 
+    def cmd_show_unknown(self, args):
+        return self.unknownWords
 
 descriptor = {
     'name' : 'voice-commands',
@@ -305,5 +344,6 @@ descriptor = {
     'mode' : PluginMode.MANAGED,
     'class' : VoiceCommandsPlugin,
     'detailsNames' : { 'nowRecording' : "Currently recording",
-                       'bytesSubmitted' : "Bytes submitted to google" }
+                       'bytesSubmitted' : "Bytes submitted to google",
+                       'unknownWords' : "Unknown words" }
 }

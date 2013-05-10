@@ -19,6 +19,7 @@ import json
 import tempfile
 import os
 import math
+import atexit
 
 from james.plugin import *
 
@@ -120,7 +121,16 @@ class VoiceThread(PluginThread):
         returnData = ''
         bufferData = []
         while (run):
-            data = self.streamIn.read(chunk)
+            try:
+                data = self.streamIn.read(chunk)
+            except IOError as ex:
+                if ex[1] != pyaudio.paInputOverflowed:
+                    self.logger.debug('Catched a overflow error')
+                else:
+                    self.logger.debug('Catched some input error')
+                    raise
+                data = '\x00' * chunk
+
             if working:
                 if len(data) % 2 != 0:
                     self.logger.warning("Recieved invalid data from audio stream")
@@ -220,6 +230,8 @@ class VoiceCommandsPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(VoiceCommandsPlugin, self).__init__(core, descriptor)
 
+        self.unknown_words_file = os.path.join(os.path.expanduser("~"), ".james_unknown_words")
+
         self.commands.create_subcommand('start', ('Starts voice detection'), self.cmd_start_thread)
         self.commands.create_subcommand('stop', ('Stopps voice detection'), self.cmd_stop_thread)
         self.commands.create_subcommand('playTone', 'Plays a tone (herz) (time)', self.cmd_play_herz_for)
@@ -243,10 +255,45 @@ class VoiceCommandsPlugin(Plugin):
                                        44100,)
         self.voiceThread.start()
 
+        self.replace = self.utils.convert_from_unicode(self.config['replace'])
+        self.keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
+        self.ignored = self.utils.convert_from_unicode(self.config['ignored'])
+        self.voiceCommands = self.utils.convert_from_unicode(self.config['commands'])
+
+        atexit.register(self.save_unknown_words)
+        self.load_unknown_words()
+
     def terminate(self):
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()
+
+    def load_unknown_words(self):
+        try:
+            file = open(self.unknown_words_file, 'r')
+            loadedUnknownWords = json.loads(file.read())
+            file.close()
+
+            for word in loadedUnknownWords:
+                if word not in self.replace:
+                    if word not in self.keyword:
+                        if word not in self.ignored:
+                            if word not in self.voiceCommands:
+                                self.unknownWords.append(word)
+
+        except IOError:
+            pass
+        pass
+
+    def save_unknown_words(self):
+        if len(self.unknownWords) > 0:
+            try:
+                file = open(self.unknown_words_file, 'w')
+                file.write(json.dumps(list(set(self.unknownWords))))
+                file.close()
+                self.logger.debug("Saving unknown words to %s" % (self.unknown_words_file))
+            except IOError:
+                self.logger.warning("Could not safe unknown words to file!")
 
     def return_status(self):
         ret = {}
@@ -270,10 +317,6 @@ class VoiceCommandsPlugin(Plugin):
     def on_text_detected(self, textData):
         # self.logger.info("Processing text data")
         niceData = self.utils.convert_from_unicode(textData)
-        replace = self.utils.convert_from_unicode(self.config['replace'])
-        keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
-        ignored = self.utils.convert_from_unicode(self.config['ignored'])
-        commands = self.utils.convert_from_unicode(self.config['commands'])
 
         for decodedTextData in niceData['hypotheses']:
             confidence = decodedTextData['confidence']
@@ -283,19 +326,19 @@ class VoiceCommandsPlugin(Plugin):
             keywordFound = False
             print "a %s" % ' '.join(rawTextList)
             for word in rawTextList:
-                if word in replace.keys():
-                    print "r %s %s" % (word, replace[word])
-                    word = replace[word]
+                if word in self.replace.keys():
+                    print "r %s %s" % (word, self.replace[word])
+                    word = self.replace[word]
 
-                if word == keyword:
+                if word == self.keyword:
                     print "k %s" % word
                     keywordFound = True
-                elif word in ignored:
+                elif word in self.ignored:
                     print "i %s" % word
                 else:
                     filteredList.append(word)
-                    if word not in replace.keys():
-                        if word not in commands.keys():
+                    if word not in self.replace.keys():
+                        if word not in self.voiceCommands.keys():
                             self.unknownWords.append(word)
                             print "u %s" % word
 
@@ -308,13 +351,14 @@ class VoiceCommandsPlugin(Plugin):
                 self.playBeeps.append((440, 3, 0.15))
             else:
                 commandFound = None
-                for command in commands.keys():
+                for command in self.voiceCommands.keys():
                     if command in filteredList:
-                        commandFound = commands[command]
+                        commandFound = self.voiceCommands[command]
 
                 if commandFound:
                         self.logger.info("Found command (%s) in (%s)" % (commandFound, ' '.join(filteredList)))
                         self.playBeeps.append((880, 2, 0.1))
+                        self.send_command(["alert", "running", "command" + commandFound.split()])
                         self.send_command(commandFound.split())
                 else:
                     self.logger.info("Unknown command: %s" % ' '.join(filteredList))
@@ -335,7 +379,7 @@ class VoiceCommandsPlugin(Plugin):
             return ["Syntax error. Use (herz) (amount) (duration)"]
 
     def cmd_show_unknown(self, args):
-        return self.unknownWords
+        return ', '.join(self.unknownWords)
 
 descriptor = {
     'name' : 'voice-commands',

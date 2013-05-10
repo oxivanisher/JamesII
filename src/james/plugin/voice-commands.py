@@ -255,14 +255,14 @@ class VoiceCommandsPlugin(Plugin):
                                        44100,)
         self.voiceThread.start()
 
-        self.replace = self.config['replace']
-        self.keyword = self.config['nodes'][self.core.hostname]['keyword'].lower()
-        self.ignored = self.config['ignored']
-        self.voiceCommands = self.config['commands']
-        # self.replace = self.utils.convert_from_unicode(self.config['replace'])
-        # self.keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
-        # self.ignored = self.utils.convert_from_unicode(self.config['ignored'])
-        # self.voiceCommands = self.utils.convert_from_unicode(self.config['commands'])
+        # self.replace = self.config['replace']
+        # self.keyword = self.config['nodes'][self.core.hostname]['keyword'].lower()
+        # self.ignored = self.config['ignored']
+        # self.voiceCommands = self.config['commands']
+        self.replace = self.utils.convert_from_unicode(self.config['replace'])
+        self.keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
+        self.ignored = self.utils.convert_from_unicode(self.config['ignored'])
+        self.voiceCommands = self.utils.convert_from_unicode(self.config['commands'])
 
         atexit.register(self.save_unknown_words)
         self.load_unknown_words()

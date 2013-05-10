@@ -383,7 +383,10 @@ class VoiceCommandsPlugin(Plugin):
             return ["Syntax error. Use (herz) (amount) (duration)"]
 
     def cmd_show_unknown(self, args):
-        return ', '.join(self.unknownWords)
+        if len(self.unknownWords) > 0:
+            return [', '.join(self.unknownWords)]
+        else:
+            return ['No unknown words']
 
 descriptor = {
     'name' : 'voice-commands',

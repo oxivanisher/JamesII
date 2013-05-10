@@ -362,7 +362,7 @@ class VoiceCommandsPlugin(Plugin):
                 if commandFound:
                         self.logger.info("Found command (%s) in (%s)" % (commandFound, ' '.join(filteredList)))
                         self.playBeeps.append((880, 2, 0.1))
-                        self.send_command(["alert", "running", "command" + commandFound.split()])
+                        self.send_command(["alert", "running", "command"] + commandFound.split())
                         self.send_command(commandFound.split())
                 else:
                     self.logger.info("Unknown command: %s" % ' '.join(filteredList))

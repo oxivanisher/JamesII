@@ -223,7 +223,7 @@ class Core(object):
 
         (loaded_plugins, plugin_warnings, plugin_descr_error) = plugin.Factory.find_plugins(path)
 
-        self.logger.debug('Plugins available: %s' % loaded_plugins)
+        self.logger.debug('Plugins available: %s' % len(loaded_plugins))
         for (plugin_name, plugin_error) in plugin_warnings:
             self.logger.debug('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
         for plugin_name in plugin_descr_error:
@@ -243,14 +243,14 @@ class Core(object):
         manual_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
             manual_plugins.append(c.name)
-        self.logger.debug("Ignoring manual plugins: %s" % manual_plugins)
+        self.logger.debug("Ignoring manual plugins: %s" % ', '.join(manual_plugins))
 
 
         autoloaded_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
             autoloaded_plugins.append(c.name)
             self.instantiate_plugin(c)
-        self.logger.debug("Autoloading plugins: %s" % plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD))
+        self.logger.debug("Autoloading plugins: %s" % ', '.join(autoloaded_plugins))
 
         # output = "Loading managed plugins:"
         loaded_managed_plugins = []
@@ -270,7 +270,7 @@ class Core(object):
                 loaded_managed_plugins.append(c.name)
                 self.instantiate_plugin(c)
 
-        self.logger.debug("Loading managed plugins: %s" % loaded_managed_plugins)
+        self.logger.debug("Loading managed plugins: %s" % ', '.join(loaded_managed_plugins))
 
     def instantiate_plugin(self, cls):
         p = cls(self, cls.descriptor)

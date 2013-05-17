@@ -19,7 +19,7 @@ class MpdClientWorker(object):
         self.myport = myport
         self.pretalk_volume = None
         self.worker_lock = threading.Lock()
-        # signal.signal(signal.SIGALRM, self.sig_timeout_handler)
+        signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
         self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
@@ -30,6 +30,7 @@ class MpdClientWorker(object):
         self.logger.warning('Lost connection to MPD server')
         self.connected = False
         self.unlock()
+        self.terminate()
 
     def connect(self):
         self.logger.debug('Connecting to MPD server')
@@ -366,7 +367,7 @@ class MpdClientPlugin(Plugin):
             self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
             return (["Playing station %s" % radio_name])
         else:
-            self.logget.debug("Unable to connect to MPD")
+            self.logger.debug("Unable to connect to MPD")
             return (["Unable to connect to MPD"])
 
     def radio_toggle(self, args):

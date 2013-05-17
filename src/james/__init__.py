@@ -602,7 +602,7 @@ class Core(object):
         now = time.time()
         for timeout in self.timeouts:
             if timeout.deadline <= now:
-                # self.logger.debug('Processing timeout %s' % timeout.handler)
+                self.logger.debug('Processing timeout %s' % timeout.handler)
                 timeout.handler(*timeout.args, **timeout.kwargs)
         self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
 
@@ -615,15 +615,12 @@ class Core(object):
             logger = self.logger
         logger.debug('Spawning subprocess (%s)' % target)
         def runInThread(target, onExit, target_args):
-            #FIXME make me thread safe (call onExit with add_timeout)
             if target_args != None:
-                self.logger.debug('OnExit long')
+                self.logger.debug('Ending subprocess (%s)' % target)
                 self.add_timeout(0, onExit, target(target_args))
-                # onExit(target(target_args))
             else:
-                self.logger.debug('OnExit short')
+                self.logger.debug('Ending subprocess (%s)' % target)
                 self.add_timeout(0, onExit, target())
-                # onExit(target())
 
         thread = threading.Thread(target=runInThread, args=(target, onExit, target_args))
         thread.start()

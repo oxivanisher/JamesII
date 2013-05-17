@@ -617,13 +617,13 @@ class Core(object):
         def runInThread(target, onExit, target_args):
             #FIXME make me thread safe (call onExit with add_timeout)
             if target_args != None:
-                # self.logger.debug('OnExit long')
-                # self.add_timeout(0, onExit(), target(target_args))
-                onExit(target(target_args))
+                self.logger.debug('OnExit long')
+                self.add_timeout(0, onExit, target(target_args))
+                # onExit(target(target_args))
             else:
-                # self.logger.debug('OnExit short')
-                # self.add_timeout(0, onExit(), target())
-                onExit(target())
+                self.logger.debug('OnExit short')
+                self.add_timeout(0, onExit, target())
+                # onExit(target())
 
         thread = threading.Thread(target=runInThread, args=(target, onExit, target_args))
         thread.start()

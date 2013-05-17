@@ -30,7 +30,6 @@ class MpdClientWorker(object):
         self.logger.warning('Lost connection to MPD server')
         self.connected = False
         self.unlock()
-        pass
 
     def connect(self):
         self.logger.debug('Connecting to MPD server')
@@ -47,7 +46,6 @@ class MpdClientWorker(object):
             signal.alarm(0)
             self.unlock()
             self.logger.error("Connection error (%s)" % e)
-            pass
 
         return False
 
@@ -75,7 +73,8 @@ class MpdClientWorker(object):
         self.worker_lock.acquire()
 
     def unlock(self):
-        self.worker_lock.release()
+        if self.worker_lock.locked():
+            self.worker_lock.release()
 
     def play_url(self, uri, volume = -1):
         self.logger.debug('Trying to play URI (%s) with volume (%s)' % (uri, volume))
@@ -260,7 +259,7 @@ class FadeThread(PluginThread):
             time.sleep(0.1)
 
     def on_exit(self, result):
-        self.plugin.fade_ended()
+        self.plugin.core.add_timeout(0, self.plugin.fade_ended)
 
 class MpdClientPlugin(Plugin):
 

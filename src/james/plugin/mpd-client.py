@@ -19,7 +19,7 @@ class MpdClientWorker(object):
         self.myport = myport
         self.pretalk_volume = None
         self.worker_lock = threading.Lock()
-        signal.signal(signal.SIGALRM, self.sig_timeout_handler)
+        # signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
         self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)

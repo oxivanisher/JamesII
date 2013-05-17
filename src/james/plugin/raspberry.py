@@ -41,7 +41,6 @@ class BlinkLed(object):
 class RaspberryThread(PluginThread):
 
     def __init__(self, plugin, button_pins, switch_pins, led_pins):
-        # FIXME i must become a singleton!
         super(RaspberryThread, self).__init__(plugin)
         self.button_pins = button_pins
         self.switch_pins = switch_pins
@@ -302,7 +301,6 @@ class RaspberryPlugin(Plugin):
 
     # worker control methods
     def start_worker(self):
-        # FIXME make me singleton!
         self.worker_lock.acquire()
         self.worker_exit = False
         self.worker_lock.release()

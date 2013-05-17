@@ -17,7 +17,6 @@ from james.plugin import *
 class JabberThread(PluginThread):
 
     def __init__(self, plugin, users, cfg_jid, password, muc_room = None, muc_nick = 'james'):
-        # FIXME i must become a singleton!
         super(JabberThread, self).__init__(plugin)
         self.cfg_jid = cfg_jid
         self.password = password
@@ -483,7 +482,6 @@ class JabberPlugin(Plugin):
 
     # worker control methods
     def start_worker(self):
-        # FIXME make me singleton!
         self.worker_lock.acquire()
         self.worker_exit = False
         self.worker_lock.release()

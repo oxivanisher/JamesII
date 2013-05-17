@@ -10,7 +10,6 @@ import signal
 from james.plugin import *
 
 class MpdClientWorker(object):
-    # FIXME: make me singleton!
     # FIXME: sometimes, i loose connection :()
 
     def __init__(self, plugin, myhost, myport):

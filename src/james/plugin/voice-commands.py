@@ -384,7 +384,7 @@ class VoiceCommandsPlugin(Plugin):
 
     def cmd_show_unknown(self, args):
         if len(self.unknownWords) > 0:
-            return [', '.join(self.unknownWords)]
+            return ['(%s) ' % len(self.unknownWords) + ', '.join(self.unknownWords)]
         else:
             return ['No unknown words']
 

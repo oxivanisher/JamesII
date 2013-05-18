@@ -165,12 +165,8 @@ class TransmissionPlugin(Plugin):
                     torrent =  self.tr_conn.info(torrent_id)[torrent_id]
                     if torrent.isFinished and torrent.status == 'stopped':
                         newname = self.remove_muted_words(torrent.name)
-                        message = self.core.new_message(self.name)
                         self.logger.info("Download of %s finished" % newname)
-                        message.level = 2
-                        message.header = ("Download of %s finished" % newname)
-                        message.send()
-
+                        self.send_command(['sys', 'alert', 'Torrent download finished'])
                         self.tr_conn.remove(torrent_id)
                 except ValueError:
                     self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")

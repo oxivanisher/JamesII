@@ -193,6 +193,7 @@ class SystemPlugin(Plugin):
                     args = request[1:]
             try:
                 command = self.command_aliases[request[0]].split() + args
+                print command['uuid']
                 self.send_command(command, command['uuid'])
                 self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(command)))
             except Exception as e:

@@ -67,12 +67,15 @@ class Plugin(object):
     def process_broadcast_command_response(self, args, host, plugin):
         pass
 
-    def send_command(self, args):
+    def send_command(self, args, srcUuid = None):
         """ Sends a command to the queue. Splits it into multiple commands with && as splitter. """
+
+        if not srcUuid:
+            srcUuid = self.uuid
 
         tmpArgsStr = ' '.join(args)
         for tmpCommandStr in tmpArgsStr.split('&&'):
-            self.send_request(self.uuid, 'cmd', tmpCommandStr.split())
+            self.send_request(srcUuid, 'cmd', tmpCommandStr.split())
 
     def send_data_command(self, args):
         """ Sends a data command to the queue. """

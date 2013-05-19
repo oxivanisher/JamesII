@@ -1,5 +1,7 @@
 # http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
 
+import flask, flask.views
+
 from james.plugin import *
 
 # http://stackoverflow.com/questions/713847/recommendations-of-python-rest-web-services-framework
@@ -21,14 +23,51 @@ from james.plugin import *
 #     app = web.application(urls, globals())
 #     app.run()
 
+class HttpView(flask.views.MethodView):
+
+    def get(self):
+        print "get recieved"
+        return "get recieved"
+
+    def post(self):
+        print "post recieved"
+        return "post recieved"
+
+
+class HttpServerWorker(PluginThread):
+
+    def __init__(self, plugin):
+        super(HttpServerWorker, self).__init__(plugin)
+        self.serverApp = flask.Flask(__name__)
+        self.serverApp.add_url_rule('/', view_func=HttpView.as_view('main'), methods=['GET', 'POST'])
+        self.serverApp.debug = True
+
+        self.logger.debug('HTTP Worker thread initialized')
+
+    def work(self):
+        self.logger.debug('HTTP Worker starting')
+        self.serverApp.run()
+        pass
+
+
+
     
 class HttpServerPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-
         super(HttpServerPlugin, self).__init__(core, descriptor)
 
-        self.logger.info("http server loaded")
+        self.workerThread = HttpServerWorker(self)
+
+
+    def start(self):
+        self.logger.debug('Starting worker')
+        self.workerThread.start()
+        self.worker_threads.append(self.workerThread)
+        
+
+    def terminate(self):
+        self.wait_for_threads(self.worker_threads)
 
 
 descriptor = {

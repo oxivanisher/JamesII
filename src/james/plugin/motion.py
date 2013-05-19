@@ -42,8 +42,6 @@ class MotionPlugin(Plugin):
         else:
             self.core.add_timeout(0, self.cam_control, True)
 
-        self.worker_threads = []
-
     def load_saved_state(self):
         try:
             file = open(self.log_file, 'r')

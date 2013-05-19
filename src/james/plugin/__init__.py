@@ -50,6 +50,8 @@ class Plugin(object):
             self.config = None
             pass
 
+        self.worker_threads = []
+
     def start(self):
         pass
 

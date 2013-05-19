@@ -34,7 +34,6 @@ class ProximityPlugin(Plugin):
         self.persons_status_file = os.path.join(os.path.expanduser("~"), ".james_persons_status")
         self.proxy_send_lock = False
         self.load_saved_state()
-        self.worker_threads = []
 
         self.proximityChecks = 0
         self.proximityUpdates = 0

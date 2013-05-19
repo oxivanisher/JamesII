@@ -28,7 +28,6 @@ class EspeakPlugin(Plugin):
         self.load_archived_messages()
 
         self.speak_lock = threading.Lock()
-        self.worker_threads = []
 
     def start(self):
         # wait 1 seconds befor working

@@ -311,6 +311,7 @@ class MpdClientPlugin(Plugin):
 
     def terminate(self):
         self.client_worker.terminate()
+        self.wait_for_threads(self.worker_threads)
 
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')
@@ -413,6 +414,7 @@ class MpdClientPlugin(Plugin):
                                          self.config['sleep_fade'],
                                          0)
                 self.thread.start()
+                self.worker_threads.append(self.thread)
                 self.logger.info("MPD Sleep mode activated")
         else:
             self.logger.info("MPD Sleep mode not activated. You are not here.")
@@ -432,6 +434,7 @@ class MpdClientPlugin(Plugin):
                                          self.config['wakeup_fade'],
                                          self.config['norm_volume'])
                 self.thread.start()
+                self.worker_threads.append(self.thread)
                 self.logger.info("MPD Wakeup mode activated")
         else:
             self.logger.info("Wakeup not activated. You are not here.")

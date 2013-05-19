@@ -177,7 +177,6 @@ class SystemPlugin(Plugin):
             request = self.utils.list_unicode_cleanup(command['body'])
         except Exception as e:
             request = False
-            pass
 
         if self.core.master:
             # search in ghost commands
@@ -191,16 +190,16 @@ class SystemPlugin(Plugin):
             if request:
                 if len(request) > 1:
                     args = request[1:]
+
             try:
-                command = self.command_aliases[request[0]].split() + args
-                print command['uuid']
-                self.send_command(command, command['uuid'])
-                self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(command)))
-            except Exception as e:
+                srcUuid = command['uuid']
+                runCommand = self.command_aliases[request[0]].split() + args
+                self.send_command(runCommand, srcUuid)
+                self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(runCommand)))
+            except KeyError as e:
                 if depth == 0 and self.core.data_commands.get_best_match(request) != self.core.data_commands:
                     self.logger.info('Unknown command (%s)' % e)
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
-                pass
 
     def return_status(self):
         coreData = {}

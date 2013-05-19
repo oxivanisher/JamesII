@@ -71,10 +71,6 @@ class Plugin(object):
         """ Sends a command to the queue. Splits it into multiple commands with && as splitter. """
         if not srcUuid:
             srcUuid = self.uuid
-            print "aa"
-        else:
-            print "bb"
-        print srcUuid
 
         tmpArgsStr = ' '.join(args)
         for tmpCommandStr in tmpArgsStr.split('&&'):

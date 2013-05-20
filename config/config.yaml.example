@@ -36,6 +36,46 @@ persons:
    none      : 00:00:00:00:00:00
 
 # plugin configurations "under construction"
+voice-commands:
+ debug: True
+ replace:
+  computed: 'computer'
+  computers: 'computer'
+  computable: 'computer'
+  competitive: 'computer'
+  computing: 'computer'
+  youtube: 'computer'
+  pc: 'computer'
+  james: 'computer'
+  dead: 'test'
+  see: 'tea'
+  grid: 'quit'
+  visitor: 'guest'
+  they: 'say'
+  and: '&&'
+  send: 'say'
+  voltio: 'video'
+ commands:
+  welcome guest: 'alert dear guest... i welcome you. have a plesant stay.'
+  be quiet: 'xbmc stop && mpd radio off'
+  stop video: 'xbmc stop'
+  pause video: 'xbmc pause'
+  resume video: 'xbmc pause'
+  test: 'alert test ok'
+  sleep: 'gn8'
+  good night: 'gn8'
+  radio on: 'mpd radio on'
+  radio off: 'mpd radio off'
+  shutdown: 'sys quit'
+  quit: 'sys quit'
+  bye: 'sys quit'
+ nodes:
+  node_name:
+   threshold: 0.25
+   lang     : en
+   timeout  : 2
+   keyword  : computer
+
 lirc-client:
  nodes:
   node_name:

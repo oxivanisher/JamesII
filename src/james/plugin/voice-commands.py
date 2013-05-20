@@ -255,39 +255,22 @@ class VoiceCommandsPlugin(Plugin):
                                        44100,)
         self.voiceThread.start()
 
-        self.replace = self.config['replace']
-        self.keyword = self.config['nodes'][self.core.hostname]['keyword'].lower()
-        self.ignored = self.config['ignored']
-        self.voiceCommands = self.config['commands']
-        # self.replace = self.utils.convert_from_unicode(self.config['replace'])
-        # self.keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
-        # self.ignored = self.utils.convert_from_unicode(self.config['ignored'])
-        # self.voiceCommands = self.utils.convert_from_unicode(self.config['commands'])
+        #FIXME: i am dirty ... HATE unicode HATE
+        if self.core.master:
+            self.replace = self.config['replace']
+            self.keyword = self.config['nodes'][self.core.hostname]['keyword'].lower()
+            self.voiceCommands = self.config['commands']
+        else:
+            self.replace = self.utils.convert_from_unicode(self.config['replace'])
+            self.keyword = self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['keyword'].lower())
+            self.voiceCommands = self.utils.convert_from_unicode(self.config['commands'])
 
         atexit.register(self.save_unknown_words)
-        self.load_unknown_words()
 
     def terminate(self):
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()
-
-    def load_unknown_words(self):
-        try:
-            file = open(self.unknown_words_file, 'r')
-            loadedUnknownWords = json.loads(file.read())
-            file.close()
-
-            for word in loadedUnknownWords:
-                if word not in self.replace:
-                    if word not in self.keyword:
-                        if word not in self.ignored:
-                            if word not in self.voiceCommands:
-                                self.unknownWords.append(word)
-
-        except IOError:
-            pass
-        pass
 
     def save_unknown_words(self):
         if len(self.unknownWords) > 0:
@@ -319,7 +302,6 @@ class VoiceCommandsPlugin(Plugin):
         self.workerLock.release()
 
     def on_text_detected(self, textData):
-        # self.logger.info("Processing text data")
         niceData = self.utils.convert_from_unicode(textData)
 
         for decodedTextData in niceData['hypotheses']:
@@ -328,47 +310,57 @@ class VoiceCommandsPlugin(Plugin):
             rawTextList = rawText.lower().split()
             filteredList = []
             keywordFound = False
-            print "a %s" % ' '.join(rawTextList)
+
+            self.logger.debug("Detected text: %s" % ' '.join(rawTextList))
+            replacedWords = []
+            filteredList = []
             for word in rawTextList:
                 if word in self.replace.keys():
-                    print "r %s %s" % (word, self.replace[word])
-                    word = self.replace[word]
-
-                if word == self.keyword:
-                    print "k %s" % word
-                    keywordFound = True
-                elif word in self.ignored:
-                    print "i %s" % word
+                    replacedWords.append(word)
+                    filteredList.append(self.replace[word])
                 else:
                     filteredList.append(word)
-                    if word not in self.replace.keys():
-                        if word not in self.voiceCommands.keys():
-                            self.unknownWords.append(word)
-                            print "u %s" % word
+            self.logger.debug("Replaced words: %s" % ', '.join(replacedWords))
 
+            keywordIndex = -1
+            if self.keyword in filteredList:
+                keywordIndex = filteredList.index(self.keyword)
 
+            filteredList = filteredList[keywordIndex + 1:]
             if len(filteredList) == 0:
                 self.logger.info("No command detected in: %s" % ' '.join(filteredList))
+                self.send_broadcast(["No command detected in: %s" % ' '.join(filteredList)])
                 self.playBeeps.append((440, 3, 0.15))
-            elif not keywordFound:
+            elif keywordIndex == -1:
                 self.logger.info("No keyword detected in: %s" % ' '.join(filteredList))
+                self.send_broadcast(["No keyword detected in: %s" % ' '.join(filteredList)])
                 self.playBeeps.append((440, 3, 0.15))
             else:
                 commandFound = None
                 for command in self.voiceCommands.keys():
-                    if command in filteredList:
+                    if command in ' '.join(filteredList):
                         commandFound = self.voiceCommands[command]
+                depth = -1
+                try:
+                    depth = self.core.ghost_commands.get_best_match(filteredList).get_depth()
+                except Exception:
+                    pass
 
                 if commandFound:
-                        self.logger.info("Found command (%s) in (%s)" % (commandFound, ' '.join(filteredList)))
-                        self.playBeeps.append((880, 2, 0.1))
-                        self.send_command(["alert", "running", "command"] + commandFound.split())
-                        self.send_command(commandFound.split())
+                    self.logger.info("Found internal command (%s) in (%s)" % (commandFound, ' '.join(filteredList)))
+                    self.send_broadcast(["Found internal command (%s) in (%s)" % (commandFound, ' '.join(filteredList))])
+                    self.playBeeps.append((880, 2, 0.1))
+                    self.send_command(commandFound.split())
+                elif depth >= 0:
+                    self.logger.info("Running command (%s)" % ' '.join(filteredList))
+                    self.send_broadcast(["Running command (%s)" % ' '.join(filteredList)])
+                    self.playBeeps.append((880, 3, 0.1))
+                    self.send_command(filteredList)
                 else:
-                    self.logger.info("Unknown command: %s" % ' '.join(filteredList))
+                    self.logger.info("Running Unknown command: %s" % ' '.join(filteredList))
+                    self.send_broadcast(["Running Unknown command: %s" % ' '.join(filteredList)])
                     self.playBeeps.append((440, 2, 0.1))
-
-        # print "text tetected callback:\n%s" % niceData
+                    self.send_command(filteredList)
 
     def cmd_play_herz_for(self, args):
         if len(args) >= 2:

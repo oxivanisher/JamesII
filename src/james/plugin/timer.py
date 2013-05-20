@@ -54,10 +54,10 @@ class TimerPlugin(Plugin):
 
     # command methods
     def cmd_timer_in(self, args):
-        seconds = self.utils.duration_string2seconds(args)
+        (seconds, newArgs) = self.utils.duration_string2seconds(args)
         if seconds > 0:
             target_time = int(time.time()) + seconds
-            return [self.timer_at(target_time, args[1:])]
+            return [self.timer_at(target_time, newArgs)]
         else:
             return ["Invalid syntax. Use seconds or: 3d4h3m2s"]
 

@@ -111,25 +111,53 @@ class JamesUtils(object):
 
     def duration_string2seconds(self, args):
         wait_seconds = 0
+
+        timeToStrings = []
+        timeToStrings.append((1, ['second', 'seconds']))
+        timeToStrings.append((60, ['minute', 'minutes']))
+        timeToStrings.append((3600, ['hour', 'hours']))
+        timeToStrings.append((86400, ['day', 'days']))
+        timeToStrings.append((604800, ['week', 'weeks']))
+        for (multiplier, strings) in timeToStrings:
+            for string in strings:
+                if string in args:
+                    index = args.index(string)
+                    if index > 0:
+                        try:
+                            count = int(args[index - 1])
+                            if count > 0:
+                                wait_seconds += multiplier * count
+                                args.pop(index)
+                                args.pop(index - 1)
+                        except Exception as e:
+                            pass
+
         try:
-            wait_seconds = int(args[0])
+            wait_seconds += int(args[0])
+            args.pop(0)
         except IndexError:
             return False
-        except ValueError: 
-            for arg in args:
-                matched = re.findall(r'(\d+)([smhdw])', arg)
-                for (digit, multiplier_id) in matched:
-                    if multiplier_id == 's':
-                        wait_seconds += int(digit)
-                    elif multiplier_id == 'm':
-                        wait_seconds += int(digit) * 60
-                    elif multiplier_id == 'h':
-                        wait_seconds += int(digit) * 3600
-                    elif multiplier_id == 'd':
-                        wait_seconds += int(digit) * 86400
-                    elif multiplier_id == 'w':
-                        wait_seconds += int(digit) * 604800
-        return wait_seconds
+        except ValueError:
+            wait_secondsStart = wait_seconds
+            matched = re.findall(r'(\d+)([smhdw])', args[0])
+            for (digit, multiplier_id) in matched:
+                if multiplier_id == 's':
+                    wait_seconds += int(digit)
+                elif multiplier_id == 'm':
+                    wait_seconds += int(digit) * 60
+                elif multiplier_id == 'h':
+                    wait_seconds += int(digit) * 3600
+                elif multiplier_id == 'd':
+                    wait_seconds += int(digit) * 86400
+                elif multiplier_id == 'w':
+                    wait_seconds += int(digit) * 604800
+                else:
+                    found = False
+
+            if wait_secondsStart != wait_seconds:
+                args.pop(0)
+
+        return( wait_seconds, args )
 
     def time_string2seconds(self, arg):
         # converts 12:22 and 12:22:33 into seconds

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block content %}
+
+{% for uuid in status %}
+<h3>{{ hostnames[uuid] }}</h3>
+UUID: {{ uuid }}<br />
+	{% for plugin in status[uuid] %}
+		<h5>{{ plugin }}</h5>
+		<table>
+		{% for detail in status[uuid][plugin]['status'] %}
+			<tr>
+				<td>{{ pluginDetailNames[plugin]['detailsNames'][detail] }}</td>
+				<td>{{ status[uuid][plugin]['status'][detail] }}</td>
+			</tr>
+		{% endfor %}
+		</table>
+ 		{% endfor %}
+<br />
+{% endfor %}
+
+{% endblock %}

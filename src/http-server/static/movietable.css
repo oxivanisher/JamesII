@@ -1,0 +1,51 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables sorting
+ */
+
+.sorting_asc {
+    background: url('../static/img/sort_asc.png') no-repeat center right;
+}
+
+.sorting_desc {
+    background: url('../static/img/sort_desc.png') no-repeat center right;
+}
+
+.sorting {
+    background: url('../static/img/sort_both.png') no-repeat center right;
+}
+
+.sorting_asc_disabled {
+    background: url('../static/img/sort_asc_disabled.png') no-repeat center right;
+}
+
+.sorting_desc_disabled {
+    background: url('../static/img/sort_desc_disabled.png') no-repeat center right;
+}
+
+/*.paging_full_numbers {
+    width: 400px;
+    height: 22px;
+    line-height: 22px;
+}*/
+
+/*  .paging_full_numbers
+      {
+            width: 600px;
+            height: 24px;
+            padding: 4px 0px 2px 0px;
+            vertical-align: middle;
+            line-height: 22px;
+      }*/
+ 
+/*.paging_full_numbers span.paginate_button,
+    .paging_full_numbers span.paginate_active {
+    border: 1px solid #aaa;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    padding: 2px 5px;
+    margin: 0 3px;
+    cursor: pointer;
+    *cursor: hand;
+}
+ 
+*/

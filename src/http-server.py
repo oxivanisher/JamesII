@@ -1,24 +1,13 @@
 #!/usr/bin/env python
 # http://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 
+import os
 import sys
 import flask
 import signal
-from multiprocessing import Process
+import time
 
 import james
-
-
-# class HttpView(flask.views.MethodView):
-
-#     def get(self):
-#         print "get recieved"
-#         return "get recieved"
-
-#     def post(self):
-#         print "post recieved"
-#         return "post recieved"
-
 
 tasks = [
     {
@@ -35,18 +24,21 @@ tasks = [
     }
 ]
 
-
-serverApp = flask.Flask(__name__)
-# serverApp.add_url_rule('/', view_func=HttpView.as_view('main'), methods=['GET', 'POST'])
+tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'http-server/templates')
+serverApp = flask.Flask(__name__, template_folder=tmpl_dir)
 serverApp.debug = True
 
-# def on_kill_sig(self, signal, frame):
-#     print "signal catched, exiting"
-#     core.terminate()
-
 @serverApp.route('/')
-def hello_world():
-    return 'Hello World!'
+@serverApp.route('/index')
+def show_status():
+    allStatus = {}
+    (externalSystemStatus, command_responses, broadcast_command_responses, hostnames) = get_james_data()
+
+    return flask.render_template('index.html', status = externalSystemStatus,
+                                               command_responses = command_responses, 
+                                               broadcast_command_responses = broadcast_command_responses,
+                                               hostnames = hostnames,
+                                               pluginDetailNames = pluginDetailNames )
 
 @serverApp.route('/todo/api/v1.0/tasks', methods = ['GET'])
 def get_tasks():
@@ -63,25 +55,49 @@ def get_task(task_id):
 def not_found(error):
     return flask.make_response(flask.jsonify( { 'error': 'Not found' } ), 404)
 
+@serverApp.route('/static/<string:folderName>/<string:fileName>', methods = ['GET'])
+def get_static(fileName, folderName):
+    if fileName:
+        return flask.send_from_directory('http-server/static/' + folderName, fileName)
+    else:
+        flask.abort(404)
+
+def get_james_data():
+    jamesProcess.core.lock_core()
+
+    externalSystemStatus = jamesPlugin.externalSystemStatus
+    hostnames = jamesPlugin.hostnames
+    command_responses = jamesPlugin.command_responses
+    broadcast_command_responses = jamesPlugin.broadcast_command_responses
+
+    jamesProcess.core.unlock_core()
+
+    return (externalSystemStatus, command_responses, broadcast_command_responses, hostnames)
+
+def get_james_static_data():
+    pluginFactoryDescriptors = james.plugin.Factory.descriptors
+    return pluginFactoryDescriptors
+
 if __name__ == '__main__':
-    print "aa"
-    # catch kill signals    
-    # signal.signal(signal.SIGTERM,on_kill_sig)
-    # signal.signal(signal.SIGQUIT,on_kill_sig)
-    # signal.signal(signal.SIGTSTP,on_kill_sig)
+    # initialize james
+    jamesProcess = james.ThreadedCore(True)
+    logger = jamesProcess.get_logger('http-server')
+    logger.info('Starting up JamesII')
+    jamesProcess.start()
 
-    core = james.Core(True)
-    core.load_plugin('http-server')
-    core.run()
-    # core.lock_core()
-    # core.run()
+    # locate http-server plugin
+    jamesProcess.core.load_plugin('http-server')
+    for plugin in jamesProcess.core.plugins:
+        if plugin.name == 'http-server':
+            jamesPlugin = plugin
 
-    # print core.config
+    # get static informations
+    pluginDetailNames = get_james_static_data()
 
     # go into endless loop
+    logger.info('Starting up webserver')
     serverApp.run(host='0.0.0.0')
-    # process = Process(target=serverApp.run(host='0.0.0.0'))
 
     # terminating james core
-    # core.unlock_core()
-    core.terminate()
+    logger.info('Terminating')
+    jamesProcess.terminate()

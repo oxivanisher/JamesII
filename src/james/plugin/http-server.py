@@ -1,5 +1,7 @@
 # http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
 
+import time
+
 from james.plugin import *
 
 # http://stackoverflow.com/questions/713847/recommendations-of-python-rest-web-services-framework
@@ -8,31 +10,71 @@ from james.plugin import *
 
 # http://stackoverflow.com/questions/14444913/web-py-specify-address-and-port
 
-
-# urls = (
-#     '/', 'index'
-# )
-
-# class index:
-#     def GET(self):
-#         return "Hello, world!"
-
-# if __name__ == "__main__":
-#     app = web.application(urls, globals())
-#     app.run()
-
-
 class HttpServerPlugin(Plugin):
 
     def __init__(self, core, descriptor):
         super(HttpServerPlugin, self).__init__(core, descriptor)
-        print "http server plugin init"
 
-    def start(self):
-        print "http server plugin start"
-       
-    def terminate(self):
-        print "http server plugin terminate"
+        self.externalSystemStatus = {}
+        self.hostnames = {}
+
+        self.command_responses = []
+        self.broadcast_command_responses = []
+
+        self.commands.create_subcommand('test', 'Print a test message to console', self.cmd_print_test)
+        self.commands.create_subcommand('show', 'Show current status info', self.cmd_print_status)
+
+        self.node_update_loop()
+
+        
+
+    # external commands (must be threadsafe!)
+    def ext_request_all_nodes_details(self):
+        self.core.add_timeout(0, self.send_data_request, 'status')
+
+    def ext_send_command(self, command):
+        self.core.add_timeout(0, self.send_command, command)
+        self.logger.debug('Running command (%s) from %s' % (' '.join('command'), host))
+
+    # internal commands
+    def node_update_loop(self):
+        self.ext_request_all_nodes_details()
+        self.core.add_timeout(20, self.node_update_loop)
+
+    def process_command_response(self, args, host, plugin):
+        self.command_responses.append((time.time(), args, host, plugin))
+        self.logger.debug('Saved command response from %s' % host)
+
+    def process_data_response(self, uuid, name, body, host, plugin):
+        if name == 'status':
+            uuid = self.utils.convert_from_unicode(uuid)
+            plugin = self.utils.convert_from_unicode(plugin)
+
+            self.hostnames[uuid] = self.utils.convert_from_unicode(host)
+
+            try:
+                self.externalSystemStatus[uuid]
+            except KeyError:
+                self.externalSystemStatus[uuid] = {}
+
+            try:
+                self.externalSystemStatus[uuid][plugin]
+            except KeyError:
+                self.externalSystemStatus[uuid][plugin] = {}
+
+            self.externalSystemStatus[uuid][plugin] = { 'status'   : self.utils.convert_from_unicode(body),
+                                                        'timestamp': time.time() }
+
+    def process_broadcast_command_response(self, args, host, plugin):
+        self.broadcast_command_responses.append((time.time(), args, host, plugin))
+        self.logger.debug('Saved broadcast command response from %s' % host)
+
+    # internal command methods
+    def cmd_print_test(self, args):
+        print "console test"
+
+    def cmd_print_status(self, args):
+        print self.externalSystemStatus
 
 descriptor = {
     'name' : 'http-server',

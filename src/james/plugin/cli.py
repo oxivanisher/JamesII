@@ -163,28 +163,11 @@ class CliPlugin(Plugin):
             self.console_thread.terminate()
 
     def cmd_request_nodes_details(self, args):
-        self.send_data_command(['sys', 'allstatus'])
+        self.send_command(['sys', 'allstatus'])
 
     def process_command_response(self, args, host, plugin):
         for line in args:
             print ("D%11s@%-10s > %s" % (plugin, host, line))
-
-    def process_data_response(self, allData, host, plugin):
-        print "*** Processing data response from %s@%s ***" % (plugin, host)
-        # if plugin == 'system':
-        displayData = []
-        for pluginName in sorted(allData.keys()):
-            pluginData = []
-            if allData[pluginName]:
-                args = self.utils.convert_from_unicode(allData[pluginName])
-                for key in sorted(args.keys()):
-                    pluginData.append((Factory.descriptors[pluginName]['detailsNames'][key], args[key]))
-                
-                displayData.append((pluginName, pluginData))
-
-        for (plugin, pluginData) in displayData:
-            for (key, value) in pluginData:
-                print "%-15s %-30s %s" % (plugin, key, value)
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:

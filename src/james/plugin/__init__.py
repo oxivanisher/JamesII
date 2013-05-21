@@ -61,7 +61,7 @@ class Plugin(object):
     def process_command_response(self, args, host, plugin):
         pass
 
-    def process_data_response(self, args, host, plugin):
+    def process_data_response(self, uuid, name, body, host, plugin):
         pass
 
     def process_broadcast_command_response(self, args, host, plugin):
@@ -75,10 +75,6 @@ class Plugin(object):
         tmpArgsStr = ' '.join(args)
         for tmpCommandStr in tmpArgsStr.split('&&'):
             self.send_request(srcUuid, 'cmd', tmpCommandStr.split())
-
-    def send_data_command(self, args):
-        """ Sends a data command to the queue. """
-        self.send_request(self.uuid, 'data', args)
 
     def send_request(self, uuid, name, body):
         self.core.send_request(uuid, name, body, self.core.hostname, self.name)
@@ -107,17 +103,6 @@ class Plugin(object):
                             self.send_response(uuid, name, res)
                 except KeyError:
                     pass
-            elif name == 'data':
-                args = self.utils.list_unicode_cleanup(body)
-
-                try:
-                    if self.command == args[0]:
-                        self.logger.info('Processing data command (%s)' % ' '.join(args))
-                        res = self.core.data_commands.process_args(args)
-                        if res:
-                            self.send_response(uuid, name, res)
-                except KeyError:
-                    pass
 
     def handle_response(self, uuid, name, body, host, plugin):
         args = body
@@ -125,12 +110,56 @@ class Plugin(object):
             if not isinstance(args, list):
                 args = [args]
             self.process_command_response(args, host, plugin)
-        if name == 'data' and uuid == self.uuid:
-            self.process_data_response(args, host, plugin)
         elif name == 'broadcast':
             if not isinstance(args, list):
                 args = [args]
             self.process_broadcast_command_response(args, host, plugin)
+
+    def send_data_request(self, name, args = []):
+        """ Sends a data command to the queue. """
+        self.core.send_data_request(self.core.uuid, name, args, self.core.hostname, self.name)
+
+    def send_data_response(self, uuid, name, body):
+        """ Sends a data command to the queue. """
+        self.core.send_data_response(uuid, name, body, self.core.hostname, self.name)
+
+    def handle_data_request(self, uuid, name, body, host, plugin):
+        if name == 'status':
+            args = self.utils.list_unicode_cleanup(body)
+            try:
+                self.logger.info('Processing status request')
+                res = self.return_status()
+                if res != {}:
+                    self.send_data_response(uuid, name, res)
+            except KeyError:
+                pass
+
+        elif name == 'cmd':
+            runCommand = True
+            if body[0][0] == '@':
+                runCommand = False
+                hosts = body[0].replace('@', '').split(',')
+                if self.core.hostname in hosts:
+                    body = body[1:]
+                    runCommand = True
+
+            if runCommand:
+                args = self.utils.list_unicode_cleanup(body)
+
+                try:
+                    if self.command == args[0]:
+                        self.logger.info('Processing data command request (%s)' % ' '.join(args))
+                        res = self.core.data_commands.process_args(args)
+                        if res:
+                            self.send_data_response(uuid, name, res)
+                except KeyError:
+                    pass
+
+        pass
+
+    def handle_data_response(self, uuid, name, body, host, plugin):
+        if name == 'status':
+            self.process_data_response(uuid, name, body, host, plugin)
 
     def cmd_avail(self, args):
         return self.core.hostname + ' ' + self.name
@@ -176,6 +205,13 @@ class Plugin(object):
         pass
 
     def process_command_response_event(self, msg):
+        pass
+
+    # command event methods
+    def process_data_request_event(self, msg):
+        pass
+
+    def process_data_response_event(self, msg):
         pass
 
     # send broadcast message

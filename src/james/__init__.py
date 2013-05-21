@@ -45,9 +45,34 @@ class BrokerConfigNotLoaded(Exception):
 class AddTimeoutHandlerMissing(Exception):
     pass
 
+class ThreadedCore(threading.Thread):
+    def __init__(self, passive = False):
+        super(ThreadedCore, self).__init__()
+        self.core = Core(passive, False)
+        self.utils = jamesutils.JamesUtils(self.core)
+        self.internalLogger = self.utils.getLogger('ThreadedCore', self.core.logger)
+        self.internalLogger.info('Initialized')
+
+    def get_logger(self, name):
+        return self.utils.getLogger('ext_' + name, self.core.logger)
+
+    def work(self):
+        self.internalLogger.info('Starting to run loop')
+        self.core.run()
+
+    def run(self):
+        self.on_exit(self.work())
+
+    def terminate(self):
+        self.internalLogger.info('Terminating')
+        self.core.add_timeout(0, self.core.terminate)
+
+    def on_exit(self, result):
+        return result
+
 class Core(object):
 
-    def __init__(self, passive = False):
+    def __init__(self, passive = False, catchSignals = True):
         self.plugins = []
         self.timeouts = []
         self.timeout_queue = Queue.Queue()
@@ -96,11 +121,12 @@ class Core(object):
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
-        signal.signal(signal.SIGINT,self.on_kill_sig)
-        signal.signal(signal.SIGTERM,self.on_kill_sig)
-        signal.signal(signal.SIGQUIT,self.on_kill_sig)
-        signal.signal(signal.SIGTSTP,self.on_kill_sig)
-        signal.signal(signal.SIGSEGV,self.on_fault_sig)
+        if catchSignals:
+            signal.signal(signal.SIGINT,self.on_kill_sig)
+            signal.signal(signal.SIGTERM,self.on_kill_sig)
+            signal.signal(signal.SIGQUIT,self.on_kill_sig)
+            signal.signal(signal.SIGTSTP,self.on_kill_sig)
+            signal.signal(signal.SIGSEGV,self.on_fault_sig)
 
 
         # Load broker configuration
@@ -176,9 +202,6 @@ class Core(object):
         # registring network logger handlers
         if self.config['netlogger']['nodes']:
             for target_host in self.config['netlogger']['nodes']:
-                # if target_host == self.hostname:
-                #     print "127.0.0.1"
-                #     target_host = '127.0.0.1'
                 self.logger.debug('Adding NetLogger host %s:%s' % (target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT))
                 socketHandler = logging.handlers.SocketHandler(target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
                 socketHandler.setLevel(logging.DEBUG)
@@ -204,6 +227,13 @@ class Core(object):
         # proximity stuff
         self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
+
+        # data (status) stuff
+        self.data_request_channel = broadcastchannel.BroadcastChannel(self, 'dataRequest')
+        self.data_request_channel.add_listener(self.data_request_listener)
+        self.data_response_channel = broadcastchannel.BroadcastChannel(self, 'dataResponse')
+        self.data_response_channel.add_listener(self.data_response_listener)
+
         try:
             file = open(self.proximity_state_file, 'r')
             self.proximity_status.status[self.location] = self.utils.convert_from_unicode(json.loads(file.read()))
@@ -293,6 +323,31 @@ class Core(object):
         for p in self.plugins:
             p.process_command_response_event(msg)
             p.handle_response(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
+
+    # data channel methods
+    def send_data_request(self, uuid, name, body, host, plugin):
+        """Sends a data request."""
+        self.data_request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+
+    def send_data_response(self, uuid, name, body, host, plugin):
+        self.data_response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+
+    def data_request_listener(self, msg):
+        for p in self.plugins:
+            p.process_data_request_event(msg)
+            p.handle_data_request(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
+
+    def data_response_listener(self, msg):
+        for p in self.plugins:
+            p.process_data_response_event(msg)
+            p.handle_data_response(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
+
+    def data_listener(self, dataStream):
+        """
+        Listener for data streams. Calls process_data_response() on each started plugin.
+        """
+        for p in self.plugins:
+            p.process_data_response(dataStream)
 
     # configuration & config channel methods
     def discovery_listener(self, msg):

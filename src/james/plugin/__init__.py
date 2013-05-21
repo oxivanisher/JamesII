@@ -130,7 +130,8 @@ class Plugin(object):
                 self.logger.debug('Processing status request')
                 res = self.return_status()
                 if res != {}:
-                    self.send_data_response(uuid, name, res)
+                    self.send_data_response(self.core.uuid, name, res)
+                    # self.send_data_response(self.uuid, name, res)
             except KeyError:
                 pass
 

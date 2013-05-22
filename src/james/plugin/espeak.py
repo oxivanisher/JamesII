@@ -12,7 +12,7 @@ class EspeakPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(EspeakPlugin, self).__init__(core, descriptor)
 
-        self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_message_archive")
+        self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_espeak_message_archive")
         self.unmuted = self.core.proximity_status.get_status_here()
         self.espeak_command = self.config['espeak_command'].split()
 

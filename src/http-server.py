@@ -9,36 +9,27 @@ import time
 
 import james
 
-tasks = [
-    {
-        'id': 1,
-        'title': u'Buy groceries',
-        'description': u'Milk, Cheese, Pizza, Fruit, Tylenol', 
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': u'Learn Python',
-        'description': u'Need to find a good Python tutorial on the web', 
-        'done': False
-    }
-]
-
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'http-server/templates')
 serverApp = flask.Flask(__name__, template_folder=tmpl_dir)
 serverApp.debug = True
 
-@serverApp.route('/')
-@serverApp.route('/index')
+@serverApp.route('/status')
 def show_status():
-    allStatus = {}
     (externalSystemStatus, command_responses, broadcast_command_responses, hostnames) = get_james_data()
 
-    return flask.render_template('index.html', status = externalSystemStatus,
+    return flask.render_template('status.html', status = externalSystemStatus,
                                                command_responses = command_responses, 
                                                broadcast_command_responses = broadcast_command_responses,
                                                hostnames = hostnames,
                                                pluginDetailNames = pluginDetailNames )
+
+@serverApp.route('/')
+@serverApp.route('/commands')
+def show_responses():
+    (externalSystemStatus, command_responses, broadcast_command_responses, hostnames) = get_james_data()
+
+    return flask.render_template('commands.html', command_responses = command_responses,
+                                                   broadcast_command_responses = broadcast_command_responses )
 
 @serverApp.route('/todo/api/v1.0/tasks', methods = ['GET'])
 def get_tasks():

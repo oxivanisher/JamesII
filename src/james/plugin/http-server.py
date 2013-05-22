@@ -26,8 +26,6 @@ class HttpServerPlugin(Plugin):
 
         self.node_update_loop()
 
-        
-
     # external commands (must be threadsafe!)
     def ext_request_all_nodes_details(self):
         self.core.add_timeout(0, self.send_data_request, 'status')
@@ -42,8 +40,18 @@ class HttpServerPlugin(Plugin):
         self.core.add_timeout(20, self.node_update_loop)
 
     def process_command_response(self, args, host, plugin):
-        self.command_responses.append((time.time(), args, host, plugin))
+        self.command_responses.append((time.time(),
+                                       self.utils.convert_from_unicode(args),
+                                       self.utils.convert_from_unicode(host),
+                                       self.utils.convert_from_unicode(plugin) ))
         self.logger.debug('Saved command response from %s' % host)
+
+    def process_broadcast_command_response(self, args, host, plugin):
+        self.broadcast_command_responses.append((time.time(),
+                                                 self.utils.convert_from_unicode(args),
+                                                 self.utils.convert_from_unicode(host),
+                                                 self.utils.convert_from_unicode(plugin) ))
+        self.logger.debug('Saved broadcast command response from %s' % host)
 
     def process_data_response(self, uuid, name, body, host, plugin):
         if name == 'status':
@@ -64,10 +72,6 @@ class HttpServerPlugin(Plugin):
 
             self.externalSystemStatus[uuid][plugin] = { 'status'   : self.utils.convert_from_unicode(body),
                                                         'timestamp': time.time() }
-
-    def process_broadcast_command_response(self, args, host, plugin):
-        self.broadcast_command_responses.append((time.time(), args, host, plugin))
-        self.logger.debug('Saved broadcast command response from %s' % host)
 
     # internal command methods
     def cmd_print_test(self, args):

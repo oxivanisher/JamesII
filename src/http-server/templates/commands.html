@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block content %}
+<h3>Send Command</h3>
+
+
+<h3>Command Responses</h3>
+<table>
+<tr>
+	<th>Time</th>
+	<th>Host</th>
+	<th>Plugin</th>
+	<th>Message</th>
+</tr>
+{% for (time, message, host, plugin) in command_responses %}
+<tr>
+	<td valign="top">{{ time }}</td>
+	<td valign="top">{{ host }}</td>
+	<td valign="top">{{ plugin }}</td>
+	<td>{% for line in message %}
+		{{ line }}<br />
+		{% endfor %}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Broadcast Command Responses</h3>
+<table>
+<tr>
+	<th>Time</th>
+	<th>Host</th>
+	<th>Plugin</th>
+	<th>Message</th>
+</tr>
+{% for (time, message, host, plugin) in broadcast_command_responses %}
+<tr>
+	<td valign="top">{{ time }}</td>
+	<td valign="top">{{ host }}</td>
+	<td valign="top">{{ plugin }}</td>
+	<td>{% for line in message %}
+		{{ line }}<br />
+		{% endfor %}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

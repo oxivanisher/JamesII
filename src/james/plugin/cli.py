@@ -144,6 +144,7 @@ class CliPlugin(Plugin):
         self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
         self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
         self.commands.create_subcommand('allstatus', 'Request all node states', self.cmd_request_nodes_details)
+        self.commands.create_subcommand('broadcast', 'Send test broadcast message', self.cmd_send_broadcast)
 
     def start(self):
         if self.cmd_line_mode:
@@ -164,6 +165,9 @@ class CliPlugin(Plugin):
 
     def cmd_request_nodes_details(self, args):
         self.send_command(['sys', 'allstatus'])
+
+    def cmd_send_broadcast(self, args):
+        self.send_broadcast('test me')
 
     def process_command_response(self, args, host, plugin):
         for line in args:

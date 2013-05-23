@@ -1,6 +1,8 @@
 # http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
 
+import atexit
 import time
+import json
 
 from james.plugin import *
 
@@ -19,12 +21,45 @@ class HttpServerPlugin(Plugin):
         self.hostnames = {}
 
         self.command_responses = []
+        self.command_responses_file = os.path.join(os.path.expanduser("~"), ".james_http-plugin-command_responses")
+        self.command_responses = self.load_archived_messages(self.command_responses_file)
+        atexit.register(self.save_archived_messages, self.command_responses, self.command_responses_file)
+
         self.broadcast_command_responses = []
+        self.broadcast_command_responses_file = os.path.join(os.path.expanduser("~"), ".james_http-plugin-broadcast_command_responses")
+        self.broadcast_command_responses = self.load_archived_messages(self.command_responses_file)
+        atexit.register(self.save_archived_messages, self.broadcast_command_responses, self.broadcast_command_responses_file)
+
+        self.alert_messages = []
+        self.alert_messages_file = os.path.join(os.path.expanduser("~"), ".james_http-plugin-alert_messages")
+        self.alert_messages = self.load_archived_messages(self.alert_messages_file)
+        atexit.register(self.save_archived_messages, self.alert_messages, self.alert_messages_file)
 
         self.commands.create_subcommand('test', 'Print a test message to console', self.cmd_print_test)
         self.commands.create_subcommand('show', 'Show current status info', self.cmd_print_status)
 
         self.node_update_loop()
+
+    def load_archived_messages(self, filePath):
+        ret = []
+        try:
+            file = open(filePath, 'r')
+            ret = json.loads(file.read())
+            file.close()
+        except IOError:
+            pass
+        except ValueError:
+            pass
+        return ret
+
+    def save_archived_messages(self, data, filePath):
+        try:
+            file = open(filePath, 'w')
+            file.write(json.dumps(data))
+            file.close()
+            self.logger.debug("Saving archived messages to %s" % (filePath))
+        except IOError:
+            self.logger.warning("Could not safe archived messages to file %s!" % (filePath))
 
     # external commands (must be threadsafe!)
     def ext_request_all_nodes_details(self):
@@ -41,6 +76,7 @@ class HttpServerPlugin(Plugin):
 
     def process_command_response(self, args, host, plugin):
         self.command_responses.append((time.time(),
+                                       self.utils.convert_Time_to_String(time.time()),
                                        self.utils.convert_from_unicode(args),
                                        self.utils.convert_from_unicode(host),
                                        self.utils.convert_from_unicode(plugin) ))
@@ -48,6 +84,7 @@ class HttpServerPlugin(Plugin):
 
     def process_broadcast_command_response(self, args, host, plugin):
         self.broadcast_command_responses.append((time.time(),
+                                                 self.utils.convert_Time_to_String(time.time()),
                                                  self.utils.convert_from_unicode(args),
                                                  self.utils.convert_from_unicode(host),
                                                  self.utils.convert_from_unicode(plugin) ))
@@ -72,6 +109,12 @@ class HttpServerPlugin(Plugin):
 
             self.externalSystemStatus[uuid][plugin] = { 'status'   : self.utils.convert_from_unicode(body),
                                                         'timestamp': time.time() }
+
+    def alert(self, args):
+        data = ' '.join(args).split(";")
+        self.alert_messages.append((time.time(),
+                                    self.utils.convert_Time_to_String(time.time()),
+                                    data))
 
     # internal command methods
     def cmd_print_test(self, args):

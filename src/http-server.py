@@ -7,29 +7,52 @@ import flask
 import signal
 import time
 
+# from flask.ext.wtf import Form, TextField, TextAreaField, SubmitField
+# from forms import ContactForm
+
 import james
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'http-server/templates')
 serverApp = flask.Flask(__name__, template_folder=tmpl_dir)
 serverApp.debug = True
 
+# class CommandForm(Form):
+#   name = TextField("Command")
+#   submit = SubmitField("Send")
+
+
 @serverApp.route('/status')
 def show_status():
-    (externalSystemStatus, command_responses, broadcast_command_responses, hostnames) = get_james_data()
+    (externalSystemStatus, command_responses, broadcast_command_responses, alert_messages, hostnames) = get_james_data()
 
     return flask.render_template('status.html', status = externalSystemStatus,
-                                               command_responses = command_responses, 
-                                               broadcast_command_responses = broadcast_command_responses,
-                                               hostnames = hostnames,
-                                               pluginDetailNames = pluginDetailNames )
+                                                command_responses = reversed(command_responses), 
+                                                broadcast_command_responses = reversed(broadcast_command_responses),
+                                                hostnames = hostnames,
+                                                pluginDetailNames = pluginDetailNames )
 
 @serverApp.route('/')
-@serverApp.route('/commands')
+@serverApp.route('/messages')
 def show_responses():
-    (externalSystemStatus, command_responses, broadcast_command_responses, hostnames) = get_james_data()
+    (externalSystemStatus, command_responses, broadcast_command_responses, alert_messages, hostnames) = get_james_data()
 
-    return flask.render_template('commands.html', command_responses = command_responses,
-                                                   broadcast_command_responses = broadcast_command_responses )
+    return flask.render_template('messages.html', command_responses = reversed(command_responses),
+                                                  broadcast_command_responses = reversed(broadcast_command_responses),
+                                                  alert_messages = reversed(alert_messages) )
+
+
+@serverApp.route('/sendCommand', methods=['GET', 'POST'])
+def send_command():
+    # form = CommandForm()
+
+    if flask.request.method == 'POST':
+        if flask.request.form['command'] != "":
+            jamesPlugin.send_command(flask.request.form['command'].split())
+        return show_responses()
+        # jamesProcess.
+        pass
+    else:
+        return show_responses()
 
 @serverApp.route('/todo/api/v1.0/tasks', methods = ['GET'])
 def get_tasks():
@@ -60,10 +83,11 @@ def get_james_data():
     hostnames = jamesPlugin.hostnames
     command_responses = jamesPlugin.command_responses
     broadcast_command_responses = jamesPlugin.broadcast_command_responses
+    alert_messages = jamesPlugin.alert_messages
 
     jamesProcess.core.unlock_core()
 
-    return (externalSystemStatus, command_responses, broadcast_command_responses, hostnames)
+    return (externalSystemStatus, command_responses, broadcast_command_responses, alert_messages, hostnames)
 
 def get_james_static_data():
     pluginFactoryDescriptors = james.plugin.Factory.descriptors
@@ -71,12 +95,13 @@ def get_james_static_data():
 
 if __name__ == '__main__':
     # initialize james
-    jamesProcess = james.ThreadedCore(True)
+    jamesProcess = james.ThreadedCore(True) #True
     logger = jamesProcess.get_logger('http-server')
     logger.info('Starting up JamesII')
     jamesProcess.start()
 
     # locate http-server plugin
+    jamesProcess.core.load_plugin('system')
     jamesProcess.core.load_plugin('http-server')
     for plugin in jamesProcess.core.plugins:
         if plugin.name == 'http-server':

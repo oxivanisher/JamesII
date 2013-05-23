@@ -3,20 +3,39 @@
 {% block content %}
 
 {% for uuid in status %}
-<h3>{{ hostnames[uuid] }}</h3>
-UUID: {{ uuid }}<br />
+	<h3><a href="#" data-toggle="tooltip" title="{{ uuid }}">{{ hostnames[uuid] }}</a></h3>
+<ul class="nav nav-tabs" id="{{ uuid }}">
 	{% for plugin in status[uuid] %}
-		<h5>{{ plugin }}</h5>
-		<table>
-		{% for detail in status[uuid][plugin]['status'] %}
-			<tr>
-				<td>{{ pluginDetailNames[plugin]['detailsNames'][detail] }}</td>
-				<td>{{ status[uuid][plugin]['status'][detail] }}</td>
-			</tr>
-		{% endfor %}
-		</table>
- 		{% endfor %}
-<br />
+	<li><a href="#{{ uuid }}{{ plugin }}">{{ plugin }}</a></li>
+	{% endfor %}
+</ul>
+
+<div class="tab-content">
+	{% for plugin in status[uuid] %}
+	<div class="tab-pane" id="{{ uuid }}{{ plugin }}">
+	<table class="table table-striped table-condensed">
+	{% for detail in status[uuid][plugin]['status'] %}
+		<tr>
+			<td>{{ pluginDetailNames[plugin]['detailsNames'][detail] }}</td>
+			<td>{{ status[uuid][plugin]['status'][detail] }}</td>
+		</tr>
+	{% endfor %}
+	</table>
+	</div>
+	{% endfor %}
+</div>
+
+<script>
+$('#{{ uuid }} a').click(function (e) {
+  e.preventDefault();
+  $(this).tab('show');
+})
+
+$(function () {
+    $('#{{ uuid }} a:first').tab('show');
+  })
+</script>
+</td></tr>
 {% endfor %}
 
 {% endblock %}

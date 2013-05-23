@@ -292,4 +292,4 @@ class JamesUtils(object):
 
     def convert_Time_to_String(self, time):
         timeInt = int(time)
-        return datetime.datetime.fromtimestamp(timeInt).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.datetime.fromtimestamp(timeInt).strftime('%d.%m.%Y %H:%M:%S')

@@ -11,12 +11,18 @@ import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 
 import james
+
+# FIXME:
+# - add http port to config
+# - somehow, read the plugin descriptors for nicer display on website
+# - support json requests for retrieving data and send commands
+# - ssl support and user login for security
+
 # print james.plugin.Factory.descriptors
 
 # factory = james.plugin.Factory()
 # factory.autoload_plugins()
 # # path = os.path.join(os.path.dirname(__file__), 'plugin')
-
 
 # print factory.descriptors
 # pluginDetailNames = james.plugin.Factory.descriptors

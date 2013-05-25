@@ -14,10 +14,10 @@
 	{% for plugin in status[uuid] %}
 	<div class="tab-pane" id="{{ uuid }}{{ plugin }}">
 	<table class="table table-striped table-condensed">
-	{% for detail in status[uuid][plugin]['status'] %}
+	{% for detailName in status[uuid][plugin] %}
 		<tr>
-			<td>{{ pluginDetailNames[plugin]['detailsNames'][detail] }}</td>
-			<td>{{ status[uuid][plugin]['status'][detail] }}</td>
+			<td>{{ detailName }}</td>
+			<td>{{ status[uuid][plugin][detailName] }}</td>
 		</tr>
 	{% endfor %}
 	</table>

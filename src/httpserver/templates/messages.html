@@ -7,7 +7,7 @@
 	<th>Time</th>
 	<th>Message</th>
 </tr>
-{% for (timeSt, time, message) in alert_messages %}
+{% for (time, message) in alertMessages %}
 <tr>
 	<td valign="top">{{ time }}</td>
 	<td>{% for line in message %}
@@ -25,7 +25,7 @@
 	<th>Plugin</th>
 	<th>Message</th>
 </tr>
-{% for (timeSt, time, message, host, plugin) in command_responses %}
+{% for (time, message, host, plugin) in commandResponses %}
 <tr>
 	<td valign="top">{{ time }}</td>
 	<td valign="top">{{ host }}</td>
@@ -45,7 +45,7 @@
 	<th>Plugin</th>
 	<th>Message</th>
 </tr>
-{% for (timeSt, time, message, host, plugin) in broadcast_command_responses %}
+{% for (time, message, host, plugin) in broadcastCommandResponses %}
 <tr>
 	<td valign="top">{{ time }}</td>
 	<td valign="top">{{ host }}</td>

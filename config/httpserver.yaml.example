@@ -1,0 +1,6 @@
+schema   : mysql           #sqlite, postgres
+host     : 
+port     :                 #can be empty
+user     : 
+password : 
+database : 

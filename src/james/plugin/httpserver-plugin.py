@@ -197,7 +197,7 @@ class HttpServerPlugin(Plugin):
 
     def alert(self, args):
         newEntry = DbAlertResponse()
-        newEntry.data = unicode(json.dumps(args))
+        newEntry.data = unicode(json.dumps(' '.join(args).split(';')))
         newEntry.time = int(time.time())
         self.store.add(newEntry)
         self.store.commit()

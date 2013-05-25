@@ -69,11 +69,13 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
 * python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
 * python-pyaudio (voice-commands plugin)
+* python-flask, Flask-SQLAlchemy (httpserver)
+* python-storm (httpserver plugin)
 
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \
-	python-transmissionrpc python-pylirc python-pip
-	pip install python-mpd2
+	python-transmissionrpc python-pylirc python-pip python-storm python-flask
+	pip install python-mpd2 Flask-SQLAlchemy
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser"

@@ -136,7 +136,7 @@ class HttpServerPlugin(Plugin):
 
     def node_update_loop(self):
         self.request_all_nodes_details()
-        self.core.add_timeout(20, self.node_update_loop)
+        self.core.add_timeout(60, self.node_update_loop)
 
     def send_waiting_commands(self):
         result = self.store.find(DbCommand)

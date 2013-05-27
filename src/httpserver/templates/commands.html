@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block content %}
+<h3>Command Responses</h3>
+<table class="table table-striped table-condensed" id='dt_table'>
+	<thead>
+		<tr>
+			<th>Time</th>
+			<th>Host</th>
+			<th>Plugin</th>
+			<th>Message</th>
+		</tr>
+	</thead>
+	<thead>
+		<tr>
+			<th><input style='width:100%;'/></th>
+			<th><input style='width:100%;'/></th>
+			<th><input style='width:100%;'/></th>
+			<th><input style='width:100%;'/></th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for (time, message, host, plugin) in commandResponses %}
+		<tr>
+			<td valign="top">{{ time }}</td>
+			<td valign="top">{{ host }}</td>
+			<td valign="top">{{ plugin }}</td>
+			<td>{% for line in message %}
+				{{ line }}<br />
+				{% endfor %}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

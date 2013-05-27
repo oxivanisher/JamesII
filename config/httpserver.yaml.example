@@ -4,3 +4,6 @@ port     :                 #can be empty
 user     : 
 password : 
 database : 
+
+webuser  :                 # htaccess user
+webpasswd:                 # htaccess password

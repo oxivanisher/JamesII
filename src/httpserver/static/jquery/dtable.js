@@ -17,7 +17,7 @@ function resize_view() {
 }
 
 $(document).ready(function(){
-    oTable = $('#dt_movietable').dataTable({
+    oTable = $('#dt_table').dataTable({
 		"bLengthChange": false,
 		"sPaginationType": "full_numbers",
 		"fnDrawCallback": function() {

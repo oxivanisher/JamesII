@@ -9,14 +9,20 @@ import time
 import json
 import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
+from functools import wraps
+
+# from OpenSSL import SSL
+# context = 'adhoc'
+# context = SSL.Context(SSL.SSLv23_METHOD)
+# context.use_privatekey_file('yourserver.key')
+# context.use_certificate_file('yourserver.crt')
 
 import james
 
 # FIXME:
-# - add http port to config
 # - somehow, read the plugin descriptors for nicer display on website
 # - support json requests for retrieving data and send commands
-# - ssl support and user login for security
+# - ssl support
 
 # print james.plugin.Factory.descriptors
 
@@ -129,7 +135,30 @@ def decode_multiline_list(data):
 def decode_unicode(data):
     return utils.convert_from_unicode(data)
 
+def check_auth(username, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    return username == config['webuser'] and password == config['webpasswd']
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return flask.Response(
+    'Could not verify your access level for that URL.\n'
+    'You have to login with proper credentials', 401,
+    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = flask.request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
+
 @app.route('/status')
+@requires_auth
 def show_status():
     hostnames = {}
     for hostname in DbHostname.query.all():
@@ -158,47 +187,100 @@ def show_status():
 
 @app.route('/')
 @app.route('/messages')
-def show_responses():
-    commandResponses = []
-    broadcastCommandResponses = []
-    alertMessages = []
+@requires_auth
+def show_messages():
 
-    for response in DbCommandResponse.query.all():
+    commandResponses = []
+    count = 0
+    for response in reversed(DbCommandResponse.query.all()):
+        count += 1
+        commandResponses.append((convert_Time_to_String(response.time),
+                                 decode_multiline_list(response.data),
+                                 utils.convert_from_unicode(response.host),
+                                 utils.convert_from_unicode(response.plugin)))
+        if count >= 5:
+            break
+
+    broadcastCommandResponses = []
+    count = 0
+    for response in reversed(DbBroadcastCommandResponse.query.all()):
+        count += 1
+        broadcastCommandResponses.append((convert_Time_to_String(response.time),
+                                 decode_multiline_list(response.data),
+                                 utils.convert_from_unicode(response.host),
+                                 utils.convert_from_unicode(response.plugin)))
+        if count >= 5:
+            break
+
+    alertMessages = []
+    count = 0
+    for alert in reversed(DbAlertResponse.query.all()):
+        count += 1
+        alertMessages.append((convert_Time_to_String(alert.time),
+                              decode_multiline_list(alert.data)))
+        if count >= 5:
+            break
+
+    return flask.render_template('messages.html', commandResponses = commandResponses,
+                                                  broadcastCommandResponses = broadcastCommandResponses,
+                                                  alertMessages = alertMessages )
+
+@app.route('/alerts')
+@requires_auth
+def show_alerts():
+
+    alertMessages = []
+    for alert in reversed(DbAlertResponse.query.all()):
+        alertMessages.append((convert_Time_to_String(alert.time),
+                              decode_multiline_list(alert.data)))
+
+    return flask.render_template('alerts.html', alertMessages = alertMessages )
+
+@app.route('/commands')
+@requires_auth
+def show_commands():
+
+    commandResponses = []
+    for response in reversed(DbCommandResponse.query.all()):
         commandResponses.append((convert_Time_to_String(response.time),
                                  decode_multiline_list(response.data),
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
 
-    for response in DbBroadcastCommandResponse.query.all():
+    return flask.render_template('commands.html', commandResponses = commandResponses )
+
+@app.route('/broadcasts')
+@requires_auth
+def show_broadcasts():
+
+    broadcastCommandResponses = []
+    for response in reversed(DbBroadcastCommandResponse.query.all()):
         broadcastCommandResponses.append((convert_Time_to_String(response.time),
                                  decode_multiline_list(response.data),
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
 
-    for alert in DbAlertResponse.query.all():
-        alertMessages.append((convert_Time_to_String(alert.time),
-                              decode_multiline_list(alert.data)))
-
-    return flask.render_template('messages.html', commandResponses = reversed(commandResponses),
-                                                  broadcastCommandResponses = reversed(broadcastCommandResponses),
-                                                  alertMessages = reversed(alertMessages) )
+    return flask.render_template('broadcasts.html', broadcastCommandResponses = broadcastCommandResponses )
 
 @app.route('/sendCommand', methods=['GET', 'POST'])
+@requires_auth
 def send_command():
     if flask.request.method == 'POST':
         if flask.request.form['command'] != "":
             newEntry = DbCommand(json.dumps(flask.request.form['command'].split()), "source")
             db.session.add(newEntry)
             db.session.commit()
-        return show_responses()
+        return show_messages()
     else:
-        return show_responses()
+        return show_messages()
 
 # @app.route('/todo/api/v1.0/tasks', methods = ['GET'])
+# @requires_auth
 # def get_tasks():
 #     return flask.jsonify( { 'tasks': tasks } )
 
 # @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['GET'])
+# @requires_auth
 # def get_task(task_id):
 #     task = filter(lambda t: t['id'] == task_id, tasks)
 #     if len(task) == 0:
@@ -206,10 +288,12 @@ def send_command():
 #     return flask.jsonify( { 'task': task[0] } )
 
 @app.errorhandler(404)
+@requires_auth
 def not_found(error):
     return flask.make_response(flask.jsonify( { 'error': 'Not found' } ), 404)
 
 @app.route('/static/<string:folderName>/<string:fileName>', methods = ['GET'])
+@requires_auth
 def get_static(fileName, folderName):
     if fileName:
         return flask.send_from_directory('httpserver/static/' + folderName, fileName)
@@ -217,6 +301,5 @@ def get_static(fileName, folderName):
         flask.abort(404)
 
 if __name__ == '__main__':
-    print ('Starting up webserver')
-    app.run(host='0.0.0.0')
-    print ('Terminating')
+    app.run(host='0.0.0.0', port=config['webport'])
+    # app.run(host='0.0.0.0', ssl_context='adhoc')

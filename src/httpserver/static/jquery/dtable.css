@@ -3,23 +3,23 @@
  */
 
 .sorting_asc {
-    background: url('../static/img/sort_asc.png') no-repeat center right;
+    background: url('/static/img/sort_asc.png') no-repeat center right;
 }
 
 .sorting_desc {
-    background: url('../static/img/sort_desc.png') no-repeat center right;
+    background: url('/static/img/sort_desc.png') no-repeat center right;
 }
 
 .sorting {
-    background: url('../static/img/sort_both.png') no-repeat center right;
+    background: url('/static/img/sort_both.png') no-repeat center right;
 }
 
 .sorting_asc_disabled {
-    background: url('../static/img/sort_asc_disabled.png') no-repeat center right;
+    background: url('/static/img/sort_asc_disabled.png') no-repeat center right;
 }
 
 .sorting_desc_disabled {
-    background: url('../static/img/sort_desc_disabled.png') no-repeat center right;
+    background: url('/static/img/sort_desc_disabled.png') no-repeat center right;
 }
 
 /*.paging_full_numbers {

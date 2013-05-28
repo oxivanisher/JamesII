@@ -72,6 +72,46 @@ class DbusNotifyPlugin(Plugin):
         except Exception as e:
             pass
 
+    def alert(self, args):
+        message = ' '.join(args)
+        self.logger.debug('Processing alert message: %s' % message)
+        # Connect to notification interface on DBUS.
+        # http://www.galago-project.org/specs/notification/0.9/x408.html#command-notify
+        # icon from http://www.iconfinder.com/search/?q=alert
+        try:
+            self.notifyservice = self.bus.get_object(
+                'org.freedesktop.Notifications',
+                '/org/freedesktop/Notifications'
+            )
+            self.notifyservice = dbus.Interface(
+                self.notifyservice,
+                "org.freedesktop.Notifications"
+            )
+
+            icon_name = 'info.png'
+            try:
+                icon_path = os.path.join(os.getcwd(), '../media/', icon_name)
+            except Exception:
+                icon_path = ''
+
+            brief_msg = ("%s" % (message))
+            long_msg = ("JamesII Alert: %s" % (message))
+
+            # The second param is the replace id, so get the notify id back,
+            # store it, and send it as the replacement on the next call.
+            self.notifyid = self.notifyservice.Notify(
+                "JamesII Message",
+                self.notifyid,
+                icon_path,
+                brief_msg,
+                long_msg,
+                [],
+                {},
+                -1
+            )
+        except Exception as e:
+            pass
+
 descriptor = {
     'name' : 'dbus-notify',
     'help' : 'Dbus notification plugin (desktop only)',

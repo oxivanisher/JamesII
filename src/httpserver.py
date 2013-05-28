@@ -11,6 +11,8 @@ import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from functools import wraps
 
+# http://www.datatables.net/release-datatables/examples/data_sources/ajax.html
+
 # from OpenSSL import SSL
 # context = 'adhoc'
 # context = SSL.Context(SSL.SSLv23_METHOD)
@@ -157,6 +159,31 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+def get_broadcast_responses():
+    broadcastCommandResponses = []
+    for response in DbBroadcastCommandResponse.query.all():
+        broadcastCommandResponses.append((convert_Time_to_String(response.time),
+                                 decode_multiline_list(response.data),
+                                 utils.convert_from_unicode(response.host),
+                                 utils.convert_from_unicode(response.plugin)))
+    return broadcastCommandResponses
+
+def get_command_responses():
+    commandResponses = []
+    for response in DbCommandResponse.query.all():
+        commandResponses.append((convert_Time_to_String(response.time),
+                                 decode_multiline_list(response.data),
+                                 utils.convert_from_unicode(response.host),
+                                 utils.convert_from_unicode(response.plugin)))
+    return commandResponses
+
+def get_alerts():
+    alertMessages = []
+    for alert in DbAlertResponse.query.all():
+        alertMessages.append((convert_Time_to_String(alert.time),
+                              decode_multiline_list(alert.data)))
+    return alertMessages
+
 @app.route('/status')
 @requires_auth
 def show_status():
@@ -243,39 +270,17 @@ def show_messages():
 @app.route('/alerts')
 @requires_auth
 def show_alerts():
-
-    alertMessages = []
-    for alert in reversed(DbAlertResponse.query.all()):
-        alertMessages.append((convert_Time_to_String(alert.time),
-                              decode_multiline_list(alert.data)))
-
-    return flask.render_template('alerts.html', alertMessages = alertMessages )
+    return flask.render_template('alerts.html', alertMessages = get_alerts() )
 
 @app.route('/commands')
 @requires_auth
 def show_commands():
-
-    commandResponses = []
-    for response in reversed(DbCommandResponse.query.all()):
-        commandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
-                                 utils.convert_from_unicode(response.host),
-                                 utils.convert_from_unicode(response.plugin)))
-
-    return flask.render_template('commands.html', commandResponses = commandResponses )
+    return flask.render_template('commands.html', commandResponses = get_command_responses() )
 
 @app.route('/broadcasts')
 @requires_auth
 def show_broadcasts():
-
-    broadcastCommandResponses = []
-    for response in reversed(DbBroadcastCommandResponse.query.all()):
-        broadcastCommandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
-                                 utils.convert_from_unicode(response.host),
-                                 utils.convert_from_unicode(response.plugin)))
-
-    return flask.render_template('broadcasts.html', broadcastCommandResponses = broadcastCommandResponses )
+    return flask.render_template('broadcasts.html', broadcastCommandResponses = get_broadcast_responses() )
 
 @app.route('/sendCommand', methods=['GET', 'POST'])
 @requires_auth
@@ -289,18 +294,19 @@ def send_command():
     else:
         return show_messages()
 
-# @app.route('/todo/api/v1.0/tasks', methods = ['GET'])
-# @requires_auth
-# def get_tasks():
-#     return flask.jsonify( { 'tasks': tasks } )
+@app.route('/api/get/commands', methods = ['GET'])
+@requires_auth
+def get_command_responses_json():
+    print get_command_responses()
+    return flask.jsonify( { 'aaData' : get_command_responses() } )
 
-# @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['GET'])
-# @requires_auth
-# def get_task(task_id):
-#     task = filter(lambda t: t['id'] == task_id, tasks)
-#     if len(task) == 0:
-#         abort(404)
-#     return flask.jsonify( { 'task': task[0] } )
+@app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['GET'])
+@requires_auth
+def get_task(task_id):
+    task = filter(lambda t: t['id'] == task_id, tasks)
+    if len(task) == 0:
+        abort(404)
+    return flask.jsonify( { 'task': task[0] } )
 
 @app.errorhandler(404)
 @requires_auth
@@ -315,6 +321,7 @@ def get_static(fileName, folderName):
     else:
         flask.abort(404)
 
+# main loop
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config['webport'])
     # app.run(host='0.0.0.0', ssl_context='adhoc')

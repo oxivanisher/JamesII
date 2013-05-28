@@ -3,6 +3,7 @@
 import time
 import json
 from storm.locals import *
+from storm.expr import *
 
 import james
 from james.plugin import *
@@ -183,8 +184,7 @@ class HttpServerPlugin(Plugin):
                 self.store.commit()
                 self.logger.debug('Processed new Host UUID: %s %s' % (hostname, uuid))
 
-            result = self.store.find(DbStatus,
-                                     DbStatus.uuid == unicode(uuid) and DbStatus.plugin == unicode(plugin)).one()
+            result = self.store.find(DbStatus, And(DbStatus.uuid == unicode(uuid), DbStatus.plugin == unicode(plugin))).one()
             if result:
                 result.time = int(time.time())
                 result.data = unicode(json.dumps(currentStatus))

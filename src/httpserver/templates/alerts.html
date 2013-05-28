@@ -18,7 +18,7 @@
 	<tbody>
 		{% for (time, message) in alertMessages %}
 		<tr>
-			<td valign="top">{{ time }}</td>
+			<td valign="top"><nobr>{{ time }}</nobr></td>
 			<td>{% for line in message %}
 				{{ line }}<br />
 				{% endfor %}</td>

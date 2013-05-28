@@ -34,7 +34,7 @@
 	<tbody>
 		{% for (time, message, host, plugin) in commandResponses %}
 		<tr>
-			<td valign="top">{{ time }}</td>
+			<td valign="top"><nobr>{{ time }}</nobr></td>
 			<td valign="top">{{ host }}</td>
 			<td valign="top">{{ plugin }}</td>
 			<td>{% for line in message %}

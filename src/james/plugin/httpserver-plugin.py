@@ -181,6 +181,7 @@ class HttpServerPlugin(Plugin):
                 newEntry.hostname = unicode(hostname)
                 self.store.add(newEntry)
                 self.store.commit()
+                self.logger.debug('Processed new Host UUID: %s %s' % (hostname, uuid))
 
             result = self.store.find(DbStatus,
                                      DbStatus.uuid == unicode(uuid) and DbStatus.plugin == unicode(plugin)).one()

@@ -194,6 +194,7 @@ class HttpServerPlugin(Plugin):
                 newEntry.data = unicode(json.dumps(currentStatus))
                 self.store.add(newEntry)
             self.store.commit()
+            self.logger.debug('Processed data status update from %s@%s (%s)' % (plugin, hostname, uuid))
 
     def alert(self, args):
         newEntry = DbAlertResponse()

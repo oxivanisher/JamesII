@@ -3,12 +3,12 @@
 {% block content %}
 <h3>Host Status Details</h3>
 <ul class="nav nav-tabs" id="statusTab">
-{% for uuid in status %}
+	{% for uuid in status %}
 		{% for plugin in status[uuid] %}
 			<li><a href="#{{ uuid }}{{ plugin }}">{{ hostnames[uuid] }}{{ plugin }}</a></li>
 		{% endfor %}
-	</ul>
-{% endfor %}
+	{% endfor %}
+</ul>
 
 <div class="tab-content">
 	{% for uuid in status %}

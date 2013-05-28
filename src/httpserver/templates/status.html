@@ -8,7 +8,7 @@
 		<a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ hostnames[uuid] }}</a>
 		<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
 		{% for plugin in status[uuid] %}
-			<li><a href="#{{ uuid }}{{ plugin }}" data-toggle="tab">{{ plugin }}</a></li>
+			<li><a href="#{{ uuid }}{{ plugin }}" data-toggle="tab">{{ plugin }} {{ statusAge[uuid][plugin] }}</a></li>
 		{% endfor %}
 		</ul>
 	<li>

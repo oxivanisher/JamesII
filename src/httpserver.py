@@ -165,24 +165,21 @@ def show_status():
         hostnames[decode_unicode(hostname.uuid)] = decode_unicode(hostname.hostname)
 
     systemStatus = {}
+    systemStatusAge = {}
     for status in DbStatus.query.all():
         uuid = decode_unicode(status.uuid)
         pluginName = decode_unicode(status.plugin)
         data = decode_multiline_list(status.data)
+        time = utils.get_short_age(status.time)
 
-        try:
-            systemStatus[uuid]
-        except KeyError:
-            systemStatus[uuid] = {}
-
-        try:
-            systemStatus[uuid][pluginName]
-        except KeyError:
-            systemStatus[uuid][pluginName] = {}
-
+        systemStatus[uuid] = {}
         systemStatus[uuid][pluginName] = data
 
+        systemStatusAge[uuid] = {}
+        systemStatusAge[uuid][pluginName] = time
+
     return flask.render_template('status.html', status = systemStatus,
+                                                statusAge = systemStatusAge,
                                                 hostnames = hostnames )
 
 @app.route('/')

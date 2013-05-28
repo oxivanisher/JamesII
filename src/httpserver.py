@@ -171,7 +171,7 @@ def show_status():
         uuid = decode_unicode(status.uuid)
         pluginName = decode_unicode(status.plugin)
         data = decode_multiline_list(status.data)
-        time = utils.get_short_age(status.time)
+        myTime = utils.get_short_age(status.time)
 
         try:
             systemStatus[uuid]
@@ -194,7 +194,7 @@ def show_status():
             systemStatusAge[uuid][pluginName] = {}
 
         systemStatus[uuid][pluginName] = data
-        systemStatusAge[uuid][pluginName] = time
+        systemStatusAge[uuid][pluginName] = myTime
 
     return flask.render_template('status.html', status = systemStatus,
                                                 statusAge = systemStatusAge,

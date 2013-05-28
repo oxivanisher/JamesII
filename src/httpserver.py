@@ -172,10 +172,27 @@ def show_status():
         data = decode_multiline_list(status.data)
         time = utils.get_short_age(status.time)
 
-        systemStatus[uuid] = {}
-        systemStatus[uuid][pluginName] = data
+        try:
+            systemStatus[uuid]
+        except KeyError:
+            systemStatus[uuid] = {}
 
-        systemStatusAge[uuid] = {}
+        try:
+            systemStatus[uuid][pluginName]
+        except KeyError:
+            systemStatus[uuid][pluginName] = {}
+
+        try:
+            systemStatusAge[uuid]
+        except KeyError:
+            systemStatusAge[uuid] = {}
+
+        try:
+            systemStatusAge[uuid][pluginName]
+        except KeyError:
+            systemStatusAge[uuid][pluginName] = {}
+
+        systemStatus[uuid][pluginName] = data
         systemStatusAge[uuid][pluginName] = time
 
     return flask.render_template('status.html', status = systemStatus,

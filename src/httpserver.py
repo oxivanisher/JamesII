@@ -166,7 +166,8 @@ def show_status():
 
     systemStatus = {}
     systemStatusAge = {}
-    for status in DbStatus.query.all():
+    tTime = int(time.time() - 120)
+    for status in DbStatus.query.filter(DbStatus.time > tTime):
         uuid = decode_unicode(status.uuid)
         pluginName = decode_unicode(status.plugin)
         data = decode_multiline_list(status.data)

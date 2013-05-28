@@ -1,18 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Index{% endblock %}
 {% block content %}
-
+<h3>Host Status Details</h3>
+<ul class="nav nav-tabs" id="statusTab">
 {% for uuid in status %}
-	<h3><a href="#" data-toggle="tooltip" title="{{ uuid }}">{{ hostnames[uuid] }}</a></h3>
-	<ul class="nav nav-tabs" id="{{ uuid }}">
 		{% for plugin in status[uuid] %}
-			<li><a href="#{{ uuid }}{{ plugin }}">{{ plugin }}</a></li>
+			<li><a href="#{{ uuid }}{{ plugin }}">{{ hostnames[uuid] }}{{ plugin }}</a></li>
 		{% endfor %}
 	</ul>
+{% endfor %}
 
-	<div class="tab-content">
+<div class="tab-content">
+	{% for uuid in status %}
 		{% for plugin in status[uuid] %}
 			<div class="tab-pane" id="{{ uuid }}{{ plugin }}">
+			UUID: {{ uuid }}:
 			<table class="table table-striped table-condensed">
 			{% for detailName in status[uuid][plugin] %}
 				<tr>
@@ -22,19 +24,19 @@
 			{% endfor %}
 			</table>
 			</div>
+			<script>
+				$('#{{ uuid }}{{ plugin }} a').click(function (e) {
+					e.preventDefault();
+					$(this).tab('show');
+				})
+			</script>
 		{% endfor %}
-	</div>
+	{% endfor %}
+</div>
 
-	<script>
-		$('#{{ uuid }} a').click(function (e) {
-		  e.preventDefault();
-		  $(this).tab('show');
-		})
-
-		$(function () {
-		    $('#{{ uuid }} a:first').tab('show');
-		  })
-	</script>
-{% endfor %}
-
+<script>
+	$(function () {
+	    $('#statusTab a:first').tab('show');
+	  })
+</script>
 {% endblock %}

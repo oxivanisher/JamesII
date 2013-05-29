@@ -139,7 +139,7 @@ class EspeakPlugin(Plugin):
         if len(self.archived_messages) > 0:
         # reading the log
             if len(self.archived_messages) == 1:
-                self.message_cache.append('While we where apart, the following thing happend:' % len(self.archived_messages))
+                self.message_cache.append('While we where apart, the following thing happend:')
             else:
                 self.message_cache.append('While we where apart, the following %s things happend:' % len(self.archived_messages))
             work_archived_messages = self.archived_messages

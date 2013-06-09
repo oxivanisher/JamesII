@@ -257,10 +257,10 @@ class XbmcPlugin(Plugin):
 
             elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
-                niceName = "%s S%02dE%02d %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
+                niceName = "%s S%02dE%02d (Series) %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
 
             elif actType == 'movie':
-                actDetails = self.get_movie_details(actFileId)
+                actDetails = self.get_movie_details(actFileId) + " (Movie)"
                 if actDetails['year'] > 0:
                     niceName = "%s (%s)" % (actDetails['originaltitle'], actDetails['year'])
                 else:

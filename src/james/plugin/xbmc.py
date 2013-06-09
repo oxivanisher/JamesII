@@ -254,19 +254,22 @@ class XbmcPlugin(Plugin):
 
             if actType == 'unknown':
                 niceName = actFile + " (YouTube)"
+                niceType = "Youtube"
 
             elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
-                niceName = "%s S%02dE%02d (Series) %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
+                niceName = "%s S%02dE%02d %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
+                niceType = "Series"
 
             elif actType == 'movie':
+                niceType = "Movie"
                 actDetails = self.get_movie_details(actFileId)
                 if actDetails['year'] > 0:
                     niceName = "%s (%s)" % (actDetails['originaltitle'], actDetails['year'])
                 else:
                     niceName = actDetails['originaltitle']
 
-            niceTime = "(Movie) %s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(actPercentage, 0),
+            niceTime = "%s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(actPercentage, 0),
                                                            actTime['hours'],
                                                            actTime['minutes'],
                                                            actTime['seconds'],
@@ -274,11 +277,11 @@ class XbmcPlugin(Plugin):
                                                            actTotaltime['minutes'],
                                                            actTotaltime['seconds'] )
             if actSpeed == 0:
-                niceStatus = "Paused"
+                niceStatus = "Paused (%s)" % niceType
             if actSpeed == 1:
-                niceStatus = "Playing"
+                niceStatus = "Playing (%s)" % niceType
             else:
-                niceStatus = "Playing at %s" % actSpeed
+                niceStatus = "Playing (%s) at %sx" % (niceType, actSpeed)
 
         ret = {}
         ret['updates'] = self.updates

@@ -281,7 +281,7 @@ class XbmcPlugin(Plugin):
             if actSpeed == 1:
                 niceStatus = "Playing (%s)" % niceType
             else:
-                niceStatus = "Playing (%s) at %sx" % (niceType, actSpeed)
+                niceStatus = "Playing at %sx (%s)" % (actSpeed, niceType)
 
         ret = {}
         ret['updates'] = self.updates

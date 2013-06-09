@@ -176,11 +176,18 @@ class XbmcPlugin(Plugin):
         # get active item
         if player:
             playItemRaw = self.send_rpc("Player.GetItem", {"playerid" : player})
+
             try:
-                return { 'label' : playItemRaw['result']['item']['label'],
-                         'type'  : playItemRaw['result']['item']['type'],
-                         'id'    : playItemRaw['result']['item']['id'] }
-                
+                fLabel = playItemRaw['result']['item']['label']
+                fType = playItemRaw['result']['item']['type']
+                fId = -1
+
+                if playItemRaw['result']['item']['type'] != 'unknown':
+                    fId = playItemRaw['result']['item']['id']
+
+                return { 'label' : fLabel,
+                         'type'  : fType,
+                         'id'    : fId }
             except TypeError:
                 pass
 
@@ -245,7 +252,10 @@ class XbmcPlugin(Plugin):
             actType = self.get_active_file(player)['type']
             actFileId = self.get_active_file(player)['id']
 
-            if actType == 'episode':
+            if actType == 'unknown':
+                niceName = actFile
+
+            elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
                 niceName = "%s S%02dE%02d %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
 

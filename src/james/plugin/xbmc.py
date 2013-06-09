@@ -253,7 +253,7 @@ class XbmcPlugin(Plugin):
             actFileId = self.get_active_file(player)['id']
 
             if actType == 'unknown':
-                niceName = actFile
+                niceName = "YouTube: " + actFile
 
             elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)

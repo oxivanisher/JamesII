@@ -194,14 +194,18 @@ class ProximityPlugin(Plugin):
                 # compensating for config changes
                 self.persons_status[person] = False
             if new_persons_status[person] != self.persons_status[person]:
-                message = self.core.new_message(self.name)
-                message.level = 1
+                # message = self.core.new_message(self.name)
+                # message.level = 1
                 if new_persons_status[person]:
-                    message.header = ("%s is here" % person)
+                    # message.header = ("%s is here" % person)
+                    message = "%s is here" % person
                 else:
-                    message.header = ("%s left" % person)
-                message.body = ("Location: %s" % self.core.location)
-                message.send()
+                    # message.header = ("%s left" % person)
+                    message = "%s left" % person
+                self.send_command(['sys', 'alert', message])
+                # message.body = ("Location: %s" % self.core.location)
+                # message.send()
+
         # saving the actual persons detected
         self.persons_status = new_persons_status
 

@@ -30,27 +30,32 @@ class LircThread(PluginThread):
     def work(self):
         blocking = 0
         run = 1
-        if pylirc.init(self.prog, self.tempFile.name):
-            while run:
+        try:
+            if pylirc.init(self.prog, self.tempFile.name):
+                while run:
 
-                if not blocking:
-                    self.plugin.workerLock.acquire()
-                    run = self.plugin.workerRunning
-                    self.plugin.workerLock.release()
-                    if run:
-                        time.sleep(0.5)
-                    else:
-                        break
+                    if not blocking:
+                        self.plugin.workerLock.acquire()
+                        run = self.plugin.workerRunning
+                        self.plugin.workerLock.release()
+                        if run:
+                            time.sleep(0.5)
+                        else:
+                            break
 
-                s = pylirc.nextcode(1)
+                    s = pylirc.nextcode(1)
 
-                blocking = 0
+                    blocking = 0
 
-                while s:
-                    for code in s:
-                        self.plugin.send_ir_command(code["config"])
-                    blocking = 1
-                    s = []
+                    while s:
+                        for code in s:
+                            self.plugin.send_ir_command(code["config"])
+                        blocking = 1
+                        s = []
+        except RuntimeError:
+            self.logger.warning('LIRC Plugin could not be loaded. Retrying in 5 seconds.')
+            pylirc.exit()
+            self.core.add_timeout(5, self.work)
 
     def create_lircrc(self, lircrcConfig):
         configReturn = []

@@ -250,7 +250,10 @@ class XbmcPlugin(Plugin):
 
             actFile = self.get_active_file(player)['label']
             actType = self.get_active_file(player)['type']
-            actFileId = self.get_active_file(player)['id']
+            try:
+                actFileId = self.get_active_file(player)['id']
+            except TypeError:
+                actType = 'unknown'
 
             if actType == 'unknown':
                 niceName = actFile

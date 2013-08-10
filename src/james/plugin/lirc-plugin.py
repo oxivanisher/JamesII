@@ -55,7 +55,8 @@ class LircThread(PluginThread):
         except RuntimeError:
             self.logger.warning('LIRC Plugin could not be loaded. Retrying in 5 seconds.')
             pylirc.exit()
-            self.plugin.core.add_timeout(5, self.work)
+            time.sleep(5)
+            self.work()
 
     def create_lircrc(self, lircrcConfig):
         configReturn = []

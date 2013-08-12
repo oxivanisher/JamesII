@@ -16,7 +16,6 @@ import subprocess
 import struct
 import time
 import json
-import tempfile
 import os
 import math
 import atexit

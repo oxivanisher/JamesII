@@ -4,6 +4,8 @@ import atexit
 import json
 import time
 import threading
+import tempfile
+import os
 
 from james.plugin import *
 
@@ -15,6 +17,7 @@ class EspeakPlugin(Plugin):
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_espeak_message_archive")
         self.unmuted = self.core.proximity_status.get_status_here()
         self.espeak_command = self.config['espeak_command'].split()
+        self.play_command = self.config['play_command'].split()
 
         self.archived_messages = []
         self.message_cache = []
@@ -84,7 +87,10 @@ class EspeakPlugin(Plugin):
         self.speak_lock.release()
 
     def speak_worker(self, msg):
-        self.utils.popenAndWait(self.espeak_command + [msg])
+        tempFile = tempfile.NamedTemporaryFile(delete=False)
+        self.utils.popenAndWait(self.espeak_command + ['-w', tempFile.name] + [msg])
+        self.utils.popenAndWait(self.play_command + [tempFile.name])
+        os.remove(tempFile.name)
         self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
 
     def speak_hook(self, args = None):

@@ -210,6 +210,7 @@ espeak:
 # -ven+f3 -m -p 70 -s 180  this one sounds somewhat like GlaDOS (play with pitch -p)
 # -v en-rp -ven+m7         british enlish english like a butler
  espeak_command: /usr/bin/espeak -ven+f3 -m -p 70 -s 180
+ play_command: /usr/bin/aplay
  nodes:
   - node_name
 

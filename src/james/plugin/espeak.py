@@ -65,7 +65,10 @@ class EspeakPlugin(Plugin):
 
     def alert(self, args):
         self.logger.debug('Alerting (%s)' % ' '.join(args))
-        self.espeak_say(args)
+        if self.unmuted:
+            self.espeak_say(args)
+        else:
+            self.archived_messages.append((time.time(), ' '.join(args)))        
 
     def espeak_time(self, args):
         self.speak('It is now %s' % self.utils.get_time_string())

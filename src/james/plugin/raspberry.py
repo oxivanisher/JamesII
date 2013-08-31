@@ -87,6 +87,7 @@ class RaspberryThread(PluginThread):
             # debug output
             loop_count += 1
             if (loop_count % 1000) == 0:
+                print "loop count: %s" % loop_count
                 for pin in self.pin_state_cache['switch']:
                     print "pin count: %s - %s" % (pin, self.pin_state_cache['switch'][pin]['count'])
             #     self.logger.debug("Rasp Worker Debug: time:       %s" % int(time.time()))

@@ -214,7 +214,7 @@ class RaspberryPlugin(Plugin):
             show_commands.create_subcommand('buttons', 'Shows button commands', self.cmd_show_buttons)
             show_commands.create_subcommand('switches', 'Shows switch commands', self.cmd_show_switches)
 
-        atexit.register(self.worker_must_exit
+        atexit.register(self.worker_must_exit)
 
     # plugin methods
     def start(self):

@@ -3,6 +3,7 @@ import sys
 import wiringpi
 import time
 import threading
+import atexit
 
 #https://github.com/WiringPi/WiringPi-Python
 
@@ -70,7 +71,7 @@ class RaspberryThread(PluginThread):
         self.rasp_init()
 
         active = True
-        # loop_count = 0
+        loop_count = 0
         millis = int(round(time.time() * 1000)) - 10
         last_diff = 10
 
@@ -213,6 +214,8 @@ class RaspberryPlugin(Plugin):
             show_commands.create_subcommand('buttons', 'Shows button commands', self.cmd_show_buttons)
             show_commands.create_subcommand('switches', 'Shows switch commands', self.cmd_show_switches)
 
+        atexit.register(self.worker_must_exit
+
     # plugin methods
     def start(self):
         self.start_worker()
@@ -341,6 +344,14 @@ class RaspberryPlugin(Plugin):
                 self.blink_led(3, 3)
         else:
             self.messages_waiting_count += 1
+
+    def alert(self, args):
+        self.logger.debug("Processing alert event")
+
+        # at home
+        if self.core.proximity_status.status[self.core.location]:
+            if message.level == 1:
+                self.blink_led(0, 3)        
 
 descriptor = {
     'name' : 'raspberry',

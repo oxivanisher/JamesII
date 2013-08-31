@@ -15,7 +15,6 @@ import time
 import atexit
 import logging, logging.handlers
 import signal
-import atexit
 
 import plugin
 import config

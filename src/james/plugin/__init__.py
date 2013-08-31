@@ -6,7 +6,6 @@ import sys
 import threading
 import time
 import logging
-import atexit
 
 class CommandNotFound(Exception):
     pass
@@ -52,8 +51,6 @@ class Plugin(object):
             pass
 
         self.worker_threads = []
-
-        atexit.register(self.terminate)
 
     def start(self):
         pass

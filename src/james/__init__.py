@@ -15,6 +15,7 @@ import time
 import atexit
 import logging, logging.handlers
 import signal
+import atexit
 
 import plugin
 import config
@@ -95,6 +96,8 @@ class Core(object):
         self.core_lock = threading.RLock()
         self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
+
+        atexit.register(self.terminate)
 
         # setting up pika loggers
         # pika.base_connection.logger = self.utils.getLogger('pika.adapters.base_connection', None)
@@ -604,31 +607,31 @@ class Core(object):
         """
         Terminate the core. This method will first call the terminate() on each plugin.
         """
-        self.returncode = returncode
-        self.logger.debug("Core.terminate() called. I shall die now.")
+        if not self.terminated:
+            self.returncode = returncode
+            self.logger.debug("Core.terminate() called. I shall die now.")
 
-        try:
-            self.discovery_channel.send(['byebye', self.hostname, self.uuid])
-        except Exception:
-            pass
+            try:
+                self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+            except Exception:
+                pass
 
-        # replaced with atexit.register(self.terminate) on plugins
-        # for p in self.plugins:
-        #     p.terminate()
-        try:
-            file = open(self.proximity_state_file, 'w')
-            file.write(json.dumps(self.proximity_status.status[self.location]))
-            file.close()
-            self.logger.debug("Saving proximity status to %s" % (self.proximity_state_file))
-        except IOError:
-            if self.passive:
-                self.logger.debug("Could not safe proximity status to file")
-            else:
-                self.logger.warning("Could not safe proximity status to file")
-        except KeyError:
-            # no proximity state found for this location
-            pass
-        self.terminated = True
+            for p in self.plugins:
+                p.terminate()
+            try:
+                file = open(self.proximity_state_file, 'w')
+                file.write(json.dumps(self.proximity_status.status[self.location]))
+                file.close()
+                self.logger.debug("Saving proximity status to %s" % (self.proximity_state_file))
+            except IOError:
+                if self.passive:
+                    self.logger.debug("Could not safe proximity status to file")
+                else:
+                    self.logger.warning("Could not safe proximity status to file")
+            except KeyError:
+                # no proximity state found for this location
+                pass
+            self.terminated = True
 
     # threading methods
     class Timeout(object):

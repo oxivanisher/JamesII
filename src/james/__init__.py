@@ -612,8 +612,8 @@ class Core(object):
         except Exception:
             pass
 
-        for p in self.plugins:
-            p.terminate()
+        # for p in self.plugins:
+        #     p.terminate()
         try:
             file = open(self.proximity_state_file, 'w')
             file.write(json.dumps(self.proximity_status.status[self.location]))

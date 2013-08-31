@@ -70,13 +70,12 @@ class RaspberryThread(PluginThread):
         self.rasp_init()
 
         active = True
-        loop_count = 0
+        # loop_count = 0
         millis = int(round(time.time() * 1000)) - 10
         last_diff = 10
 
         # sleeping for 1/100 sec seems to be a good value for raspberry
         while active:
-            loop_count += 1
             # this magic calculates the next sleep time based on the last run to about 0.01 sec
             new_millis = int(round(time.time() * 1000))
             diff = new_millis - millis
@@ -85,7 +84,10 @@ class RaspberryThread(PluginThread):
             millis = new_millis
 
             # debug output
-            # if (loop_count % 100) == 0:
+            loop_count += 1
+            if (loop_count % 1000) == 0:
+                for pin in self.pin_state_cache['buttons']:
+                    print "pin count: %s - %s" % (pin, self.pin_state_cache['buttons'][pin]['count'])
             #     self.logger.debug("Rasp Worker Debug: time:       %s" % int(time.time()))
             #     self.logger.debug("Rasp Worker Debug: sleep_time: %s" % sleep_time)
             #     self.logger.debug("Rasp Worker Debug: diff:       %s" % diff)

@@ -87,8 +87,8 @@ class RaspberryThread(PluginThread):
             # debug output
             loop_count += 1
             if (loop_count % 1000) == 0:
-                for pin in self.pin_state_cache['buttons']:
-                    print "pin count: %s - %s" % (pin, self.pin_state_cache['buttons'][pin]['count'])
+                for pin in self.pin_state_cache['switch']:
+                    print "pin count: %s - %s" % (pin, self.pin_state_cache['switch'][pin]['count'])
             #     self.logger.debug("Rasp Worker Debug: time:       %s" % int(time.time()))
             #     self.logger.debug("Rasp Worker Debug: sleep_time: %s" % sleep_time)
             #     self.logger.debug("Rasp Worker Debug: diff:       %s" % diff)
@@ -213,8 +213,6 @@ class RaspberryPlugin(Plugin):
             show_commands = self.commands.create_subcommand('show', 'Show commands for buttons and switches', None)
             show_commands.create_subcommand('buttons', 'Shows button commands', self.cmd_show_buttons)
             show_commands.create_subcommand('switches', 'Shows switch commands', self.cmd_show_switches)
-
-        atexit.register(self.worker_must_exit)
 
     # plugin methods
     def start(self):

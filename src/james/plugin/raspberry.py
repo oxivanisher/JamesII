@@ -351,8 +351,7 @@ class RaspberryPlugin(Plugin):
 
         # at home
         if self.core.proximity_status.status[self.core.location]:
-            if message.level == 1:
-                self.blink_led(0, 3)        
+            self.blink_led(0, 3)        
 
 descriptor = {
     'name' : 'raspberry',

@@ -612,6 +612,7 @@ class Core(object):
         except Exception:
             pass
 
+        # replaced with atexit.register(self.terminate) on plugins
         # for p in self.plugins:
         #     p.terminate()
         try:

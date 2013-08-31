@@ -428,6 +428,7 @@ class MpdClientPlugin(Plugin):
                 if self.core.proximity_status.get_status_here():
                     if self.fade_in_progress:
                         self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
+                        return (["MPD Wakeup mode NOT activated due other fade in progress"])
                     else:
                         self.radio_off(None)
                         self.client_worker.play_url(self.stations[self.config['wakeup_st']], 0)
@@ -439,12 +440,16 @@ class MpdClientPlugin(Plugin):
                         self.thread.start()
                         self.worker_threads.append(self.thread)
                         self.logger.info("MPD Wakeup mode activated")
+                        return (["MPD Wakeup mode activated"])
                 else:
                     self.logger.info("Wakeup not activated. You are not here.")
+                    return (["Wakeup not activated. You are not here."])
             else:
                 self.logger.info("Wakeup not activated. Radio is already playing.")
+                return (["Wakeup not activated. Radio is already playing."])
         else:
             self.logger.info("Wakeup not activated. Unable to connect to MPD.")
+            return (["Wakeup not activated. Unable to connect to MPD."])
 
 
     def fade_ended(self):

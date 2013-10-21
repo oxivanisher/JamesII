@@ -86,6 +86,7 @@ class JabberThread(PluginThread):
         self.plugin.worker_lock.acquire()
         exit = self.plugin.worker_exit
         self.plugin.worker_lock.release()
+        self.roster = {}
         if not exit:
             try:
                 while not self.conn.reconnectAndReauth():

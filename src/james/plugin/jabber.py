@@ -41,6 +41,7 @@ class JabberThread(PluginThread):
             self.logger.error("Unable to connect to server %s!" % jid.getDomain())
             self.active = False
         else:
+            self.logger.info("Successfully connect to server %s!" % jid.getDomain())
             self.active = True
     
         if self.active:
@@ -92,7 +93,6 @@ class JabberThread(PluginThread):
         if not exit:
             try:
                 while not self.conn.reconnectAndReauth():
-                    self.logger.debug("Reconnecting...")
                     time.sleep(5)
             except:
                 self.conn = False

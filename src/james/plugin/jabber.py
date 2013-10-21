@@ -71,7 +71,8 @@ class JabberThread(PluginThread):
             my_roster = self.conn.getRoster()
             for i in my_roster.getItems():
                 self.roster[i] = my_roster.getStatus(i)
-            self.roster = self.plugin.utils.convert_from_unicode(self.roster)
+            if len(self.roster) > 0:
+                self.roster = self.plugin.utils.convert_from_unicode(self.roster)
 
             # self.logger.debug("Jabber worker roster: %s" % self.roster)
             return True
@@ -92,6 +93,7 @@ class JabberThread(PluginThread):
                     time.sleep(5)
             except:
                 self.conn = False
+                time.sleep(1)
                 self.xmpp_connect()
         else:
             self.active = False

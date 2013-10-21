@@ -38,7 +38,7 @@ class JabberThread(PluginThread):
         conres = self.conn.connect()
 
         if not conres:
-            self.logger.error("Unable to connect to server %s!" % jid.getDomain())
+            self.logger.warning("Unable to connect to server %s!" % jid.getDomain())
             self.active = False
         else:
             self.logger.info("Successfully connect to server %s!" % jid.getDomain())

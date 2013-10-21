@@ -28,6 +28,7 @@ class JabberThread(PluginThread):
         self.conn = False
         self.roster = {}
         self.muc_users = {}
+        self.reconnectingLoop = 0
 
     # jabber connection methods
     def xmpp_connect(self):
@@ -75,6 +76,7 @@ class JabberThread(PluginThread):
                 self.roster = self.plugin.utils.convert_from_unicode(self.roster)
 
             # self.logger.debug("Jabber worker roster: %s" % self.roster)
+            self.reconnectingLoop = 0
             return True
 
         else:
@@ -94,7 +96,11 @@ class JabberThread(PluginThread):
                     time.sleep(5)
             except:
                 self.conn = False
-                time.sleep(1)
+                if not self.reconnectingLoop > 12:
+                    self.reconnectingLoop += 1
+                if self.reconnectingLoop > 1:
+                    self.logger.info("Reconnect delay: %s" % (self.reconnectingLoop * 5))
+                    time.sleep(self.reconnectingLoop * 5)
                 self.xmpp_connect()
         else:
             self.active = False

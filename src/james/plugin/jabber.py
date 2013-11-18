@@ -262,7 +262,7 @@ class JabberThread(PluginThread):
                     src_jid = self.plugin.utils.convert_from_unicode(message.getJid()).split('/')
                     self.muc_users[who] = src_jid[0]
 
-                self.logger.debug("Users online: %s" % (' ',join(self.muc_users)))
+                self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
 
     # called when the worker ends
     def on_exit(self, result):

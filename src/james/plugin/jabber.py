@@ -198,7 +198,7 @@ class JabberThread(PluginThread):
     # callback handlers
     def message_callback(self, conn, message):
         if (time.time() - self.startupTime) < 10:
-            self.logger.debug("Ignoring message from %s due startup delay check" % (message.getFrom()))
+            self.logger.debug("Ignoring message from %s due startup delay" % (message.getFrom()))
         else:
             realjid = self.cfg_jid
             if message.__getitem__('type') == 'groupchat':
@@ -252,6 +252,7 @@ class JabberThread(PluginThread):
             if message.getJid():
                 self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                 if prs_type == 'unavailable':
+                    self.logger.debug("Remove online user: %s" % (who))
                     try:
                         del self.muc_users[who]
                     except Exception as e:

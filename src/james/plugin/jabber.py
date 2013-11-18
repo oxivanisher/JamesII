@@ -256,6 +256,7 @@ class JabberThread(PluginThread):
             print 'show: %s' % message.getShow()()
         except Exception:
             pass
+        repr(message)
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))

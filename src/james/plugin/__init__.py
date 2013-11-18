@@ -245,8 +245,10 @@ class PluginThread(threading.Thread):
         self.utils = self.plugin.utils
         self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
         try:
+            print "thread: %s" % self.plugin.core.config[self.plugin.name]
             if self.plugin.core.config[self.plugin.name]:
                 self.logger.setLevel(logging.DEBUG)
+                print "thread debug on"
         except AttributeError:
             pass
         except KeyError:

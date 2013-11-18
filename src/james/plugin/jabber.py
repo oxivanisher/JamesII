@@ -245,15 +245,15 @@ class JabberThread(PluginThread):
         who = str(message.getFrom())
         print ', '.join(message.__dict__.keys())
         try:
-            print 'body: %s' % message.getBody()
+            print 'status: %s' % message.getStatus()
         except Exception:
             pass
         try:
-            print 'subject: %s' % message.getSubject()
+            print 'payload: %s' % message.getPayload()
         except Exception:
             pass
         try:
-            print 'thread: %s' % message.getThread()
+            print 'statusCode: %s' % message.getStatusCode()()
         except Exception:
             pass
         if prs_type == 'subscribe':

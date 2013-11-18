@@ -245,7 +245,7 @@ class PluginThread(threading.Thread):
         self.utils = self.plugin.utils
         self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
         try:
-            if self.core.config[self.plugin.name]['debug']:
+            if self.config['debug']:
                 self.logger.setLevel(logging.DEBUG)
         except AttributeError:
             pass

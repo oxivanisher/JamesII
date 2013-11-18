@@ -250,14 +250,14 @@ class JabberThread(PluginThread):
         except Exception:
             pass
         try:
-            print 'data: %s' % presence.getData()
+            print 'data: %s' % presence.getStatusCode()
         except Exception:
             pass
         try:
             print 'show: %s' % presence.getShow()()
         except Exception:
             pass
-        print inspect.getmembers(presence)
+        # print inspect.getmembers(presence)
         repr(presence)
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))

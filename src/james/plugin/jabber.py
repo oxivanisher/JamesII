@@ -2,6 +2,7 @@
 import xmpp
 import sys
 import time
+import inspect
 
 from james.plugin import *
 
@@ -240,30 +241,31 @@ class JabberThread(PluginThread):
                 # self.logger.debug(message.getAttrs())
                 pass
 
-    def presence_callback(self, conn, message):
-        prs_type = message.getType()
-        who = str(message.getFrom())
-        print ', '.join(message.__dict__.keys())
+    def presence_callback(self, conn, presence):
+        prs_type = presence.getType()
+        who = str(presence.getFrom())
+        print ', '.join(presence.__dict__.keys())
         try:
-            print 'status: %s' % message.getStatus()
+            print 'status: %s' % presence.getStatus()
         except Exception:
             pass
         try:
-            print 'data: %s' % message.getData()
+            print 'data: %s' % presence.getData()
         except Exception:
             pass
         try:
-            print 'show: %s' % message.getShow()()
+            print 'show: %s' % presence.getShow()()
         except Exception:
             pass
-        repr(message)
+        print inspect.getmembers(presence)
+        repr(presence)
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
         elif prs_type == 'presence':
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
-            if message.getJid():
+            if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                     if prs_type == 'unavailable':
@@ -274,7 +276,7 @@ class JabberThread(PluginThread):
                             self.logger.debug("Remove online user error: %s" % (e))
                     else:
                         self.logger.debug("User now online: %s" % (who))
-                        src_jid = self.plugin.utils.convert_from_unicode(message.getJid()).split('/')
+                        src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
                         self.muc_users[who] = src_jid[0]
 
                     self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))

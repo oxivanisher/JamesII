@@ -29,6 +29,7 @@ class JabberThread(PluginThread):
         self.roster = {}
         self.muc_users = {}
         self.reconnectingLoop = 0
+        self.startupTime = time.time()
 
     # jabber connection methods
     def xmpp_connect(self):
@@ -196,28 +197,31 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
-        realjid = self.cfg_jid
-        if message.__getitem__('type') == 'groupchat':
-            try:
-                realjid = self.muc_users[str(message.getFrom())]
-            except KeyError:
-                # recieved a message from a user which is probably not here anymore
-                pass
-        elif message.__getitem__('type') == 'chat':
-            realjid = str(message.getFrom()).split('/')[0]
+        if (time.time() - self.startupTime) < 2:
+            self.logger.debug("Ignoring message from %s due startup delay check" % (message.getFrom()))
+        else:
+            realjid = self.cfg_jid
+            if message.__getitem__('type') == 'groupchat':
+                try:
+                    realjid = self.muc_users[str(message.getFrom())]
+                except KeyError:
+                    # recieved a message from a user which is probably not here anymore
+                    pass
+            elif message.__getitem__('type') == 'chat':
+                realjid = str(message.getFrom()).split('/')[0]
 
-        # check if it is a message from myself
-        if self.cfg_jid != realjid:
-            admin = None
-            # check if the user is a admin
-            for (jid, username) in self.users:
-                if jid == realjid:
-                    admin = username
+            # check if it is a message from myself
+            if self.cfg_jid != realjid:
+                admin = None
+                # check if the user is a admin
+                for (jid, username) in self.users:
+                    if jid == realjid:
+                        admin = username
 
-            if admin:
-                self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
-            else:
-                self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
+                if admin:
+                    self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
+                else:
+                    self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 
     def disconnect_callback(self, conn, message):
         self.logger.info("Jabber worker disconnect callback called!")

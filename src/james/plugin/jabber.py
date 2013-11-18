@@ -244,21 +244,33 @@ class JabberThread(PluginThread):
     def presence_callback(self, conn, presence):
         prs_type = presence.getType()
         who = str(presence.getFrom())
-        print ', '.join(presence.__dict__.keys())
-        try:
-            print 'status: %s' % presence.getStatus()
-        except Exception:
-            pass
-        try:
-            print 'data: %s' % presence.getStatusCode()
-        except Exception:
-            pass
-        try:
-            print 'show: %s' % presence.getShow()()
-        except Exception:
-            pass
-        # print inspect.getmembers(presence)
-        repr(presence)
+        # print ', '.join(presence.__dict__.keys())
+        # try:
+        #     print 'status: %s' % presence.getStatus()
+        # except Exception:
+        #     pass
+        # try:
+        #     print 'getStatusCode: %s' % presence.getStatusCode()
+        # except Exception:
+        #     pass
+        # try:
+        #     print 'attrs: %s' % presence.getAttrs()
+        # except Exception:
+        #     pass
+        # try:
+        #     print 'show: %s' % presence.getShow()()
+        # except Exception:
+        #     pass
+        # for (item, num) in inspect.getmembers(presence):
+        #     print "i: %s" % item
+
+        # try:
+        #     roster = self.conn.getRoster()
+        #     fromjid = presence.getFrom().getStripped()
+        #     print roster.getStatus(fromjid)
+        # except Exception:
+        #     pass
+
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))

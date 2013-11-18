@@ -252,6 +252,7 @@ class JabberThread(PluginThread):
             if message.getJid():
                 src_jid = self.plugin.utils.convert_from_unicode(message.getJid()).split('/')
                 self.muc_users[who] = src_jid[0]
+                self.logger.debug("Presence Type: %s, %s" % (prs_type, msg.__getitem__('jid')))
 
     # called when the worker ends
     def on_exit(self, result):

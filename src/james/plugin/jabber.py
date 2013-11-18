@@ -250,7 +250,7 @@ class JabberThread(PluginThread):
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
             if message.getJid():
-                if who != "%s/%s" %self.muc_room, self.muc_nick:
+                if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                     if prs_type == 'unavailable':
                         self.logger.debug("Remove online user: %s" % (who))

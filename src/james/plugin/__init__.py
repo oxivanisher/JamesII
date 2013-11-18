@@ -166,8 +166,8 @@ class Plugin(object):
         return self.core.hostname + ' ' + self.name
 
     def cmd_activate_debug(self, args):
-        self.logger.debug('Activating debug')
         self.logger.setLevel(logging.DEBUG)
+        self.logger.debug('Activating debug')
 
     def cmd_deactivate_debug(self, args):
         self.logger.debug('Deactivating debug')
@@ -244,6 +244,13 @@ class PluginThread(threading.Thread):
         self.config = self.plugin.config
         self.utils = self.plugin.utils
         self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
+        try:
+            if self.core.config[self.plugin.name]['debug']:
+                self.logger.setLevel(logging.DEBUG)
+        except AttributeError:
+            pass
+        except KeyError:
+            pass
         self.logger.debug('Thread initialized')
 
     def work(self):

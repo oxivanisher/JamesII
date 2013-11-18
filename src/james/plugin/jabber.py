@@ -244,9 +244,18 @@ class JabberThread(PluginThread):
         prs_type = message.getType()
         who = str(message.getFrom())
         print ', '.join(message.__dict__.keys())
-        print 'body: %s' % message.getBody()
-        print 'subject: %s' % message.getSubject()
-        print 'thread: %s' % message.getThread()
+        try:
+            print 'body: %s' % message.getBody()
+        except Exception:
+            pass
+        try:
+            print 'subject: %s' % message.getSubject()
+        except Exception:
+            pass
+        try:
+            print 'thread: %s' % message.getThread()
+        except Exception:
+            pass
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))

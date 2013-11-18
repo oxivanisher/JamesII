@@ -243,7 +243,8 @@ class JabberThread(PluginThread):
     def presence_callback(self, conn, message):
         prs_type = message.getType()
         who = str(message.getFrom())
-        message.iteritems()
+        for item in message.iteritems():
+            print item
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))

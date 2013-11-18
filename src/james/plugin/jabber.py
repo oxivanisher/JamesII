@@ -249,11 +249,11 @@ class JabberThread(PluginThread):
         except Exception:
             pass
         try:
-            print 'payload: %s' % message.getPayload()
+            print 'data: %s' % message.getData()
         except Exception:
             pass
         try:
-            print 'statusCode: %s' % message.getStatusCode()()
+            print 'show: %s' % message.getShow()()
         except Exception:
             pass
         if prs_type == 'subscribe':

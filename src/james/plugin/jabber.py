@@ -293,7 +293,8 @@ class JabberThread(PluginThread):
                     except Exception:
                         pass
 
-                    print "test: %s" % self.myroster.getStatus(presence.getJid())
+                    print "myroster.getStatus: %s" % self.myroster.getStatus(presence.getJid())
+                    print "myroster.getStatusCode: %s" % self.myroster.getStatusCode(presence.getJid())
 
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                     

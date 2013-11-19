@@ -143,7 +143,7 @@ class JabberThread(PluginThread):
         if self.muc_room:
             mucUserJids = []
             for muc_user in self.muc_users.keys():
-                mucUserJids.append(self.muc_users[muc_user].split('/')[0])
+                mucUserJids.append(muc_user.split('/')[0])
             for (header, body) in self.plugin.waiting_muc_messages:
                 for (userJid, username) in self.users:
                     print "userJid not in mucUserJids: %s / %s" % (userJid, mucUserJids)

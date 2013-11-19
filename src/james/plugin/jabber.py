@@ -232,11 +232,11 @@ class JabberThread(PluginThread):
                 # check if the user is a admin
                 for (jid, username) in self.users:
                     print "(jid, username): %s %s" % (jid, username)
-                    src_jid = self.plugin.utils.convert_from_unicode(jid)
-                    print "src_jid: %s" % src_jid
-                    if src_jid[0] == realjid:
+                    userJid = self.plugin.utils.convert_from_unicode(jid)
+                    print "userJid: %s" % userJid
+                    if userJid == realjid:
                         admin = True
-                        print "admin found on %s" % src_jid[0]
+                        print "admin found on %s" % userJid
 
                 if admin:
                     print "admin"

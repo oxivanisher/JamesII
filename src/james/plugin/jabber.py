@@ -231,16 +231,15 @@ class JabberThread(PluginThread):
         if (time.time() - self.startupTime) < 10:
             self.logger.warning("Ignoring message from %s due startup delay" % (message.getFrom()))
         else:
+            realjid = str(message.getFrom()).split('/')[0]
             if message.__getitem__('type') == 'groupchat':
-                realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved group chat message from user: %s" % str(message.getFrom()))
             elif message.__getitem__('type') == 'chat':
-                realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
 
             # check if it is a message from myself
-            print "\n%s != %s" % (self.cfg_jid, realjid)
-            if self.cfg_jid != realjid:
+            print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
+            if str(message.getFrom()) != "%s/%s" % (self.muc_room, self.muc_nick):
                 admin = False
                 # check if the user is a admin
                 for (userJid, username) in self.users:

@@ -143,10 +143,10 @@ class JabberThread(PluginThread):
         if self.muc_room:
             mucUserJids = []
             amountUsers = len(self.users)
-            print "test: %s" % self.muc_users
+            # print "test: %s" % self.muc_users
             for muc_user in self.muc_users.keys():
                 mucUserJids.append(self.muc_users[muc_user].split('/')[0])
-                print "appending: %s" % self.muc_users[muc_user].split('/')[0]
+                # print "appending: %s" % self.muc_users[muc_user].split('/')[0]
             for (header, body) in self.plugin.waiting_muc_messages:
                 amountChatDeliveries = 0
                 for (userJid, username) in self.users:
@@ -231,14 +231,12 @@ class JabberThread(PluginThread):
         if (time.time() - self.startupTime) < 10:
             self.logger.warning("Ignoring message from %s due startup delay" % (message.getFrom()))
         else:
-            realjid = self.cfg_jid
-
             if message.__getitem__('type') == 'groupchat':
                 realjid = str(message.getFrom()).split('/')[0]
-                self.logger.debug("Recieved group chat message from user: %s" % realjid)
+                self.logger.debug("Recieved group chat message from user: %s" % str(message.getFrom()))
             elif message.__getitem__('type') == 'chat':
                 realjid = str(message.getFrom()).split('/')[0]
-                self.logger.debug("Recieved chat message from user: %s" % realjid)
+                self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
 
             # check if it is a message from myself
             print "\n%s != %s" % (self.cfg_jid, realjid)

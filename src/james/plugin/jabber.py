@@ -231,7 +231,9 @@ class JabberThread(PluginThread):
                 admin = None
                 # check if the user is a admin
                 for (jid, username) in self.users:
+                    print "(jid, username): %s %s" % (jid, username)
                     src_jid = self.plugin.utils.convert_from_unicode(jid).split('/')
+                    print "src_jid: %s" % src_jid
                     if src_jid[0] == realjid:
                         admin = username
                         print "admin found on %s" % src_jid[0]

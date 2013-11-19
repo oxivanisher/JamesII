@@ -263,15 +263,15 @@ class JabberThread(PluginThread):
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     status = self.myroster.getShow(presence.getJid())
-                        if status == 'xa':
-                            self.logger.debug("User now online: %s" % (who))
-                            self.muc_users[who] = src_jid[0]
-                        else:
-                            self.logger.debug("User now away: %s" % (who))
-                            try:
-                                del self.muc_users[who]
-                            except Exception as e:
-                                self.logger.debug("Remove online user error: %s" % (e))
+                    if status == 'xa':
+                        self.logger.debug("User now online: %s" % (who))
+                        self.muc_users[who] = src_jid[0]
+                    else:
+                        self.logger.debug("User now away: %s" % (who))
+                        try:
+                            del self.muc_users[who]
+                        except Exception as e:
+                            self.logger.debug("Remove online user error: %s" % (e))
         self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
 
     # called when the worker ends

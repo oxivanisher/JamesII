@@ -144,10 +144,12 @@ class JabberThread(PluginThread):
             mucUserJids = []
             for muc_user in self.muc_users.keys():
                 mucUserJids.append(self.muc_users[muc_user].split('/')[0])
+            print mucUserJids
             for (header, body) in self.plugin.waiting_muc_messages:
                 for (userJid, username) in self.users:
                     print "userJid not in self.muc_users.keys(): %s / %s" % (userJid, self.muc_users.keys())
                     for muc_user in self.muc_users.keys():
+                        print "%s in %s" % (userJid, mucUserJids)
                         if userJid not in mucUserJids:
                             self.plugin.waiting_messages.append((userJid, header, body))
                             self.logger.debug("Delivering muc message to %s via private chat" % userJid)

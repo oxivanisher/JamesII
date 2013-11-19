@@ -152,7 +152,7 @@ class JabberThread(PluginThread):
                     # muc_send = False
                     for (jid, name) in self.users:
                         # see if user is in muc online an then send it there only
-                        for mucJid in self.muc_users.keys()
+                        for mucJid in self.muc_users.keys():
                             onlineJid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
                             if onlineJid[0] == jid:
                                 # muc_send = True
@@ -160,7 +160,7 @@ class JabberThread(PluginThread):
                                 message = self.create_message(jid, header, body)
                                 self.conn.send(message)
                     # if muc_send:
-                        
+
             except Exception as e:
                 self.logger.debug("Send direct msg ERROR: %s" % e)
         # see if we must send muc messages
@@ -272,7 +272,7 @@ class JabberThread(PluginThread):
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     status = self.myroster.getShow(presence.getJid())
-                    print "%s -> %s" % (who, status)
+                    # print "%s -> %s" % (who, status)
                     if status in [None, 'chat']:
                         self.logger.debug("User now online: %s" % (who))
                         # self.muc_users[who] = src_jid[0]

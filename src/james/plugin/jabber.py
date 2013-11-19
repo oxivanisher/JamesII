@@ -150,7 +150,7 @@ class JabberThread(PluginThread):
             for (header, body) in self.plugin.waiting_muc_messages:
                 amountChatDeliveries = 0
                 for (userJid, username) in self.users:
-                    print "userJid not in mucUserJids: %s / %s" % (userJid, mucUserJids)
+                    # print "userJid not in mucUserJids: %s / %s" % (userJid, mucUserJids)
                     if userJid not in mucUserJids:
                         amountChatDeliveries += 1
                         self.plugin.waiting_messages.append((header, body, userJid))
@@ -234,35 +234,35 @@ class JabberThread(PluginThread):
             realjid = None
             if message.__getitem__('type') == 'groupchat':
                 try:
-                    print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
+                    # print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
+                    self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
                 except Exception:
-                    pass
-                self.logger.debug("Recieved group chat message from user: %s" % str(message.getFrom()))
+                    self.logger.debug("Recieved MUC message from non online user: %s" % str(message.getFrom()))
             elif message.__getitem__('type') == 'chat':
                 realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
 
             # check if it is a message from myself
-            print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
+            # print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
             if realjid:
                 if str(message.getFrom()) != "%s/%s" % (self.muc_room, self.muc_nick):
                     admin = False
                     # check if the user is a admin
                     for (userJid, username) in self.users:
-                        print "(userJid, username): %s %s" % (userJid, username)
+                        # print "(userJid, username): %s %s" % (userJid, username)
                         # userJid = self.plugin.utils.convert_from_unicode(jid)
                         # print "userJid: %s" % userJid
                         if userJid == realjid.split('/')[0]:
                             admin = True
-                            print "admin found on %s" % userJid
+                            # print "admin found on %s" % userJid
 
                     if admin:
-                        print "admin"
+                        # print "admin"
                         self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
                         self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
                     else:
-                        print "noadmin"
+                        # print "noadmin"
                         self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))
                         self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 

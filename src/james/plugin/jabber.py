@@ -296,9 +296,8 @@ class JabberThread(PluginThread):
 
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                     
-                    else:
-                        self.logger.debug("User now online: %s" % (who))
-                        self.muc_users[who] = src_jid[0]
+                    self.logger.debug("User now online: %s" % (who))
+                    self.muc_users[who] = src_jid[0]
 
                     self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
 

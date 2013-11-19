@@ -28,6 +28,7 @@ class JabberThread(PluginThread):
         self.muc_nick = muc_nick
         self.conn = False
         self.roster = {}
+        self.myroster = None
         self.muc_users = {}
         self.reconnectingLoop = 0
         self.startupTime = time.time()
@@ -59,7 +60,8 @@ class JabberThread(PluginThread):
                 self.logger.warning("Warning: unable to perform SASL auth on %s. Old authentication method used!" % server)
 
             # lets go online
-            self.conn.sendInitPresence(requestRoster=0)
+            self.conn.sendInitPresence(requestRoster=1)
+            self.myroster = jabber.getRoster()
 
             # registering handlers
             self.conn.RegisterHandler('message', self.message_callback)
@@ -277,7 +279,9 @@ class JabberThread(PluginThread):
                 print 'show: %s' % presence.getShow()()
             except Exception:
                 pass
-            
+
+            print "test: %s" % self.myroster.getStatus(who)
+
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))

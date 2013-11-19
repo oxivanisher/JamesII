@@ -142,25 +142,32 @@ class JabberThread(PluginThread):
         # see if we must send muc messages
         if self.muc_room:
             mucUserJids = []
+            amountUsers = len(self.users)
             for muc_user in self.muc_users.keys():
                 mucUserJids.append(muc_user.split('/')[0])
             for (header, body) in self.plugin.waiting_muc_messages:
+                amountChatDeliveries = 0
                 for (userJid, username) in self.users:
                     print "userJid not in mucUserJids: %s / %s" % (userJid, mucUserJids)
                     if userJid not in mucUserJids:
+                        amountChatDeliveries += 1
                         self.plugin.waiting_messages.append((header, body, userJid))
-                        self.logger.debug("Delivering muc message to %s via private chat" % userJid)
-                try:
-                    msg_text = '\n'.join(header)
-                    if len(body):
-                        msg_text = msg_text + '\n' + '\n'.join(body)
-                    msg = xmpp.protocol.Message(body=msg_text)
-                    msg.setTo(self.muc_room)
-                    msg.setType('groupchat')
-                    self.conn.send(msg)
-                    self.logger.debug("Send muc message: %s" % msg_text)
-                except Exception as e:
-                    self.logger.warning("Send muc msg ERROR: %s" % e)
+                        self.logger.debug("Delivering MUC message to %s via private chat" % userJid)
+
+                if amountChatDeliveries < amountUsers:
+                    try:
+                        msg_text = '\n'.join(header)
+                        if len(body):
+                            msg_text = msg_text + '\n' + '\n'.join(body)
+                        msg = xmpp.protocol.Message(body=msg_text)
+                        msg.setTo(self.muc_room)
+                        msg.setType('groupchat')
+                        self.conn.send(msg)
+                        self.logger.debug("Send MUC message: %s" % msg_text)
+                    except Exception as e:
+                        self.logger.warning("Send MUC msg ERROR: %s" % e)
+                else:
+                    self.logger.debug("Not delivering message to MUC, all users where contacted via private message.")
         # see if we must send direct messages
         for (header, body, to_jid) in self.plugin.waiting_messages:
             try:

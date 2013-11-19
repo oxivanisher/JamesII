@@ -146,7 +146,7 @@ class JabberThread(PluginThread):
             print "test: %s" % self.muc_users
             for muc_user in self.muc_users.keys():
                 mucUserJids.append(muc_user.split('/')[0])
-                print "appending: %s" % muc_user.split('/')[0]
+                print "appending: %s" % self.muc_users[muc_user].split('/')[0]
             for (header, body) in self.plugin.waiting_muc_messages:
                 amountChatDeliveries = 0
                 for (userJid, username) in self.users:

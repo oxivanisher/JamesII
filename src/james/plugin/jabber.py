@@ -141,6 +141,7 @@ class JabberThread(PluginThread):
             self.active = False
         # see if we must send muc messages
         if self.muc_room:
+            mucUserJids = []
             for muc_user in self.muc_users.keys():
                 mucUserJids.append(self.muc_users[muc_user].split('/')[0])
             for (header, body) in self.plugin.waiting_muc_messages:
@@ -149,6 +150,7 @@ class JabberThread(PluginThread):
                     for muc_user in self.muc_users.keys():
                         if userJid not in mucUserJids:
                             self.plugin.waiting_messages.append((userJid, header, body))
+                            self.logger.debug("Delivering muc message to %s via private chat" % userJid)
                 try:
                     msg_text = '\n'.join(header)
                     if len(body):
@@ -294,12 +296,12 @@ class JabberThread(PluginThread):
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     status = self.myroster.getShow(presence.getJid())
                     # print "%s -> %s" % (who, status)
-                    if status in [None, 'chat', 'away', 'dnd']:
-                        self.logger.debug("User now available (online, chat, afk, dnd): %s" % (who))
+                    if status in [None, 'chat']:
+                        self.logger.debug("User now available (online, chat): %s" % (who))
                         # self.muc_users[who] = src_jid[0]
                         self.muc_users[who] = presence.getJid()
-                    elif status in ['xa']:
-                        self.logger.debug("User now unavailable (offline): %s" % (who))
+                    elif status in ['xa', 'away', 'dnd']:
+                        self.logger.debug("User now unavailable (offline, afk, dnd): %s" % (who))
                         try:
                             del self.muc_users[who]
                         except Exception as e:

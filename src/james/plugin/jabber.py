@@ -225,19 +225,23 @@ class JabberThread(PluginThread):
                 realjid = str(message.getFrom())
 
             # check if it is a message from myself
-            print "%s != %s" % (self.cfg_jid, realjid)
-            if self.cfg_jid != realjid:
+            print "%s != %s" % (self.cfg_jid, realjid.split('/')[0])
+            if self.cfg_jid != realjid.split('/')[0]:
+                print "ok"
                 admin = None
                 # check if the user is a admin
                 for (jid, username) in self.users:
                     src_jid = self.plugin.utils.convert_from_unicode(jid).split('/')
                     if src_jid[0] == realjid:
                         admin = username
+                        print "admin found on %s" % src_jid[0]
 
                 if admin:
+                    print "admin"
                     self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
                     self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
                 else:
+                    print "noadmin"
                     self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))
                     self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 

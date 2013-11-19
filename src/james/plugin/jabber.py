@@ -224,6 +224,7 @@ class JabberThread(PluginThread):
                 realjid = str(message.getFrom()).split('/')[0]
 
             # check if it is a message from myself
+            print "%s != %s" % (self.cfg_jid, realjid)
             if self.cfg_jid != realjid:
                 admin = None
                 # check if the user is a admin

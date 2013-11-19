@@ -231,33 +231,40 @@ class JabberThread(PluginThread):
         if (time.time() - self.startupTime) < 10:
             self.logger.warning("Ignoring message from %s due startup delay" % (message.getFrom()))
         else:
-            realjid = str(message.getFrom()).split('/')[0]
+            realjid = None
             if message.__getitem__('type') == 'groupchat':
+                try:
+                    print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
+                    realjid = self.muc_users[message.getFrom()].split('/')[0]
+                except Exception:
+                    pass
                 self.logger.debug("Recieved group chat message from user: %s" % str(message.getFrom()))
             elif message.__getitem__('type') == 'chat':
+                realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
 
             # check if it is a message from myself
             print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
-            if str(message.getFrom()) != "%s/%s" % (self.muc_room, self.muc_nick):
-                admin = False
-                # check if the user is a admin
-                for (userJid, username) in self.users:
-                    print "(userJid, username): %s %s" % (userJid, username)
-                    # userJid = self.plugin.utils.convert_from_unicode(jid)
-                    # print "userJid: %s" % userJid
-                    if userJid == realjid.split('/')[0]:
-                        admin = True
-                        print "admin found on %s" % userJid
+            if realjid:
+                if str(message.getFrom()) != "%s/%s" % (self.muc_room, self.muc_nick):
+                    admin = False
+                    # check if the user is a admin
+                    for (userJid, username) in self.users:
+                        print "(userJid, username): %s %s" % (userJid, username)
+                        # userJid = self.plugin.utils.convert_from_unicode(jid)
+                        # print "userJid: %s" % userJid
+                        if userJid == realjid.split('/')[0]:
+                            admin = True
+                            print "admin found on %s" % userJid
 
-                if admin:
-                    print "admin"
-                    self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
-                    self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
-                else:
-                    print "noadmin"
-                    self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))
-                    self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
+                    if admin:
+                        print "admin"
+                        self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
+                        self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
+                    else:
+                        print "noadmin"
+                        self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))
+                        self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 
     def disconnect_callback(self, conn, message):
         self.logger.info("Jabber worker disconnect callback called!")

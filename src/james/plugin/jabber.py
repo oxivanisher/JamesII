@@ -271,19 +271,20 @@ class JabberThread(PluginThread):
         elif prs_type == 'presence':
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
-            try:
-                print 'status: %s' % presence.getStatus()
-            except Exception:
-                pass
-            try:
-                print 'show: %s' % presence.getShow()()
-            except Exception:
-                pass
-
-            print "test: %s" % self.myroster.getStatus(who)
-
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
+
+                    try:
+                        print 'status: %s' % presence.getStatus()
+                    except Exception:
+                        pass
+                    try:
+                        print 'getStatusCode: %s' % presence.getStatusCode()()
+                    except Exception:
+                        pass
+
+                    print "test: %s" % self.myroster.getStatus(who)
+
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                     if prs_type == 'unavailable':
                         self.logger.debug("Remove online user: %s" % (who))

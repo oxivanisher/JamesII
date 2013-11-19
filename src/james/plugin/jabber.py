@@ -247,25 +247,7 @@ class JabberThread(PluginThread):
         prs_type = presence.getType()
         who = str(presence.getFrom())
         src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
-        # print ', '.join(presence.__dict__.keys())
 
-        # try:
-        #     print 'getStatusCode: %s' % presence.getStatusCode()
-        # except Exception:
-        #     pass
-        # try:
-        #     print 'attrs: %s' % presence.getAttrs()
-        # except Exception:
-        #     pass
-        # for (item, num) in inspect.getmembers(presence):
-        #     print "i: %s" % item
-
-        # try:
-        #     roster = self.conn.getRoster()
-        #     fromjid = presence.getFrom().getStripped()
-        #     print roster.getStatus(fromjid)
-        # except Exception:
-        #     pass
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
@@ -280,28 +262,17 @@ class JabberThread(PluginThread):
         else:
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
-                    try:
-                        print 'getStatus: %s' % presence.getStatus()
-                    except Exception:
-                        pass
-                    try:
-                        print 'getShow: %s' % presence.getShow()()
-                    except Exception:
-                        pass
-                    try:
-                        print 'getStatusCode: %s' % presence.getStatusCode()()
-                    except Exception:
-                        pass
-
-                    print "myroster.getShow: %s" % self.myroster.getShow(presence.getJid())
-                    print "myroster.getStatus: %s" % self.myroster.getStatus(presence.getJid())
-                    print "myroster.getStatusCode: %s" % self.myroster.getStatusCode(presence.getJid())
-
-                    self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
-                    self.logger.debug("User now online: %s" % (who))
-
-                    self.muc_users[who] = src_jid[0]
-                    self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
+                    status = self.myroster.getShow(presence.getJid()):
+                        if status == 'xa':
+                            self.logger.debug("User now online: %s" % (who))
+                            self.muc_users[who] = src_jid[0]
+                        else:
+                            self.logger.debug("User now away: %s" % (who))
+                            try:
+                                del self.muc_users[who]
+                            except Exception as e:
+                                self.logger.debug("Remove online user error: %s" % (e))
+        self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
 
     # called when the worker ends
     def on_exit(self, result):

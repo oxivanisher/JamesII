@@ -254,10 +254,6 @@ class JabberThread(PluginThread):
         #     print 'attrs: %s' % presence.getAttrs()
         # except Exception:
         #     pass
-        # try:
-        #     print 'show: %s' % presence.getShow()()
-        # except Exception:
-        #     pass
         # for (item, num) in inspect.getmembers(presence):
         #     print "i: %s" % item
 
@@ -277,7 +273,11 @@ class JabberThread(PluginThread):
                 print 'status: %s' % presence.getStatus()
             except Exception:
                 pass
-
+            try:
+                print 'show: %s' % presence.getShow()()
+            except Exception:
+                pass
+            
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))

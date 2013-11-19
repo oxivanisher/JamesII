@@ -233,7 +233,7 @@ class JabberThread(PluginThread):
                     print "(userJid, username): %s %s" % (userJid, username)
                     # userJid = self.plugin.utils.convert_from_unicode(jid)
                     # print "userJid: %s" % userJid
-                    if userJid == realjid:
+                    if userJid == realjid.split('/')[0]:
                         admin = True
                         print "admin found on %s" % userJid
 

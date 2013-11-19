@@ -61,7 +61,7 @@ class JabberThread(PluginThread):
 
             # lets go online
             self.conn.sendInitPresence(requestRoster=1)
-            self.myroster = jabber.getRoster()
+            self.myroster = self.conn.getRoster()
 
             # registering handlers
             self.conn.RegisterHandler('message', self.message_callback)

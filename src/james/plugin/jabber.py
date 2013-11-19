@@ -224,17 +224,19 @@ class JabberThread(PluginThread):
                 realjid = str(message.getFrom()).split('/')[0]
 
             # check if it is a message from myself
-            print "%s != %s" % (self.cfg_jid, realjid)
             if self.cfg_jid != realjid:
                 admin = None
                 # check if the user is a admin
                 for (jid, username) in self.users:
-                    if jid == realjid:
+                    src_jid = self.plugin.utils.convert_from_unicode(jid).split('/')
+                    if src_jid[0] == realjid:
                         admin = username
 
                 if admin:
+                    self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
                     self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
                 else:
+                    self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))
                     self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 
     def disconnect_callback(self, conn, message):

@@ -218,6 +218,7 @@ class JabberThread(PluginThread):
             if message.__getitem__('type') == 'groupchat':
                 try:
                     realjid = self.muc_users[str(message.getFrom())]
+                    print self.muc_users
                 except KeyError:
                     self.logger.debug("Ignoring group chat message from a user which is probably not here anymore: %s" % (str(message.getFrom())))
             elif message.__getitem__('type') == 'chat':

@@ -246,6 +246,7 @@ class JabberThread(PluginThread):
     def presence_callback(self, conn, presence):
         prs_type = presence.getType()
         who = str(presence.getFrom())
+        src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
         # print ', '.join(presence.__dict__.keys())
 
         # try:
@@ -265,7 +266,6 @@ class JabberThread(PluginThread):
         #     print roster.getStatus(fromjid)
         # except Exception:
         #     pass
-        print prs_type
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
@@ -273,7 +273,6 @@ class JabberThread(PluginThread):
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
         elif prs_type == 'unavailable':
             self.logger.debug("Remove online user: %s" % (who))
-            print "offile: %s" % who
             try:
                 del self.muc_users[who]
             except Exception as e:
@@ -281,14 +280,16 @@ class JabberThread(PluginThread):
         else:
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
-                    src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
-
                     try:
-                        print 'status: %s' % presence.getStatus()
+                        print 'getStatus: %s' % presence.getStatus()
                     except Exception:
                         pass
                     try:
-                        print 'show: %s' % presence.getShow()()
+                        print 'getShow: %s' % presence.getShow()()
+                    except Exception:
+                        pass
+                    try:
+                        print 'getStatusCode: %s' % presence.getStatusCode()()
                     except Exception:
                         pass
 
@@ -297,6 +298,7 @@ class JabberThread(PluginThread):
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
                     
                     self.logger.debug("User now online: %s" % (who))
+
                     self.muc_users[who] = src_jid[0]
 
                     self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))

@@ -264,10 +264,10 @@ class JabberThread(PluginThread):
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     status = self.myroster.getShow(presence.getJid())
                     print "%s -> %s" % (who, status)
-                    if status == 'xa':
+                    if status in [None, 'chat']:
                         self.logger.debug("User now online: %s" % (who))
                         self.muc_users[who] = src_jid[0]
-                    else:
+                    elif status in ['xa', 'away', 'dnd']:
                         self.logger.debug("User now away: %s" % (who))
                         try:
                             del self.muc_users[who]

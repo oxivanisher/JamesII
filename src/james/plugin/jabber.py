@@ -293,15 +293,14 @@ class JabberThread(PluginThread):
                     except Exception:
                         pass
 
+                    print "myroster.getShow: %s" % self.myroster.getShow(presence.getJid())
                     print "myroster.getStatus: %s" % self.myroster.getStatus(presence.getJid())
                     print "myroster.getStatusCode: %s" % self.myroster.getStatusCode(presence.getJid())
 
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
-                    
                     self.logger.debug("User now online: %s" % (who))
 
                     self.muc_users[who] = src_jid[0]
-
                     self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
 
     # called when the worker ends

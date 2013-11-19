@@ -234,15 +234,15 @@ class JabberThread(PluginThread):
             realjid = self.cfg_jid
 
             if message.__getitem__('type') == 'groupchat':
-                realjid = str(message.getFrom())
+                realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved group chat message from user: %s" % realjid)
             elif message.__getitem__('type') == 'chat':
-                realjid = str(message.getFrom())
+                realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % realjid)
 
             # check if it is a message from myself
-            print "\n%s != %s" % (self.cfg_jid, realjid.split('/')[0])
-            if self.cfg_jid != realjid.split('/')[0]:
+            print "\n%s != %s" % (self.cfg_jid, realjid)
+            if self.cfg_jid != realjid:
                 admin = False
                 # check if the user is a admin
                 for (userJid, username) in self.users:

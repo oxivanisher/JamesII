@@ -234,12 +234,8 @@ class JabberThread(PluginThread):
             realjid = self.cfg_jid
 
             if message.__getitem__('type') == 'groupchat':
-                print self.muc_users
-                try:
-                    realjid = self.muc_users[str(message.getFrom())]
-                    self.logger.debug("Recieved group chat message from user: %s" % realjid)
-                except KeyError:
-                    self.logger.debug("Ignoring group chat message from a user which is probably not here anymore: %s" % realjid)
+                realjid = str(message.getFrom())
+                self.logger.debug("Recieved group chat message from user: %s" % realjid)
             elif message.__getitem__('type') == 'chat':
                 realjid = str(message.getFrom())
                 self.logger.debug("Recieved chat message from user: %s" % realjid)

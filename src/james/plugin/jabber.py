@@ -139,6 +139,24 @@ class JabberThread(PluginThread):
         # see if i must shut myself down
         if self.plugin.worker_exit:
             self.active = False
+        # see if we must send muc messages
+        if self.muc_room:
+            for (header, body) in self.plugin.waiting_muc_messages:
+                for (userJid, username) in self.users:
+                    print "userJid not in self.muc_users.keys(): %s / %s" % (userJid, self.muc_users.keys())
+                    if userJid not in self.muc_users.keys():
+                        self.plugin.waiting_messages.append((userJid, header, body))
+                try:
+                    msg_text = '\n'.join(header)
+                    if len(body):
+                        msg_text = msg_text + '\n' + '\n'.join(body)
+                    msg = xmpp.protocol.Message(body=msg_text)
+                    msg.setTo(self.muc_room)
+                    msg.setType('groupchat')
+                    self.conn.send(msg)
+                    self.logger.debug("Send muc message: %s" % msg_text)
+                except Exception as e:
+                    self.logger.warning("Send muc msg ERROR: %s" % e)
         # see if we must send direct messages
         for (header, body, to_jid) in self.plugin.waiting_messages:
             try:
@@ -164,19 +182,6 @@ class JabberThread(PluginThread):
 
             except Exception as e:
                 self.logger.debug("Send direct msg ERROR: %s" % e)
-        # see if we must send muc messages
-        if self.muc_room:
-            for (header, body) in self.plugin.waiting_muc_messages:
-                try:
-                    msg_text = '\n'.join(header)
-                    if len(body):
-                        msg_text = msg_text + '\n' + '\n'.join(body)
-                    msg = xmpp.protocol.Message(body=msg_text)
-                    msg.setTo(self.muc_room)
-                    msg.setType('groupchat')
-                    self.conn.send(msg)
-                except Exception as e:
-                    self.logger.debug("Send muc msg ERROR: %s" % e)
         # see if we must change our status
         if self.plugin.jabber_status_string != self.status_message:
             self.status_message = self.plugin.jabber_status_string
@@ -286,12 +291,12 @@ class JabberThread(PluginThread):
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     status = self.myroster.getShow(presence.getJid())
                     # print "%s -> %s" % (who, status)
-                    if status in [None, 'chat']:
-                        self.logger.debug("User now online: %s" % (who))
+                    if status in [None, 'chat', 'away', 'dnd']:
+                        self.logger.debug("User now available (online, chat, afk, dnd): %s" % (who))
                         # self.muc_users[who] = src_jid[0]
                         self.muc_users[who] = presence.getJid()
-                    elif status in ['xa', 'away', 'dnd']:
-                        self.logger.debug("User now away: %s" % (who))
+                    elif status in ['xa']:
+                        self.logger.debug("User now unavailable (offline): %s" % (who))
                         try:
                             del self.muc_users[who]
                         except Exception as e:

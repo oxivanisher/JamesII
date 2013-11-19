@@ -238,7 +238,7 @@ class JabberThread(PluginThread):
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
                     self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
                 except Exception:
-                    self.logger.debug("Recieved MUC message from non online user: %s" % str(message.getFrom()))
+                    self.logger.info("Recieved MUC message from non online user: %s" % str(message.getFrom()))
             elif message.__getitem__('type') == 'chat':
                 realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))

@@ -141,11 +141,14 @@ class JabberThread(PluginThread):
             self.active = False
         # see if we must send muc messages
         if self.muc_room:
+            for muc_user in self.muc_users.keys():
+                mucUserJids.append(self.muc_users[muc_user].split('/')[0])
             for (header, body) in self.plugin.waiting_muc_messages:
                 for (userJid, username) in self.users:
                     print "userJid not in self.muc_users.keys(): %s / %s" % (userJid, self.muc_users.keys())
-                    if userJid not in self.muc_users.keys():
-                        self.plugin.waiting_messages.append((userJid, header, body))
+                    for muc_user in self.muc_users.keys():
+                        if userJid not in mucUserJids:
+                            self.plugin.waiting_messages.append((userJid, header, body))
                 try:
                     msg_text = '\n'.join(header)
                     if len(body):

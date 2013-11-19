@@ -279,7 +279,7 @@ class JabberThread(PluginThread):
                     except Exception:
                         pass
                     try:
-                        print 'getStatusCode: %s' % presence.getStatusCode()()
+                        print 'show: %s' % presence.getShow()()
                     except Exception:
                         pass
 

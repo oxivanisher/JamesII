@@ -265,6 +265,7 @@ class JabberThread(PluginThread):
         #     print roster.getStatus(fromjid)
         # except Exception:
         #     pass
+        print prs_type
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))

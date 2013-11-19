@@ -270,6 +270,13 @@ class JabberThread(PluginThread):
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
         elif prs_type == 'presence':
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
+        elif prs_type == 'unavailable':
+            self.logger.debug("Remove online user: %s" % (who))
+            print "offile: %s" % who
+            try:
+                del self.muc_users[who]
+            except Exception as e:
+                self.logger.debug("Remove online user error: %s" % (e))
         else:
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
@@ -286,14 +293,8 @@ class JabberThread(PluginThread):
 
                     print "test: %s" % self.myroster.getStatus(presence.getJid())
 
-
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))
-                    if prs_type == 'unavailable':
-                        self.logger.debug("Remove online user: %s" % (who))
-                        try:
-                            del self.muc_users[who]
-                        except Exception as e:
-                            self.logger.debug("Remove online user error: %s" % (e))
+                    
                     else:
                         self.logger.debug("User now online: %s" % (who))
                         self.muc_users[who] = src_jid[0]

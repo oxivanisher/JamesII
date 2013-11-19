@@ -225,15 +225,14 @@ class JabberThread(PluginThread):
                 realjid = str(message.getFrom())
 
             # check if it is a message from myself
-            print "%s != %s" % (self.cfg_jid, realjid.split('/')[0])
+            print "\n%s != %s" % (self.cfg_jid, realjid.split('/')[0])
             if self.cfg_jid != realjid.split('/')[0]:
-                print "ok"
                 admin = False
                 # check if the user is a admin
-                for (jid, username) in self.users:
-                    print "(jid, username): %s %s" % (jid, username)
-                    userJid = self.plugin.utils.convert_from_unicode(jid)
-                    print "userJid: %s" % userJid
+                for (userJid, username) in self.users:
+                    print "(userJid, username): %s %s" % (userJid, username)
+                    # userJid = self.plugin.utils.convert_from_unicode(jid)
+                    # print "userJid: %s" % userJid
                     if userJid == realjid:
                         admin = True
                         print "admin found on %s" % userJid

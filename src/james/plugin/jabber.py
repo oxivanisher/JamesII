@@ -149,9 +149,18 @@ class JabberThread(PluginThread):
                     self.conn.send(message)
                 else:
                     # broadcast message to every user
+                    # muc_send = False
                     for (jid, name) in self.users:
-                        message = self.create_message(jid, header, body)
-                        self.conn.send(message)
+                        # see if user is in muc online an then send it there only
+                        for mucJid in self.muc_users.keys()
+                            onlineJid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
+                            if onlineJid[0] == jid:
+                                # muc_send = True
+                            else:
+                                message = self.create_message(jid, header, body)
+                                self.conn.send(message)
+                    # if muc_send:
+                        
             except Exception as e:
                 self.logger.debug("Send direct msg ERROR: %s" % e)
         # see if we must send muc messages
@@ -246,7 +255,7 @@ class JabberThread(PluginThread):
     def presence_callback(self, conn, presence):
         prs_type = presence.getType()
         who = str(presence.getFrom())
-        src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
+        # src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
 
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
@@ -266,7 +275,8 @@ class JabberThread(PluginThread):
                     print "%s -> %s" % (who, status)
                     if status in [None, 'chat']:
                         self.logger.debug("User now online: %s" % (who))
-                        self.muc_users[who] = src_jid[0]
+                        # self.muc_users[who] = src_jid[0]
+                        self.muc_users[who] = presence.getJid()
                     elif status in ['xa', 'away', 'dnd']:
                         self.logger.debug("User now away: %s" % (who))
                         try:

@@ -154,9 +154,10 @@ class JabberThread(PluginThread):
                         # see if user is in muc online an then send it there only
                         for mucJid in self.muc_users.keys():
                             onlineJid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
-                            if onlineJid[0] == jid:
+                            # if onlineJid[0] == jid:
                                 # muc_send = True
-                            else:
+                            # else:
+                            if onlineJid[0] != jid:
                                 message = self.create_message(jid, header, body)
                                 self.conn.send(message)
                     # if muc_send:

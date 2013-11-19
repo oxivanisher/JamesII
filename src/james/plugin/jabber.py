@@ -213,18 +213,17 @@ class JabberThread(PluginThread):
         if (time.time() - self.startupTime) < 10:
             self.logger.warning("Ignoring message from %s due startup delay" % (message.getFrom()))
         else:
-            realjid = None
+            realjid = str(message.getFrom())
 
             if message.__getitem__('type') == 'groupchat':
                 print self.muc_users
                 try:
                     realjid = self.muc_users[str(message.getFrom())]
+                    self.logger.debug("Recieved group chat message from user: %s" % realjid)
                 except KeyError:
-                    self.logger.debug("Ignoring group chat message from a user which is probably not here anymore: %s" % (str(message.getFrom())))
+                    self.logger.debug("Ignoring group chat message from a user which is probably not here anymore: %s" % realjid)
             elif message.__getitem__('type') == 'chat':
-                realjid = str(message.getFrom())
                 self.logger.debug("Recieved chat message from user: %s" % realjid)
-
 
             # check if it is a message from myself
             print "\n%s != %s" % (self.cfg_jid, realjid.split('/')[0])

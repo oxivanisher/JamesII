@@ -143,6 +143,7 @@ class JabberThread(PluginThread):
         if self.muc_room:
             mucUserJids = []
             amountUsers = len(self.users)
+            print "test: %s" % self.muc_users
             for muc_user in self.muc_users.keys():
                 mucUserJids.append(muc_user.split('/')[0])
             for (header, body) in self.plugin.waiting_muc_messages:

@@ -216,7 +216,7 @@ class JabberThread(PluginThread):
             realjid = self.cfg_jid
             if message.__getitem__('type') == 'groupchat':
                 try:
-                    realjid = self.muc_users[str(message.getFrom())]
+                    realjid = self.muc_users[str(message.getFrom())].split('/')[0]
                 except KeyError:
                     # recieved a message from a user which is probably not here anymore
                     pass

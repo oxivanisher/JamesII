@@ -219,12 +219,13 @@ class JabberThread(PluginThread):
                     realjid = self.muc_users[str(message.getFrom())]
 
                 except KeyError:
-                    # recieved a message from a user which is probably not here anymore
+                    self.logger.debug("Ignoring message from a user which is probably not here anymore: %s" % (message.getFrom()))
                     pass
             elif message.__getitem__('type') == 'chat':
                 realjid = str(message.getFrom())
 
             # check if it is a message from myself
+            print "%s != %s" % (self.cfg_jid, realjid)
             if self.cfg_jid != realjid:
                 admin = None
                 # check if the user is a admin

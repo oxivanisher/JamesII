@@ -245,10 +245,7 @@ class JabberThread(PluginThread):
         prs_type = presence.getType()
         who = str(presence.getFrom())
         # print ', '.join(presence.__dict__.keys())
-        # try:
-        #     print 'status: %s' % presence.getStatus()
-        # except Exception:
-        #     pass
+
         # try:
         #     print 'getStatusCode: %s' % presence.getStatusCode()
         # except Exception:
@@ -270,15 +267,17 @@ class JabberThread(PluginThread):
         #     print roster.getStatus(fromjid)
         # except Exception:
         #     pass
-        if presence.getStatus() == "online":
-            print "online!"
-
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribe'))
         elif prs_type == 'presence':
             self.logger.debug("::: %s" % msg.__getitem__('jid'))
         else:
+            try:
+                print 'status: %s' % presence.getStatus()
+            except Exception:
+                pass
+
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
                     self.logger.debug("Presence Type: %s, %s" % (prs_type, who))

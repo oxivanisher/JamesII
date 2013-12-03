@@ -172,6 +172,10 @@ class TransmissionPlugin(Plugin):
                     self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
                 except transmissionrpc.error.TransmissionError as e:
                     self.logger.warning("TransmissionError occured: %s" % e)
+                except socket.timeout:
+                    self.logger.info("Socket Timeout on TorrentID: %s" % torrent_id)
+                except Exception as e:
+                    self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER! -> %e" % e)
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):

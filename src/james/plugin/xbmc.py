@@ -243,7 +243,11 @@ class XbmcPlugin(Plugin):
         if player:
             actPlayerData = self.get_active_player_details(player)
 
-            actSpeed = actPlayerData['speed']
+            try:
+                actSpeed = actPlayerData['speed']
+            except TypeError:
+                pass
+
             actPercentage = actPlayerData['percentage']
             actTime = actPlayerData['time']
             actTotaltime = actPlayerData['totaltime']

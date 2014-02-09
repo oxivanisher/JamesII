@@ -99,6 +99,8 @@ class TimerPlugin(Plugin):
             target_timestamp = int(target_time.strftime('%s'))
 
         if target_timestamp > 0 and len(args) > 0:
+            if target_timestamp < time.time():
+                target_timestamp += 86400
             return [self.timer_at(target_timestamp, args)]
         else:
             return ["Invalid syntax. Use timestamp or hh:mm[:ss] [dd-mm-yyyy]"]

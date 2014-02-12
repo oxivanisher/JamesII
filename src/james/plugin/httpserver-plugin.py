@@ -140,13 +140,16 @@ class HttpServerPlugin(Plugin):
         self.core.add_timeout(60, self.node_update_loop)
 
     def send_waiting_commands(self):
-        result = self.store.find(DbCommand)
-        for command in result:
-            plainCommand = self.utils.convert_from_unicode(json.loads(command.command))
-            self.logger.info('Running command: %s' % ' '.join(plainCommand))
-            self.send_command(plainCommand)
-        result.remove()
-        self.store.commit()
+        try:
+            result = self.store.find(DbCommand)
+            for command in result:
+                plainCommand = self.utils.convert_from_unicode(json.loads(command.command))
+                self.logger.info('Running command: %s' % ' '.join(plainCommand))
+                self.send_command(plainCommand)
+            result.remove()
+            self.store.commit()
+        except Exception as e:
+            self.logger.error('Error: %s' % e)
 
     def send_waiting_commands_loop(self):
         self.send_waiting_commands()

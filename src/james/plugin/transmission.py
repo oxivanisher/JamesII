@@ -90,7 +90,7 @@ class TransmissionPlugin(Plugin):
             message = self.core.new_message(self.name)
             message.level = 2
             try:
-                self.tr_conn.add_uri(args[0])
+                self.tr_conn.add_torrent(args[0])
                 self.addedTorrents += 1
                 self.logger.info('Download of (%s) starting' % args[0])
                 message.header = ("Torrent download started")
@@ -163,7 +163,7 @@ class TransmissionPlugin(Plugin):
             for torrent_id in self.tr_conn.get_files():
                 try:
                     torrent =  self.tr_conn.info(torrent_id)[torrent_id]
-                    if torrent.isFinished and torrent.status == 'stopped':
+                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
                         self.send_command(['sys', 'alert', 'Torrent download finished'])
@@ -173,7 +173,7 @@ class TransmissionPlugin(Plugin):
                 except transmissionrpc.error.TransmissionError as e:
                     self.logger.warning("TransmissionError occured: %s" % e)
                 except Exception as e:
-                    self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER! -> %e" % e)
+                    self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER!")
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):

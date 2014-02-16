@@ -163,7 +163,7 @@ class TransmissionPlugin(Plugin):
             for torrent_id in self.tr_conn.get_files():
                 try:
                     torrent =  self.tr_conn.info(torrent_id)[torrent_id]
-                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100:
+                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100 and torrent.downloadDir == self.tr_conn.download_dir:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
                         self.send_command(['sys', 'alert', 'Torrent download finished'])

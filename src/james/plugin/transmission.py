@@ -90,7 +90,7 @@ class TransmissionPlugin(Plugin):
             message = self.core.new_message(self.name)
             message.level = 2
             try:
-                self.tr_conn.add_torrent(args[0])
+                self.tr_conn.add_uri(args[0])
                 self.addedTorrents += 1
                 self.logger.info('Download of (%s) starting' % args[0])
                 message.header = ("Torrent download started")

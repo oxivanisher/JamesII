@@ -160,20 +160,22 @@ class TransmissionPlugin(Plugin):
     
     def worker_loop(self):
         if self.connection_ok():
-            for torrent_id in self.tr_conn.get_files():
-                try:
+            try:
+                for torrent_id in self.tr_conn.get_files():
                     torrent =  self.tr_conn.info(torrent_id)[torrent_id]
                     if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
                         self.send_command(['sys', 'alert', 'Torrent download finished'])
                         self.tr_conn.remove(torrent_id)
-                except ValueError:
-                    self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
-                except transmissionrpc.error.TransmissionError as e:
-                    self.logger.warning("TransmissionError occured: %s" % e)
-                except Exception as e:
-                    self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER!")
+            except ValueError:
+                self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
+            except transmissionrpc.error.TransmissionError as e:
+                self.logger.warning("TransmissionError occured: %s" % e)
+            except socket.error as e:
+                self.logger.warning("Socket Error occured: %s" % e)
+            except Exception as e:
+                self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER!")
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):

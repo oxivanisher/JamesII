@@ -647,9 +647,8 @@ class JabberPlugin(Plugin):
 
     def alert(self, args):
         self.logger.debug('Alerting (%s)' % ' '.join(args))
-        if not newstatus['status'][self.core.location]:
+        if not self.core.proximity_status.get_status_here():
             self.send_xmpp_message(' '.join(args))
-
 
     def return_status(self):
         ret = {}

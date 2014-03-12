@@ -645,6 +645,11 @@ class JabberPlugin(Plugin):
             self.change_xmpp_status_message(message)
             self.last_xmpp_status_message = message
 
+    def alert(self, args):
+        self.logger.debug('Alerting (%s)' % ' '.join(args))
+        if not newstatus['status'][self.core.location]:
+            self.send_xmpp_message(' '.join(args))
+
 
     def return_status(self):
         ret = {}

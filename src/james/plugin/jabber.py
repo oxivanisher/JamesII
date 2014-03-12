@@ -646,8 +646,8 @@ class JabberPlugin(Plugin):
             self.last_xmpp_status_message = message
 
     def alert(self, args):
-        self.logger.debug('Alerting (%s)' % ' '.join(args))
-        self.send_xmpp_muc_message(' '.join(args))
+        self.logger.debug('Alerting (%s)' % args)
+        self.send_xmpp_muc_message(args)
 
     def return_status(self):
         ret = {}

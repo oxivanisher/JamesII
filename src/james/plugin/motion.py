@@ -144,13 +144,18 @@ class MotionPlugin(Plugin):
             self.lastEvent = time.time()
             self.movementsDetected += 1
 
+            alertMessage = "Movement detected at %s" % (self.core.location)
+
             message = self.core.new_message(self.name)
             message.level = 2
-            message.header = ("Movement detected at %s" % (self.core.location))
+            message.header = alertMessage
 
             if self.move_file(file_path, self.config['dropbox-dir']):
                 message.body = ("%s/%s" % (self.config['dropbox-url'], file_name))
+                alertMessage += ": " + message.body
             message.send()
+
+            self.send_command(['sys', 'alert', alertMessage])
 
             if self.move_file(file_path, self.config['target-dir']):
                 self.logger.info('Motion: New Image file %s' % file_name)

@@ -172,8 +172,6 @@ class TransmissionPlugin(Plugin):
                 self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
             except transmissionrpc.error.TransmissionError as e:
                 self.logger.warning("TransmissionError occured: %s" % e)
-            except socket.error as e:
-                self.logger.warning("Socket Error occured: %s" % e)
             except Exception as e:
                 self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER!")
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)

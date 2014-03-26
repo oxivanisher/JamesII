@@ -18,6 +18,10 @@ class GoogleCalendarPlugin(Plugin):
 
         self.commands.create_subcommand('show', 'Show calendar entries from google', self.cmd_calendar_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
+        self.commands.create_subcommand('list', 'List all google calendars', self.cmd_calendars_list)
+
+        self.eventFetches = 0
+        self.eventsFetched = 0
 
         FLAGS = gflags.FLAGS
         FLOW = OAuth2WebServerFlow(
@@ -37,64 +41,86 @@ class GoogleCalendarPlugin(Plugin):
         self.service = build(serviceName='calendar', version='v3', http=http, developerKey='AIzaSyAIE6TwzGnQcPn4vDgXoUoOtNDK__x6ong')
 
     # internal commands
-    def fetchEvents(self, pageToken=None):
+    def fetchEvents(self, calendarId, pageToken=None):
         events = {}
         tzStr = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%z')
+        tzStr2 = tzStr[:3] + ':' + tzStr[3:]
         tStart = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%Y-%m-%dT00:00:00')
         tEnd = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%Y-%m-%dT23:59:59')
-        # print tzStr[:3] + ':' + tzStr[3:], tStart, tEnd
         try:
             events = self.service.events().list(
-                calendarId = self.config['calendarId'],
+                calendarId = calendarId,
                 singleEvents = True,
                 maxResults = 1000,
                 orderBy = 'startTime',
-                timeMin = tStart + tzStr[:3] + ':' + tzStr[3:],
-                timeMax = tEnd + tzStr[:3] + ':' + tzStr[3:],
-                # timeMin = '2014-03-01T00:00:00-08:00',
-                # timeMax = '2014-03-31T00:00:00-08:00',
+                timeMin = tStart + tzStr2,
+                timeMax = tEnd + tzStr2,
                 pageToken = pageToken,
                 ).execute()
+            self.eventFetches += 1
         except Exception as e:
             self.logger.error("Event fetching error: %s" % e)
         return events
 
     def requestEvents(self):
         allEvents = []
-        events = self.fetchEvents()
-        while True:
-            for event in events['items']:
-                allEvents.append(event)
-            page_token = events.get('nextPageToken')
-            if page_token:
-                events = getEvents(page_token)
-            else:
-                break
+        for calendar in self.config['calendarIds']:
+            events = self.fetchEvents(calendar)
+            while True:
+                for event in events['items']:
+                    allEvents.append(event)
+                page_token = events.get('nextPageToken')
+                if page_token:
+                    events = getEvents(calendar, page_token)
+                else:
+                    break
 
         retList = []
         for event in allEvents:
+            self.eventsFetched += 1
+            retStr = ""
             # whole day event:
-            event['start']['date']
+            # if 'date' in event['start'].keys():
+            #     retStr = "Today: "
             # normal event:
-            event['start']['dateTime']
-            retStr = "At %s: " % ("now")
-
+            if 'dateTime' in event['start'].keys():
+                eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
+                retStr = "At %02d:%02d: " % (eventTime.hour, eventTime.minute)
             if event['status'] == "tentative":
                 retStr += " possibly "
-
             retStr += event['summary']
 
             retList.append(retStr)
-        
-        return retList
+
+        if len(retList):
+            return ['Google calendar events for today'] + retList + ['End of calendar events']
+        else:
+            return ['No google calendar events for today']
 
     # commands
     def cmd_calendar_show(self, args):
         return self.requestEvents()
 
-    # commands
     def cmd_calendar_speak(self, args):
         self.send_command(['espeak', 'say', '. '.join(self.requestEvents())])
+
+    def cmd_calendars_list(self, args):
+        try:
+            retList = ['Google calendars:', 'ID: Name']
+            calendars = self.service.calendarList().list().execute()
+            for cal in calendars['items']:
+                if cal['kind'] == 'calendar#calendarListEntry':
+                    retList.append(cal['id'] + ": " + cal['summary'])
+            return retList
+        except Exception as e:
+            print e
+
+    # status
+    def return_status(self):
+        ret = {}
+        ret['eventFetches'] = self.eventFetches
+        ret['eventsFetched'] = self.eventsFetched
+        return ret
 
 descriptor = {
     'name' : 'gcal',
@@ -102,5 +128,6 @@ descriptor = {
     'command' : 'gcal',
     'mode' : PluginMode.MANAGED,
     'class' : GoogleCalendarPlugin,
-    'detailsNames' : { }
+    'detailsNames' : { 'eventFetches' : "Amount of event fetches",
+                       'eventsFetched' : "Amount of events fetched" }
 }

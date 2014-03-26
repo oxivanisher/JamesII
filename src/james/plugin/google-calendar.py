@@ -1,6 +1,8 @@
 
 import gflags
 import httplib2
+import datetime
+import pytz
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -36,15 +38,25 @@ class GoogleCalendarPlugin(Plugin):
 
     # internal commands
     def fetchEvents(self, pageToken=None):
-        events = self.service.events().list(
-            calendarId = self.config['calendarId'],
-            singleEvents = True,
-            maxResults = 1000,
-            orderBy = 'startTime',
-            timeMin = '2014-03-01T00:00:00-08:00',
-            timeMax = '2014-03-31T00:00:00-08:00',
-            pageToken = pageToken,
-            ).execute()
+        events = {}
+        tzStr = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%z')
+        tStart = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%Y-%m-%dT00:00:00')
+        tEnd = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%Y-%m-%dT23:59:59')
+        # print tzStr[:3] + ':' + tzStr[3:], tStart, tEnd
+        try:
+            events = self.service.events().list(
+                calendarId = self.config['calendarId'],
+                singleEvents = True,
+                maxResults = 1000,
+                orderBy = 'startTime',
+                timeMin = tStart + tzStr[:3] + ':' + tzStr[3:],
+                timeMax = tEnd + tzStr[:3] + ':' + tzStr[3:],
+                # timeMin = '2014-03-01T00:00:00-08:00',
+                # timeMax = '2014-03-31T00:00:00-08:00',
+                pageToken = pageToken,
+                ).execute()
+        except Exception as e:
+            self.logger.error("Event fetching error: %s" % e)
         return events
 
     def requestEvents(self):
@@ -58,7 +70,23 @@ class GoogleCalendarPlugin(Plugin):
                 events = getEvents(page_token)
             else:
                 break
-        return allEvents
+
+        retList = []
+        for event in allEvents:
+            # whole day event:
+            event['start']['date']
+            # normal event:
+            event['start']['dateTime']
+            retStr = "At %s: " % ("now")
+
+            if event['status'] == "tentative":
+                retStr += " possibly "
+
+            retStr += event['summary']
+
+            retList.append(retStr)
+        
+        return retList
 
     # commands
     def cmd_calendar_show(self, args):
@@ -66,8 +94,7 @@ class GoogleCalendarPlugin(Plugin):
 
     # commands
     def cmd_calendar_speak(self, args):
-        return self.requestEvents()
-
+        self.send_command(['espeak', 'say', '. '.join(self.requestEvents())])
 
 descriptor = {
     'name' : 'gcal',

@@ -234,6 +234,12 @@ wakeonlan:
  nodes:
   - node_name
 
+gcal:
+ client_secret: Get Yours from Google!
+ calendarId   : 
+ nodes:
+  - node_name
+
 locations:
 # configure locations (the system will default to 'home')
  # node_name: location

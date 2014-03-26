@@ -1,4 +1,6 @@
 
+#pip install google-api-python-client
+
 import gflags
 import httplib2
 import datetime
@@ -24,6 +26,7 @@ class GoogleCalendarPlugin(Plugin):
         self.eventsFetched = 0
 
         FLAGS = gflags.FLAGS
+        FLAGS.auth_local_webserver = False
         FLOW = OAuth2WebServerFlow(
             client_id = '474730164735-f9l08rmhjihi6vhgckf1p3pmnolnf3sc.apps.googleusercontent.com',
             client_secret = self.config['client_secret'],

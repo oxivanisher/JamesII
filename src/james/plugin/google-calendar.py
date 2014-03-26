@@ -53,8 +53,10 @@ class GoogleCalendarPlugin(Plugin):
                 singleEvents = True,
                 maxResults = 1000,
                 orderBy = 'startTime',
-                timeMin = tStart + tzStr2,
-                timeMax = tEnd + tzStr2,
+                # timeMin = tStart + tzStr2,
+                # timeMax = tEnd + tzStr2,
+                timeMin = tStart + "+00:00",
+                timeMax = tEnd + "+00:00",
                 pageToken = pageToken,
                 ).execute()
             self.eventFetches += 1
@@ -93,7 +95,7 @@ class GoogleCalendarPlugin(Plugin):
             retList.append(retStr)
 
         if len(retList):
-            return ['Google calendar events for today'] + retList + ['End of calendar events']
+            return ['Google calendar events for today: '] + retList + ['End of calendar events']
         else:
             return ['No google calendar events for today']
 

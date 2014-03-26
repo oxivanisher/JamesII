@@ -236,7 +236,9 @@ wakeonlan:
 
 gcal:
  client_secret: Get Yours from Google!
- calendarId   : 
+ calendarIds:
+  - you@gmail.com
+  - '#contacts@group.v.calendar.google.com'
  nodes:
   - node_name
 

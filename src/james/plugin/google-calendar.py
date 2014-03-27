@@ -103,7 +103,7 @@ class GoogleCalendarPlugin(Plugin):
             if event['status'] == "tentative":
                 retStr += " possibly "
                 # evil is: 
-            retStr += event['summary'].replace(u"\xc2\xb0", "°")
+            retStr += event['summary'].replace(u"\xc2\xb0", " degrees")
             retList.append(retStr)
 
         if len(retList):

@@ -64,7 +64,11 @@ class GoogleCalendarPlugin(Plugin):
                 ).execute()
             self.eventFetches += 1
         except Exception as e:
-            self.logger.error("Event fetching error: %s" % e)
+            if e == '':
+                self.logger.error("Event fetching error, probably oauth2 session refresh")
+                return False
+            else:
+                self.logger.error("Event fetching error: %s" % e)
         return events
 
     def requestEvents(self):

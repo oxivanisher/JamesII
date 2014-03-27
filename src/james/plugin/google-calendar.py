@@ -102,7 +102,7 @@ class GoogleCalendarPlugin(Plugin):
                 retStr = "At %02d:%02d: " % (eventTime.hour, eventTime.minute)
             if event['status'] == "tentative":
                 retStr += " possibly "
-            retStr += event['summary'].replace(u"\xc2", "degrees")
+            retStr += event['summary']#.replace(u"\xc2", "degrees")
 
             retList.append(retStr)
 

@@ -103,7 +103,7 @@ class GoogleCalendarPlugin(Plugin):
             if event['status'] == "tentative":
                 retStr += " possibly "
                 # evil is: 
-            retStr += event['summary'].replace('\xc2\xb0', " degrees")
+            retStr += event['summary']
             retList.append(retStr)
 
         if len(retList):
@@ -128,6 +128,12 @@ class GoogleCalendarPlugin(Plugin):
             return retList
         except Exception as e:
             print e
+
+    # internal
+    def process_proximity_event(self, newstatus):
+        self.logger.debug("Google Calendar Processing proximity event")
+        if newstatus['status'][self.core.location]:
+            self.cmd_calendar_speak()
 
     # status
     def return_status(self):

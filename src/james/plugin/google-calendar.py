@@ -70,7 +70,12 @@ class GoogleCalendarPlugin(Plugin):
     def requestEvents(self):
         allEvents = []
         for calendar in self.config['calendarIds']:
-            events = self.fetchEvents(calendar)
+            events = False
+            while not events:
+                events = self.fetchEvents(calendar)
+                if not events:
+                    time.sleep(1)
+
             while True:
                 for event in events['items']:
                     allEvents.append(event)

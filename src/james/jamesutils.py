@@ -250,6 +250,7 @@ class JamesUtils(object):
             args = [s.encode('utf-8', errors='ignore').strip() for s in data]
             args = filter(lambda s: s != '', args)
         except UnicodeDecodeError as e:
+            logger = self.getLogger('jamesutils', self.core.logger)
             self.logger.error("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
             args = data
         return args

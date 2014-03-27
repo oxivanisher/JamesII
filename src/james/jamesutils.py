@@ -246,8 +246,12 @@ class JamesUtils(object):
             return data
 
     def list_unicode_cleanup(self, data):
-        args = [s.encode('utf-8', errors='ignore').strip() for s in data]
-        args = filter(lambda s: s != '', args)
+        try:
+            args = [s.encode('utf-8', errors='ignore').strip() for s in data]
+            args = filter(lambda s: s != '', args)
+        except UnicodeDecodeError as e:
+            self.logger.error("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
+            args = data
         return args
 
     def popenAndWait(self, command):

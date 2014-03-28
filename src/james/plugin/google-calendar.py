@@ -96,17 +96,17 @@ class GoogleCalendarPlugin(Plugin):
 
         retList = []
         for event in allEvents:
-            retStr = ""
             self.eventsFetched += 1
 
             # whole day event:
             if 'date' in event['start'].keys():
-                # retStr = "Today: "
-                print event['start']['date']
-
+                if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d')
+                    retStr = "Today "
+                else:
+                    retStr = "Tomorrow "
 
             # normal event:
-            if 'dateTime' in event['start'].keys():
+            elif 'dateTime' in event['start'].keys():
                 eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTime.day != datetime.datetime.now(self.timeZone).day:
                     retStr = "Tomorrow at %02d:%02d: " % (eventTime.hour, eventTime.minute)

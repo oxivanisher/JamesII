@@ -39,20 +39,20 @@ do
 	elif [[ $RESULT -eq 2 ]];
 	then
 		GITPULL=false
-		echo -e "\nJamesII connection error detected. Sleeping for 20 seconds\n"
-		sleep 20
+		echo -e "\nJamesII connection error detected. Sleeping for 10 seconds\n"
+		sleep 10
 	elif [[ $RESULT -eq 3 ]];
 	then
 		GITPULL=true
-		echo -e "\nJamesII keyboard interrupt detected. Sleeping for 20 seconds\n"
-		sleep 20
+		echo -e "\nJamesII keyboard interrupt detected. Sleeping for 10 seconds\n"
+		sleep 10
 	else
 		GITPULL=true
-		echo -e "\nJamesII crash detected. Sleeping for 20 seconds\n"
+		echo -e "\nJamesII crash detected. Sleeping for 10 seconds\n"
 		echo $(date +%s) > ./.james_crashed
 		chmod 666 ./.james_crashed
 		echo -e "Console Log:\n$(sudo cat ./.james_console_log)\n\n\nJamesII Log:\n$(sudo cat ./JamesII.log) " | mail root -s "JamesII Crash on $(hostname)"
-		sleep 20
+		sleep 10
 	fi
 done
 rm /var/lock/JamesII.pid

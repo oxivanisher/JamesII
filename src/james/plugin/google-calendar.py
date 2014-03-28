@@ -68,6 +68,7 @@ class GoogleCalendarPlugin(Plugin):
                 timeMax = tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
                 pageToken = pageToken,
                 ).execute()
+            print tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00", tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00"
             self.eventFetches += 1
         except Exception as e:
             if e == '':

@@ -45,6 +45,24 @@ class BrokerConfigNotLoaded(Exception):
 class AddTimeoutHandlerMissing(Exception):
     pass
 
+class Timeout():
+    """Timeout class using ALARM signal."""
+    class Timeout(Exception):
+        pass
+ 
+    def __init__(self, sec):
+        self.sec = sec
+ 
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.raise_timeout)
+        signal.alarm(self.sec)
+ 
+    def __exit__(self, *args):
+        signal.alarm(0)    # disable alarm
+ 
+    def raise_timeout(self, *args):
+        raise Timeout.Timeout()
+
 class ThreadedCore(threading.Thread):
     def __init__(self, passive = False):
         super(ThreadedCore, self).__init__()
@@ -573,11 +591,15 @@ class Core(object):
 
         while not self.terminated:
             try:
-                self.lock_core()
-                self.connection.process_data_events()
-                self.process_timeouts()
-                self.unlock_core()
-                #self.logger.debug("process events")
+                with Timeout(30):
+                    self.lock_core()
+                with Timeout(30):
+                    self.connection.process_data_events()
+                with Timeout(30):
+                    self.process_timeouts()
+                with Timeout(30):
+                    self.unlock_core()
+                    #self.logger.debug("process events")
             except KeyboardInterrupt:
                 self.logger.info("Keyboard interrupt detected. Exiting...")
                 self.terminate(3)
@@ -588,6 +610,9 @@ class Core(object):
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error
                 self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
+                self.terminate(2)
+            except Timeout.Timeout:
+                self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
             # except Exception as e:
             #     self.logger.critical("Caught unknown error (%s)" % e)

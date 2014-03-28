@@ -97,8 +97,8 @@ class GoogleCalendarPlugin(Plugin):
 
         retList = []
         for event in allEvents:
-            retStr = ""
             self.eventsFetched += 1
+            retStr = False
 
             # whole day event:
             if 'date' in event['start'].keys():
@@ -119,15 +119,16 @@ class GoogleCalendarPlugin(Plugin):
                     nowTs = int(time.time())
 
                     if nowTs > eventTsStart and nowTs < eventTsEnd:
-                        retStr = "Now %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                        retStr = "Now until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
                     elif nowTs < eventTsStart:
                         retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
 
-            if event['status'] == "tentative":
-                retStr += " possibly "
-                # evil is: 
-            retStr += event['summary']
-            retList.append(retStr)
+            if retStr:
+                if event['status'] == "tentative":
+                    retStr += " possibly "
+                    # evil is: 
+                retStr += event['summary']
+                retList.append(retStr)
 
         if len(retList):
             return ['Calendar events: '] + retList + ['End of calendar']

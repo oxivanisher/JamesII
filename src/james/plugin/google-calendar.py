@@ -63,7 +63,8 @@ class GoogleCalendarPlugin(Plugin):
                 singleEvents = True,
                 maxResults = 1000,
                 orderBy = 'startTime',
-                timeMin = tStart.strftime('%Y-%m-%dT%H:%M:%S') + "+00:00",
+                timeMin = tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
+                # timeMin = tStart.strftime('%Y-%m-%dT%H:%M:%S') + "+00:00",
                 timeMax = tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
                 pageToken = pageToken,
                 ).execute()
@@ -96,6 +97,7 @@ class GoogleCalendarPlugin(Plugin):
 
         retList = []
         for event in allEvents:
+            retStr = ""
             self.eventsFetched += 1
 
             # whole day event:
@@ -107,11 +109,20 @@ class GoogleCalendarPlugin(Plugin):
 
             # normal event:
             elif 'dateTime' in event['start'].keys():
-                eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                if eventTime.day != datetime.datetime.now(self.timeZone).day:
-                    retStr = "Tomorrow at %02d:%02d: " % (eventTime.hour, eventTime.minute)
+                eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
+                eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
+                if eventTimeStart.day != datetime.datetime.now(self.timeZone).day:
+                    retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
-                    retStr = "At %02d:%02d: " % (eventTime.hour, eventTime.minute)
+                    eventTsStart = eventTimeStart.hour * 3600 + eventTimeStart.minute * 60 + eventTimeStart.second
+                    eventTsEnd = eventTsEnd.hour * 3600 + eventTsEnd.minute * 60 + eventTsEnd.second
+                    nowTs = int(time.time())
+
+                    if nowTs > eventTsStart and nowTs < eventTsEnd:
+                        retStr = "Now %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                    elif nowTs < eventTsStart:
+                        retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+
             if event['status'] == "tentative":
                 retStr += " possibly "
                 # evil is: 

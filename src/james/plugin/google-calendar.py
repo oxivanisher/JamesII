@@ -22,6 +22,8 @@ class GoogleCalendarPlugin(Plugin):
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
         self.commands.create_subcommand('list', 'List all google calendars', self.cmd_calendars_list)
 
+        self.timeZone = pytz.timezone(self.core.config['core']['timezone'])
+
         self.eventFetches = 0
         self.eventsFetched = 0
 
@@ -45,15 +47,14 @@ class GoogleCalendarPlugin(Plugin):
 
     # internal commands
     def fetchEvents(self, calendarId, pageToken=None):
-        timeZone = pytz.timezone(self.core.config['core']['timezone'])
         events = {}
         today = True
-        tzStr = datetime.datetime.now(timeZone).strftime('%z')
+        tzStr = datetime.datetime.now(self.timeZone).strftime('%z')
         tzStr2 = tzStr[:3] + ':' + tzStr[3:]
 
-        tStart = datetime.datetime.now(timeZone)
-        tEnd = datetime.datetime.now(timeZone)
-        if datetime.datetime.now(timeZone).strftime('%H') > 18:
+        tStart = datetime.datetime.now(self.timeZone)
+        tEnd = datetime.datetime.now(self.timeZone)
+        if datetime.datetime.now(self.timeZone).strftime('%H') > 18:
             tEnd += datetime.timedelta(days=1)
 
         try:
@@ -105,7 +106,7 @@ class GoogleCalendarPlugin(Plugin):
             # normal event:
             if 'dateTime' in event['start'].keys():
                 eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                if eventTime.day != datetime.datetime.now(timeZone).day:
+                if eventTime.day != datetime.datetime.now(self.timeZone).day:
                     retStr = "Tomorrow at %02d:%02d: " % (eventTime.hour, eventTime.minute)
                 else:
                     retStr = "At %02d:%02d: " % (eventTime.hour, eventTime.minute)

@@ -614,8 +614,8 @@ class Core(object):
             except Timeout.Timeout:
                 self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
-            # except Exception as e:
-            #     self.logger.critical("Caught unknown error (%s)" % e)
+            except Exception as e:
+                self.logger.critical("Caught unknown error (%s)" % e)
             #     self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)

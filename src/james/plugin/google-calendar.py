@@ -64,11 +64,9 @@ class GoogleCalendarPlugin(Plugin):
                 maxResults = 1000,
                 orderBy = 'startTime',
                 timeMin = tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
-                # timeMin = tStart.strftime('%Y-%m-%dT%H:%M:%S') + "+00:00",
                 timeMax = tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
                 pageToken = pageToken,
                 ).execute()
-            print tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00", tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00"
             self.eventFetches += 1
         except Exception as e:
             if e == '':
@@ -112,7 +110,7 @@ class GoogleCalendarPlugin(Plugin):
             elif 'dateTime' in event['start'].keys():
                 eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                if eventTimeStart > datetime.datetime.now():
+                if eventTimeStart.day > datetime.datetime.now().day:
                     retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
                     eventTsStart = eventTimeStart.hour * 3600 + eventTimeStart.minute * 60 + eventTimeStart.second

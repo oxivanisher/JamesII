@@ -21,12 +21,10 @@ do
 
 	if $GITPULL;
 	then
-		clear
 		echo -e "..:: Doing git pull ::..\n"
 		git pull
 	fi
 
-	clear
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
 	sudo cp ./JamesII.log ./JamesII.log.old
 	sudo truncate -s0 ./JamesII.log

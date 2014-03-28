@@ -98,6 +98,7 @@ class GoogleCalendarPlugin(Plugin):
         for event in allEvents:
             self.eventsFetched += 1
             retStr = False
+            now = datetime.datetime.now()
 
             # whole day event:
             if 'date' in event['start'].keys():
@@ -113,14 +114,18 @@ class GoogleCalendarPlugin(Plugin):
                 if eventTimeStart.day > datetime.datetime.now().day:
                     retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
-                    eventTsStart = eventTimeStart.hour * 3600 + eventTimeStart.minute * 60 + eventTimeStart.second
-                    eventTsEnd = eventTimeEnd.hour * 3600 + eventTimeEnd.minute * 60 + eventTimeEnd.second
-                    nowTs = int(time.time())
+                    # eventTsStart = eventTimeStart.hour * 3600 + eventTimeStart.minute * 60 + eventTimeStart.second
+                    # eventTsEnd = eventTimeEnd.hour * 3600 + eventTimeEnd.minute * 60 + eventTimeEnd.second
+                    # nowTs = int(time.time())
 
-                    if nowTs > eventTsStart and nowTs < eventTsEnd:
+                    if now > eventTimeStart and now < eventTimeEnd:
                         retStr = "Now until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
-                    elif nowTs < eventTsStart:
+                    elif now < eventTimStart:
                         retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                    # if nowTs > eventTsStart and nowTs < eventTsEnd:
+                    #     retStr = "Now until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
+                    # elif nowTs < eventTsStart:
+                    #     retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
 
             if retStr:
                 if event['status'] == "tentative":

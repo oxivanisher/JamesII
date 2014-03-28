@@ -54,7 +54,7 @@ class GoogleCalendarPlugin(Plugin):
 
         tStart = datetime.datetime.now(self.timeZone)
         tEnd = datetime.datetime.now(self.timeZone)
-        if datetime.datetime.now(self.timeZone).strftime('%H') > 18:
+        if int(datetime.datetime.now(self.timeZone).strftime('%H')) > 18:
             tEnd += datetime.timedelta(days=1)
 
         try:

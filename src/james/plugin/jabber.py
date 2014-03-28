@@ -229,7 +229,7 @@ class JabberThread(PluginThread):
     # callback handlers
     def message_callback(self, conn, message):
         if (time.time() - self.startupTime) < 10:
-            self.logger.warning("Ignoring message from %s due startup delay" % (message.getFrom()))
+            self.logger.info("Ignoring message from %s due startup delay" % (message.getFrom()))
         else:
             realjid = None
             if message.__getitem__('type') == 'groupchat':

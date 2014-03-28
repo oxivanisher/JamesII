@@ -98,12 +98,13 @@ class GoogleCalendarPlugin(Plugin):
         for event in allEvents:
             self.eventsFetched += 1
 
-            print event['start']['dateTime']
             # whole day event:
-            # if 'date' in event['start'].keys():
-            #     retStr = "Today: "
-            # normal event:
+            if 'date' in event['start'].keys():
+                # retStr = "Today: "
+                print event['start']['date']
 
+
+            # normal event:
             if 'dateTime' in event['start'].keys():
                 eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTime.day != datetime.datetime.now(self.timeZone).day:

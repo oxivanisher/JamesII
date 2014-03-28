@@ -63,8 +63,6 @@ class GoogleCalendarPlugin(Plugin):
                 singleEvents = True,
                 maxResults = 1000,
                 orderBy = 'startTime',
-                # timeMin = tStart + tzStr2,
-                # timeMax = tEnd + tzStr2,
                 timeMin = tStart.strftime('%Y-%m-%dT%H:%M:%S') + "+00:00",
                 timeMax = tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
                 pageToken = pageToken,
@@ -99,11 +97,13 @@ class GoogleCalendarPlugin(Plugin):
         retList = []
         for event in allEvents:
             self.eventsFetched += 1
-            retStr = ""
+
+            print event['start']['dateTime']
             # whole day event:
             # if 'date' in event['start'].keys():
             #     retStr = "Today: "
             # normal event:
+
             if 'dateTime' in event['start'].keys():
                 eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTime.day != datetime.datetime.now(self.timeZone).day:

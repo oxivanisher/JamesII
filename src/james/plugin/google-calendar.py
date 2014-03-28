@@ -45,11 +45,17 @@ class GoogleCalendarPlugin(Plugin):
 
     # internal commands
     def fetchEvents(self, calendarId, pageToken=None):
+        timeZone = pytz.timezone(self.core.config['core']['timezone'])
         events = {}
-        tzStr = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%z')
+        today = True
+        tzStr = datetime.datetime.now(timeZone).strftime('%z')
         tzStr2 = tzStr[:3] + ':' + tzStr[3:]
-        tStart = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%Y-%m-%dT00:00:00')
-        tEnd = datetime.datetime.now(pytz.timezone(self.core.config['core']['timezone'])).strftime('%Y-%m-%dT23:59:59')
+
+        tStart = datetime.datetime.now(timeZone).strftime('%Y-%m-%dT%H:%M:%S')
+        tEnd = datetime.datetime.now(timeZone).strftime('%Y-%m-%dT23:59:59')
+        if datetime.datetime.now(timeZone).strftime('%H') > 18:
+            tEnd += datetime.timedelta(days=1)
+
         try:
             events = self.service.events().list(
                 calendarId = calendarId,
@@ -99,7 +105,10 @@ class GoogleCalendarPlugin(Plugin):
             # normal event:
             if 'dateTime' in event['start'].keys():
                 eventTime = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                retStr = "At %02d:%02d: " % (eventTime.hour, eventTime.minute)
+                if eventTime.day != datetime.datetime.now(timeZone).day:
+                    retStr = "Tomorrow at %02d:%02d: " % (eventTime.hour, eventTime.minute)
+                else:
+                    retStr = "At %02d:%02d: " % (eventTime.hour, eventTime.minute)
             if event['status'] == "tentative":
                 retStr += " possibly "
                 # evil is: 
@@ -107,9 +116,9 @@ class GoogleCalendarPlugin(Plugin):
             retList.append(retStr)
 
         if len(retList):
-            return ['Google calendar events for today: '] + retList + ['End of calendar events']
+            return ['Calendar events: '] + retList + ['End of calendar']
         else:
-            return ['No google calendar events for today']
+            return ['No calendar events']
 
     # commands
     def cmd_calendar_show(self, args):

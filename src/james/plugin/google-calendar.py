@@ -96,6 +96,7 @@ class GoogleCalendarPlugin(Plugin):
 
         retList = []
         for event in allEvents:
+            retStr = ""
             self.eventsFetched += 1
 
             # whole day event:

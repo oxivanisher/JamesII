@@ -23,6 +23,7 @@ do
 	then
 		echo -e "..:: Doing git pull ::..\n"
 		git pull
+		echo -e ""
 	fi
 
 	echo -e "..:: Starting james.py ($(date)) ::..\n"

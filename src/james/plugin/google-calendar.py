@@ -100,7 +100,7 @@ class GoogleCalendarPlugin(Plugin):
 
             # whole day event:
             if 'date' in event['start'].keys():
-                if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d')
+                if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d'):
                     retStr = "Today "
                 else:
                     retStr = "Tomorrow "

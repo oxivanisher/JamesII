@@ -115,7 +115,7 @@ class GoogleCalendarPlugin(Plugin):
                     retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
                     eventTsStart = eventTimeStart.hour * 3600 + eventTimeStart.minute * 60 + eventTimeStart.second
-                    eventTsEnd = eventTsEnd.hour * 3600 + eventTsEnd.minute * 60 + eventTsEnd.second
+                    eventTsEnd = eventTimeEnd.hour * 3600 + eventTimeEnd.minute * 60 + eventTimeEnd.second
                     nowTs = int(time.time())
 
                     if nowTs > eventTsStart and nowTs < eventTsEnd:

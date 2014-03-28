@@ -51,8 +51,8 @@ class GoogleCalendarPlugin(Plugin):
         tzStr = datetime.datetime.now(timeZone).strftime('%z')
         tzStr2 = tzStr[:3] + ':' + tzStr[3:]
 
-        tStart = datetime.datetime.now(timeZone).strftime('%Y-%m-%dT%H:%M:%S')
-        tEnd = datetime.datetime.now(timeZone).strftime('%Y-%m-%dT23:59:59')
+        tStart = datetime.datetime.now(timeZone)
+        tEnd = datetime.datetime.now(timeZone)
         if datetime.datetime.now(timeZone).strftime('%H') > 18:
             tEnd += datetime.timedelta(days=1)
 
@@ -64,8 +64,8 @@ class GoogleCalendarPlugin(Plugin):
                 orderBy = 'startTime',
                 # timeMin = tStart + tzStr2,
                 # timeMax = tEnd + tzStr2,
-                timeMin = tStart + "+00:00",
-                timeMax = tEnd + "+00:00",
+                timeMin = tStart.strftime('%Y-%m-%dT%H:%M:%S') + "+00:00",
+                timeMax = tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
                 pageToken = pageToken,
                 ).execute()
             self.eventFetches += 1

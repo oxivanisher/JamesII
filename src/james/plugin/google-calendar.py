@@ -120,7 +120,7 @@ class GoogleCalendarPlugin(Plugin):
 
                     if now > eventTimeStart and now < eventTimeEnd:
                         retStr = "Now until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
-                    elif now < eventTimStart:
+                    elif now < eventTimeStart:
                         retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                     # if nowTs > eventTsStart and nowTs < eventTsEnd:
                     #     retStr = "Now until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)

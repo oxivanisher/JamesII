@@ -111,6 +111,7 @@ class GoogleCalendarPlugin(Plugin):
             elif 'dateTime' in event['start'].keys():
                 eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
+                print eventTimeStart.day, datetime.datetime.now(self.timeZone).day, datetime.datetime.now().day
                 if eventTimeStart.day != datetime.datetime.now(self.timeZone).day:
                     retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:

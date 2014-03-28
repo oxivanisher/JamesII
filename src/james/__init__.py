@@ -614,9 +614,11 @@ class Core(object):
             except Timeout.Timeout:
                 self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
+
+            #if i hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
                 self.logger.critical("Caught unknown error (%s)" % e)
-            #     self.terminate(1)
+                self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)
         sys.exit(self.returncode)

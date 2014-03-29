@@ -617,7 +617,9 @@ class Core(object):
 
             #if i hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
-                self.logger.critical("Caught unknown error (%s)" % e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                self.logger.critical("Caught unknown error '%s' from: %s, %s, %s" % (e, exc_type, fname, exc_tb.tb_lineno))
                 self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)

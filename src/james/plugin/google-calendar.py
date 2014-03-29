@@ -115,7 +115,7 @@ class GoogleCalendarPlugin(Plugin):
                     retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 
-                    if now > eventTimeStart and now < eventTimeEnd:
+                    if now > eventTieStart and now < eventTimeEnd:
                         retStr = "Until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
                     elif now < eventTimeStart:
                         retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)

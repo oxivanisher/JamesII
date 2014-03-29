@@ -618,8 +618,7 @@ class Core(object):
             #if i hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                fname = exc_tb.tb_frame.f_code.co_filename
+                fname = exc_tb.tb_frame.f_code.co_filename.replace(os.path.realpath(__file__), '')
                 self.logger.critical("%s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
                 self.terminate(1)
 

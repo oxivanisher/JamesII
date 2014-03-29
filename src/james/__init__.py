@@ -619,7 +619,8 @@ class Core(object):
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                self.logger.critical("Caught unknown error '%s' from: %s, %s, %s" % (e, exc_type, fname, exc_tb.tb_lineno))
+                fname = exc_tb.tb_frame.f_code.co_filename
+                self.logger.critical("%s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
                 self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)

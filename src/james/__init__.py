@@ -110,9 +110,20 @@ class Core(object):
         self.nodes_online = {}
         self.master_node = ''
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
+        self.stats_file = os.path.join(os.path.expanduser("~"), ".james_stats")
         self.core_lock = threading.RLock()
         self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
+
+        self.loadedState = {}
+        try:
+            file = open(self.stats_file, 'r')
+            self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
+            file.close()
+            if self.config['core']['debug']:
+                self.logger.debug("Loading states from %s" % (self.stats_file))
+        except Exception:
+            pass
 
         atexit.register(self.terminate)
 
@@ -643,6 +654,20 @@ class Core(object):
                 self.discovery_channel.send(['byebye', self.hostname, self.uuid])
             except Exception:
                 pass
+
+            saveStats = {}
+            for p in self.plugins:
+                saveStats[p.name] = p.safe_state()
+            try:
+                file = open(self.stats_file, 'w')
+                file.write(json.dumps(saveStats))
+                file.close()
+                self.logger.debug("Saving stats to %s" % (self.stats_file))
+            except IOError:
+                if self.passive:
+                    self.logger.debug("Could not safe stats to file")
+                else:
+                    self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
                 p.terminate()

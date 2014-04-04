@@ -21,10 +21,10 @@ class MotionPlugin(Plugin):
         self.log = []
         self.watch_mode = False
 
-        self.watches = 0
-        self.camLosts = 0
-        self.movementsDetected = 0
-        self.lastEvent = 0
+        self.load_state('watches', 0)
+        self.load_state('camLosts', 0)
+        self.load_state('movementsDetected', 0)
+        self.load_state('lastEvent', 0)
 
         self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
         self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)

@@ -16,7 +16,8 @@ class TransmissionPlugin(Plugin):
                                            self.config['nodes'][self.core.hostname]['port'])
 
         self.tr_conn = None
-        self.addedTorrents = 0
+        self.load_state('addedTorrents', 0)
+        self.load_state('finishedTorrents', 0)
 
         self.commands.create_subcommand('show', 'Shows a list current torrents', self.cmd_show)
         self.commands.create_subcommand('add', 'Adds a URL to download', self.cmd_add)
@@ -168,6 +169,7 @@ class TransmissionPlugin(Plugin):
                         self.logger.info("Download of %s finished" % newname)
                         self.send_command(['sys', 'alert', 'Torrent download finished'])
                         self.tr_conn.remove(torrent_id)
+                        self.finishedTorrents += 1
             except ValueError:
                 self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
             except transmissionrpc.error.TransmissionError as e:
@@ -211,5 +213,6 @@ descriptor = {
     'mode' : PluginMode.MANAGED,
     'class' : TransmissionPlugin,
     'detailsNames' : { 'connected' : "Connected",
-                       'addedTorrents' : "Amount of added torrents" }
+                       'addedTorrents' : "Amount of added torrents",
+                       'finishedTorrents' : "Amount of finished torrents" }
 }

@@ -58,6 +58,17 @@ class Plugin(object):
     def terminate(self):
         pass
 
+    def safe_state(self):
+        return self.return_status()
+
+    def load_state(self, name, defaultValue):
+        try:
+            # return self.core.loadedState[self.name][name]
+            setattr(self, name, self.core.loadedState[self.name][name])
+        except Exception:
+            # return defaultValue
+            setattr(self, name, defaultValue)
+
     def process_command_response(self, args, host, plugin):
         pass
 

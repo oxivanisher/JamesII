@@ -194,7 +194,6 @@ class MpdClientWorker(object):
             pass
         self.logger.debug("Disconnected, worker exititing")
 
-
 class FadeThread(PluginThread):
 
     def __init__(self, plugin, mpd_client, fade_time, target_vol):
@@ -297,10 +296,10 @@ class MpdClientPlugin(Plugin):
         talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
         talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
 
-        self.radioStarted = 0
-        self.wakeups = 0
-        self.sleeps = 0
-        self.fades = 0
+        self.load_state('radioStarted', 0)
+        self.load_state('wakeups', 0)
+        self.load_state('sleeps', 0)
+        self.load_state('fades', 0)
 
         for station in self.config['stations'].keys():
             self.stations[station] = self.config['stations'][station]
@@ -453,7 +452,6 @@ class MpdClientPlugin(Plugin):
         else:
             self.logger.info("Wakeup not activated. Unable to connect to MPD.")
             return (["Wakeup not activated. Unable to connect to MPD."])
-
 
     def fade_ended(self):
         self.fades += 1

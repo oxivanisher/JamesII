@@ -36,7 +36,7 @@ class XbmcPlugin(Plugin):
         self.updateNode = False
         if self.core.hostname in self.config['updatenodes']:
             self.updateNode = True
-        self.updates = 0
+        self.load_state('updates', 0)
 
         self.commands.create_subcommand('test', 'test message', self.get_active_player_details)
 

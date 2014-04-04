@@ -24,8 +24,8 @@ class GoogleCalendarPlugin(Plugin):
 
         self.timeZone = pytz.timezone(self.core.config['core']['timezone'])
 
-        self.eventFetches = 0
-        self.eventsFetched = 0
+        self.load_state('eventFetches', 0)
+        self.load_state('eventsFetched', 0)
 
         FLAGS = gflags.FLAGS
         FLAGS.auth_local_webserver = False

@@ -22,7 +22,7 @@ class EspeakPlugin(Plugin):
         self.archived_messages = []
         self.message_cache = []
         self.talkover = False
-        self.messagesSpoke = 0
+        self.load_state('messagesSpoke', 0)
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)

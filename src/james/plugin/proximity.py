@@ -35,8 +35,8 @@ class ProximityPlugin(Plugin):
         self.proxy_send_lock = False
         self.load_saved_state()
 
-        self.proximityChecks = 0
-        self.proximityUpdates = 0
+        self.load_state('proximityChecks', 0)
+        self.load_state('proximityUpdates', 0)
         self.lastProximityCheckStart = 0
         self.lastProximityCheckEnd = 0
         self.lastProximityCheckDuration = 0
@@ -228,7 +228,6 @@ class ProximityPlugin(Plugin):
         self.logger.debug('Publishing proximity event')
         self.proxy_send_lock = False
         self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
-
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)

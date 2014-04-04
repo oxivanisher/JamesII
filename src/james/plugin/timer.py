@@ -26,7 +26,7 @@ class TimerPlugin(Plugin):
         self.saved_commands = []
         self.load_saved_commands()
 
-        self.commandsRun = 0
+        self.load_state('commandsRun', 0)
 
     def start(self):
         # wait 3 seconds befor working

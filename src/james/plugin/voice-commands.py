@@ -240,10 +240,10 @@ class VoiceCommandsPlugin(Plugin):
         self.workerLock = threading.Lock()
         self.workerRunning = True
         self.workerWorking = False
-        self.bytesSubmitted = 0
+        self.load_state('bytesSubmitted', 0)
         self.playSounds = []
         self.playBeeps = []
-        self.unknownWords = []
+        self.load_state('unknownWords', [])
         
         self.voiceThread = VoiceThread(self,
                                        self.core,

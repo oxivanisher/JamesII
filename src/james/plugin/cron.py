@@ -140,7 +140,7 @@ class CronPlugin(Plugin):
         self.load_saved_commands()
         atexit.register(self.save_commands)
 
-        self.jobsRun = 0
+        self.load_state('jobsRun', 0)
 
     def start(self):
         # wait 3 seconds befor working

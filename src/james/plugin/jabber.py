@@ -340,14 +340,14 @@ class JabberPlugin(Plugin):
         self.start_time = int(time.time())
         self.last_xmpp_status_message = ''
 
-        self.recievedMuc = 0
-        self.recievedChat = 0
-        self.sentMuc = 0
-        self.sentChat = 0
-        self.commandsRunMuc = 0
-        self.commandsRunChat = 0
-        self.statusChanges = 0
-        self.unauthMessages = 0
+        self.load_state('recievedMuc', 0)
+        self.load_state('recievedChat', 0)
+        self.load_state('sentMuc', 0)
+        self.load_state('sentChat', 0)
+        self.load_state('commandsRunMuc', 0)
+        self.load_state('commandsRunChat', 0)
+        self.load_state('statusChanges', 0)
+        self.load_state('unauthMessages', 0)
 
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
         broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)

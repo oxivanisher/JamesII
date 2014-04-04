@@ -175,8 +175,8 @@ class LircPlugin(Plugin):
         self.workerLock = threading.Lock()
         self.workerRunning = True
 
-        self.commandsRecieved = 0
-        self.commandsSent = 0
+        self.load_state('commandsRecieved', 0)
+        self.load_state('commandsSent', 0)
 
         self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
         self.lirc_thread.start()

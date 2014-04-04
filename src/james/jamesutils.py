@@ -13,6 +13,7 @@ class JamesUtils(object):
 
     def __init__(self, core):
         self.core = core
+        self.listUnicodeCleanuptmp = []
 
     def get_short_age(self, timestamp):
         age = int(time.time() - timestamp)
@@ -249,8 +250,10 @@ class JamesUtils(object):
         try:
             args = [s.encode('utf-8', errors='ignore').strip() for s in data]
         except UnicodeDecodeError as e:
-            logger = self.getLogger('jamesutils')
-            logger.error("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
+            if self.listUnicodeCleanuptmp != data:
+                logger = self.getLogger('jamesutils')
+                logger.error("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
+                self.listUnicodeCleanuptmp = data
             args = data
 
         args = filter(lambda s: s != '', args)

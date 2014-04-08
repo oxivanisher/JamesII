@@ -602,13 +602,13 @@ class Core(object):
 
         while not self.terminated:
             try:
-                with Timeout(30):
+                with Timeout(180):
                     self.lock_core()
-                with Timeout(30):
+                with Timeout(180):
                     self.connection.process_data_events()
-                with Timeout(30):
+                with Timeout(180):
                     self.process_timeouts()
-                with Timeout(30):
+                with Timeout(180):
                     self.unlock_core()
                     #self.logger.debug("process events")
             except KeyboardInterrupt:

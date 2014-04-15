@@ -245,21 +245,21 @@ class Core(object):
                                                         self.master,
                                                         self.brokerconfig['host'], self.brokerconfig['port']))
 
-        # Create request & response channels
+        self.logger.debug("RabbitMQ: Create request & response channels")
         self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')
         self.request_channel.add_listener(self.request_listener)
         self.response_channel = broadcastchannel.BroadcastChannel(self, 'response')
         self.response_channel.add_listener(self.response_listener)
 
-        # Create messaging channels
+        self.logger.debug("RabbitMQ: Create messaging channel")
         self.message_channel = broadcastchannel.BroadcastChannel(self, 'message')
         self.message_channel.add_listener(self.message_listener)
 
-        # proximity stuff
+        self.logger.debug("RabbitMQ: Create proximity channel")
         self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
 
-        # data (status) stuff
+        self.logger.debug("RabbitMQ: Create dataRequest & dataResponse channels")
         self.data_request_channel = broadcastchannel.BroadcastChannel(self, 'dataRequest')
         self.data_request_channel.add_listener(self.data_request_listener)
         self.data_response_channel = broadcastchannel.BroadcastChannel(self, 'dataResponse')

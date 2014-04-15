@@ -276,12 +276,13 @@ class Core(object):
         except ValueError:
             pass
 
-        # publish our nodes_online list and start the loop
+        self.logger.debug("Publishing nodes_online list and starting loop")
         self.master_send_nodes_online()
 
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
 
+        self.logger.debug("Loading plugins from: %s" % path)
         (loaded_plugins, plugin_warnings, plugin_descr_error) = plugin.Factory.find_plugins(path)
 
         self.logger.debug('Plugins available: %s' % len(loaded_plugins))

@@ -85,10 +85,10 @@ class ProximityPlugin(Plugin):
 
         key = random.randint(1000,9999)
         pairMsg = "Bluetooth pairing key is: %s" % key
-        message = self.core.new_message(self.name)
-        message.header = (pairMsg)
-        message.level = 3
-        message.send()
+        # message = self.core.new_message(self.name)
+        # message.header = (pairMsg)
+        # message.level = 3
+        # message.send()
 
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
         # print "removed:",lines
@@ -96,7 +96,7 @@ class ProximityPlugin(Plugin):
         self.core.add_timeout(1, self.pair, pairData)
         return pairMsg
 
-    def pair(self, args, pairData):
+    def pair(self, pairData):
         # ret.append(self.utils.list_unicode_cleanup(lines))
 
         p = subprocess.Popen(['bluez-simple-agent', 'hci0', pairData[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)

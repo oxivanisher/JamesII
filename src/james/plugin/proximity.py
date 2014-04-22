@@ -90,10 +90,8 @@ class ProximityPlugin(Plugin):
 
     def pair(self, pairData):
         p = subprocess.Popen(['bluez-simple-agent', 'hci0', pairData[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
-        print "opened"
         pair_out = p.communicate(input=str(pairData[1]) + '\n')[0]
-        print "pair out:",pair_out
-        return(pair_out)
+        logger.debug("BT Logging output: %s" pair_out)
 
     def discover(self, args):
         self.logger.debug('Discovering bluetooth hosts...')

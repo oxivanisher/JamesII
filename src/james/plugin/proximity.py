@@ -82,15 +82,17 @@ class ProximityPlugin(Plugin):
 
     def pair(self, args):
         key = random.randint(1000,9999)
-        print "key: ",key
+        print "key:",key
         ret = ["Please enter the key: %s" % key]
 
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
+        print "removed:",lines
         # ret.append(self.utils.list_unicode_cleanup(lines))
 
         p = subprocess.Popen(['bluez-simple-agent', 'hci0', args[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+        print "opened"
         pair_out = p.communicate(input='%s\n' % key)
-        print pair_out
+        print "pair out:",pair_out
         # ret.append(self.utils.list_unicode_cleanup(pair_out))
 
         return(ret)

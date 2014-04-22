@@ -12,8 +12,11 @@ class WakeOnLanPlugin(Plugin):
         self.core = core
         self.wol_devices = []
         for person in self.core.config['persons'].keys():
-            for name in self.core.config['persons'][person]['eth_devices'].keys():
-                self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name]))
+            try:
+                for name in self.core.config['persons'][person]['eth_devices'].keys():
+                    self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name]))
+                except KeyError:
+                    pass
 
         self.commands.create_subcommand('list', 'Lists available wol target hosts', self.wol_list)
         self.commands.create_subcommand('wake', 'Wakes up a given host (hostname)', self.wol_wake)

@@ -25,6 +25,7 @@ class ProximityPlugin(Plugin):
             self.commands.create_subcommand('test', 'Test for local bluetooth devices', self.test)
             if self.core.os_username == 'root':
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
+                self.commands.create_subcommand('devices', 'Shows the states of the devices', self.show_devices)
                 self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
 
         for person in self.core.config['persons'].keys():
@@ -99,6 +100,10 @@ class ProximityPlugin(Plugin):
                 ret.append("%10s is not here" % (person))
         return ret
 
+    def show_devices(self, args):
+        ret = []
+        return ret
+
     # proximity daemon methods
     def proximity_check_daemon(self):
         self.proximity_check(None)
@@ -120,18 +125,23 @@ class ProximityPlugin(Plugin):
         self.logger.debug('Starting proximity scan')
         hosts = []
         for person in self.core.config['persons'].keys():
-            if self.core.config['persons'][person]['bt_devices']:
-                for name in self.core.config['persons'][person]['bt_devices'].keys():
-                    mac = self.core.config['persons'][person]['bt_devices'][name]
-                    ret = self.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
-                    clear_list = filter(lambda s: s != '', ret)
-                    try:
+            try:
+                if self.core.config['persons'][person]['bt_devices']:
+                    for name in self.core.config['persons'][person]['bt_devices'].keys():
+                        mac = self.core.config['persons'][person]['bt_devices'][name]
+                        ret = self.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
+                        clear_list = filter(lambda s: s != '', ret)
+
                         for line in clear_list:
                             if "Device Name:" in line:
                                 args = line.split(':')
                                 hosts.append((mac, args[1].strip()))
-                    except Exception:
-                        pass
+                except KeyError:
+                    # person has no bt_devices
+                    pass
+                except Exception:
+                    # probably parse error from command
+                    pass
         return hosts
 
     def proximity_check_callback(self, values):
@@ -177,11 +187,14 @@ class ProximityPlugin(Plugin):
         # registering the person for this device as detected
         for (mac, name) in values:
             for person in self.core.config['persons'].keys():
-                if self.core.config['persons'][person]['bt_devices']:
-                    for device in self.core.config['persons'][person]['bt_devices'].values():
-                        if device == mac:
-                            persons_detected.append(person)
-                            new_persons_status[person] = True
+                try:
+                    if self.core.config['persons'][person]['bt_devices']:
+                        for device in self.core.config['persons'][person]['bt_devices'].values():
+                            if device == mac:
+                                persons_detected.append(person)
+                                new_persons_status[person] = True
+                except KeyError:
+                    pass
 
         # save the actual online hosts to var
         self.hosts_online = new_hosts_online

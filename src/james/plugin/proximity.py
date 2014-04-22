@@ -82,6 +82,7 @@ class ProximityPlugin(Plugin):
 
     def pair(self, args):
         key = random.randint(1000,9999)
+        print "key: ",key
         ret = ["Please enter the key: %s" % key]
 
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])

@@ -136,12 +136,12 @@ class ProximityPlugin(Plugin):
                             if "Device Name:" in line:
                                 args = line.split(':')
                                 hosts.append((mac, args[1].strip()))
-                except KeyError:
-                    # person has no bt_devices
-                    pass
-                except Exception:
-                    # probably parse error from command
-                    pass
+            except KeyError:
+                # person has no bt_devices
+                pass
+            except Exception:
+                # probably parse error from command
+                pass
         return hosts
 
     def proximity_check_callback(self, values):

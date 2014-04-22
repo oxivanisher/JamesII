@@ -81,33 +81,19 @@ class ProximityPlugin(Plugin):
         return(devices)
 
     def prepair_pair(self, args):
-        ret = []
-
         key = random.randint(1000,9999)
         pairMsg = "Bluetooth pairing key is: %s" % key
-        # message = self.core.new_message(self.name)
-        # message.header = (pairMsg)
-        # message.level = 3
-        # message.send()
-
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
-        # print "removed:",lines
         pairData = [args[0], key]
         self.core.add_timeout(1, self.pair, pairData)
         return pairMsg
 
     def pair(self, pairData):
-        # ret.append(self.utils.list_unicode_cleanup(lines))
-
         p = subprocess.Popen(['bluez-simple-agent', 'hci0', pairData[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
         print "opened"
         pair_out = p.communicate(input=str(pairData[1]) + '\n')[0]
-        # pair_out = p.communicate(input='%s\n' % key)[0]
         print "pair out:",pair_out
-        # ret.append(self.utils.list_unicode_cleanup(pair_out))
-
-        return(ret)
-
+        return(pair_out)
 
     def discover(self, args):
         self.logger.debug('Discovering bluetooth hosts...')

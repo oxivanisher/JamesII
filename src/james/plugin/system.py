@@ -98,7 +98,7 @@ class SystemPlugin(Plugin):
 
     def cmd_quit(self, args):
         message = self.core.new_message(self.name)
-        message.header = ("James is shutting down. Bye bye.")
+        message.header = ("Bye bye, james is shutting down.")
         message.level = 2
         message.send()
 

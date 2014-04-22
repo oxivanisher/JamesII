@@ -25,7 +25,6 @@ class ProximityPlugin(Plugin):
             self.commands.create_subcommand('test', 'Test for local bluetooth devices', self.test)
             if self.core.os_username == 'root':
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
-                self.commands.create_subcommand('devices', 'Shows the states of the devices', self.show_devices)
                 self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
 
         for person in self.core.config['persons'].keys():
@@ -98,10 +97,6 @@ class ProximityPlugin(Plugin):
                 ret.append("%10s is here" % (person))
             else:
                 ret.append("%10s is not here" % (person))
-        return ret
-
-    def show_devices(self, args):
-        ret = []
         return ret
 
     # proximity daemon methods

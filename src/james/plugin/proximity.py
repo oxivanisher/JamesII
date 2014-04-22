@@ -90,7 +90,8 @@ class ProximityPlugin(Plugin):
 
         p = subprocess.Popen(['bluez-simple-agent', 'hci0', args[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
         pair_out = p.communicate(input='%s\n' % key)
-        ret.append(self.utils.list_unicode_cleanup(pair_out))
+        print pair_out
+        # ret.append(self.utils.list_unicode_cleanup(pair_out))
 
         return(ret)
 

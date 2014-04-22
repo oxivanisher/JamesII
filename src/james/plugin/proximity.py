@@ -85,13 +85,13 @@ class ProximityPlugin(Plugin):
         pairMsg = "Bluetooth pairing key is: %s" % key
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
         pairData = [args[0], key]
-        self.core.add_timeout(1, self.pair, pairData)
+        self.core.add_timeout(0, self.pair, pairData)
         return pairMsg
 
     def pair(self, pairData):
         p = subprocess.Popen(['bluez-simple-agent', 'hci0', pairData[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
         pair_out = p.communicate(input=str(pairData[1]) + '\n')[0]
-        logger.debug("BT Logging output: %s" % pair_out)
+        self.logger.debug("BT Logging output: %s" % pair_out)
 
     def discover(self, args):
         self.logger.debug('Discovering bluetooth hosts...')

@@ -5,6 +5,7 @@ import getpass
 import time
 import atexit
 import json
+import random
 
 from james.plugin import *
 
@@ -26,6 +27,7 @@ class ProximityPlugin(Plugin):
             if self.core.os_username == 'root':
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
                 self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
+                self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.pair)
 
         for person in self.core.config['persons'].keys():
             self.persons_status[person] = False
@@ -77,6 +79,19 @@ class ProximityPlugin(Plugin):
                 values = line.split()
                 devices[values[1]] = values[0]
         return(devices)
+
+    def pair(self, args):
+        key = random.randint(1000,9999)
+        ret = ["Please enter the key: %s" % key]
+
+        lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args, 'remove'])
+        ret.append(self.utils.list_unicode_cleanup(lines))
+
+        p = subprocess.Popen(['bluez-simple-agent', 'hci0', args], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+        pair_out = p.communicate(input='%s\n' % key)
+        ret.append(self.utils.list_unicode_cleanup(pair_out))
+
+        return(ret)
 
     def discover(self, args):
         self.logger.debug('Discovering bluetooth hosts...')

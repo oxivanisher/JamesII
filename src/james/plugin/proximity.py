@@ -86,7 +86,7 @@ class ProximityPlugin(Plugin):
         key = random.randint(1000,9999)
         message = self.core.new_message(self.name)
         message.header = ("Bluetooth pairing key is: %s" % key)
-        message.level = 2
+        message.level = 3
         message.send()
 
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])

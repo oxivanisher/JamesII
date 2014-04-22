@@ -85,10 +85,10 @@ class ProximityPlugin(Plugin):
         key = random.randint(1000,9999)
         ret = ["Please enter the key: %s" % key]
 
-        lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', str(args), 'remove'])
+        lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
         ret.append(self.utils.list_unicode_cleanup(lines))
 
-        p = subprocess.Popen(['bluez-simple-agent', 'hci0', args], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen(['bluez-simple-agent', 'hci0', args[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
         pair_out = p.communicate(input='%s\n' % key)
         ret.append(self.utils.list_unicode_cleanup(pair_out))
 

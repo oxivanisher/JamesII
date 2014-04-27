@@ -123,9 +123,9 @@ class EspeakPlugin(Plugin):
 
     def cmd_mutestate(self, args):
         if self.forced_mute:
-            return ["Forced mute disabled"]
+            return ["Forced mute enables"]
         else:
-            return ["Forced mute enabled"]
+            return ["Forced mute disabled"]
 
     def speak(self, msg):
         self.speak_lock.acquire()

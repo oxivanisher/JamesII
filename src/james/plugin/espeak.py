@@ -30,8 +30,8 @@ class EspeakPlugin(Plugin):
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
         muteCmd = self.commands.create_subcommand('mute', 'Toggles muting of all output', self.cmd_mute)
-        muteCmd.create_subcommand('on', 'Force activating mute', self.cmd_mute, True)
-        muteCmd.create_subcommand('off', 'Force deactivating mute', self.cmd_mute, False)
+        muteCmd.create_subcommand('on', 'Force activating mute', self.cmd_mute, False, True)
+        muteCmd.create_subcommand('off', 'Force deactivating mute', self.cmd_mute, False, False)
         self.commands.create_subcommand('mutestate', 'Shows the current muted state', self.cmd_mutestate)
 
         atexit.register(self.save_archived_messages)

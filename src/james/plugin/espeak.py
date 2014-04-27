@@ -123,7 +123,7 @@ class EspeakPlugin(Plugin):
 
     def cmd_mutestate(self, args):
         if self.forced_mute:
-            return ["Forced mute enables"]
+            return ["Forced mute enabled"]
         else:
             return ["Forced mute disabled"]
 

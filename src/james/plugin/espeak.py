@@ -15,6 +15,7 @@ class EspeakPlugin(Plugin):
         super(EspeakPlugin, self).__init__(core, descriptor)
 
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_espeak_message_archive")
+        self.mute_file = os.path.join(os.path.expanduser("~"), ".james_muted")
         self.unmuted = self.core.proximity_status.get_status_here()
         self.forced_mute = False
         self.espeak_command = self.config['espeak_command'].split()
@@ -29,8 +30,13 @@ class EspeakPlugin(Plugin):
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
         self.commands.create_subcommand('mute', 'Toggles muting of all output', self.cmd_mute)
+        self.commands.create_subcommand('mutestate', 'Shows the current muted state', self.cmd_mutestate)
+
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
+
+        atexit.register(self.save_muted_state)
+        self.load_muted_state()
 
         self.speak_lock = threading.Lock()
 
@@ -57,6 +63,25 @@ class EspeakPlugin(Plugin):
             self.logger.debug("Saving archived messages to %s" % (self.message_archive_file))
         except IOError:
             self.logger.warning("Could not safe archived messages to file!")
+
+    def load_muted_state(self):
+        try:
+            file = open(self.mute_file, 'r')
+            self.forced_mute = json.loads(file.read())
+            file.close()
+
+        except IOError:
+            pass
+        pass
+
+    def save_muted_state(self):
+        try:
+            file = open(self.mute_file, 'w')
+            file.write(json.dumps(self.mute_file))
+            file.close()
+            self.logger.debug("Saving muted state to %s" % (self.mute_file))
+        except IOError:
+            self.logger.warning("Could not safe muted state to file!")
 
     def espeak_say(self, args):
         text = ' '.join(args)
@@ -95,6 +120,12 @@ class EspeakPlugin(Plugin):
             muteMessage = "Forced mute enabled"
         self.logger.info(muteMessage)
         return [muteMessage]
+
+    def cmd_mutestate(self, args):
+        if self.forced_mute:
+            return ["Forced mute disabled"]
+        else:
+            return ["Forced mute enabled"]
 
     def speak(self, msg):
         self.speak_lock.acquire()

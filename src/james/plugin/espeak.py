@@ -16,6 +16,7 @@ class EspeakPlugin(Plugin):
 
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_espeak_message_archive")
         self.unmuted = self.core.proximity_status.get_status_here()
+        self.forced_mute = False
         self.espeak_command = self.config['espeak_command'].split()
         self.play_command = self.config['play_command'].split()
 
@@ -27,6 +28,7 @@ class EspeakPlugin(Plugin):
         self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
+        self.commands.create_subcommand('mute', 'Toggles muting of all output', self.cmd_mute)
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
 
@@ -84,17 +86,30 @@ class EspeakPlugin(Plugin):
             ret.append("no messages waiting")
         return ret
 
+    def cmd_mute(self, args):
+        if self.forced_mute:
+            self.forced_mute = False
+            muteMessage = "Forced mute disabled"
+        else:
+            self.forced_mute = True
+            muteMessage = "Forced mute enabled"
+        self.logger.info(muteMessage)
+        return [muteMessage]
+
     def speak(self, msg):
         self.speak_lock.acquire()
         self.message_cache.append(msg)
         self.speak_lock.release()
 
     def speak_worker(self, msg):
-        tempFile = tempfile.NamedTemporaryFile(delete=False)
-        self.utils.popenAndWait(self.espeak_command + ['-w', tempFile.name] + [msg])
-        self.utils.popenAndWait(self.play_command + [tempFile.name])
-        os.remove(tempFile.name)
-        self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
+        if not self.forced_mute:
+            tempFile = tempfile.NamedTemporaryFile(delete=False)
+            self.utils.popenAndWait(self.espeak_command + ['-w', tempFile.name] + [msg])
+            self.utils.popenAndWait(self.play_command + [tempFile.name])
+            os.remove(tempFile.name)
+            self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
+        else:
+            self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))
 
     def speak_hook(self, args = None):
         if len(self.message_cache) > 0:

@@ -121,7 +121,7 @@ class EspeakPlugin(Plugin):
         for (timestamp, message) in self.archived_messages:
             ret.append("%-20s %s" % (self.utils.get_nice_age(int(timestamp)),
                                      message))
-        if not ret:
+        if len(self.archived_messages) == 0:
             ret.append("No messages waiting")
 
         self.archived_messages = []

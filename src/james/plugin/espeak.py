@@ -117,14 +117,16 @@ class EspeakPlugin(Plugin):
 
     def cmd_clear(self, args):
         # clear waiting messages
-        ret = ["Clearing the following messages:"]
+        ret = []
         for (timestamp, message) in self.archived_messages:
             ret.append("%-20s %s" % (self.utils.get_nice_age(int(timestamp)),
                                      message))
-        if len(self.archived_messages) == 0:
-            ret.append("No messages waiting")
 
-        self.archived_messages = []
+        if not ret:
+            ret.append("No messages waiting")
+        else:
+            self.archived_messages = []
+            ret.append("Clearing the following messages:")       
 
         return ret
 

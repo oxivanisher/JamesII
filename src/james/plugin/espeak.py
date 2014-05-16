@@ -29,6 +29,7 @@ class EspeakPlugin(Plugin):
         self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
+        self.commands.create_subcommand('clear', 'Clears the message in the cache', self.cmd_clear)
         muteCmd = self.commands.create_subcommand('muteswitch', 'Toggles muting of all output', self.cmd_mute)
         muteCmd = self.commands.create_subcommand('mute', 'Toggles muting of all output', False)
         muteCmd.create_subcommand('on', 'Force activating mute', self.cmd_mute_on)
@@ -112,6 +113,19 @@ class EspeakPlugin(Plugin):
                                      message))
         if not ret:
             ret.append("no messages waiting")
+        return ret
+
+    def cmd_clear(self, args):
+        # clear waiting messages
+        ret = ["Clearing the following messages:"]
+        for (timestamp, message) in self.archived_messages:
+            ret.append("%-20s %s" % (self.utils.get_nice_age(int(timestamp)),
+                                     message))
+        if not ret:
+            ret.append("No messages waiting")
+
+        self.archived_messages = []
+
         return ret
 
     def cmd_mute_on(self, args):

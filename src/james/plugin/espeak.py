@@ -81,7 +81,7 @@ class EspeakPlugin(Plugin):
     def save_muted_state(self):
         try:
             file = open(self.mute_file, 'w')
-            file.write(json.dumps(self.mute_file))
+            file.write(json.dumps(self.forced_mute))
             file.close()
             self.logger.debug("Saving muted state to %s" % (self.mute_file))
         except IOError:

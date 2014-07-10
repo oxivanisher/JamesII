@@ -129,6 +129,9 @@ class JabberThread(PluginThread):
         try:
             res = self.conn.Process(1)
 
+            if res == '0':
+                # Nothing happend, everything is ok
+                pass
             if res == 0:
                 self.logger.debug("Underlying connection is closed on processing incoming stanzas")
                 self.xmpp_disconnect()

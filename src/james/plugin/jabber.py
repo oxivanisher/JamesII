@@ -70,9 +70,7 @@ class JabberThread(PluginThread):
             self.conn.RegisterHandler('disconnect', self.disconnect_callback)
             self.conn.RegisterHandler('iq', self.iq_callback)
 
-            # do we have to connect to a muc room?
-            if self.muc_room:
-                self.conn.send(xmpp.Presence(to='%s/%s' % (self.muc_room, self.muc_nick)))
+            self.connect_to_room()
 
             # get our roster
             my_roster = self.conn.getRoster()
@@ -100,6 +98,7 @@ class JabberThread(PluginThread):
             try:
                 while not self.conn.reconnectAndReauth():
                     time.sleep(5)
+                self.connect_to_room()
             except:
                 self.conn = False
                 if not self.reconnectingLoop > 12:
@@ -110,6 +109,18 @@ class JabberThread(PluginThread):
                 self.xmpp_connect()
         else:
             self.active = False
+
+    # connect to room
+    def connect_to_room(self):
+        # do we have to connect to a muc room?
+        if self.muc_room:
+            self.conn.send(xmpp.Presence(to='%s/%s' % (self.muc_room, self.muc_nick)))
+
+        # resend status message
+        new_status = self.status_message
+        presence = xmpp.Presence()
+        presence.setStatus(new_status)
+        self.conn.send(presence)
 
     # base worker methods
     def work(self):

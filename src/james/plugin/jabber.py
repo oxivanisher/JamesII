@@ -228,19 +228,24 @@ class JabberThread(PluginThread):
 
     # callback handlers
     def message_callback(self, conn, message):
+        message_type = message.__getitem__('type')
+        who = str(message.getFrom())
+        self.logger.debug("Message callback from %s (%s)" % (who, message_type))
+
+
         if (time.time() - self.startupTime) < 10:
             # self.logger.info("Ignoring message from %s due startup delay" % (message.getFrom()))
             pass
         else:
             realjid = None
-            if message.__getitem__('type') == 'groupchat':
+            if message_type == 'groupchat':
                 try:
                     # print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
                     self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
                 except Exception:
                     self.logger.info("Recieved MUC message from non online user: %s" % str(message.getFrom()))
-            elif message.__getitem__('type') == 'chat':
+            elif message_type == 'chat':
                 realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
 
@@ -271,16 +276,19 @@ class JabberThread(PluginThread):
         self.logger.info("Jabber worker disconnect callback called!")
         self.xmpp_disconnect()
         
-    def iq_callback(self, conn, message):
+    def iq_callback(self, conn, iq):
+        iq_type = iq.getType()
+        who = str(iq.getFrom())
+        self.logger.debug("Presence callback from %s (%s)" % (who, iq_type))
         # self.logger.debug("iq") # callback: %s" % message)
-        if message.getType() == 'get':
+        if iq_type == 'get':
             pass
         else:
             # self.logger.debug("iq event callback from %s to %s!" % (message.getFrom(), message.getTo()))
-            if message.getType() == 'result':
+            if iq_type == 'result':
                 # self.logger.debug(message.getAttrs())
                 pass
-            elif message.getType() == 'error':
+            elif iq_type == 'error':
                 # self.logger.debug(message.getAttrs())
                 pass
 
@@ -288,6 +296,7 @@ class JabberThread(PluginThread):
         prs_type = presence.getType()
         who = str(presence.getFrom())
         # src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
+        self.logger.debug("Presence callback from %s (%s)" % (who, prs_type))
 
         if prs_type == 'subscribe':
                 self.conn.send(xmpp.Presence(to=who, typ = 'subscribed'))

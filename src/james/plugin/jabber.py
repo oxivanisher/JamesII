@@ -139,12 +139,12 @@ class JabberThread(PluginThread):
 
     def StepOn(self):
         try:
-
-            if time.time() - self.lastping > 5:
+            if time.time() - self.lastping > 10:
                 self.lastping = time.time()
                 ping = xmpp.Protocol('iq',typ='get',payload=[xmpp.Node('ping',attrs={'xmlns':'urn:xmpp:ping'})])
                 pingres = self.conn.SendAndWaitForResponse(ping, 1)
-                self.logger.debug("Ping result: %s" % pingres)
+                if not pingres:
+                    self.xmpp_disconnect()
 
             res = self.conn.Process(1)
             if res == '0':

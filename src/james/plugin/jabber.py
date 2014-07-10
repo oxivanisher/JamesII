@@ -159,7 +159,10 @@ class JabberThread(PluginThread):
             self.xmpp_disconnect()
             sys.exc_clear()
         except Exception as e:
-            self.logger.debug("Other error (%s) on processing incoming stanzas" % e)
+            if e.message == 'system-shutdown':
+                self.xmpp_disconnect()
+            else:
+                self.logger.debug("Other error (%s) on processing incoming stanzas" % e)
             pass
         if not self.conn.isConnected(): self.xmpp_disconnect()
 

@@ -90,6 +90,7 @@ class JabberThread(PluginThread):
             return False
 
     def xmpp_disconnect(self):
+        self.logger.info("Jabber worker disconnect called!")
         self.plugin.worker_lock.acquire()
         exit = self.plugin.worker_exit
         self.plugin.worker_lock.release()
@@ -103,7 +104,7 @@ class JabberThread(PluginThread):
                 if not self.reconnectingLoop > 12:
                     self.reconnectingLoop += 1
                 if self.reconnectingLoop > 1:
-                    self.logger.info("Reconnect delay: %s" % (self.reconnectingLoop * 5))
+                    self.logger.info("Jabber worker reconnect delay: %s" % (self.reconnectingLoop * 5))
                     time.sleep(self.reconnectingLoop * 5)
                 self.xmpp_connect()
         else:
@@ -273,7 +274,7 @@ class JabberThread(PluginThread):
                         self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 
     def disconnect_callback(self, conn, message):
-        self.logger.info("Jabber worker disconnect callback called!")
+        self.logger.debug("Jabber worker disconnect callback called!")
         self.xmpp_disconnect()
         
     def iq_callback(self, conn, iq):

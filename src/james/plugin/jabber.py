@@ -32,6 +32,7 @@ class JabberThread(PluginThread):
         self.muc_users = {}
         self.reconnectingLoop = 0
         self.startupTime = time.time()
+        self.lastping = 0
 
     # jabber connection methods
     def xmpp_connect(self):
@@ -127,8 +128,14 @@ class JabberThread(PluginThread):
 
     def StepOn(self):
         try:
-            res = self.conn.Process(1)
 
+            if time.time() - self.lastping > 5:
+                self.lastping = time.time()
+                ping = xmpp.Protocol('iq',typ='get',payload=[xmpp.Node('ping',attrs={'xmlns':'urn:xmpp:ping'})])
+                pingres = self.conn.SendAndWaitForResponse(ping, 1)
+                self.logger.debug("Ping result: %s" % pingres)
+
+            res = self.conn.Process(1)
             if res == '0':
                 # Nothing happend, everything is ok
                 pass

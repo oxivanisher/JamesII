@@ -132,7 +132,7 @@ class JabberThread(PluginThread):
             if res == '0':
                 # Nothing happend, everything is ok
                 pass
-            if res == 0:
+            elif res == 0:
                 self.logger.debug("Underlying connection is closed on processing incoming stanzas")
                 self.xmpp_disconnect()
             else:

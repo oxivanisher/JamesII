@@ -127,7 +127,9 @@ class JabberThread(PluginThread):
 
     def StepOn(self):
         try:
-            self.conn.Process(1)
+            if self.conn.Process(1) == 0:
+               self.logger.debug("Underlying connection is closed on processing incoming stanzas")
+               self.xmpp_disconnect()
         except IOError:
             self.logger.debug("IOError on processing incoming stanzas")
             self.xmpp_disconnect()

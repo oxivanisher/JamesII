@@ -129,9 +129,11 @@ class JabberThread(PluginThread):
         try:
             self.conn.Process(1)
         except IOError:
+            self.logger.debug("IOError on processing incoming stanzas")
             self.xmpp_disconnect()
             sys.exc_clear()
-        except:
+        except Exception as e:
+            self.logger.debug("Other error (%s) on processing incoming stanzas" % e)
             pass
         if not self.conn.isConnected(): self.xmpp_disconnect()
 

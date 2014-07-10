@@ -36,6 +36,7 @@ class JabberThread(PluginThread):
 
     # jabber connection methods
     def xmpp_connect(self):
+        self.logger.debug("XMPP connect called")
         # setup connection
         jid = xmpp.protocol.JID(self.cfg_jid)
         self.conn = xmpp.Client(jid.getDomain(),debug=[])
@@ -98,7 +99,6 @@ class JabberThread(PluginThread):
             try:
                 while not self.conn.reconnectAndReauth():
                     time.sleep(5)
-                self.connect_to_room()
             except:
                 self.conn = False
                 if not self.reconnectingLoop > 12:
@@ -106,7 +106,7 @@ class JabberThread(PluginThread):
                 if self.reconnectingLoop > 1:
                     self.logger.info("Jabber worker reconnect delay: %s" % (self.reconnectingLoop * 5))
                     time.sleep(self.reconnectingLoop * 5)
-                self.xmpp_connect()
+            self.xmpp_connect()
         else:
             self.active = False
 

@@ -23,6 +23,7 @@ class LircThread(PluginThread):
 
         self.tempFile = tempfile.NamedTemporaryFile(delete=False)
         self.tmpFileName = self.tempFile.name
+        self.logger.debug("Tmp File: %s" % self.tmpFileName)
         self.plugin = plugin
         self.tempFile.write(self.create_lircrc(rcv_config))
         self.tempFile.close()
@@ -52,8 +53,8 @@ class LircThread(PluginThread):
                             self.plugin.send_ir_command(code["config"])
                         blocking = 1
                         s = []
-        except RuntimeError:
-            self.logger.warning('LIRC Plugin could not be loaded. Retrying in 5 seconds.')
+        except RuntimeError as e:
+            self.logger.warning('LIRC Plugin could not be loaded. Retrying in 5 seconds. %s' % e)
             pylirc.exit()
             time.sleep(5)
             self.work()

@@ -230,10 +230,10 @@ class ProximityPlugin(Plugin):
 
         if self.persons_status != new_persons_status:
             if self.status:
-                self.logger.info(', '.join(new_persons_status.keys()) + ' are now at home')
+                self.logger.info('Now at home: ' + ', '.join(new_persons_status.keys()))
             else:
-                self.logger.info('You are now away')
-            self.core.send_persons_state(new_persons_status, 'btproximity')
+                self.logger.info('Nobody is at home')
+        self.core.send_persons_state(new_persons_status, 'btproximity')
 
         self.persons_status = new_persons_status
 

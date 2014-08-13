@@ -224,15 +224,20 @@ class ProximityPlugin(Plugin):
                 self.send_command(['sys', 'alert', message])
 
         # saving the actual persons detected
-        self.persons_status = new_persons_status
 
         if self.status != self.core.proximity_status.get_status_here():
             self.proximityUpdates += 1
+
+        if sorted(self.persons_status) != sorted(new_persons_status):
             if self.status:
-                self.logger.info('You are now at home')
+                self.logger.info(', '.join(new_persons_status.keys()) + ' are now at home')
             else:
                 self.logger.info('You are now away')
-            self.core.proximity_event(self.status, 'btproximity')
+            self.core.send_persons_state(new_persons_status, 'btproximity')
+
+        self.persons_status = new_persons_status
+
+        self.core.proximity_event(self.status, 'btproximity', self.persons_status)
 
     def process_discovery_event(self, msg):
         if not self.proxy_send_lock:

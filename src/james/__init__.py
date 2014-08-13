@@ -103,6 +103,7 @@ class Core(object):
         self.passive = False
         self.uuid = str(uuid.uuid1())
         self.proximity_status = proximitystatus.ProximityStatus(self)
+        self.persons_status = {}
         self.location = 'home'
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
@@ -258,6 +259,10 @@ class Core(object):
         self.logger.debug("RabbitMQ: Create proximity channel")
         self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
+
+        self.logger.debug("RabbitMQ: Create persons_status channel")
+        self.persons_status_channel = broadcastchannel.BroadcastChannel(self, 'persons_status')
+        self.persons_status_channel.add_listener(self.persons_status_listener)
 
         self.logger.debug("RabbitMQ: Create dataRequest & dataResponse channels")
         self.data_request_channel = broadcastchannel.BroadcastChannel(self, 'dataRequest')
@@ -506,6 +511,35 @@ class Core(object):
         for p in self.plugins:
             p.process_message(message)
 
+    # persons_status channel methods
+    def persons_status_listener(self, msg):
+        """
+        Listens to persons_status changes on the persons_status channel and
+        update the local storage.
+        """
+        if msg['location'] == self.location:
+            self.logger.debug("Recieved persons_status update. Saving it to core.")
+            self.persons_status == msg['persons_status']
+
+    def send_persons_state(self, persons_status, pluginname):
+        """
+        Call the distribution methon for persons states
+        """
+        self.add_timeout(0, self.publish_proximity_status_callback, persons_status, pluginname)
+
+    def publish_proximity_status_callback(self, persons_status, pluginname):
+        """
+        send the persons states over the persons_status channel.
+        """
+        self.logger.debug('Publishing persons status update %s from plugin %s' % (persons_status, pluginname))
+        try:
+            self.persons_status_channel.send({'persons_status' : persons_status,
+                                              'host' : self.hostname,
+                                              'plugin' : pluginname,
+                                              'location' : self.location})
+        except Exception as e:
+            self.logger.warning("Could not send proximity status (%s)" % (e))    
+
     # proximity channel methods
     def proximity_listener(self, msg):
         """
@@ -515,6 +549,7 @@ class Core(object):
         """
         try:
             if self.proximity_status.get_status_here() != msg['status'][self.location]:
+                self.logger.debug("Recieved proximity update. Calling process_proximity_event on plugins.")
                 for p in self.plugins:
                     p.process_proximity_event(msg)
             self.proximity_status.update_all_status(msg['status'], msg['plugin'])

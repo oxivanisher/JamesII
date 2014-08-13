@@ -106,7 +106,7 @@ class EspeakPlugin(Plugin):
                 except Exception:
                     pass
 
-        if self.unmuted and adminIsHere:
+        if self.unmuted and adminIsHere and self.core.proximity_status.get_status_here():
             self.espeak_say(args)
             if len(self.archived_messages):
                 self.greet_homecomer()

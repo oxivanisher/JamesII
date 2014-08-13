@@ -213,7 +213,7 @@ class SystemPlugin(Plugin):
         coreData['osUsername'] = self.core.os_username
         coreData['now'] = time.time()
         coreData['proximityStatus'] = self.core.proximity_status.get_status_here()
-        coreData['proximityStatus'] = self.core.persons_status
+        coreData['personsStatus'] = self.core.persons_status
         return coreData
 
 descriptor = {

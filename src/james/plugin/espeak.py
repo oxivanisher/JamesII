@@ -227,7 +227,8 @@ class EspeakPlugin(Plugin):
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.message_cache.append('Hi ' + ', '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
+            if len(isHere):
+                self.message_cache.append('Hi ' + ', '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
 
         if adminIsHere:
             if len(self.archived_messages) > 0:

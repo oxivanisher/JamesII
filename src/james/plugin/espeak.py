@@ -213,26 +213,38 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         self.speak_lock.acquire()
 
+        isHere = []
+        adminIsHere = False
+        for person in new_persons_status:
+            if new_persons_status[person]:
+                isHere.append(person)
+                try:
+                    if self.core.config['persons'][person]['admin']:
+                        adminIsHere = True
+                except Exception:
+                    pass
+
         nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.message_cache.append('Welcome, it is now %s' % self.utils.get_time_string())
+            self.message_cache.append('Hi ' + ', '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
 
-        if len(self.archived_messages) > 0:
-        # reading the log
-            if len(self.archived_messages) == 1:
-                self.message_cache.append('While we where apart, the following thing happend:')
+        if adminIsHere:
+            if len(self.archived_messages) > 0:
+            # reading the log to the admin
+                if len(self.archived_messages) == 1:
+                    self.message_cache.append('While we where apart, the following thing happend:')
+                else:
+                    self.message_cache.append('While we where apart, the following %s things happend:' % len(self.archived_messages))
+                work_archived_messages = self.archived_messages
+                self.archived_messages = []
+                for (timestamp, message) in work_archived_messages:
+                    self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
+
+                self.message_cache.append("End of Log")
+                
             else:
-                self.message_cache.append('While we where apart, the following %s things happend:' % len(self.archived_messages))
-            work_archived_messages = self.archived_messages
-            self.archived_messages = []
-            for (timestamp, message) in work_archived_messages:
-                self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
-
-            self.message_cache.append("End of Log")
-            
-        else:
-            self.message_cache.append('Nothing happend while we where apart.')
+                self.message_cache.append('Nothing happend while we where apart.')
 
         self.speak_lock.release()
 

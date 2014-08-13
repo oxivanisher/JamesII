@@ -26,6 +26,7 @@ core:
 persons:
 # cofigure the persons recognized by JamesII
  johndoe:
+  admin      : True
   jid        : you@your.domain
   email      : you@your.domain
   bt_devices:

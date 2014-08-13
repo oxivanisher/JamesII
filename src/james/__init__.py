@@ -518,7 +518,7 @@ class Core(object):
         update the local storage.
         """
         if msg['location'] == self.location:
-            self.logger.debug("Recieved persons_status update. Saving it to core.")
+            self.logger.info("Recieved persons_status update: %s. Saving it to core." % msg['persons_status'])
             self.persons_status == msg['persons_status']
 
     def send_persons_status(self, persons_status, pluginname):

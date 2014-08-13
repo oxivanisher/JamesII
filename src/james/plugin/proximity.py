@@ -209,7 +209,12 @@ class ProximityPlugin(Plugin):
         # save the actual online hosts to var
         self.hosts_online = new_hosts_online
 
+        # if something changed, increment the proximityUpdates counter
+        if self.status != self.core.proximity_status.get_status_here():
+            self.proximityUpdates += 1
+
         # checking for newly detected persons
+        personsChanged = False
         for person in new_persons_status.keys():
             try:
                 self.persons_status[person]
@@ -217,18 +222,15 @@ class ProximityPlugin(Plugin):
                 # compensating for config changes
                 self.persons_status[person] = False
             if new_persons_status[person] != self.persons_status[person]:
+                personsChanged = True
                 if new_persons_status[person]:
                     message = "%s is here" % person
                 else:
                     message = "%s left" % person
+                  
                 self.send_command(['sys', 'alert', message])
 
-        # saving the actual persons detected
-
-        if self.status != self.core.proximity_status.get_status_here():
-            self.proximityUpdates += 1
-
-        if self.persons_status != new_persons_status:
+        if personsChanged:
             if self.status:
                 isHere = []
                 for person in new_persons_status:
@@ -239,6 +241,7 @@ class ProximityPlugin(Plugin):
                 self.logger.info('Nobody is at home')
         self.core.send_persons_status(new_persons_status, 'btproximity')
 
+        # saving the actual persons detected
         self.persons_status = new_persons_status
 
         self.core.proximity_event(self.status, 'btproximity')

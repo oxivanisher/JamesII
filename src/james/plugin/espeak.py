@@ -110,7 +110,7 @@ class EspeakPlugin(Plugin):
         if self.unmuted and adminIsHere:
             self.espeak_say(args)
         else:
-            self.logger.info("Added message: %s to archive" % ' '.join(args))
+            self.logger.debug("Added message: %s to archive" % ' '.join(args))
             self.archived_messages.append((time.time(), ' '.join(args)))        
 
     def espeak_time(self, args):

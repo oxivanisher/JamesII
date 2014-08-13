@@ -525,9 +525,9 @@ class Core(object):
         """
         Call the distribution methon for persons states
         """
-        self.add_timeout(0, self.publish_proximity_status_callback, persons_status, pluginname)
+        self.add_timeout(0, self.publish_persons_state_callback, persons_status, pluginname)
 
-    def publish_proximity_status_callback(self, persons_status, pluginname):
+    def publish_persons_state_callback(self, persons_status, pluginname):
         """
         send the persons states over the persons_status channel.
         """

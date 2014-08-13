@@ -240,7 +240,6 @@ class ProximityPlugin(Plugin):
                 self.logger.info('Now at home: ' + ', '.join(isHere))
             else:
                 self.logger.info('Nobody is at home')
-            self.send_command(['sys', 'alert'])
 
         message = []
         if personsCame:

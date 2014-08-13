@@ -230,6 +230,7 @@ class ProximityPlugin(Plugin):
                 else:
                     personsLeft.append(person)
 
+        self.core.send_persons_status(new_persons_status, 'btproximity')
         if personsChanged:
             if self.status:
                 isHere = []
@@ -239,7 +240,7 @@ class ProximityPlugin(Plugin):
                 self.logger.info('Now at home: ' + ', '.join(isHere))
             else:
                 self.logger.info('Nobody is at home')
-        self.core.send_persons_status(new_persons_status, 'btproximity')
+            self.send_command(['sys', 'alert'])
 
         message = []
         if personsCame:

@@ -519,7 +519,7 @@ class Core(object):
         """
         if msg['location'] == self.location:
             self.logger.debug("Recieved persons_status update: %s. Saving it to core." % msg['persons_status'])
-            self.persons_status = msg['persons_status']
+            self.persons_status = self.utils.convert_from_unicode(msg['persons_status'])
 
     def send_persons_status(self, persons_status, pluginname):
         """

@@ -231,9 +231,12 @@ class ProximityPlugin(Plugin):
                     personsLeft.append(person)
 
         message = []
-        message.append(', '.join(personsCame) + ' came')
-        message.append(', '.join(personsLeft) + ' left')
-        self.send_command(['sys', 'alert', ' and '.join(message)])
+        if personsCame:
+            message.append(', '.join(personsCame) + ' came')
+        if personsLeft:
+            message.append(', '.join(personsLeft) + ' left')
+        if len(message):
+            self.send_command(['sys', 'alert', ' and '.join(message)])
 
         if personsChanged:
             if self.status:

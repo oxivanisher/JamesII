@@ -100,7 +100,6 @@ class EspeakPlugin(Plugin):
         adminIsHere = False
         for person in self.core.persons_status:
             if self.core.persons_status[person]:
-                adminIsHere.append(person)
                 try:
                     if self.core.config['persons'][person]['admin']:
                         adminIsHere = True

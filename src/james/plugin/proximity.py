@@ -228,7 +228,7 @@ class ProximityPlugin(Plugin):
         if self.status != self.core.proximity_status.get_status_here():
             self.proximityUpdates += 1
 
-        if sorted(self.persons_status) != sorted(new_persons_status):
+        if self.persons_status != new_persons_status:
             if self.status:
                 self.logger.info(', '.join(new_persons_status.keys()) + ' are now at home')
             else:
@@ -237,7 +237,7 @@ class ProximityPlugin(Plugin):
 
         self.persons_status = new_persons_status
 
-        self.core.proximity_event(self.status, 'btproximity', self.persons_status)
+        self.core.proximity_event(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):
         if not self.proxy_send_lock:

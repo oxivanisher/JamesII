@@ -215,8 +215,8 @@ class EspeakPlugin(Plugin):
 
         isHere = []
         adminIsHere = False
-        for person in new_persons_status:
-            if new_persons_status[person]:
+        for person in self.core.persons_status:
+            if self.core.persons_status[person]:
                 isHere.append(person)
                 try:
                     if self.core.config['persons'][person]['admin']:

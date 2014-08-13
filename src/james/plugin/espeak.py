@@ -108,7 +108,8 @@ class EspeakPlugin(Plugin):
 
         if self.unmuted and adminIsHere:
             self.espeak_say(args)
-            self.greet_homecomer()
+            if len(self.archived_messages):
+                self.greet_homecomer()
         else:
             self.logger.debug("Added message: %s to archive" % ' '.join(args))
             self.archived_messages.append((time.time(), ' '.join(args)))

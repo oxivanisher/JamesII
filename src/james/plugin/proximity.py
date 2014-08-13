@@ -215,6 +215,8 @@ class ProximityPlugin(Plugin):
 
         # checking for newly detected persons
         personsChanged = False
+        personsLeft = []
+        personsCame = []
         for person in new_persons_status.keys():
             try:
                 self.persons_status[person]
@@ -224,11 +226,14 @@ class ProximityPlugin(Plugin):
             if new_persons_status[person] != self.persons_status[person]:
                 personsChanged = True
                 if new_persons_status[person]:
-                    message = "%s is here" % person
+                    personsCame.append(person)
                 else:
-                    message = "%s left" % person
-                  
-                self.send_command(['sys', 'alert', message])
+                    personsLeft.append(person)
+
+        message = []
+        message.append(', '.join(personsCame) + ' came')
+        message.append(', '.join(personsLeft) + ' left')
+        self.send_command(['sys', 'alert', ' and '.join(message)])
 
         if personsChanged:
             if self.status:

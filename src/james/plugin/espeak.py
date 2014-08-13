@@ -108,9 +108,10 @@ class EspeakPlugin(Plugin):
 
         if self.unmuted and adminIsHere:
             self.espeak_say(args)
+            self.greet_homecomer()
         else:
             self.logger.debug("Added message: %s to archive" % ' '.join(args))
-            self.archived_messages.append((time.time(), ' '.join(args)))        
+            self.archived_messages.append((time.time(), ' '.join(args)))
 
     def espeak_time(self, args):
         self.speak('It is now %s' % self.utils.get_time_string())
@@ -239,7 +240,7 @@ class EspeakPlugin(Plugin):
 
         if (time.time() - self.core.startup_timestamp) > 10:
             if len(isHere):
-                self.message_cache.append('Hi ' + ', '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
+                self.message_cache.append('Hey ' + ' and '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
 
         if adminIsHere:
             if len(self.archived_messages) > 0:

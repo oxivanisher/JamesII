@@ -521,13 +521,13 @@ class Core(object):
             self.logger.debug("Recieved persons_status update. Saving it to core.")
             self.persons_status == msg['persons_status']
 
-    def send_persons_state(self, persons_status, pluginname):
+    def send_persons_status(self, persons_status, pluginname):
         """
         Call the distribution methon for persons states
         """
-        self.add_timeout(0, self.publish_persons_state_callback, persons_status, pluginname)
+        self.add_timeout(0, self.publish_persons_status_callback, persons_status, pluginname)
 
-    def publish_persons_state_callback(self, persons_status, pluginname):
+    def publish_persons_status_callback(self, persons_status, pluginname):
         """
         send the persons states over the persons_status channel.
         """
@@ -538,7 +538,7 @@ class Core(object):
                                               'plugin' : pluginname,
                                               'location' : self.location})
         except Exception as e:
-            self.logger.warning("Could not send proximity status (%s)" % (e))    
+            self.logger.warning("Could not send persons status (%s)" % (e))    
 
     # proximity channel methods
     def proximity_listener(self, msg):

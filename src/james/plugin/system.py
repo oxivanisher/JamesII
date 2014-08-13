@@ -213,6 +213,7 @@ class SystemPlugin(Plugin):
         coreData['osUsername'] = self.core.os_username
         coreData['now'] = time.time()
         coreData['proximityStatus'] = self.core.proximity_status.get_status_here()
+        coreData['proximityStatus'] = self.core.persons_status
         return coreData
 
 descriptor = {
@@ -230,5 +231,6 @@ descriptor = {
                        'platform' : "Platform",
                        'osUsername' : "OS Username",
                        'now' : "Now Timestamp",
-                       'proximityStatus' : "Proximity status on location" }
+                       'proximityStatus' : "Proximity status on location",
+                       'personsStatus': "Persons location status" }
 }

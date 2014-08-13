@@ -96,7 +96,18 @@ class EspeakPlugin(Plugin):
 
     def alert(self, args):
         self.logger.debug('Alerting (%s)' % ' '.join(args))
-        if self.unmuted:
+
+        adminIsHere = False
+        for person in self.core.persons_status:
+            if self.core.persons_status[person]:
+                isHere.append(person)
+                try:
+                    if self.core.config['persons'][person]['admin']:
+                        adminIsHere = True
+                except Exception:
+                    pass
+
+        if self.unmuted and adminIsHere:
             self.espeak_say(args)
         else:
             self.archived_messages.append((time.time(), ' '.join(args)))        

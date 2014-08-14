@@ -76,7 +76,7 @@ class GoogleCalendarPlugin(Plugin):
                 self.logger.error("Event fetching error: %s" % e)
         return events
 
-    def requestEvents(self):
+    def requestEvents(self, users = []):
         allEvents = []
         for calendar in self.config['calendarIds']:
             events = False
@@ -154,7 +154,7 @@ class GoogleCalendarPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         self.logger.debug("Google Calendar Processing proximity event")
         if newstatus['status'][self.core.location]:
-            self.cmd_calendar_speak(None)
+            self.core.add_timeout(0, self.cmd_calendar_speak)
 
     # status
     def return_status(self):

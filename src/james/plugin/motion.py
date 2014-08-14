@@ -210,10 +210,10 @@ class MotionPlugin(Plugin):
         self.logger.debug("Motion processing proximity event")
         if newstatus['status'][self.core.location]:
             self.watch_mode = False
-            self.cmd_off(None)
+            self.core.add_timeout(0, self.cmd_off, None)
         else:
             self.watch_mode = False
-            self.cmd_on(None)
+            self.core.add_timeout(0, self.cmd_on, None)
         return True
 
     def return_status(self):

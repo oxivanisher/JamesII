@@ -266,7 +266,7 @@ class EspeakPlugin(Plugin):
         self.logger.debug("Espeak Processing proximity event")
         self.unmuted = newstatus['status'][self.core.location]
         if newstatus['status'][self.core.location]:
-            self.greet_homecomer()
+            self.core.add_timeout(0, self.greet_homecomer)
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)

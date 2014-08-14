@@ -327,10 +327,10 @@ class RaspberryPlugin(Plugin):
         self.logger.debug("Processing proximity event")
         
         if newstatus['status'][self.core.location]:
-            self.turn_off_led(3)
+            self.core.add_timeout(0, self.turn_off_led, 3)
             self.messages_waiting_count = 0
         else:
-            self.turn_on_led(3)
+            self.core.add_timeout(0, self.turn_on_led, 3)
 
     def process_message(self, message):
         self.logger.debug("Processing message event")

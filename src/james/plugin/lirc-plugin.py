@@ -253,21 +253,21 @@ class LircPlugin(Plugin):
             try:
                 for entry in self.config['nodes'][self.core.hostname]['proximityToggle']:
                     for command in entry.keys():
-                        self.cmd_send([command, entry[command]])
+                        self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
             except TypeError:
                 pass
             if newstatus['status'][self.core.location]:
                 try:
                     for entry in self.config['nodes'][self.core.hostname]['proximityHome']:
                         for command in entry.keys():
-                            self.cmd_send([command, entry[command]])
+                            self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
                 except TypeError:
                     pass
             else:
                 try:
                     for entry in self.config['nodes'][self.core.hostname]['proximityGone']:
                         for command in entry.keys():
-                            self.cmd_send([command, entry[command]])
+                            self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
                 except TypeError:
                     pass
         return True

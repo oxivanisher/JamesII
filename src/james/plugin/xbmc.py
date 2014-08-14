@@ -225,7 +225,7 @@ class XbmcPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         self.logger.debug("XBMC Processing proximity event")
         if not newstatus['status'][self.core.location]:
-            self.cmd_stop(None)
+            self.core.add_timeout(0, self.cmd_stop, None)
 
     def return_status(self):
         player = self.get_active_player()

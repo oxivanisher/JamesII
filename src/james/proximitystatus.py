@@ -29,4 +29,8 @@ class ProximityStatus(object):
         return copy.deepcopy(self.status)
 
     def get_status_here(self):
-        return self.status[self.core.location]
+        if self.core.location in self.status.keys():
+            return self.status[self.core.location]
+        else:
+            self.core.logger.warning("Location not found for ProximityStatus.get_status_here")
+            return False

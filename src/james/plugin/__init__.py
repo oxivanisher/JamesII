@@ -138,7 +138,7 @@ class Plugin(object):
         if name == 'status':
             args = self.utils.list_unicode_cleanup(body)
             try:
-                self.logger.debug('Processing status request')
+                self.logger.debug('Processing status request from %s@%s' % (plugin, host))
                 res = self.return_status()
                 if res != {}:
                     self.send_data_response(self.core.uuid, name, res)

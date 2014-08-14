@@ -102,9 +102,9 @@ class Core(object):
         self.master = False
         self.passive = False
         self.uuid = str(uuid.uuid1())
+        self.location = 'home'
         self.proximity_status = proximitystatus.ProximityStatus(self)
         self.persons_status = {}
-        self.location = 'home'
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
         self.ghost_commands = command.Command('ghost')

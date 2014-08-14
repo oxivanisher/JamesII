@@ -252,7 +252,8 @@ class ProximityPlugin(Plugin):
         # saving the actual persons detected
         self.persons_status = new_persons_status
 
-        self.core.proximity_event(self.status, 'btproximity')
+        if personsChanged:
+            self.core.proximity_event(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):
         if not self.proxy_send_lock:

@@ -67,6 +67,12 @@ class HttpServerPlugin(Plugin):
         self.node_update_loop()
         self.send_waiting_commands_loop()
 
+        self.updatetimeout = 60
+        try:
+            self.updatetimeout = int(self.config['updatetimeout'])
+        except Exception:
+            pass
+
     def init_db(self):
         try:
             cfgFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../config/httpserver.yaml')
@@ -137,7 +143,7 @@ class HttpServerPlugin(Plugin):
 
     def node_update_loop(self):
         self.request_all_nodes_details()
-        self.core.add_timeout(60, self.node_update_loop)
+        self.core.add_timeout(self.updatetimeout, self.node_update_loop)
 
     def send_waiting_commands(self):
         try:

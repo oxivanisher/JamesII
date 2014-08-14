@@ -12,6 +12,7 @@ class ProximityStatus(object):
             self.core.proximity_event(value, plugin)
     
     def update_all_status(self, newstatus, plugin):
+        self.core.logger.info("ProximityStatus.update_all_status: %s from %s" % (newstatus, plugin))
         if self.status != newstatus:
             fire_event = True
         else:
@@ -32,5 +33,5 @@ class ProximityStatus(object):
         if self.core.location in self.status.keys():
             return self.status[self.core.location]
         else:
-            self.core.logger.error("Location %s not found for ProximityStatus.get_status_here" % self.core.location)
+            self.core.logger.error("ProximityStatus.get_status_here: Location '%s' not found" % self.core.location)
             return False

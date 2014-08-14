@@ -32,5 +32,5 @@ class ProximityStatus(object):
         if self.core.location in self.status.keys():
             return self.status[self.core.location]
         else:
-            self.core.logger.warning("Location %s not found for ProximityStatus.get_status_here" % self.core.location)
+            self.core.logger.error("Location %s not found for ProximityStatus.get_status_here" % self.core.location)
             return False

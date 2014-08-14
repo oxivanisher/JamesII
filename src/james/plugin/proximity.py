@@ -232,12 +232,11 @@ class ProximityPlugin(Plugin):
 
         self.core.send_persons_status(new_persons_status, 'btproximity')
         if personsChanged:
-            isHere = []
-            for person in new_persons_status:
-                if new_persons_status[person]:
-                    isHere.append(person)
-
-            if len(isHere):
+            if self.status:
+                isHere = []
+                for person in new_persons_status:
+                    if new_persons_status[person]:
+                        isHere.append(person)
                 self.logger.info('Now at home: ' + ', '.join(isHere))
             else:
                 self.logger.info('Nobody is at home')
@@ -254,7 +253,7 @@ class ProximityPlugin(Plugin):
         self.persons_status = new_persons_status
 
         if personsChanged:
-            self.logger.info("Persons changed, sending proximity event.")
+            self.logger.info("Persons changed, sending proximity")
             self.core.proximity_event(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):

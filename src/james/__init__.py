@@ -583,7 +583,7 @@ class Core(object):
         """
         send the newstatus proximity status over the proximity channel.
         """
-        self.logger.debug('Publishing proximity status update %s from plugin %s' % (newstatus, pluginname))
+        self.logger.info('Publishing proximity status update %s from plugin %s' % (newstatus, pluginname))
         try:
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,

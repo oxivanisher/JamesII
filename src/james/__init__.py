@@ -566,6 +566,7 @@ class Core(object):
         """
         If the local proximity state has changed, call the publish method
         """
+        self.logger.info("Status debug: %s" % changedstatus)
         newstatus = {}
         oldstatus = self.proximity_status.get_all_status_copy()
 

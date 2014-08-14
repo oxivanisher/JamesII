@@ -573,7 +573,7 @@ class Core(object):
             newstatus[self.location] = changedstatus
         else:
             newstatus[self.location] = oldstatus[self.location]
-
+        self.logger.info("debug publish_proximity_status: %s" % newstatus)
         self.publish_proximity_status(newstatus, pluginname)
 
     def publish_proximity_status(self, newstatus, pluginname):

@@ -552,11 +552,12 @@ class Core(object):
         started plugins.
         """
         try:
-            if self.proximity_status.get_status_here() != msg['status'][self.location]:
+            oldState = self.proximity_status.get_status_here()
+            self.proximity_status.update_all_status(msg['status'], msg['plugin'])
+            if msg['status'][self.location] != oldState:
                 self.logger.debug("Recieved proximity update. Calling process_proximity_event on plugins.")
                 for p in self.plugins:
                     p.process_proximity_event(msg)
-            self.proximity_status.update_all_status(msg['status'], msg['plugin'])
         except KeyError:
             # this proximity event is not for our location. just ignore it for now
             pass

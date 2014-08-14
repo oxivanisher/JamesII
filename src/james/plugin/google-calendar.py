@@ -128,9 +128,11 @@ class GoogleCalendarPlugin(Plugin):
                 retList.append(retStr)
 
         if len(retList):
-            return ['Calendar events: '] + retList + ['End of calendar']
-        else:
-            return ['No calendar events']
+            return retList
+        # if len(retList):
+        #     return ['Calendar events: '] + retList + ['End of calendar']
+        # else:
+        #     return ['No calendar events']
 
     # commands
     def cmd_calendar_show(self, args):

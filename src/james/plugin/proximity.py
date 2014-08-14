@@ -256,7 +256,7 @@ class ProximityPlugin(Plugin):
 
         if personsChanged:
             self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
-            self.core.proximity_event(self.status, 'btproximity')
+        self.core.proximity_event(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):
         if not self.proxy_send_lock:

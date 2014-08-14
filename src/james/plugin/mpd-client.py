@@ -469,9 +469,9 @@ class MpdClientPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
-                self.core.add_timeout(0, self.radio_on, None)
+                self.core.add_timeout(0, self.radio_on, False)
             else:
-                self.core.add_timeout(0, self.radio_off, None)
+                self.core.add_timeout(0, self.radio_off, False)
 
     def return_status(self):
         self.logger.debug('Showing status')

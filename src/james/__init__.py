@@ -552,11 +552,11 @@ class Core(object):
         started plugins.
         """
         try:
-            self.logger.info("debug core.proximity_listener %s" % msg)
+            self.logger.debug("core.proximity_listener: %s" % msg)
             oldState = self.proximity_status.get_status_here()
             self.proximity_status.update_all_status(msg['status'], msg['plugin'])
             if msg['status'][self.location] != oldState:
-                self.logger.info("debug Recieved proximity update. Calling process_proximity_event on plugins.")
+                self.logger.debug("Recieved proximity update (listener). Calling process_proximity_event on plugins.")
                 for p in self.plugins:
                     p.process_proximity_event(msg)
         except KeyError:
@@ -574,7 +574,7 @@ class Core(object):
             newstatus[self.location] = changedstatus
         else:
             newstatus[self.location] = oldstatus[self.location]
-        self.logger.info("debug publish_proximity_status: %s" % newstatus)
+        self.logger.debug("publish_proximity_status: %s from %s" % (newstatus, pluginname))
         self.publish_proximity_status(newstatus, pluginname)
 
     def publish_proximity_status(self, newstatus, pluginname):
@@ -584,7 +584,7 @@ class Core(object):
         """
         send the newstatus proximity status over the proximity channel.
         """
-        self.logger.info("debug Publishing proximity status update %s from plugin %s" % (newstatus, pluginname))
+        self.logger.debug("Publishing proximity status update %s from plugin %s" % (newstatus, pluginname))
         try:
             self.proximity_channel.send({'status' : newstatus,
                                          'host' : self.hostname,

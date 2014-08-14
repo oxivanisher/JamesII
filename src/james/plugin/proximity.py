@@ -253,7 +253,7 @@ class ProximityPlugin(Plugin):
         self.persons_status = new_persons_status
 
         if personsChanged:
-            self.logger.info("Persons changed, sending proximity status: %s" % self.status)
+            self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
             self.core.proximity_event(self.status, 'btproximity')
 
     def process_discovery_event(self, msg):

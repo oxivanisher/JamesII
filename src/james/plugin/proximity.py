@@ -171,10 +171,12 @@ class ProximityPlugin(Plugin):
             new_persons_status[person] = False
 
         if len(values) > 0:
+            self.logger.debug("Setting self.status to True (phase 1)")
             self.status = True
         else:
             # compensating if the device is just for 1 aptempt not reachable
-            if len(self.hosts_online) > 0:
+            if len(old_hosts_online) > 0:
+                self.logger.debug("Setting self.status to True (phase 2)")
                 self.status = True
 
         for (mac, name) in values:

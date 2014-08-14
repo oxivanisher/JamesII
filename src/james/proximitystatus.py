@@ -29,7 +29,4 @@ class ProximityStatus(object):
         return copy.deepcopy(self.status)
 
     def get_status_here(self):
-        try:
-            return self.status[self.core.location]
-        except KeyError:
-            return False
+        return self.status[self.core.location]

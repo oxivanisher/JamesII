@@ -249,7 +249,7 @@ class ProximityPlugin(Plugin):
         if personsLeft:
             message.append(' and '.join(personsLeft) + ' left')
         if len(message):
-            self.send_command(['sys', 'alert', ', '.join(message)])
+            self.send_command(['espeak', 'say', ', '.join(message)])
 
         # saving the actual persons detected
         self.persons_status = new_persons_status

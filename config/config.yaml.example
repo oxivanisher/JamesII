@@ -94,6 +94,7 @@ lirc-client:
 #     - KEY_POWER
 
 http-server:
+ updatetimeout: 60
  nodes:
   node_name:
    port     : 8181

@@ -60,18 +60,18 @@ class HttpServerPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(HttpServerPlugin, self).__init__(core, descriptor)
 
+        self.updatetimeout = 60
+        try:
+            self.updatetimeout = int(self.config['updatetimeout'])
+        except Exception:
+            pass
+
         if not self.init_db():
             self.logger.info('Unable to get Database Store. Terminating!')
             self.core.terminate()
 
         self.node_update_loop()
         self.send_waiting_commands_loop()
-
-        self.updatetimeout = 60
-        try:
-            self.updatetimeout = int(self.config['updatetimeout'])
-        except Exception:
-            pass
 
     def init_db(self):
         try:

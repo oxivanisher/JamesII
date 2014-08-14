@@ -569,6 +569,7 @@ class Core(object):
         self.logger.info("Status debug: %s" % changedstatus)
         newstatus = {}
         oldstatus = self.proximity_status.get_all_status_copy()
+        newstatus[self.location] = oldstatus
 
         if oldstatus[self.location] != changedstatus:
             newstatus[self.location] = changedstatus

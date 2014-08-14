@@ -346,10 +346,12 @@ class Core(object):
     # command channel methods
     def send_request(self, uuid, name, body, host, plugin):
         """Sends a request."""
-        self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.request_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        # self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def send_response(self, uuid, name, body, host, plugin):
-        self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.response_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        # self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def request_listener(self, msg):
         for p in self.plugins:
@@ -364,10 +366,12 @@ class Core(object):
     # data channel methods
     def send_data_request(self, uuid, name, body, host, plugin):
         """Sends a data request."""
-        self.data_request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.data_request_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        # self.data_request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def send_data_response(self, uuid, name, body, host, plugin):
-        self.data_response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.data_response_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        # self.data_response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def data_request_listener(self, msg):
         for p in self.plugins:

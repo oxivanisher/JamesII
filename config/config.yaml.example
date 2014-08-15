@@ -35,6 +35,9 @@ persons:
   eth_devices:
    # hostname : mac address
    none      : 00:00:00:00:00:00
+  gcals:
+   - you@gmail.com
+   - '#contacts@group.v.calendar.google.com'
 
 # plugin configurations "under construction"
 voice-commands:
@@ -238,9 +241,6 @@ wakeonlan:
 
 gcal:
  client_secret: Get Yours from Google!
- calendarIds:
-  - you@gmail.com
-  - '#contacts@group.v.calendar.google.com'
  nodes:
   - node_name
 

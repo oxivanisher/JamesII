@@ -33,7 +33,7 @@ class GoogleCalendarPlugin(Plugin):
             client_id = '474730164735-f9l08rmhjihi6vhgckf1p3pmnolnf3sc.apps.googleusercontent.com',
             client_secret = self.config['client_secret'],
             scope = 'https://www.googleapis.com/auth/calendar',
-            user_agent = 'jame2/001a')
+            user_agent = 'james2/001a')
 
         storage = Storage(os.path.join(os.path.expanduser("~"), ".james_gcal_dat"))
         credentials = storage.get()
@@ -76,26 +76,45 @@ class GoogleCalendarPlugin(Plugin):
                 self.logger.error("Event fetching error: %s" % e)
         return events
 
-    def requestEvents(self, users = []):
-        allEvents = []
-        for calendar in self.config['calendarIds']:
-            events = False
-            while not events:
-                events = self.fetchEvents(calendar)
-                if not events:
-                    time.sleep(1)
+    def getCalendarIds(self):
+        personClientIds = {}
+        for person in self.core.persons_status:
+            self.logger.debug("Found person: %s" % person)
+            personClientIds[person] = []
+            try:
+                if self.core.persons_status[person]:
+                    for calendarId in self.core.config['persons'][person]['gcals']:
+                        personClientIds[person].append(calendarId)
+                        self.logger.debug("Found calendar: %s" % calendarId)
+            except KeyError:
+                pass
+        self.logger.debug("getCalendarIds: %s" % personClientIds)
+        return personClientIds
 
-            while True:
-                for event in events['items']:
-                    allEvents.append(event)
-                page_token = events.get('nextPageToken')
-                if page_token:
-                    events = getEvents(calendar, page_token)
-                else:
-                    break
+    def requestEvents(self):
+        self.logger.debug("requestEvents")
+        allEvents = []
+        personClientIds = self.getCalendarIds()
+
+        for person in personClientIds.keys():
+            for calendar in personClientIds[person]:
+                events = False
+                while not events:
+                    events = self.fetchEvents(calendar)
+                    if not events:
+                        time.sleep(1)
+
+                while True:
+                    for event in events['items']:
+                        allEvents.append((person, event))
+                    page_token = events.get('nextPageToken')
+                    if page_token:
+                        events = getEvents(calendar, page_token)
+                    else:
+                        break
 
         retList = []
-        for event in allEvents:
+        for (person, event) in allEvents:
             self.eventsFetched += 1
             retStr = False
             now = datetime.datetime.now()

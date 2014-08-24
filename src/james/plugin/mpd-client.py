@@ -295,6 +295,7 @@ class MpdClientPlugin(Plugin):
         talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
         talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
         talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
+        talkover_command.create_subcommand('toggle', 'Toggles talkover', self.toggle_talkover)
 
         self.load_state('radioStarted', 0)
         self.load_state('wakeups', 0)
@@ -331,6 +332,12 @@ class MpdClientPlugin(Plugin):
             return (["Deactivate talkover"])
         else:
             return (["Unable to connect to MPD"])
+
+    def toggle_talkover(self, args):
+        if self.talkoverActive:
+            self.deactivate_talkover()
+        else:
+            self.activate_talkover()
 
     def cmd_list_stations(self, args):
         ret = []

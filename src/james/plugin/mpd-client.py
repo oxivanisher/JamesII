@@ -335,9 +335,9 @@ class MpdClientPlugin(Plugin):
 
     def toggle_talkover(self, args):
         if self.talkoverActive:
-            self.deactivate_talkover()
+            self.deactivate_talkover(None)
         else:
-            self.activate_talkover()
+            self.activate_talkover(None)
 
     def cmd_list_stations(self, args):
         ret = []

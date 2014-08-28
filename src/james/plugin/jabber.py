@@ -262,7 +262,6 @@ class JabberThread(PluginThread):
         who = str(message.getFrom())
         self.logger.debug("Message callback from %s (%s)" % (who, message_type))
 
-
         if (time.time() - self.startupTime) < 10:
             # self.logger.info("Ignoring message from %s due startup delay" % (message.getFrom()))
             pass
@@ -297,6 +296,9 @@ class JabberThread(PluginThread):
                         # print "admin"
                         self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
                         self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
+                    elif realjid in self.config['ignored']:
+                    	# ignored user
+                    	self.logger.debug("Ignoring message from user %s" % (message.getFrom()))
                     else:
                         # print "noadmin"
                         self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))

@@ -108,6 +108,8 @@ jabber:
  password   : secret
  muc_room   : james2@conference.your.domain
  muc_nick   : JamesII
+ ignored:
+ - ignored@your.domain
  nodes:
   - node_name
 

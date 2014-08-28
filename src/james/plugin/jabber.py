@@ -261,6 +261,11 @@ class JabberThread(PluginThread):
         message_type = message.__getitem__('type')
         who = str(message.getFrom())
         self.logger.debug("Message callback from %s (%s)" % (who, message_type))
+        
+        try:
+            if message.getBody()[0] == "!":
+            	self.logger.debug("Ignoring message starting with ! from user: %s" % str(message.getFrom()))
+            	return
 
         if (time.time() - self.startupTime) < 10:
             # self.logger.info("Ignoring message from %s due startup delay" % (message.getFrom()))

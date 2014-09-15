@@ -258,6 +258,7 @@ class PluginThread(threading.Thread):
         try:
             if self.config['debug']:
                 self.logger.setLevel(logging.DEBUG)
+                self.logger.debug("Debug activated")
         except AttributeError:
             pass
         except KeyError:

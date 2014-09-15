@@ -49,6 +49,8 @@ class Plugin(object):
             pass
         except KeyError:
             pass
+        except TypeError:
+            pass
 
         self.worker_threads = []
 

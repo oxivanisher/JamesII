@@ -43,14 +43,14 @@ class Plugin(object):
 
         self.logger = self.utils.getLogger(self.name, self.core.logger)
         try:
-            print self.core.config[self.name]['debug']
+            print self.name, self.core.config[self.name]['debug']
             if self.core.config[self.name]['debug']:
                 self.cmd_activate_debug([])
         except AttributeError:
-            print "AttributeError"
+            print "AttributeError: %s" % self.name
             pass
         except KeyError:
-            print "KeyError"
+            print "KeyError: %s" % self.name
             pass
 
         self.worker_threads = []

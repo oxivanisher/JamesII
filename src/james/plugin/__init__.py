@@ -50,7 +50,6 @@ class Plugin(object):
         except KeyError:
             pass
 
-
         self.worker_threads = []
 
     def start(self):

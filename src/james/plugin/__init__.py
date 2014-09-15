@@ -35,6 +35,12 @@ class Plugin(object):
 
         self.data_commands.create_subcommand('status', 'Returns status informations', self.return_status)
 
+        try:
+            self.config = self.core.config[self.name]
+        except KeyError:
+            self.config = None
+            pass
+
         self.logger = self.utils.getLogger(self.name, self.core.logger)
         try:
             if self.core.config[self.name]['debug']:
@@ -44,11 +50,6 @@ class Plugin(object):
         except KeyError:
             pass
 
-        try:
-            self.config = self.core.config[self.name]
-        except KeyError:
-            self.config = None
-            pass
 
         self.worker_threads = []
 

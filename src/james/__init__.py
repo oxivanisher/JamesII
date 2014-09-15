@@ -201,7 +201,7 @@ class Core(object):
                                                                                 credentials = cred))
             connected = True
         except Exception as e:
-            self.logger.warning("Could not connect to RabbitMQ server!")
+            self.logger.warning("Could not connect to RabbitMQ server on default port!")
 
         # Create global connection on fallback port
         if not connected:

@@ -192,15 +192,28 @@ class Core(object):
         self.logger.debug("JamesII starting up (%s mode)" % (mode_output))
 
         # Create global connection
+        connected = False
         try:
             cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                 port = self.brokerconfig['port'],
                                                                                 virtual_host = self.brokerconfig['vhost'],
                                                                                 credentials = cred))
+            connected = True
         except Exception as e:
-            self.logger.critical("Could not connect to RabbitMQ server!")
-            sys.exit(2)
+            self.logger.warning("Could not connect to RabbitMQ server!")
+
+        # Create global connection on fallback port
+        if no connected:
+            try:
+                cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
+                                                                                    port = self.brokerconfig['fallbackport'],
+                                                                                    virtual_host = self.brokerconfig['vhost'],
+                                                                                    credentials = cred))
+            except Exception as e:
+                self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting!")
+                sys.exit(2)
 
         # Create discovery & configuration channels
         self.discovery_channel = broadcastchannel.BroadcastChannel(self, 'discovery')

@@ -204,7 +204,7 @@ class Core(object):
             self.logger.warning("Could not connect to RabbitMQ server!")
 
         # Create global connection on fallback port
-        if no connected:
+        if not connected:
             try:
                 cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],

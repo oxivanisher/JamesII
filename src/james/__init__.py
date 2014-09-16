@@ -687,7 +687,7 @@ class Core(object):
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = exc_tb.tb_frame.f_code.co_filename
-                self.logger.critical("%s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+                self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
                 self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)
@@ -766,14 +766,23 @@ class Core(object):
                 self.timeouts.append(timeout)
             except Queue.Empty:
                 break
+            except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = exc_tb.tb_frame.f_code.co_filename
+                self.logger.critical("Exception 1 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
 
         # Process events
-        now = time.time()
-        for timeout in self.timeouts:
-            if timeout.deadline <= now:
-                self.logger.debug('Processing timeout %s' % timeout.handler)
-                timeout.handler(*timeout.args, **timeout.kwargs)
-        self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
+        try:
+            now = time.time()
+            for timeout in self.timeouts:
+                if timeout.deadline <= now:
+                    self.logger.debug('Processing timeout %s' % timeout.handler)
+                    timeout.handler(*timeout.args, **timeout.kwargs)
+            self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = exc_tb.tb_frame.f_code.co_filename
+            self.logger.critical("Exception 2 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
 
     def spawnSubprocess(self, target, onExit, target_args = None, logger = None):
         """

@@ -275,13 +275,17 @@ class JabberThread(PluginThread):
         else:
             realjid = None
             if message_type == 'groupchat':
+                # ignoring messagess from the room itself ?!?
+                if who == self.muc_room + "/" + self.muc_nick:
+                    self.logger.debug("Recieved MUC message from channel and ignoring it")
+                    return
                 try:
                     # print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
                     self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
                 except Exception as e:
                     self.logger.debug("RealJID's DB: %s" % (self.muc_users))
-                    self.logger.info("Recieved MUC message from non online user: %s (%s)" % (str(message.getFrom()), e))
+                    self.logger.info("Recieved MUC message from non online user: %s (%s)" % (who, e))
             elif message_type == 'chat':
                 realjid = str(message.getFrom()).split('/')[0]
                 self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))

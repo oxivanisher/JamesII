@@ -252,7 +252,7 @@ class JamesUtils(object):
         except UnicodeDecodeError as e:
             if self.listUnicodeCleanuptmp != data:
                 logger = self.getLogger('jamesutils')
-                logger.error("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
+                logger.warning("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
                 self.listUnicodeCleanuptmp = data
             args = data
 

@@ -645,8 +645,8 @@ class JabberPlugin(Plugin):
         for line in args:
             message.append("%10s@%-10s: %s" % (plugin, host, line))
         self.send_xmpp_muc_message(message)
-        if not self.core.proximity_status.status[self.core.location]:
-            self.send_xmpp_message(message)
+        # if not self.core.proximity_status.status[self.core.location]:
+        #     self.send_xmpp_message(message)
 
     def process_broadcast_command_response(self, args, host, plugin):
         message = ['Broadcast:']

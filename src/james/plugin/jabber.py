@@ -403,6 +403,7 @@ class JabberPlugin(Plugin):
         self.load_state('unauthMessages', 0)
 
         self.commands.create_subcommand('list', 'Lists all allowed Jabber users', self.cmd_list_users)
+        self.commands.create_subcommand('msg', 'Sends a message to like alert', self.cmd_msg)
         broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
         broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
         broadcase_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
@@ -442,6 +443,11 @@ class JabberPlugin(Plugin):
     def cmd_broadcast_off(self, args):
         self.show_broadcast = False
         return ["Broadcast messages will no longer be shown"]
+
+    def cmd_msg(self, args):
+        self.logger.debug('Sending message (%s)' % ' '.join(args))
+        self.send_xmpp_muc_message(['Message: ' + ' '.join(args)])
+        return ["Message sent"]
 
     # methods for worker process
     def send_xmpp_message(self, message_head = [], message_body = [], to = None):

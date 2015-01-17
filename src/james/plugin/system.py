@@ -94,7 +94,7 @@ class SystemPlugin(Plugin):
             message.send()
             return (["Message header: %s; body: %s" % (message.header, message.body)])
         except Exception as e:
-            return (["Message could not me sent (%s)" % (e)])
+            return (["Message could not be sent (%s)" % (e)])
 
     def cmd_quit(self, args):
         message = self.core.new_message(self.name)

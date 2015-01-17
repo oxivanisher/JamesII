@@ -88,25 +88,28 @@ class TransmissionPlugin(Plugin):
     def cmd_add(self, args):
         if self.connection_ok():
             args = self.utils.list_unicode_cleanup(args)
-            message = self.core.new_message(self.name)
-            message.level = 2
+            # message = self.core.new_message(self.name)
+            # message.level = 2
             try:
                 self.tr_conn.add_uri(args[0])
                 self.addedTorrents += 1
                 self.logger.info('Download of (%s) starting' % args[0])
-                message.header = ("Torrent download started")
-                message.body = args[0]
-                message.send()
+                self.send_command(['jab', 'msg', 'Torrent download started'])
+                # message.header = ("Torrent download started")
+                # message.body = args[0]
+                # message.send()
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:
                 self.logger.warning('Torrent download not started due error (%s)' % args[0])
-                message.header = ("Torrent download not started due error")
-                message.body = args[0]
-                message.send()
+                self.send_command(['jab', 'msg', 'Torrent download not started due error (%s)' % args[0]])
+                # message.header = ("Torrent download not started due error")
+                # message.body = args[0]
+                # message.send()
                 pass
             except IndexError:
                 return ["Syntax error!"]
                 pass
+
         else:
             return ["ERROR: Unable to connect to transmission host (%s)" % self.server_string]
 
@@ -167,7 +170,7 @@ class TransmissionPlugin(Plugin):
                     if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
-                        self.send_command(['sys', 'alert', 'Torrent download finished'])
+                        self.send_command(['jab', 'msg', 'Torrent download finished'])
                         self.tr_conn.remove(torrent_id)
                         self.finishedTorrents += 1
             except ValueError:

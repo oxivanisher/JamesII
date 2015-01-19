@@ -170,7 +170,7 @@ class TransmissionPlugin(Plugin):
                     if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
-                        self.send_command(['jab', 'msg', 'Torrent download finished'])
+                        self.send_command(['jab', 'msg', 'Torrent of %s finished' % newname])
                         self.tr_conn.remove(torrent_id)
                         self.finishedTorrents += 1
             except ValueError:

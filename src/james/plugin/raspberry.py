@@ -48,25 +48,25 @@ class RaspberryThread(PluginThread):
         self.led_pins = led_pins
         self.plugin = plugin
         self.pin_state_cache = {}
-        # self.gpio = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
-        self.gpio = wiringpi2.wiringPiSetupGpio()
+        # wiringpi2 = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
+        wiringpi2.wiringPiSetupGpio()
         self.led_blink_list = []
 
     def rasp_init(self):
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
-            self.gpio.pinMode(pin, 0)
+            wiringpi2.pinMode(pin, 0)
             self.pin_state_cache['buttons'][pin] = 0
 
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
-            self.gpio.pinMode(pin, 0)
+            wiringpi2.pinMode(pin, 0)
             current_state = self.read_pin(pin)
             self.pin_state_cache['switch'][pin] = { 'count' : 0, 'state' : current_state}
         
         for pin in self.led_pins:
-            self.gpio.pinMode(pin, 1)
-            self.gpio.digitalWrite(pin, 0)
+            wiringpi2.pinMode(pin, 1)
+            wiringpi2.digitalWrite(pin, 0)
 
     def work(self):
         # self.rasp_init()
@@ -160,17 +160,17 @@ class RaspberryThread(PluginThread):
 
     def set_led(self, led_id, mode):
         if mode:
-            self.gpio.digitalWrite(led_id, 1)
+            wiringpi2.digitalWrite(led_id, 1)
         else:
-            self.gpio.digitalWrite(led_id, 0)
+            wiringpi2.digitalWrite(led_id, 0)
 
     def read_pin(self, pin):
-        return self.gpio.digitalRead(pin)
+        return wiringpi2.digitalRead(pin)
 
     # called when the worker ends
     def on_exit(self, result):
         for pin in self.button_pins + self.switch_pins + self.led_pins:
-            self.gpio.digitalWrite(pin, 0)
+            wiringpi2.digitalWrite(pin, 0)
         self.plugin.on_worker_exit()
 
 class RaspberryPlugin(Plugin):

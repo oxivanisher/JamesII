@@ -49,7 +49,8 @@ class RaspberryThread(PluginThread):
         self.plugin = plugin
         self.pin_state_cache = {}
         # wiringpi2 = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
-        wiringpi2.wiringPiSetupGpio()
+        wiringpi2.wiringPiSetup()
+        # wiringpi2.wiringPiSetupGpio()
         self.led_blink_list = []
 
     def rasp_init(self):

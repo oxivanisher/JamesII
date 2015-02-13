@@ -69,7 +69,7 @@ class RaspberryThread(PluginThread):
             self.gpio.digitalWrite(pin, 0)
 
     def work(self):
-        self.rasp_init()
+        # self.rasp_init()
 
         active = True
         # loop_count = 0

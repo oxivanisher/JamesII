@@ -8,7 +8,8 @@ cd WiringPi-Python
 #cd WiringPi2-Python
 git clone git://git.drogon.net/wiringPi
 git submodule update --init
-cd WiringPi
+# cd WiringPi
+cd wiringPi
 ./build
 cd ..
 sudo python setup.py install

@@ -1,11 +1,11 @@
 
 import sys
-import wiringpi
+import wiringpi2
 import time
 import threading
 import atexit
 
-#https://github.com/WiringPi/WiringPi-Python
+# https://github.com/WiringPi/WiringPi2-Python
 
 from james.plugin import *
 
@@ -48,7 +48,8 @@ class RaspberryThread(PluginThread):
         self.led_pins = led_pins
         self.plugin = plugin
         self.pin_state_cache = {}
-        self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
+        # self.gpio = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
+        self.gpio = wiringpi2.wiringPiSetupGpio()
         self.led_blink_list = []
 
     def rasp_init(self):

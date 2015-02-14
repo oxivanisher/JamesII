@@ -257,7 +257,6 @@ class ProximityPlugin(Plugin):
                 message.append('Proximity is stopping to watch.')
             else:
                 message.append('Proximity is now watching!')
-            self.send_command(['jab', 'msg', message])
             self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
             self.core.proximity_event(self.status, 'btproximity')
 

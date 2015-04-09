@@ -195,6 +195,7 @@ class Core(object):
         connected = False
         try:
             cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
+            strategy = pika.SimpleReconnectionStrategy()
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                 port = self.brokerconfig['port'],
                                                                                 virtual_host = self.brokerconfig['vhost'],

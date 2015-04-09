@@ -202,7 +202,7 @@ class Core(object):
                                                                                 heartbeat_interval = 60))
             connected = True
         except Exception as e:
-            self.logger.warning("Could not connect to RabbitMQ server on default port!")
+            self.logger.warning("Could not connect to RabbitMQ server on default port! %s" % e)
 
         # Create global connection on fallback port
         if not connected:
@@ -214,7 +214,7 @@ class Core(object):
                                                                                     credentials = cred,
                                                                                     heartbeat_interval = 60))
             except Exception as e:
-                self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting!")
+                self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)
                 sys.exit(2)
 
         # Create discovery & configuration channels

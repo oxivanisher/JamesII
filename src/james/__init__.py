@@ -195,7 +195,6 @@ class Core(object):
         connected = False
         try:
             cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
-            strategy = pika.SimpleReconnectionStrategy()
             self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                 port = self.brokerconfig['port'],
                                                                                 virtual_host = self.brokerconfig['vhost'],
@@ -675,6 +674,10 @@ class Core(object):
             except pika.exceptions.ChannelClosed:
                 # channel closed error
                 self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
+                self.terminate(2)
+            except pika.exceptions.ConnectionClosed:
+                # connection closed error
+                self.logger.critical("Lost connection to RabbitMQ server! (ConnectionClosed)")
                 self.terminate(2)
             except pika.exceptions.AMQPConnectionError:
                 # disconnection error

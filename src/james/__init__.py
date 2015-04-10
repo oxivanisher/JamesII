@@ -233,7 +233,8 @@ class Core(object):
             self.logger.debug("Waiting for config")
             while not self.config:
                 try:
-                    self.connection.process_data_events()
+                    with Timeout(180):
+                        self.connection.process_data_events()
                 except KeyboardInterrupt:
                     self.logger.warning("Keyboard interrupt detected. Exiting...")
                     sys.exit(3)

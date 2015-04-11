@@ -195,12 +195,12 @@ class Core(object):
         connected = False
         try:
             cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
-            with Timeout(180):
+            with Timeout(300):
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                     port = self.brokerconfig['port'],
                                                                                     virtual_host = self.brokerconfig['vhost'],
                                                                                     credentials = cred,
-                                                                                    heartbeat_interval = 30))
+                                                                                    heartbeat_interval = 180))
             connected = True
         except Exception as e:
             self.logger.warning("Could not connect to RabbitMQ server on default port! %s" % e)
@@ -209,12 +209,12 @@ class Core(object):
         if not connected:
             try:
                 cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
-                with Timeout(180):
+                with Timeout(300):
                     self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                         port = self.brokerconfig['fallbackport'],
                                                                                         virtual_host = self.brokerconfig['vhost'],
                                                                                         credentials = cred,
-                                                                                        heartbeat_interval = 30))
+                                                                                        heartbeat_interval = 180))
             except Exception as e:
                 self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)
                 sys.exit(2)

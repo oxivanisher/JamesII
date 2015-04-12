@@ -10,7 +10,6 @@ class BroadcastChannel(object):
         self.core = core
         self.name = name
         self.listeners = []
-        self.log = jamesutils.getLogger('broadcastchannel')
 
         self.channel = self.core.connection.channel()
         self.channel.exchange_declare(exchange=self.name, type='fanout')

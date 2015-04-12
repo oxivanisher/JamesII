@@ -3,7 +3,7 @@
 import json
 import pika
 import time
-import jamesutils
+import logging
 
 class BroadcastChannel(object):
     def __init__(self, core, name):
@@ -21,6 +21,7 @@ class BroadcastChannel(object):
         self.channel.basic_consume(self.recv, queue=self.queue_name, no_ack=True)
 
     def send(self, msg):
+        logger = logging.getLogger('broadcastchannel')
         msgSent = False
         tryCount = 0
         body = json.dumps(msg)
@@ -31,10 +32,10 @@ class BroadcastChannel(object):
             except pika.exceptions.ConnectionClosed:
                 tryCount += 1
                 if tryCount >= 20:
-                    self.log.warning("Stopping to send message!")
+                    logger.warning("Stopping to send message!")
                     msgSent = True
                 else:
-                    self.log.info("Unable to send message <%s>. Will retry in 3 sec")
+                    logger.info("Unable to send message <%s>. Will retry in 3 sec")
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):

@@ -46,7 +46,8 @@ class SystemPlugin(Plugin):
     def get_uptime(self, args):
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
-        return ["JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + self.utils.get_nice_age(uptime_seconds)]
+            uptime_string = str(timedelta(seconds = uptime_seconds))
+        return ["JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
 
     def start(self):
         try:

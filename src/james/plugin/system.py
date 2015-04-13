@@ -2,9 +2,9 @@
 import sys
 import socket
 import time
-# from datetime import timedelta
-
 import commands
+from datetime import timedelta
+
 from james.plugin import *
 
 class SystemPlugin(Plugin):
@@ -44,7 +44,10 @@ class SystemPlugin(Plugin):
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
 
     def get_uptime(self, args):
-        return ["JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp)]
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+            uptime_string = str(timedelta(seconds = uptime_seconds))
+        return ["JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + self.utils.get_nice_age(uptime_string)]
 
     def start(self):
         try:

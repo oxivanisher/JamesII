@@ -195,7 +195,7 @@ class Core(object):
         connected = False
         try:
             cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
-            with Timeout(180):
+            with Timeout(300):
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                     port = self.brokerconfig['port'],
                                                                                     virtual_host = self.brokerconfig['vhost'],
@@ -209,7 +209,7 @@ class Core(object):
         if not connected:
             try:
                 cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
-                with Timeout(180):
+                with Timeout(300):
                     self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                         port = self.brokerconfig['fallbackport'],
                                                                                         virtual_host = self.brokerconfig['vhost'],

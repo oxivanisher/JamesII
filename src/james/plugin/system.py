@@ -44,7 +44,7 @@ class SystemPlugin(Plugin):
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
 
     def get_uptime(self, args):
-        return self.utils.get_nice_age(self.core.startup_timestamp)
+        return ["JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp)]
 
     def start(self):
         try:

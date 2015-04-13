@@ -1,7 +1,8 @@
 
 import sys
 import socket
-from datetime import timedelta
+import time
+# from datetime import timedelta
 
 import commands
 from james.plugin import *
@@ -21,6 +22,7 @@ class SystemPlugin(Plugin):
         nodes_command = self.commands.create_subcommand('nodes', 'Informational node functions', None)
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
         nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)
+        nodes_command.create_subcommand('uptime', 'Show the node uptime', self.get_uptime)
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
@@ -40,6 +42,9 @@ class SystemPlugin(Plugin):
     def get_ip(self, args):
         return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
+
+    def get_uptime(self, args):
+        return self.utils.get_nice_age(self.core.startup_timestamp)
 
     def start(self):
         try:

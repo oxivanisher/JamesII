@@ -118,7 +118,7 @@ class SysstatPlugin(Plugin):
         for cpu in cpus:
             total += cpu
             ret['cpuThreadsLoad'].append(cpu)
-        ret['cpuLoadAvg'] = int(total / psutil.NUM_CPUS)
+        ret['cpuLoadAvg'] = int(total / psutil.cpu_count())
         ret['cpuThreads'] = len(cpus)
 
         data = self.get_sysstat_mem()

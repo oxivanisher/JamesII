@@ -110,7 +110,7 @@ class SysstatPlugin(Plugin):
 
     def return_status(self):
         ret = {}
-        ret['uptime'] = time.time() - psutil.BOOT_TIME
+        ret['uptime'] = time.time() - psutil.get_boot_time()
 
         cpus = psutil.cpu_percent(interval=1, percpu=True)
         ret['cpuThreadsLoad'] = []

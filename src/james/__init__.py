@@ -199,7 +199,7 @@ class Core(object):
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                     port = self.brokerconfig['port'],
                                                                                     virtual_host = self.brokerconfig['vhost'],
-                                                                                    credentials = cred),
+                                                                                    credentials = cred,
                                                                                     heartbeat_interval = 30)) #retry with newer pika than 0.9.14 !
             connected = True
         except Exception as e:
@@ -213,7 +213,7 @@ class Core(object):
                     self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                         port = self.brokerconfig['fallbackport'],
                                                                                         virtual_host = self.brokerconfig['vhost'],
-                                                                                        credentials = cred),
+                                                                                        credentials = cred,
                                                                                         heartbeat_interval = 30)) #retry with newer pika than 0.9.14 !
             except Exception as e:
                 self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)

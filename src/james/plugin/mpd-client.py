@@ -494,17 +494,17 @@ class MpdClientPlugin(Plugin):
             str_status = status['state']
             volume = status['volume']
 
-            print currentsong
+            if 'name' in currentsong.keys():
+                name = currentsong['name']
+            if 'title' in currentsong.keys():
+                title = currentsong['title']
 
             if status['state'] == "play":
                 str_status = "Playing"
-                title = currentsong['title']
-                name = currentsong['name']
             elif status['state'] == "stop":
                 str_status = "Stopped"
             elif status['state'] == "pause":
                 str_status = "Paused"
-                name = currentsong['name']
 
         ret = {}
         ret['state'] = str_status

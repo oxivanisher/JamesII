@@ -110,7 +110,7 @@ class XbmcPlugin(Plugin):
                 self.logger.info("Database updating")
                 return ["Video database is updating"]
             else:
-                return ["Could not send update command %s" % e]
+                return ["Could not send update command"]
         else:
             self.logger.debug("Not update database because i am no updateNode")
 

@@ -64,6 +64,7 @@ class XbmcPlugin(Plugin):
                 return False
         except Exception:
             self.logger.warning('Unable to connect to XBMC')
+            return False
 
     def send_rpc_message(self, title, message):
         return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})

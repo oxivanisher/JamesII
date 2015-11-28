@@ -62,8 +62,8 @@ class XbmcPlugin(Plugin):
             else:
                 self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
                 return False
-        except Exception:
-            self.logger.warning('Unable to connect to XBMC')
+        except Exception as e:
+            self.logger.warning('Unable to connect to XBMC: %s' % e)
             return False
 
     def send_rpc_message(self, title, message):

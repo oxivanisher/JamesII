@@ -494,6 +494,8 @@ class MpdClientPlugin(Plugin):
             str_status = status['state']
             volume = status['volume']
 
+            print currentsong
+
             if status['state'] == "play":
                 str_status = "Playing"
                 title = currentsong['title']

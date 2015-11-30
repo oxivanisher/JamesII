@@ -48,7 +48,7 @@ class TransmissionPlugin(Plugin):
         self.worker_loop()
 
     def cmd_show(self, args):
-        def candy_output(tid, status, rate, peers, eta, ratio, name):
+        def candy_output(tid, qpos, status, rate, peers, eta, ratio, name):
             if isinstance(ratio, float):
                 ratio = round(ratio, 2)
             elif ratio <= 0:
@@ -60,7 +60,7 @@ class TransmissionPlugin(Plugin):
             if peers == 0:
                 peers = "-"
 
-            return "%3s %-18s %10s %6s %9s %-5s %s" % (tid, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
+            return "%3s %3s %-18s %10s %6s %9s %-5s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
 
         ret = []
         if self.connection_ok():
@@ -69,7 +69,7 @@ class TransmissionPlugin(Plugin):
             # (u'rateDownload', 1473000)
             # (u'peersConnected', 247)
 
-            ret.append(candy_output("ID", "Status", "DL Speed", "Peers", "Remaining", "UL Ratio", "Name"))
+            ret.append(candy_output("ID", "Q Pos", "Status", "DL Speed", "Peers", "Remaining", "UL Ratio", "Name"))
             for torrent_id in self.tr_conn.get_files():
                 torrent =  self.tr_conn.info(torrent_id)[torrent_id]
 
@@ -81,8 +81,8 @@ class TransmissionPlugin(Plugin):
                 # with this code block you see all the attributes of the torrent
                 # for key, value in torrent.fields.iteritems():
                 #     self.logger.debug(key, value)
-                ret.append(candy_output(torrent_id, torrent.status, dl_rate, torrent.peersConnected,
-                           my_eta, torrent.uploadRatio, torrent.name))
+                ret.append(candy_output(torrent_id, torrent.status, torrent.queue_position,
+                           dl_rate, torrent.peersConnected, my_eta, torrent.uploadRatio, torrent.name))
         else:
             self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)

@@ -51,6 +51,12 @@ class TransmissionPlugin(Plugin):
         def candy_output(tid, status, rate, peers, eta, ratio, name):
             if isinstance(ratio, float):
                 ratio = round(ratio, 2)
+            elif ratio <= 0:
+                ratio = "-"
+
+            if rate == "0B":
+                rate = "-"
+
             return "%3s %-18s %10s %6s %9s %-5s %s" % (tid, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
 
         ret = []

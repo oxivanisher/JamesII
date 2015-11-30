@@ -57,6 +57,9 @@ class TransmissionPlugin(Plugin):
             if rate == "0B":
                 rate = "-"
 
+            if peers == 0:
+                peets = "-"
+
             return "%3s %-18s %10s %6s %9s %-5s %s" % (tid, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
 
         ret = []

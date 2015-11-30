@@ -64,10 +64,10 @@ class TransmissionPlugin(Plugin):
                                                            "Name"))
             for torrent_id in self.tr_conn.get_files():
                 torrent =  self.tr_conn.info(torrent_id)[torrent_id]
-                if not torrent.eta:
-                    my_eta = "-"
-                else:
+                if hasattr(torrent, 'eta'):
                     my_eta = torrent.eta
+                else:
+                    my_eta = "-"
 
                 dl_rate = self.utils.bytes2human(torrent.rateDownload)
                 # with this code block you see all the attributes of the torrent

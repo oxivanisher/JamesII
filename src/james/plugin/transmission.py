@@ -72,7 +72,7 @@ class TransmissionPlugin(Plugin):
                 # with this code block you see all the attributes of the torrent
                 # for key, value in torrent.fields.iteritems():
                 #     self.logger.debug(key, value)
-                ret.append(candy_output(torrent_id, torrent.status, dl_rate + "/s", torrent.peersConnected,
+                ret.append(candy_output(torrent_id, torrent.status, dl_rate, torrent.peersConnected,
                            my_eta, torrent.uploadRatio, torrent.name))
         else:
             self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)

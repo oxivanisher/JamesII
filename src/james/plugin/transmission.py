@@ -51,7 +51,7 @@ class TransmissionPlugin(Plugin):
     def cmd_show(self, args):
         def candy_output(tid, qpos, status, rate, peers, eta, ratio, name):
             if isinstance(ratio, float):
-                ratio = round(ratio, 2)
+                ratio = round(ratio, 3)
             elif ratio <= 0:
                 ratio = "-"
 
@@ -61,7 +61,7 @@ class TransmissionPlugin(Plugin):
             if peers == 0:
                 peers = "-"
 
-            return "%3s %5s %-18s %10s %6s %9s %-5s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
+            return "%3s %5s %-18s %10s %6s %9s %8s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
 
         ret = []
         if self.connection_ok():

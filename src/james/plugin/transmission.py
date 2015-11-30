@@ -51,7 +51,7 @@ class TransmissionPlugin(Plugin):
         def candy_output(tid, status, rate, peers, eta, ratio, name):
             if isinstance(ratio, float):
                 ratio = round(ratio, 2)
-            return "%3s %-14s %10s %6s %9s %-5s %s" % (tid, status, rate, peers, eta, ratio, name)
+            return "%3s %-15s %10s %6s %9s %-5s %s" % (tid, status, rate, peers, eta, ratio, name)
 
         ret = []
         if self.connection_ok():
@@ -63,10 +63,10 @@ class TransmissionPlugin(Plugin):
             ret.append(candy_output("ID", "Status", "DL Speed", "Peers", "Remaining", "UL Ratio", "Name"))
             for torrent_id in self.tr_conn.get_files():
                 torrent =  self.tr_conn.info(torrent_id)[torrent_id]
+
+                my_eta = "-"
                 if hasattr(torrent, 'eta'):
                     my_eta = torrent.eta
-                else:
-                    my_eta = "-"
 
                 dl_rate = self.utils.bytes2human(torrent.rateDownload)
                 # with this code block you see all the attributes of the torrent

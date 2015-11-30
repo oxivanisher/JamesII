@@ -49,7 +49,9 @@ class TransmissionPlugin(Plugin):
 
     def cmd_show(self, args):
         def candy_output(tid, status, rate, peers, eta, ratio, name):
-            return "%3s %-14s %10s %6s %9s %-5s %s" % (tid, status, rate, peers, eta, round(ratio, 2), name)
+            if isinstance(ratio, float):
+                ratio = round(ratio, 2)
+            return "%3s %-14s %10s %6s %9s %-5s %s" % (tid, status, rate, peers, eta, ratio, name)
 
         ret = []
         if self.connection_ok():

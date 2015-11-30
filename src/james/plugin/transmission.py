@@ -22,6 +22,7 @@ class TransmissionPlugin(Plugin):
         self.commands.create_subcommand('show', 'Shows a list current torrents', self.cmd_show)
         self.commands.create_subcommand('add', 'Adds a URL to download', self.cmd_add)
         self.commands.create_subcommand('start', 'Restart a torrent', self.cmd_start)
+        self.commands.create_subcommand('force', 'Force download a torrent', self.cmd_force)
         self.commands.create_subcommand('stop', 'Stopps a torrent', self.cmd_stop)
         self.commands.create_subcommand('remove', 'Removes a torrent', self.cmd_remove)
         self.commands.create_subcommand('test', 'Checks if the connection to the transmission host is working', self.cmd_test_connection)
@@ -128,6 +129,24 @@ class TransmissionPlugin(Plugin):
                     ret.append("Unable to remove Torrent ID: %s" % t_id)
                     pass
         else:
+            ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
+        return ret
+
+    def cmd_force(self, args):
+        ret = []
+        if self.connection_ok():
+            args = self.utils.list_unicode_cleanup(args)
+            for t_id in args:
+                try:
+                    self.tr_conn.start(int(t_id), bypass_queue=True)
+                    self.logger.info("Force started Torrent ID: %s" % t_id)
+                    ret.append("Force started Torrent ID: %s" % t_id)
+                except Exception:
+                    self.logger.warning("Unable to force start Torrent ID: %s" % t_id)
+                    ret.append("Unable to force start Torrent ID: %s" % t_id)
+                    pass
+        else:
+            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
         return ret
 

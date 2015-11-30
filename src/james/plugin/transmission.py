@@ -61,7 +61,7 @@ class TransmissionPlugin(Plugin):
             if peers == 0:
                 peers = "-"
 
-            return "%3s %3s %-18s %10s %6s %9s %-5s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
+            return "%3s %5s %-18s %10s %6s %9s %-5s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
 
         ret = []
         if self.connection_ok():

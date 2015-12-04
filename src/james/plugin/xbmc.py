@@ -146,7 +146,7 @@ class XbmcPlugin(Plugin):
             if self.send_rpc_message(header, body):
                 self.logger.debug("Showing message: header (%s) body (%s)" % (header, body))
             else:
-                return ["Could not send notification %s" % e]
+                return ["Could not send notification."]
 
     def process_broadcast_command_response(self, args, host, plugin):
         if self.show_broadcast:
@@ -155,7 +155,7 @@ class XbmcPlugin(Plugin):
             if self.send_rpc_message(header, body):
                 self.logger.debug("Showing broadcast message: header (%s) body (%s)" % (header, body))
             else:
-                return ["Could not send notification %s" % e]
+                return ["Could not send notification."]
 
     def get_active_player(self):
         # get active player

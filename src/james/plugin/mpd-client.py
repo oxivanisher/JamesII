@@ -65,7 +65,7 @@ class MpdClientWorker(object):
                 self.connected = False
                 return False
         except Exception as e:
-            self.logger.error('Unĥandled exception: %s' % (e))
+            self.logger.error('Unhandled exception: %s' % (e))
             if self.connect():
                 return True
             else:

@@ -61,22 +61,16 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError:
             self.logger.debug('We are disconnected (ping)')
-            signal.alarm(0)
-            self.unlock()
-            if self.connect():
-                return True
-            else:
-                self.connected = False
-                return False
         except Exception as e:
             self.logger.error('Unhandled exception: %s' % (e))
-            signal.alarm(0)
-            self.unlock()
-            if self.connect():
-                return True
-            else:
-                self.connected = False
-                return False
+
+        signal.alarm(0)
+        self.unlock()
+        if self.connect():
+            return True
+        else:
+            self.connected = False
+            return False
 
     def lock(self):
         self.worker_lock.acquire()

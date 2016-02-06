@@ -48,6 +48,13 @@ class MpdClientWorker(object):
             self.unlock()
             self.logger.error("Connection error (%s)" % e)
 
+            if e == "Already connected":
+                self.unlock()
+                signal.alarm(0)
+                self.connected = True
+                self.client.timeout = 5
+                return True
+
         return False
 
     def check_connection(self):

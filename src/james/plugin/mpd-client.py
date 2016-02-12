@@ -485,7 +485,11 @@ class MpdClientPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
-                self.core.add_timeout(0, self.radio_on, False)
+                # default radio on on person coming home is deactivated at the moment
+                # FIXME: this needs to be implemented in config file, depending on the
+                # person coming home and wished node to play radio on
+                # self.core.add_timeout(0, self.radio_on, False)
+                pass
             else:
                 self.core.add_timeout(0, self.radio_off, False)
 

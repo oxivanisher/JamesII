@@ -67,6 +67,9 @@ class MpdClientWorker(object):
                 self.client.timeout = 5
                 self.logger.info("MPD check connection returned: Already connected")
                 return True
+            elif e == "Not connected":
+                self.logger.debug("Not connected, will connect")
+                self.connected = False
             else:
                 self.logger.error("Unhandled connection error (%s)" % e)
         except Exception as e:

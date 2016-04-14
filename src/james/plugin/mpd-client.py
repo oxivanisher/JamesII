@@ -52,7 +52,7 @@ class MpdClientWorker(object):
             if e.errno == errno.ECONNREFUSED:
                 self.logger.warning("Unable to connect. MPD probably offline.")
             else:
-                self.logger.error("Unhandled connection error (%s)" % (e))
+                self.logger.error("Unhandled connection error (%s) on connect." % (e))
 
         return False
 
@@ -76,8 +76,11 @@ class MpdClientWorker(object):
             elif e.message == "Not connected":
                 self.logger.warning("Not connected, will try to connect")
                 self.connected = False
+            elif e.message == "Connection lost while reading line":
+                self.logger.info("Connection lost while reading line")
+                self.connected = False
             else:
-                self.logger.error("Unhandled connection error (%s)" % (e.message))
+                self.logger.error("Unhandled connection error (%s) on connection check." % (e.message))
         except Exception as e:
             self.logger.error('Unhandled exception: %s' % (e))
 

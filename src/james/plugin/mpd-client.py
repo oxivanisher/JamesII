@@ -61,17 +61,17 @@ class MpdClientWorker(object):
             self.unlock()
             return True
         except mpd.ConnectionError as e:
-            if e.errno == EISCONN:
+            if e == errno.EISCONN:
                 self.unlock()
                 signal.alarm(0)
                 self.connected = True
                 self.client.timeout = 5
                 self.logger.info("Already connected")
                 return True
-            elif e.errno == errno.ENOTCONN:
+            elif e == errno.ENOTCONN:
                 self.logger.info("Not connected, will try to connect")
                 self.connected = False
-            elif e.error == errno.ECONNREFUSED:
+            elif e == errno.ECONNREFUSED:
                 self.logger.warning("Unable to connect. MPD probably offline.")
                 self.connected = False
                 signal.alarm(0)

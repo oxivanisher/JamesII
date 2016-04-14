@@ -47,7 +47,7 @@ class MpdClientWorker(object):
         except Exception as e:
             signal.alarm(0)
             self.unlock()
-            self.logger.error("Unhandled connection error (%s: %s)" % (e.errno, e))
+            self.logger.error("Unhandled connection error (%s)" % (e))
 
         return False
 
@@ -78,7 +78,7 @@ class MpdClientWorker(object):
                 self.unlock()
                 return False
             else:
-                self.logger.error("Unhandled connection error (%s: %s)" % (e.errno, e))
+                self.logger.error("Unhandled connection error (%s)" % (e))
         except Exception as e:
             self.logger.error('Unhandled exception: %s' % (e))
 

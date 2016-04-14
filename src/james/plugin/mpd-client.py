@@ -6,6 +6,7 @@ import subprocess
 import time
 import mpd
 import signal
+import errno
 
 from james.plugin import *
 
@@ -52,7 +53,7 @@ class MpdClientWorker(object):
             print type(e)
             print dir(e)
 
-            if e.message == "Connection refused":
+            if e.errno == errno.ECONNREFUSED:
                 self.logger.warning("Unable to connect. MPD probably offline.")
             else:
                 self.logger.error("Unhandled connection error (%s)" % (e))

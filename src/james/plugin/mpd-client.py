@@ -67,7 +67,7 @@ class MpdClientWorker(object):
         except mpd.ConnectionError as e:
             print e
             print type(e)
-            dir(e)
+            print dir(e)
             if e == "Already connected":
                 self.unlock()
                 signal.alarm(0)

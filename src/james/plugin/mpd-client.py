@@ -49,10 +49,6 @@ class MpdClientWorker(object):
             signal.alarm(0)
             self.unlock()
 
-            print e
-            print type(e)
-            print dir(e)
-
             if e.errno == errno.ECONNREFUSED:
                 self.logger.warning("Unable to connect. MPD probably offline.")
             else:

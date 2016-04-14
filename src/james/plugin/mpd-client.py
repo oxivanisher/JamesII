@@ -6,7 +6,6 @@ import subprocess
 import time
 import mpd
 import signal
-import errno
 
 from james.plugin import *
 
@@ -45,9 +44,14 @@ class MpdClientWorker(object):
             self.client.timeout = 5
             return True
         except Exception as e:
+            self.connected = False
             signal.alarm(0)
             self.unlock()
-            self.logger.error("Unhandled connection error (%s)" % (e))
+
+            if e == "[Errno 111] Connection refused":
+                self.logger.warning("Unable to connect. MPD probably offline.")
+            else:
+                self.logger.error("Unhandled connection error (%s)" % (e))
 
         return False
 
@@ -61,22 +65,16 @@ class MpdClientWorker(object):
             self.unlock()
             return True
         except mpd.ConnectionError as e:
-            if e == errno.EISCONN:
+            if e == "Already connected":
                 self.unlock()
                 signal.alarm(0)
                 self.connected = True
                 self.client.timeout = 5
                 self.logger.info("Already connected")
                 return True
-            elif e == errno.ENOTCONN:
-                self.logger.info("Not connected, will try to connect")
+            elif e == "Not connected":
+                self.logger.warning("Not connected, will try to connect")
                 self.connected = False
-            elif e == errno.ECONNREFUSED:
-                self.logger.warning("Unable to connect. MPD probably offline.")
-                self.connected = False
-                signal.alarm(0)
-                self.unlock()
-                return False
             else:
                 self.logger.error("Unhandled connection error (%s)" % (e))
         except Exception as e:

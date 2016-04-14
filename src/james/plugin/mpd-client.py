@@ -48,7 +48,7 @@ class MpdClientWorker(object):
             signal.alarm(0)
             self.unlock()
 
-            if e.message == "[Errno 111] Connection refused":
+            if e.message == "Connection refused":
                 self.logger.warning("Unable to connect. MPD probably offline.")
             else:
                 self.logger.error("Unhandled connection error (%s)" % (e))

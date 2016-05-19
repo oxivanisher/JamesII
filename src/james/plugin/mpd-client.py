@@ -74,24 +74,23 @@ class MpdClientWorker(object):
                 return True
             elif e.message == "Not connected":
                 self.logger.warning("Not connected, will try to connect")
-                self.connected = False
             elif e.message == "Connection lost while reading line":
                 self.logger.info("Connection lost while reading line")
-                self.connected = False
             elif e.message == "Broken pipe":
                 self.logger.info("Encountered broken pipe error (v1)")
-                self.connected = False
             else:
                 self.logger.error("Unhandled connection error (%s) on connection check." % (e.message))
+            self.connected = False
         except Exception as e:
             if e == "Broken pipe":
                 self.logger.info("Encountered broken pipe error (v2)")
-                self.connected = False
             elif e == "[Errno 32] Broken pipe":
                 self.logger.info("Encountered broken pipe error (v3)")
-                self.connected = False
+            elif e.errno == 32:
+                self.logger.info("Encountered broken pipe error (v4)")
             else:
                 self.logger.error('Unhandled exception: %s' % (e))
+            self.connected = False
 
         signal.alarm(0)
         self.unlock()

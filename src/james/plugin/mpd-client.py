@@ -75,7 +75,7 @@ class MpdClientWorker(object):
             elif e.message == "Not connected":
                 self.logger.warning("Not connected, will try to connect")
             elif e.message == "Connection lost while reading line":
-                self.logger.info("Connection lost while reading line")
+                self.logger.debug("Connection lost while reading line")
             elif e.message == "Broken pipe":
                 self.logger.info("Encountered broken pipe error (v1)")
             else:

@@ -39,6 +39,13 @@ class MpdClientWorker(object):
             signal.alarm(0)
             self.client.timeout = 5
             return True
+        except mpd.ConnectionError as e:
+            if e.message == "Already connected":
+                self.unlock()
+                signal.alarm(0)
+                self.client.timeout = 5
+                self.logger.info("Already connected in connect")
+                return True
         except Exception as e:
             self.unlock()
             signal.alarm(0)
@@ -64,7 +71,7 @@ class MpdClientWorker(object):
                 self.unlock()
                 signal.alarm(0)
                 self.client.timeout = 5
-                self.logger.info("Already connected")
+                self.logger.info("Already connected in check_connection")
                 return True
             elif e.message == "Not connected":
                 self.logger.warning("Not connected, will try to connect")

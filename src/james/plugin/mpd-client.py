@@ -9,11 +9,9 @@ import signal
 
 from james.plugin import *
 
-class MpdClientWorker(object):
-    # FIXME: sometimes, i loose connection :()
 
+class MpdClientWorker(object):
     def __init__(self, plugin, myhost, myport):
-        self.connected = False
         self.plugin = plugin
         self.myhost = myhost
         self.myport = myport
@@ -23,12 +21,11 @@ class MpdClientWorker(object):
 
         self.client = mpd.MPDClient(use_unicode=False)
         self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
-        
+
         self.check_connection()
 
     def sig_timeout_handler(self, signum, frame):
         self.logger.warning('Lost connection to MPD server')
-        self.connected = False
         self.unlock()
         self.terminate()
 
@@ -40,13 +37,11 @@ class MpdClientWorker(object):
             self.client.connect(self.myhost, self.myport)
             self.unlock()
             signal.alarm(0)
-            self.connected = True
             self.client.timeout = 5
             return True
         except Exception as e:
-            self.connected = False
-            signal.alarm(0)
             self.unlock()
+            signal.alarm(0)
 
             if e == "Connection refused":
                 self.logger.warning("Unable to connect. MPD probably offline.")
@@ -68,7 +63,6 @@ class MpdClientWorker(object):
             if e.message == "Already connected":
                 self.unlock()
                 signal.alarm(0)
-                self.connected = True
                 self.client.timeout = 5
                 self.logger.info("Already connected")
                 return True
@@ -77,28 +71,21 @@ class MpdClientWorker(object):
             elif e.message == "Connection lost while reading line":
                 self.logger.debug("Connection lost while reading line")
             elif e.message == "Broken pipe":
-                self.logger.info("Encountered broken pipe error (v1)")
+                self.logger.info("Encountered broken pipe error (mpd exception)")
             else:
                 self.logger.error("Unhandled connection error (%s) on connection check." % (e.message))
-            self.connected = False
         except Exception as e:
-            if e == "Broken pipe":
-                self.logger.info("Encountered broken pipe error (v2)")
-            elif e == "[Errno 32] Broken pipe":
-                self.logger.info("Encountered broken pipe error (v3)")
-            elif e.errno == 32:
-                self.logger.info("Encountered broken pipe error (v4)")
+            if e.errno == 32:
+                self.logger.info("Encountered broken pipe error (other exception)")
             else:
                 self.logger.error('Unhandled exception: %s' % (e))
-            self.connected = False
 
-        signal.alarm(0)
         self.unlock()
+        signal.alarm(0)
 
         if self.connect():
             return True
         else:
-            self.connected = False
             return False
 
     def lock(self):
@@ -215,7 +202,6 @@ class MpdClientWorker(object):
     def terminate(self):
         self.lock()
         self.plugin.fade_in_progress = False
-        self.connected = False
         self.unlock()
         try:
             self.client.close()
@@ -224,6 +210,7 @@ class MpdClientWorker(object):
             self.logger.debug("Could not disconnect because we are not connected.")
             pass
         self.logger.debug("Disconnected, worker exititing")
+
 
 class FadeThread(PluginThread):
 
@@ -271,7 +258,7 @@ class FadeThread(PluginThread):
             self.mpd_client.lock()
             fade_state = self.plugin.fade_in_progress
             self.mpd_client.unlock()
-            
+
             if not fade_state:
                 return
 
@@ -291,6 +278,7 @@ class FadeThread(PluginThread):
 
     def on_exit(self, result):
         self.plugin.core.add_timeout(0, self.plugin.fade_ended)
+
 
 class MpdClientPlugin(Plugin):
 
@@ -524,7 +512,7 @@ class MpdClientPlugin(Plugin):
         title = ""
         str_status = "Disconnected"
         volume = ''
-        
+
         if status:
             str_status = status['state']
             volume = status['volume']

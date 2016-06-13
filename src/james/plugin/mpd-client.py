@@ -41,17 +41,19 @@ class MpdClientWorker(object):
             self.logger.info("Successfully connected to MPD daemon.")
             return True
         except mpd.ConnectionError as e:
-            self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))
+            if str(e) != "Not connected":
+                self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
             if e.errno == 32:
                 self.logger.info("connect encountered pipe error")
             elif e.errno == 111:
-                self.logger.info("Unable to connect to MPD daemon.")
+                self.logger.info("connect unable to connect to MPD daemon.")
             else:
-                self.logger.error('Unhandled exception: %s' % (e))
+                self.logger.error('connect unhandled exception: %s' % (e))
 
         self.unlock()
         signal.alarm(0)
+        self.logger.info("Unable to connect to MPD daemon.")
         return False
 
     def check_connection(self):
@@ -64,20 +66,24 @@ class MpdClientWorker(object):
             self.unlock()
             return True
         except mpd.ConnectionError as e:
-            self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             if str(e) == "Connection lost while reading line":
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.unlock()
                 self.terminate()
             elif str(e) != "Not connected":
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.client.close()
+            else:
+                self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+
         except Exception as e:
             self.client.close()
             if e.errno == 32:
                 self.logger.info("check_connection encountered pipe error")
             elif e.errno == 111:
-                self.logger.info("Unable to connect to MPD daemon.")
+                self.logger.info("check_connection unable to connect to MPD daemon.")
             else:
-                self.logger.error('Unhandled exception: %s' % (e))
+                self.logger.error('check_connection unhandled exception: %s' % (e))
 
         self.unlock()
         signal.alarm(0)

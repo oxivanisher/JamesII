@@ -73,6 +73,8 @@ class MpdClientWorker(object):
             elif str(e) != "Not connected":
                 self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.client.close()
+            elif str(e) == "Not connected":
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
 

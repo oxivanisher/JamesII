@@ -40,10 +40,8 @@ class MpdClientWorker(object):
             self.client.timeout = 5
             return True
         except mpd.ConnectionError as e:
-            self.client.kill()
             self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
-            self.client.kill()
             if e.errno == 32:
                 self.logger.info("connect encountered pipe error")
             else:

@@ -49,6 +49,8 @@ class MpdClientWorker(object):
             else:
                 self.logger.error('Unhandled exception: %s' % (e))
 
+        self.unlock()
+        signal.alarm(0)
         return False
 
     def check_connection(self):

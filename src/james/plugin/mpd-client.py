@@ -64,7 +64,9 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError as e:
             self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
-            if str(e) != "Not connected":
+            if str(e) == "Connection lost while reading line":
+                self.terminate()
+            elif str(e) != "Not connected":
                 self.client.close()
         except Exception as e:
             self.client.close()

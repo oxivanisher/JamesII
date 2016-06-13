@@ -63,13 +63,15 @@ class MpdClientWorker(object):
             self.unlock()
             return True
         except mpd.ConnectionError as e:
+            self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             if str(e) != "Not connected":
                 self.client.close()
-                self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
             self.client.close()
             if e.errno == 32:
                 self.logger.info("check_connection encountered pipe error")
+            elif e.errno == 111:
+                self.logger.info("Unable to connect to MPD daemon.")
             else:
                 self.logger.error('Unhandled exception: %s' % (e))
 

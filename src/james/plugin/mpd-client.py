@@ -47,13 +47,12 @@ class MpdClientWorker(object):
             if e.errno == 32:
                 self.logger.info("connect encountered pipe error")
             elif e.errno == 111:
-                self.logger.info("connect unable to connect to MPD daemon.")
+                self.logger.info("connect is unable to connect to MPD daemon.")
             else:
                 self.logger.error('connect unhandled exception: %s' % (e))
 
         self.unlock()
         signal.alarm(0)
-        self.logger.info("connect is unable to connect to MPD daemon.")
         return False
 
     def check_connection(self):

@@ -40,20 +40,14 @@ class MpdClientWorker(object):
             self.client.timeout = 5
             return True
         except mpd.ConnectionError as e:
-            if e.message == "Already connected":
-                self.unlock()
-                signal.alarm(0)
-                self.client.timeout = 5
-                self.logger.info("Already connected in connect")
-                return True
+            self.client.kill()
+            self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
-            self.unlock()
-            signal.alarm(0)
-
-            if e == "Connection refused":
-                self.logger.warning("Unable to connect. MPD probably offline.")
+            self.client.kill()
+            if e.errno == 32:
+                self.logger.info("connect encountered pipe error")
             else:
-                self.logger.error("Unhandled connection error (%s) on connect." % (e))
+                self.logger.error('Unhandled exception: %s' % (e))
 
         return False
 
@@ -67,23 +61,12 @@ class MpdClientWorker(object):
             self.unlock()
             return True
         except mpd.ConnectionError as e:
-            if e.message == "Already connected":
-                self.unlock()
-                signal.alarm(0)
-                self.client.timeout = 5
-                self.logger.info("Already connected in check_connection")
-                return True
-            elif e.message == "Not connected":
-                self.logger.warning("Not connected, will try to connect")
-            elif e.message == "Connection lost while reading line":
-                self.logger.debug("Connection lost while reading line")
-            elif e.message == "Broken pipe":
-                self.logger.info("Encountered broken pipe error (mpd exception)")
-            else:
-                self.logger.error("Unhandled connection error (%s) on connection check." % (e.message))
+            self.client.close()
+            self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
+            self.client.close()
             if e.errno == 32:
-                self.logger.info("Encountered broken pipe error (other exception)")
+                self.logger.info("check_connection encountered pipe error")
             else:
                 self.logger.error('Unhandled exception: %s' % (e))
 

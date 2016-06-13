@@ -38,6 +38,7 @@ class MpdClientWorker(object):
             self.unlock()
             signal.alarm(0)
             self.client.timeout = 5
+            self.logger.info("Successfully connected to MPD daemon.")
             return True
         except mpd.ConnectionError as e:
             self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))

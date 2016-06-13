@@ -44,6 +44,8 @@ class MpdClientWorker(object):
         except Exception as e:
             if e.errno == 32:
                 self.logger.info("connect encountered pipe error")
+            elif e.errno == 111:
+                self.logger.info("Unable to connect to MPD daemon.")
             else:
                 self.logger.error('Unhandled exception: %s' % (e))
 

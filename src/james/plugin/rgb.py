@@ -26,7 +26,7 @@ class RGBLEDPlugin(Plugin):
         return (["Sunrise enabled"])
 
     def cmd_color(self, args):
-        self.color()
+        self.color(args)
         return (["Fixed color set to %s" % ', '.join(args)])
 
     def cmd_off(self, args):

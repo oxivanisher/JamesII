@@ -29,7 +29,7 @@ class RGBLEDPlugin(Plugin):
         self.color()
         return (["Fixed color set to %s" % ', '.join(args)])
 
-    def cmd_off(self):
+    def cmd_off(self, args):
         self.off()
         return (["LEDs switched off"])
 

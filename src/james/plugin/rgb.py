@@ -34,7 +34,7 @@ class RGBLEDPlugin(Plugin):
         return (["LEDs switched off"])
 
     def sunrise(self):
-        self.sunrise += 1
+        self.sunrises += 1
         self.send_data(self, 1)
 
     def color(self, args):

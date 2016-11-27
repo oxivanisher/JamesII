@@ -6,6 +6,7 @@ src/.james_console_log
 src/.james_crashed_log
 src/JamesII.log*
 include/WiringPi-Python/*
+.idea/
 
 # Editor files
 nbproject/*

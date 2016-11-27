@@ -18,7 +18,7 @@ class RGBLEDPlugin(Plugin):
         self.bus = smbus.SMBus(1)
         self.address = 0x04
 
-    def send_data(self, command, args = [0x00]):
+    def send_data(self, command, args = 0):
         self.bus.write_i2c_block_data(self.address, chr(command), [chr(i) for i in args])
 
     def cmd_sunrise(self, args):

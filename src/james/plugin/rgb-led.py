@@ -18,7 +18,7 @@ class RGBLEDPlugin(Plugin):
         self.bus = smbus.SMBus(1)
         self.address = 0x04
 
-    def send_data(self, args, what, arguments=[0]):
+    def send_over_i2c(self, what, arguments=[0]):
         self.logger.info("Sending command %s over i2c with args: %s" % (what, arguments))
         self.bus.write_i2c_block_data(self.address, what, [chr(i) for i in arguments])
 
@@ -36,13 +36,13 @@ class RGBLEDPlugin(Plugin):
 
     def sunrise(self):
         self.sunrises += 1
-        self.send_data(self, 1)
+        self.send_over_i2c(self, 1)
 
     def color(self, args):
-        self.send_data(self, 2, args)
+        self.send_over_i2c(self, 2, args)
 
     def off(self):
-        self.send_data(self, 0)
+        self.send_over_i2c(self, 0)
 
     def return_status(self):
         self.logger.debug('Showing status')

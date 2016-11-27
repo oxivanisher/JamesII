@@ -46,7 +46,7 @@ class RGBLEDPlugin(Plugin):
     def return_status(self):
         self.logger.debug('Showing status')
         ret = {}
-        ret['sunrises'] = self.sunrise
+        ret['sunrises'] = self.sunrises
         return ret
 
 descriptor = {

@@ -36,13 +36,13 @@ class RGBLEDPlugin(Plugin):
 
     def sunrise(self):
         self.sunrises += 1
-        self.send_over_i2c(self, 1)
+        self.send_over_i2c(1)
 
     def color(self, args):
-        self.send_over_i2c(self, 2, args)
+        self.send_over_i2c(2, args)
 
     def off(self):
-        self.send_over_i2c(self, 0)
+        self.send_over_i2c(0)
 
     def return_status(self):
         self.logger.debug('Showing status')

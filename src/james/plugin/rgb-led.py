@@ -20,7 +20,7 @@ class RGBLEDPlugin(Plugin):
 
     def send_over_i2c(self, what, arguments=[0]):
         self.logger.info("Sending command %s over i2c with args: %s" % (what, arguments))
-        self.bus.write_i2c_block_data(self.address, what, [chr(i) for i in arguments])
+        self.bus.write_i2c_block_data(self.address, what, [int(i) for i in arguments])
 
     def cmd_sunrise(self, args):
         self.sunrise()

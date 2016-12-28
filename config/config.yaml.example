@@ -246,6 +246,10 @@ gcal:
  nodes:
   - node_name
 
+rgb-led:
+ nodes:
+  - node_name
+
 locations:
 # configure locations (the system will default to 'home')
  # node_name: location

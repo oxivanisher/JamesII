@@ -170,8 +170,9 @@ transmission:
 
 proximity:
 # proximity deamon sleep times. long if somebody is at home, short if not
- sleep_long : 240
+ sleep_long : 60
  sleep_short: 20
+ miss_count: 5
  nodes:
   - node_name
 

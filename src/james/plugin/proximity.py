@@ -161,6 +161,7 @@ class ProximityPlugin(Plugin):
         self.lastProximityCheckDuration = self.lastProximityCheckEnd - self.lastProximityCheckStart
         self.oldstatus = self.status
         self.status = False
+        self.missingcount = 0
         old_hosts_online = self.hosts_online
         new_hosts_online = []
         persons_detected = []
@@ -256,9 +257,17 @@ class ProximityPlugin(Plugin):
             if self.status:
                 message.append('Proximity is stopping to watch.')
             else:
-                message.append('Proximity is now watching!')
-            self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
-            self.core.proximity_event(self.status, 'btproximity')
+                self.missingcount += 1
+                if self.missingcount > self.config['miss_count']:
+                    message.append('Proximity is now watching!')
+                    self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
+                    self.core.proximity_event(self.status, 'btproximity')
+                else:
+                    message.append('Proximity missingcounter increased to %s' % self.missingcount)
+
+        # making sure, the missing counter is reset every time someone is around
+        if self.status:
+            self.missingcount = 0
 
         if len(message):
             self.send_command(['jab', 'msg', ', '.join(message)])

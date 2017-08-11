@@ -160,7 +160,7 @@ class ProximityPlugin(Plugin):
         self.lastProximityCheckEnd = time.time()
         self.lastProximityCheckDuration = self.lastProximityCheckEnd - self.lastProximityCheckStart
         self.oldstatus = self.status
-        self.status = False
+        self.status = False  # True means that someone is around
         self.missingcount = 0
         old_hosts_online = self.hosts_online
         new_hosts_online = []
@@ -175,7 +175,7 @@ class ProximityPlugin(Plugin):
             self.logger.debug("Setting self.status to True (phase 1)")
             self.status = True
         else:
-            # compensating if the device is just for 1 aptempt not reachable
+            # compensating if the device is just for 1 attempt not reachable
             if len(old_hosts_online) > 0:
                 self.logger.debug("Setting self.status to True (phase 2)")
                 self.status = True
@@ -264,6 +264,8 @@ class ProximityPlugin(Plugin):
                     self.core.proximity_event(self.status, 'btproximity')
                 else:
                     message.append('Proximity missingcounter increased to %s' % self.missingcount)
+                    # Forcing to re-run this loop
+                    self.oldstatus = True
 
         # making sure, the missing counter is reset every time someone is around
         if self.status:

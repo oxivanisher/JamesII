@@ -174,11 +174,6 @@ class ProximityPlugin(Plugin):
         if len(values) > 0:
             self.logger.debug("Setting self.status to True (phase 1)")
             self.status = True
-        else:
-            # compensating if the device is just for 1 attempt not reachable
-            if len(old_hosts_online) > 0:
-                self.logger.debug("Setting self.status to True (phase 2)")
-                self.status = True
 
         for (mac, name) in values:
             notfound = True
@@ -263,7 +258,7 @@ class ProximityPlugin(Plugin):
                     self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
                     self.core.proximity_event(self.status, 'btproximity')
                 else:
-                    message.append('Proximity missingcounter increased to %s' % self.missingcount)
+                    message.append('Proximity missingcounter increased to %s of %s' % self.missingcount, self.config['miss_count'])
                     # Forcing to re-run this loop
                     self.oldstatus = True
 

@@ -261,6 +261,7 @@ class ProximityPlugin(Plugin):
             elif self.missingcount < int(self.config['miss_count']):
                 self.logger.info('Proximity missingcounter increased to %s of %s' %
                                  (self.missingcount, self.config['miss_count']))
+                self.oldstatus = True
             elif self.missingcount >= int(self.config['miss_count']):
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %

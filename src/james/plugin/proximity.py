@@ -254,7 +254,7 @@ class ProximityPlugin(Plugin):
             if self.missingcount < int(self.config['miss_count']):
                 message.append('Proximity missingcounter increased to %s of %s' % self.missingcount, self.config['miss_count'])
                 self.oldstatus = False
-            elif self.missingcount == self.config['miss_count']:
+            elif self.missingcount == int(self.config['miss_count']):
                 message.append('Proximity missingcounter reached the max at %s' % self.config['miss_count'])
                 self.oldstatus = False
 

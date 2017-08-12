@@ -251,11 +251,12 @@ class ProximityPlugin(Plugin):
         # use the missingcounter to be able to work around BT devices which not always answer
         if not self.status:
             self.missingcount += 1
-            if self.missingcount <= self.config['miss_count']:
+            if self.missingcount < self.config['miss_count']:
                 message.append('Proximity missingcounter increased to %s of %s' % self.missingcount, self.config['miss_count'])
                 self.oldstatus = False
-            else:
+            elif self.missingcount == self.config['miss_count']:
                 message.append('Proximity missingcounter reached the max at %s' % self.config['miss_count'])
+                self.oldstatus = False
 
         if self.oldstatus != self.status:
             if self.status:

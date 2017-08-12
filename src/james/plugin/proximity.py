@@ -90,7 +90,11 @@ class ProximityPlugin(Plugin):
         return pairMsg
 
     def pair(self, pairData):
-        p = subprocess.Popen(['bluez-simple-agent', 'hci0', pairData[0]], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen(['bluez-simple-agent',
+                              'hci0', pairData[0]],
+                             stdout=subprocess.PIPE,
+                             stdin=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
         pair_out = p.communicate(input=str(pairData[1]) + '\n')[0]
         self.logger.debug("BT Logging output: %s" % pair_out)
 
@@ -252,14 +256,16 @@ class ProximityPlugin(Plugin):
         if not self.status:
             self.missingcount += 1
             if self.missingcount == 0:
-                # this only happens on the very first run to suppress the message
+                # this only happens on the very first run after startup to suppress the message
                 pass
             elif self.missingcount < int(self.config['miss_count']):
-                message.append('Proximity missingcounter increased to %s of %s' % (self.missingcount, self.config['miss_count']))
+                self.logger.info('Proximity missingcounter increased to %s of %s' %
+                                 (self.missingcount, self.config['miss_count']))
                 self.oldstatus = False
-            elif self.missingcount == int(self.config['miss_count']):
-                message.append('Proximity missingcounter reached the max at %s: Proximity is now watching!' % (self.config['miss_count']))
-                self.logger.info("Missingcounter reached its max, sending proximity status: %s@%s" % (self.status, self.core.location))
+            elif self.missingcount >= int(self.config['miss_count']):
+                message.append('Proximity is now watching!' % (self.config['miss_count']))
+                self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
+                                 (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
 
         if self.oldstatus != self.status and self.status:
@@ -280,7 +286,8 @@ class ProximityPlugin(Plugin):
     def process_discovery_event_callback(self):
         self.logger.debug('Publishing proximity event')
         self.proxy_send_lock = False
-        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() }, 'btproximity')
+        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() },
+                                           'btproximity')
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)

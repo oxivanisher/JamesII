@@ -172,7 +172,7 @@ class ProximityPlugin(Plugin):
             new_persons_status[person] = False
 
         if len(values) > 0:
-            self.logger.debug("Setting self.status to True (phase 1)")
+            self.logger.debug("Setting self.status to True because devices where detected")
             self.status = True
 
         for (mac, name) in values:
@@ -192,7 +192,7 @@ class ProximityPlugin(Plugin):
             if notfound:
                 self.logger.info('Proximity lost %s' % (name))
 
-        # registering the person for this device as detected
+        # registering the person for these devices as detected
         for (mac, name) in values:
             for person in self.core.config['persons'].keys():
                 try:
@@ -251,13 +251,14 @@ class ProximityPlugin(Plugin):
         if self.oldstatus != self.status:
             if self.status:
                 message.append('Proximity is stopping to watch.')
+                self.core.proximity_event(self.status, 'btproximity')
                 # making sure, the missing counter is reset every time someone is around
                 self.missingcount = 0
             else:
                 self.missingcount += 1
                 if self.missingcount > self.config['miss_count']:
                     message.append('Proximity is now watching!')
-                    self.logger.info("Persons changed, sending proximity status: %s@%s" % (self.status, self.core.location))
+                    self.logger.info("Missingcounter reached its max, sending proximity status: %s@%s" % (self.status, self.core.location))
                     self.core.proximity_event(self.status, 'btproximity')
                 else:
                     message.append('Proximity missingcounter increased to %s of %s' % self.missingcount, self.config['miss_count'])

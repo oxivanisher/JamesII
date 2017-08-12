@@ -43,7 +43,7 @@ class ProximityPlugin(Plugin):
         self.lastProximityCheckEnd = 0
         self.lastProximityCheckDuration = 0
         self.currentProximitySleep = 0
-        self.missingcount = 0
+        self.missingcount = -1
 
     def start(self):
         if self.core.os_username == 'root':
@@ -251,21 +251,21 @@ class ProximityPlugin(Plugin):
         # use the missingcounter to be able to work around BT devices which not always answer
         if not self.status:
             self.missingcount += 1
-            if self.missingcount < int(self.config['miss_count']):
+            if self.missingcount == 0:
+                # this only happens on the very first run to suppress the message
+                pass
+            elif self.missingcount < int(self.config['miss_count']):
                 message.append('Proximity missingcounter increased to %s of %s' % (self.missingcount, self.config['miss_count']))
                 self.oldstatus = False
             elif self.missingcount == int(self.config['miss_count']):
-                message.append('Proximity missingcounter reached the max at %s' % (self.config['miss_count']))
-                self.oldstatus = False
-
-        if self.oldstatus != self.status:
-            if self.status:
-                message.append('Proximity is stopping to watch.')
-                # making sure, the missing counter is reset every time someone is around
-                self.missingcount = 0
-            else:
-                message.append('Proximity is now watching!')
+                message.append('Proximity missingcounter reached the max at %s: Proximity is now watching!' % (self.config['miss_count']))
                 self.logger.info("Missingcounter reached its max, sending proximity status: %s@%s" % (self.status, self.core.location))
+                self.core.proximity_event(self.status, 'btproximity')
+
+        if self.oldstatus != self.status and self.status:
+            message.append('Proximity is stopping to watch.')
+            # making sure, the missing counter is reset every time someone is around
+            self.missingcount = 0
             self.core.proximity_event(self.status, 'btproximity')
 
         if len(message):

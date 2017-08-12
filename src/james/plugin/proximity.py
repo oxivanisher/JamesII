@@ -258,15 +258,18 @@ class ProximityPlugin(Plugin):
             if self.missingcount == 0:
                 # this only happens on the very first run after startup to suppress the message
                 pass
-            elif self.missingcount < int(self.config['miss_count']):
-                self.logger.info('Proximity missingcounter increased to %s of %s' %
-                                 (self.missingcount, self.config['miss_count']))
-                self.oldstatus = True
-            elif self.missingcount >= int(self.config['miss_count']):
+            elif self.missingcount == int(self.config['miss_count']):
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
+            elif self.missingcount < int(self.config['miss_count']):
+                self.logger.info('Proximity missingcounter increased to %s of %s' %
+                                 (self.missingcount, self.config['miss_count']))
+                self.oldstatus = True
+            else:
+                # since the count keeps counting, just ignore it
+                pass
 
         if self.oldstatus != self.status and self.status:
             message.append('Proximity is stopping to watch.')

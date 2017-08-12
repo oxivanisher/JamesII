@@ -263,7 +263,7 @@ class ProximityPlugin(Plugin):
                                  (self.missingcount, self.config['miss_count']))
                 self.oldstatus = False
             elif self.missingcount >= int(self.config['miss_count']):
-                message.append('Proximity is now watching!' % (self.config['miss_count']))
+                message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')

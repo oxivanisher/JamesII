@@ -248,22 +248,24 @@ class ProximityPlugin(Plugin):
         # saving the actual persons detected
         self.persons_status = new_persons_status
 
+        # use the missingcounter to be able to work around BT devices which not always answer
+        if not self.status:
+            self.missingcount += 1
+            if self.missingcount <= self.config['miss_count']:
+                message.append('Proximity missingcounter increased to %s of %s' % self.missingcount, self.config['miss_count'])
+                self.oldstatus = False
+            else:
+                message.append('Proximity missingcounter reached the max at %s' % self.config['miss_count'])
+
         if self.oldstatus != self.status:
             if self.status:
                 message.append('Proximity is stopping to watch.')
-                self.core.proximity_event(self.status, 'btproximity')
                 # making sure, the missing counter is reset every time someone is around
                 self.missingcount = 0
             else:
-                self.missingcount += 1
-                if self.missingcount > self.config['miss_count']:
-                    message.append('Proximity is now watching!')
-                    self.logger.info("Missingcounter reached its max, sending proximity status: %s@%s" % (self.status, self.core.location))
-                    self.core.proximity_event(self.status, 'btproximity')
-                else:
-                    message.append('Proximity missingcounter increased to %s of %s' % self.missingcount, self.config['miss_count'])
-                    # Forcing to re-run this loop
-                    self.oldstatus = True
+                message.append('Proximity is now watching!')
+                self.logger.info("Missingcounter reached its max, sending proximity status: %s@%s" % (self.status, self.core.location))
+            self.core.proximity_event(self.status, 'btproximity')
 
         if len(message):
             self.send_command(['jab', 'msg', ', '.join(message)])

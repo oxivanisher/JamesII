@@ -266,22 +266,21 @@ class ProximityPlugin(Plugin):
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
-                self.oldstatus = True
             elif self.missingcount < int(self.config['miss_count']):
                 self.logger.info('Proximity missingcounter increased to %s of %s' %
                                  (self.missingcount, self.config['miss_count']))
                 self.messageCache = self.messageCache + message
-                self.oldstatus = True
                 message = []
             else:
                 # since the count keeps counting, just ignore it
                 pass
 
         if self.oldstatus != self.status and self.status:
-            message.append('Proximity is stopping to watch.')
+            if self.missingcount >= int(self.config['miss_count']):
+                message.append('Proximity is stopping to watch.')
+                self.core.proximity_event(self.status, 'btproximity')
             # making sure, the missing counter is reset every time someone is around
             self.missingcount = 0
-            self.core.proximity_event(self.status, 'btproximity')
 
         if len(message):
             self.send_command(['jab', 'msg', ', '.join(message)])

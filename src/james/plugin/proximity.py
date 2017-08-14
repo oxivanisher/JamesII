@@ -279,6 +279,8 @@ class ProximityPlugin(Plugin):
             if self.missingcount >= int(self.config['miss_count']):
                 message.append('Proximity is stopping to watch.')
                 self.core.proximity_event(self.status, 'btproximity')
+            else:
+                message = []
             # making sure, the missing counter is reset every time someone is around
             self.missingcount = 0
 

@@ -44,6 +44,7 @@ class ProximityPlugin(Plugin):
         self.lastProximityCheckDuration = 0
         self.currentProximitySleep = 0
         self.missingcount = -1
+        self.messageCache = []
 
     def start(self):
         if self.core.os_username == 'root':
@@ -259,6 +260,8 @@ class ProximityPlugin(Plugin):
                 # this only happens on the very first run after startup to suppress the message
                 pass
             elif self.missingcount == int(self.config['miss_count']):
+                message = self.messageCache
+                self.messageCache = []
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
@@ -266,7 +269,8 @@ class ProximityPlugin(Plugin):
             elif self.missingcount < int(self.config['miss_count']):
                 self.logger.info('Proximity missingcounter increased to %s of %s' %
                                  (self.missingcount, self.config['miss_count']))
-                self.oldstatus = True
+                self.messageCache = self.messageCache + message
+                message = []
             else:
                 # since the count keeps counting, just ignore it
                 pass

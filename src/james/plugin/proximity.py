@@ -260,7 +260,7 @@ class ProximityPlugin(Plugin):
                 # this only happens on the very first run after startup to suppress the message
                 pass
             elif self.missingcount == int(self.config['miss_count']):
-                message = self.messageCache
+                message = list(set(self.messageCache))
                 self.messageCache = []
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %

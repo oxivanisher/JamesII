@@ -21,7 +21,7 @@ class LircThread(PluginThread):
 
         self.prog = 'JamesII-lirc'
 
-        self.tempFile = tempfile.NamedTemporaryFile(suffix="-%s" % self.prog, delete=True)
+        self.tempFile = tempfile.NamedTemporaryFile(suffix="-%s" % self.prog, delete=False)
         self.tmpFileName = self.tempFile.name
         self.logger.debug("Tmp File: %s" % self.tmpFileName)
         self.plugin = plugin

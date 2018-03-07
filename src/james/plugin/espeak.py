@@ -174,7 +174,7 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         if not self.forced_mute:
-            tempFile = tempfile.NamedTemporaryFile(suffix="-JamesII-Espeak", delete=True)
+            tempFile = tempfile.NamedTemporaryFile(suffix="-JamesII-Espeak", delete=False)
             self.utils.popenAndWait(self.espeak_command + ['-w', tempFile.name] + [msg])
             self.utils.popenAndWait(self.play_command + [tempFile.name])
             os.remove(tempFile.name)

@@ -14,7 +14,7 @@ class WakeOnLanPlugin(Plugin):
         for person in self.core.config['persons'].keys():
             try:
                 for name in self.core.config['persons'][person]['eth_devices'].keys():
-                    self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name]))
+                    self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name], person))
             except KeyError:
                 pass
 
@@ -25,14 +25,14 @@ class WakeOnLanPlugin(Plugin):
 
     def wol_list(self, args):
         ret = []
-        for (name, mac) in self.wol_devices:
-            ret.append("%-20s %s" % (mac, name))
+        for (name, mac, person) in self.wol_devices:
+            ret.append("%-20s %-10s %s" % (mac, person, name))
         return ret
 
     def wol_wake(self, args):
         host = None
         try:
-            for (name, mac) in self.wol_devices:
+            for (name, mac, person) in self.wol_devices:
                 if args[0] == name:
                     host = mac
 
@@ -48,10 +48,18 @@ class WakeOnLanPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             if newstatus['status'][self.core.location]:
                 self.logger.debug("Processing proximity event")
+
+                # finding out, which persons are home
+                isHere = []
+                for person in self.core.persons_status:
+                    if self.core.persons_status[person]:
+                        isHere.append(person)
+
                 ret = []
-                for (name, mac) in self.wol_devices:
-                    self.core.add_timeout(0, self.utils.wake_on_lan, mac)
-                    ret.append('WOL Woke host %s (%s)' % (name, mac))
+                for (name, mac, person) in self.wol_devices:
+                    if person in isHere:
+                        self.core.add_timeout(0, self.utils.wake_on_lan, mac)
+                        ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
                 self.logger.info(ret)
 
     def return_status(self):

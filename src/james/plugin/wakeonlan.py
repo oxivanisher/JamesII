@@ -55,6 +55,8 @@ class WakeOnLanPlugin(Plugin):
                     if self.core.persons_status[person]:
                         isHere.append(person)
 
+                self.logger.debug("Persons detected here: %s" % (", ".join(isHere)))
+
                 ret = []
                 for (name, mac, person) in self.wol_devices:
                     if person in isHere:

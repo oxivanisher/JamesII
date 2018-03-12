@@ -51,19 +51,18 @@ class WakeOnLanPlugin(Plugin):
 
                 # finding out, which persons are home - sadly, this is currently NOT possible since only the proximity
                 # node knows this
-                isHere = []
+                # isHere = []
                 # for person in self.core.persons_status.keys():
                 #     self.logger.debug(newstatus['status'][self.core.location])
                 #     if self.core.persons_status[person]:
                 #         isHere.append(person)
-                self.logger.info(self.persons_status)
-                self.logger.debug("Persons detected here: %s" % (", ".join(isHere)))
+                # self.logger.debug("Persons detected here: %s" % (", ".join(isHere)))
+                #     if person in isHere: ....
 
                 ret = []
                 for (name, mac, person) in self.wol_devices:
-                    if person in isHere:
-                        self.core.add_timeout(0, self.utils.wake_on_lan, mac)
-                        ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
+                    self.core.add_timeout(0, self.utils.wake_on_lan, mac)
+                    ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
                 self.logger.info(ret)
 
     def return_status(self):

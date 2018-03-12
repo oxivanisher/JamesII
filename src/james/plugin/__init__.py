@@ -29,7 +29,7 @@ class Plugin(object):
         self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
         self.commands.create_subcommand('alert', "Alert some text (head) (body)", self.alert, True)
 
-        debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', descriptor['help'], True)
+        debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
         debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
 

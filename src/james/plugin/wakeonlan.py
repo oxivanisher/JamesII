@@ -52,7 +52,7 @@ class WakeOnLanPlugin(Plugin):
                 # finding out, which persons are home
                 isHere = []
                 for person in self.core.persons_status.keys():
-                    self.logger.debug(person)
+                    self.logger.debug(newstatus['status'][self.core.location])
                     if self.core.persons_status[person]:
                         isHere.append(person)
 

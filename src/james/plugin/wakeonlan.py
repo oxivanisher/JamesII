@@ -49,13 +49,14 @@ class WakeOnLanPlugin(Plugin):
             if newstatus['status'][self.core.location]:
                 self.logger.debug("Processing proximity event")
 
-                # finding out, which persons are home
+                # finding out, which persons are home - sadly, this is currently NOT possible since only the proximity
+                # node knows this
                 isHere = []
-                for person in self.core.persons_status.keys():
-                    self.logger.debug(newstatus['status'][self.core.location])
-                    if self.core.persons_status[person]:
-                        isHere.append(person)
-
+                # for person in self.core.persons_status.keys():
+                #     self.logger.debug(newstatus['status'][self.core.location])
+                #     if self.core.persons_status[person]:
+                #         isHere.append(person)
+                self.logger.info(self.persons_status)
                 self.logger.debug("Persons detected here: %s" % (", ".join(isHere)))
 
                 ret = []

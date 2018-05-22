@@ -542,6 +542,8 @@ class JabberPlugin(Plugin):
                     self.run_muc_command(command)
                 except IndexError:
                     pass
+                except AttributeError:
+                    self.logger.warning("The bughunt is on: Got a muc_nic message from %s" % (message.getBody()))
 
     def on_error_msg(self, message):
         self.logger.error("Recieved error msg: %s" % message)

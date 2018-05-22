@@ -173,14 +173,15 @@ class JabberThread(PluginThread):
         if self.muc_room:
             mucUserJids = []
             amountUsers = len(self.users)
-            # print "test: %s" % self.muc_users
             for muc_user in self.muc_users.keys():
-                mucUserJids.append(self.muc_users[muc_user].split('/')[0])
-                # print "appending: %s" % self.muc_users[muc_user].split('/')[0]
+                try:
+                    mucUserJids.append(self.muc_users[muc_user].split('/')[0])
+                except AttributeError:
+                    self.logger.warning("The bughunt is on: Got a unparsable muc user list %s" % (self.muc_users[muc_user]))
+
             for (header, body) in self.plugin.waiting_muc_messages:
                 amountChatDeliveries = 0
                 for (userJid, username) in self.users:
-                    # print "userJid not in mucUserJids: %s / %s" % (userJid, mucUserJids)
                     if userJid not in mucUserJids:
                         amountChatDeliveries += 1
                         self.plugin.waiting_messages.append((header, body, userJid))
@@ -214,7 +215,10 @@ class JabberThread(PluginThread):
                     for (jid, name) in self.users:
                         # see if user is in muc online an then send it there only
                         for mucJid in self.muc_users.keys():
-                            onlineJid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
+                            try:
+                                onlineJid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
+                            except AttributeError:
+                                self.logger.warning("The bughunt is on: Searching for online Jid %s" % (self.plugin.utils.convert_from_unicode(self.muc_users[mucJid])))
                             # if onlineJid[0] == jid:
                                 # muc_send = True
                             # else:
@@ -280,7 +284,6 @@ class JabberThread(PluginThread):
                     self.logger.debug("Recieved MUC message from channel and ignoring it")
                     return
                 try:
-                    # print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
                     self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
                 except AttributeError:
@@ -296,7 +299,6 @@ class JabberThread(PluginThread):
                     self.logger.warning("The bughunt is on: Got a message from %s in chat" % (str(message.getFrom())))
     
             # check if it is a message from myself
-            # print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
             if realjid:
                 if str(message.getFrom()) != "%s/%s" % (self.muc_room, self.muc_nick):
                     admin = False
@@ -308,19 +310,16 @@ class JabberThread(PluginThread):
                         try:
                             if userJid == realjid.split('/')[0]:
                                 admin = True
-                                # print "admin found on %s" % userJid
                         except AttributeError:
                             self.logger.warning("The bughunt is on: Unable to check for admin permissions for %s" % (realjid))
 
                     if admin:
-                        # print "admin"
                         self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
                         self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
                     elif realjid in self.config['ignored']:
                     	# ignored user
                     	self.logger.debug("Ignoring message from user %s" % (message.getFrom()))
                     else:
-                        # print "noadmin"
                         self.logger.warning("Processing unauthorized message from user %s" % (message.getFrom()))
                         self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, realjid)
 

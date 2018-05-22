@@ -276,9 +276,6 @@ class JabberThread(PluginThread):
             realjid = None
             if message_type == 'groupchat':
                 # ignoring messagess from the room itself ?!?
-                if self.muc_users[message.getFrom()] is None:
-                    self.logger.warning("The bughunt is on: Got a message from nobody in groupchat")
-                    return
                 if who == self.muc_room + "/" + self.muc_nick:
                     self.logger.debug("Recieved MUC message from channel and ignoring it")
                     return
@@ -286,16 +283,18 @@ class JabberThread(PluginThread):
                     # print "test: %s" % self.muc_users[message.getFrom()].split('/')[0]
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
                     self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
+                except AttributeError:
+                        self.logger.warning("The bughunt is on: Got a message from nobody in groupchat")
                 except Exception as e:
                     self.logger.debug("RealJID's DB: %s" % (self.muc_users))
                     self.logger.info("Recieved MUC message from non online user: %s (%s)" % (who, e))
             elif message_type == 'chat':
-                if str(message.getFrom()) is None:
+                try:
+                    realjid = str(message.getFrom()).split('/')[0]
+                    self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
+                except AttributeError:
                     self.logger.warning("The bughunt is on: Got a message from nobody in chat")
-                    return
-                realjid = str(message.getFrom()).split('/')[0]
-                self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
-
+    
             # check if it is a message from myself
             # print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
             if realjid:
@@ -306,14 +305,17 @@ class JabberThread(PluginThread):
                         # print "(userJid, username): %s %s" % (userJid, username)
                         # userJid = self.plugin.utils.convert_from_unicode(jid)
                         # print "userJid: %s" % userJid
-                        if userJid == realjid.split('/')[0]:
-                            admin = True
-                            # print "admin found on %s" % userJid
+                        try:
+                            if userJid == realjid.split('/')[0]:
+                                admin = True
+                                # print "admin found on %s" % userJid
+                        except AttributeError:
+                            self.logger.warning("The bughunt is on: Unable to check for admin permissions")
 
                     if admin:
                         # print "admin"
                         self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
-                        self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
+                        self.plugin.core.add_timeout(0, self.plugin.on_authorizsed_xmpp_message, message, realjid)
                     elif realjid in self.config['ignored']:
                     	# ignored user
                     	self.logger.debug("Ignoring message from user %s" % (message.getFrom()))

@@ -284,7 +284,7 @@ class JabberThread(PluginThread):
                     realjid = self.muc_users[message.getFrom()].split('/')[0]
                     self.logger.debug("Recieved MUC message from user: %s" % str(message.getFrom()))
                 except AttributeError:
-                        self.logger.warning("The bughunt is on: Got a message from nobody in groupchat")
+                        self.logger.warning("The bughunt is on: Got a message from %s in groupchat" % (self.muc_users[message.getFrom()]))
                 except Exception as e:
                     self.logger.debug("RealJID's DB: %s" % (self.muc_users))
                     self.logger.info("Recieved MUC message from non online user: %s (%s)" % (who, e))
@@ -293,7 +293,7 @@ class JabberThread(PluginThread):
                     realjid = str(message.getFrom()).split('/')[0]
                     self.logger.debug("Recieved chat message from user: %s" % str(message.getFrom()))
                 except AttributeError:
-                    self.logger.warning("The bughunt is on: Got a message from nobody in chat")
+                    self.logger.warning("The bughunt is on: Got a message from %s in chat" % (str(message.getFrom())))
     
             # check if it is a message from myself
             # print "\n%s != %s" % (str(message.getFrom()), "%s/%s" % (self.muc_room, self.muc_nick))
@@ -310,7 +310,7 @@ class JabberThread(PluginThread):
                                 admin = True
                                 # print "admin found on %s" % userJid
                         except AttributeError:
-                            self.logger.warning("The bughunt is on: Unable to check for admin permissions")
+                            self.logger.warning("The bughunt is on: Unable to check for admin permissions for %s" % (realjid))
 
                     if admin:
                         # print "admin"
@@ -496,13 +496,19 @@ class JabberPlugin(Plugin):
         # (the server sends the last X messages, so do not process them multiple times)
         if (self.start_time + 3) < int(time.time()):
             self.unauthMessages += 1
-            bad_user = str(message.getFrom()).split('/')[1]
-            self.send_xmpp_muc_message(['%s (%s), you are not authorized!' % (bad_user, realjid)])
+            try:
+                bad_user = str(message.getFrom()).split('/')[1]
+                self.send_xmpp_muc_message(['%s (%s), you are not authorized!' % (bad_user, realjid)])
+            except AttributeError:
+                self.logger.warning("The bughunt is on: Got a unauthorized message from %s" % (str(message.getFrom())))
 
     def on_chat_msg(self, message):
         self.recievedChat += 1
-        jid_data = str(message.getFrom()).split('/')
-        jid_from = jid_data[0]
+        try:
+            jid_data = str(message.getFrom()).split('/')
+            jid_from = jid_data[0]
+        except AttributeError:
+            self.logger.warning("The bughunt is on: Got a chat message from %s" % (str(message.getFrom())))
         try:
             jid_ress = jid_data[1]
 
@@ -520,8 +526,11 @@ class JabberPlugin(Plugin):
         # (the server sends the last X messages, so do not process them multiple times)
         if (self.start_time + 3) < int(time.time()):
             self.recievedMuc += 1
-            jid_data = str(message.getFrom()).split('/')
-            jid_from = jid_data[1]
+            try:
+                jid_data = str(message.getFrom()).split('/')
+                jid_from = jid_data[1]
+            except AttributeError:
+                self.logger.warning("The bughunt is on: Got a groupchat message from %s" % (str(message.getFrom())))
             # ignore my own messages
             if not jid_from == self.config['muc_nick']:
                 try:

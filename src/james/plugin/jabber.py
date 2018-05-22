@@ -276,6 +276,9 @@ class JabberThread(PluginThread):
             realjid = None
             if message_type == 'groupchat':
                 # ignoring messagess from the room itself ?!?
+                if self.muc_users[message.getFrom()] is None:
+                    self.logger.warning("The bughunt is on... Got a message from nobody...")
+                    return
                 if who == self.muc_room + "/" + self.muc_nick:
                     self.logger.debug("Recieved MUC message from channel and ignoring it")
                     return

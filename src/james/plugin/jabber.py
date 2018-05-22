@@ -315,7 +315,7 @@ class JabberThread(PluginThread):
                     if admin:
                         # print "admin"
                         self.logger.debug("Processing authorized message from user %s" % (message.getFrom()))
-                        self.plugin.core.add_timeout(0, self.plugin.on_authorizsed_xmpp_message, message, realjid)
+                        self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, realjid)
                     elif realjid in self.config['ignored']:
                     	# ignored user
                     	self.logger.debug("Ignoring message from user %s" % (message.getFrom()))

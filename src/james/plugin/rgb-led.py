@@ -23,7 +23,10 @@ class RGBLEDPlugin(Plugin):
 
     def send_over_i2c(self, what, arguments=[0]):
         self.logger.info("Sending command %s over i2c with args: %s" % (what, arguments))
-        self.bus.write_i2c_block_data(self.address, what, [int(i) for i in arguments])
+        try:
+            self.bus.write_i2c_block_data(self.address, what, [int(i) for i in arguments])
+        except IOError as e:
+            self.logger.info("send_over_i2c encountered a IOError: %s" % (str(e)))
 
     def cmd_sunrise(self, args):
         self.sunrise()

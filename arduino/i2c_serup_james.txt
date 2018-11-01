@@ -1,0 +1,9 @@
+echo dtparam=i2c1=on >> /boot/config.txt
+echo dtparam=i2c_arm=on >> /boot/config.txt
+echo i2d-dev >> /etc/modules
+apt-get install i2c-tools python-smbus
+
+
+# http://robot-kingdom.com/ways-link-raspberry-pi-with-arduino-using-gpio-serial-usb-i2c/
+# https://oscarliang.com/raspberry-pi-arduino-connected-i2c/
+# http://www.netzmafia.de/skripten/hardware/RasPi/RasPi_I2C.html

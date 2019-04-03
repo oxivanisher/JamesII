@@ -44,12 +44,15 @@ class MpdClientWorker(object):
             if str(e) != "Not connected":
                 self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
-            if e.errno == 32:
-                self.logger.info("connect encountered pipe error")
-            elif e.errno == 111:
-                self.logger.info("connect is unable to connect to MPD daemon.")
+            if hasattr(e, 'errno'):
+                if e.errno == 32:
+                    self.logger.info("connect encountered pipe error")
+                elif e.errno == 111:
+                    self.logger.info("connect is unable to connect to MPD daemon.")
+                else:
+                    self.logger.error('connect unhandled exception: %s' % (e))
             else:
-                self.logger.error('connect unhandled exception: %s' % (e))
+                self.logger.error('connect unhandled exception, no errno available: %s' % (e))
 
         self.unlock()
         signal.alarm(0)
@@ -79,12 +82,15 @@ class MpdClientWorker(object):
 
         except Exception as e:
             self.client.close()
-            if e.errno == 32:
-                self.logger.info("check_connection encountered pipe error")
-            elif e.errno == 111:
-                self.logger.info("check_connection is unable to connect to MPD daemon.")
+            if hasattr(e, 'errno'):
+                if e.errno == 32:
+                    self.logger.info("connect encountered pipe error")
+                elif e.errno == 111:
+                    self.logger.info("connect is unable to connect to MPD daemon.")
+                else:
+                    self.logger.error('connect unhandled exception: %s' % (e))
             else:
-                self.logger.error('check_connection unhandled exception: %s' % (e))
+                self.logger.error('connect unhandled exception, no errno available: %s' % (e))
 
         self.unlock()
         signal.alarm(0)

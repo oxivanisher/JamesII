@@ -12,7 +12,7 @@ class BroadcastChannel(object):
         self.listeners = []
 
         self.channel = self.core.connection.channel()
-        self.channel.exchange_declare(exchange=self.name, type='fanout')
+        self.channel.exchange_declare(exchange=self.name, exchange_type='fanout')
         self.queue_name = self.channel.queue_declare(exclusive=True).method.queue
 
         self.channel.queue_bind(exchange=self.name, queue=self.queue_name)

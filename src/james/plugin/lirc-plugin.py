@@ -14,6 +14,8 @@ from subprocess import call
 
 from james.plugin import *
 
+LIRC_CFG_FILE = '/etc/lirc/lircd.conf'
+
 class LircThread(PluginThread):
 
     def __init__(self, plugin, rcv_config):
@@ -163,9 +165,6 @@ class LircPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(LircPlugin, self).__init__(core, descriptor)
 
-        self.logger.debug('Loading lircd config from /etc/lirc/lircd.conf')
-        self.lircParse = Lirc('/etc/lirc/lircd.conf')
-
         listCommand = self.commands.create_subcommand('list', ('Will list certain things'), None)
         listCommand.create_subcommand('send', ('Will return all sendable commands'), self.cmd_list_send)
         listCommand.create_subcommand('rcv', ('Will return all watched IR signals'), self.cmd_list_rcv)
@@ -173,14 +172,22 @@ class LircPlugin(Plugin):
 
         self.commands.create_subcommand('send', ('Sends a IR signal. Syntax: lirc send remotename keyname'), self.cmd_send)
 
-        self.workerLock = threading.Lock()
-        self.workerRunning = True
+        self.logger.debug('Loading lircd config from %s' % LIRC_CFG_FILE)
+        if os.path.exists(LIRC_CFG_FILE):
+            self.lircParse = Lirc(LIRC_CFG_FILE)
+
+            self.workerLock = threading.Lock()
+            self.workerRunning = True
+
+            self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
+            self.lirc_thread.start()
+
+        else:
+            self.logger.warning('LIRC_CFG_FILE (%s) not found. Plugin will not work!' % LIRC_CFG_FILE)
+            self.workerRunning = False
 
         self.load_state('commandsRecieved', 0)
         self.load_state('commandsSent', 0)
-
-        self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
-        self.lirc_thread.start()
 
     def send_ir_command(self, command):
         self.logger.info('IR Received command request (%s)' % command)

@@ -32,7 +32,7 @@ echo -e "..:: Starting james.py ($(date)) ::..\n"
 sudo cp ./JamesII.log ./JamesII.log.old
 sudo truncate -s0 ./JamesII.log
 sudo chmod 666 ./JamesII.log
-sudo script -q -c "./james.py" -e ./.james_console_log
-
+sudo script -q -c "./james.py" -e ./.james_console_log &
 child=$!
+
 wait "$child"

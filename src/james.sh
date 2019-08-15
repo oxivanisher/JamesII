@@ -10,15 +10,6 @@ then
 	fi
 fi
 
-_term() {
-  echo "Caught SIGTERM signal!"
-  sudo kill -TERM "$child" 2>/dev/null
-  rm /var/lock/JamesII.pid
-  cd $INPWD
-}
-
-trap _term SIGTERM
-
 echo $$ > /var/lock/JamesII.pid
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -29,7 +20,5 @@ git pull
 echo -e ""
 
 echo -e "..:: Starting james.py ($(date)) ::..\n"
-sudo "./james.py" &
-child=$!
-
-wait "$child"
+sudo "./james.py"
+rm /var/lock/JamesII.pid

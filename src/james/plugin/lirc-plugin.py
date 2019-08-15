@@ -14,8 +14,7 @@ from subprocess import call
 
 from james.plugin import *
 
-#LIRC_CFG_FILE = '/etc/lirc/lircd.conf'
-LIRC_CFG_FILE = '/etc/lirc/lircd.conf.d/atv_bed.conf'
+LIRC_CFG_FILE = '/etc/lirc/lircd.conf'
 
 class LircThread(PluginThread):
 

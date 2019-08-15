@@ -12,7 +12,7 @@ fi
 
 _term() {
   echo "Caught SIGTERM signal!"
-  kill -TERM "$child" 2>/dev/null
+  sudo kill -TERM "$child" 2>/dev/null
   rm /var/lock/JamesII.pid
   cd $INPWD
 }

@@ -24,11 +24,9 @@ echo $$ > /var/lock/JamesII.pid
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 
-
 echo -e "..:: Doing git pull ::..\n"
 git pull
 echo -e ""
-fi
 
 echo -e "..:: Starting james.py ($(date)) ::..\n"
 sudo cp ./JamesII.log ./JamesII.log.old

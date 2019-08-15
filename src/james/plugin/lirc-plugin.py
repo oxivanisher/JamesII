@@ -14,7 +14,8 @@ from subprocess import call
 
 from james.plugin import *
 
-LIRC_CFG_FILE = '/etc/lirc/lircd.conf'
+#LIRC_CFG_FILE = '/etc/lirc/lircd.conf'
+LIRC_CFG_FILE = '/etc/lirc/lircd.conf.d/atv_bed.conf'
 
 class LircThread(PluginThread):
 
@@ -199,7 +200,7 @@ class LircPlugin(Plugin):
             count = args[2]
         except Exception:
             count = '1'
-        
+
         try:
             if args[1] in self.config['nodes'][self.core.hostname]['sendCommands'][args[0]]:
                 self.lircParse.send_once(args[0], args[1], count)
@@ -220,7 +221,7 @@ class LircPlugin(Plugin):
                 for command in self.config['nodes'][self.core.hostname]['sendCommands'][remote]:
                     ret.append('%-15s %s' % (remote, command))
         except TypeError:
-            pass 
+            pass
         return ret
 
     def cmd_list_rcv(self, args):
@@ -231,7 +232,7 @@ class LircPlugin(Plugin):
                     for key in command.keys():
                         ret.append('%-15s %-15s %s' % (remote, key, command[key]))
         except TypeError:
-            pass 
+            pass
         return ret
 
     def cmd_list_devices(self, args):

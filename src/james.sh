@@ -23,7 +23,7 @@ echo -e "..:: Starting james.py ($(date)) ::..\n"
 sudo "./james.py"
 rm /var/lock/JamesII.pid
 
-if [ "$1" == "upstart"];
+if [ "$1" == "upstart" ]
 then
 	exit 1
 fi

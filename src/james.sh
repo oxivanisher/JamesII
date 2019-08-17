@@ -24,5 +24,6 @@ sudo "./james.py"
 rm /var/lock/JamesII.pid
 
 if [ "$1" == "upstart"];
+then
 	exit 1
 fi

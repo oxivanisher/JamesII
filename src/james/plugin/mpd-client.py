@@ -1,13 +1,84 @@
 
-import os
-import sys
 import urllib2
-import subprocess
 import time
 import mpd
 import signal
+import socket
 
 from james.plugin import *
+
+
+class PersistentMPDClient(mpd.MPDClient):
+    # this class is from here: https://github.com/bdutro/PersistentMPDClient/blob/master/PersistentMPDClient.py
+
+    def __init__(self, socket=None, host=None, port=None):
+        super(PersistentMPDClient, self).__init__()
+        self.socket = socket
+        self.host   = host
+        self.port   = port
+
+        self.do_connect()
+        # get list of available commands from client
+        self.command_list = self.commands()
+
+        # commands not to intercept
+        self.command_blacklist = ['ping']
+
+        # wrap all valid MPDClient functions
+        # in a ping-connection-retry wrapper
+        for cmd in self.command_list:
+            if cmd not in self.command_blacklist:
+                if hasattr(super(PersistentMPDClient, self), cmd):
+                    super_fun = super(PersistentMPDClient, self).__getattribute__(cmd)
+                    new_fun = self.try_cmd(super_fun)
+                    setattr(self, cmd, new_fun)
+                else:
+                    pass
+
+    # create a wrapper for a function (such as an MPDClient
+    # member function) that will verify a connection (and
+    # reconnect if necessary) before executing that function.
+    # functions wrapped in this way should always succeed
+    # (if the server is up)
+    # we ping first because we don't want to retry the same
+    # function if there's a failure, we want to use the noop
+    # to check connectivity
+    def try_cmd(self, cmd_fun):
+        def fun(*pargs, **kwargs):
+            try:
+                self.ping()
+            except (mpd.ConnectionError, OSError) as e:
+                self.do_connect()
+            return cmd_fun(*pargs, **kwargs)
+        return fun
+
+    # needs a name that does not collide with parent connect() function
+    def do_connect(self):
+        try:
+            try:
+                self.disconnect()
+            # if it's a TCP connection, we'll get a socket error
+            # if we try to disconnect when the connection is lost
+            except mpd.ConnectionError as e:
+                pass
+            # if it's a socket connection, we'll get a BrokenPipeError
+            # if we try to disconnect when the connection is lost
+            # but we have to retry the disconnect, because we'll get
+            # an "Already connected" error if we don't.
+            # the second one should succeed.
+            except BrokenPipeError as e:
+                try:
+                    self.disconnect()
+                except Exception as e:
+                    print("Second disconnect failed, yikes.")
+                    print(e)
+                    pass
+            if self.socket:
+                self.connect(self.socket, None)
+            else:
+                self.connect(self.host, self.port)
+        except socket.error as e:
+            print("Connection refused.")
 
 
 class MpdClientWorker(object):
@@ -19,7 +90,7 @@ class MpdClientWorker(object):
         self.worker_lock = threading.Lock()
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
-        self.client = mpd.MPDClient(use_unicode=False)
+        self.client = PersistentMPDClient(use_unicode=False)
         self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
         self.check_connection()

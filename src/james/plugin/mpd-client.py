@@ -90,7 +90,7 @@ class MpdClientWorker(object):
         self.worker_lock = threading.Lock()
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
-        self.client = PersistentMPDClient(use_unicode=False)
+        self.client = PersistentMPDClient() #call to original class had use_unicode=False
         self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
         self.check_connection()

@@ -110,21 +110,21 @@ class MpdClientWorker(object):
             self.unlock()
             signal.alarm(0)
             self.client.timeout = 5
-            self.logger.info("Successfully connected to MPD daemon.")
+            self.logger.debug("Successfully connected to MPD daemon.")
             return True
         except mpd.ConnectionError as e:
             if str(e) != "Not connected":
-                self.logger.info("connect encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.warning("connect encountered mpd.ConnectionError: %s" % (str(e)))
         except Exception as e:
             if hasattr(e, 'errno'):
                 if e.errno == 32:
-                    self.logger.info("connect encountered pipe error")
+                    self.logger.warning("connect encountered pipe error")
                 elif e.errno == 111:
-                    self.logger.info("connect is unable to connect to MPD daemon.")
+                    self.logger.warning("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.error('connect unhandled exception: %s' % (e))
+                    self.logger.warning('connect unhandled exception: %s' % (e))
             else:
-                self.logger.error('connect unhandled exception, no errno available: %s' % (e))
+                self.logger.warning('connect unhandled exception, no errno available: %s' % (e))
 
         self.unlock()
         signal.alarm(0)
@@ -156,9 +156,9 @@ class MpdClientWorker(object):
             self.client.close()
             if hasattr(e, 'errno'):
                 if e.errno == 32:
-                    self.logger.info("connect encountered pipe error")
+                    self.logger.warning("connect encountered pipe error")
                 elif e.errno == 111:
-                    self.logger.info("connect is unable to connect to MPD daemon.")
+                    self.logger.warning("connect is unable to connect to MPD daemon.")
                 else:
                     self.logger.error('connect unhandled exception: %s' % (e))
             else:

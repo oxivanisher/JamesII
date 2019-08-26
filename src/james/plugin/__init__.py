@@ -189,10 +189,10 @@ class Plugin(object):
     def wait_for_threads(self, threadList):
         for thread in threadList:
             if thread.is_alive():
-                self.logger.info("Waiting 3 seconds for thread %s to exit" % thread.name)
+                self.logger.info("Waiting 3 seconds for thread %s of %s to exit" % (thread.name, self.name))
                 thread.join(3)
 
-        self.logger.info("All threads ended")
+        self.logger.info("All threads of %s ended" % self.name)
 
     # message methods
     def process_message(self, message):

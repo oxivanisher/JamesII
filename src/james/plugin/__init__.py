@@ -187,17 +187,10 @@ class Plugin(object):
         self.logger.setLevel(logging.INFO)
 
     def wait_for_threads(self, threadList):
-        allDone = False
-        messageShowed = False
-        while not allDone:
-            allDone = True
-            for thread in threadList:
-                if thread.is_alive():
-                    if not messageShowed:
-                        self.logger.info("Waiting for threads to exit")
-                        thread.join()
-                        messageShowed = True
-                    allDone = False
+        for thread in threadList:
+            if thread.is_alive():
+                self.logger.info("Waiting 3 seconds for thread %s to exit" % thread.name)
+                thread.join(3)
 
         if messageShowed:
             self.logger.info("All threads ended")

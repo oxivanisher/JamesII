@@ -699,6 +699,9 @@ class Core(object):
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = exc_tb.tb_frame.f_code.co_filename
                 self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+                if self.core_lock.acquire(False):
+                    self.logger.warning("Core lock acquired, releaseing it for forced shutdown.")
+                    self.core_lock.release()
                 self.terminate(1)
 
         self.logger.debug("Exiting with returncode (%s)" % self.returncode)

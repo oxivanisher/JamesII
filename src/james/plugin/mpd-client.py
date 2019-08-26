@@ -115,6 +115,9 @@ class MpdClientWorker(object):
         except mpd.ConnectionError as e:
             if str(e) != "Not connected":
                 self.logger.warning("connect encountered mpd.ConnectionError: %s" % (str(e)))
+                except mpd.base.ConnectionError as e:
+                if str(e) != "Not connected":
+                    self.logger.warning("connect encountered mpd.base.ConnectionError: %s" % (str(e)))
         except Exception as e:
             if hasattr(e, 'errno'):
                 if e.errno == 32:
@@ -151,6 +154,11 @@ class MpdClientWorker(object):
                 self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+
+        except mpd.base.ConnectionError as e:
+            if str(e) == "Connection to server was reset":
+                self.logger.debug("check_connection encountered mpd.base.ConnectionError: %s" % (str(e)))
+                self.client.close()
 
         except Exception as e:
             self.client.close()
@@ -292,7 +300,8 @@ class MpdClientWorker(object):
             self.client.disconnect()
         except mpd.ConnectionError:
             self.logger.debug("Could not disconnect because we are not connected.")
-            pass
+        except mpd.base.ConnectionError:
+            self.logger.debug("Could not disconnect because we are not connected.")
         self.logger.debug("Disconnected, worker exititing")
 
 

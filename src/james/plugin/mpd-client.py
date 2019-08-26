@@ -115,9 +115,9 @@ class MpdClientWorker(object):
         except mpd.ConnectionError as e:
             if str(e) != "Not connected":
                 self.logger.warning("connect encountered mpd.ConnectionError: %s" % (str(e)))
-                except mpd.base.ConnectionError as e:
-                if str(e) != "Not connected":
-                    self.logger.warning("connect encountered mpd.base.ConnectionError: %s" % (str(e)))
+        except mpd.base.ConnectionError as e:
+            if str(e) != "Not connected":
+                self.logger.warning("connect encountered mpd.base.ConnectionError: %s" % (str(e)))
         except Exception as e:
             if hasattr(e, 'errno'):
                 if e.errno == 32:

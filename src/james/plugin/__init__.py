@@ -192,8 +192,7 @@ class Plugin(object):
                 self.logger.info("Waiting 3 seconds for thread %s to exit" % thread.name)
                 thread.join(3)
 
-        if messageShowed:
-            self.logger.info("All threads ended")
+        self.logger.info("All threads ended")
 
     # message methods
     def process_message(self, message):

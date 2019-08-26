@@ -716,7 +716,7 @@ class Core(object):
         """
         if not self.terminated:
             self.returncode = returncode
-            self.logger.debug("Core.terminate() called. I shall die now.")
+            self.logger.info("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             try:
                 self.discovery_channel.send(['byebye', self.hostname, self.uuid])
@@ -738,6 +738,7 @@ class Core(object):
                     self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
+                self.logger.info("Calling terminate() on plugin %s" % p.name)
                 p.terminate()
             try:
                 file = open(self.proximity_state_file, 'w')
@@ -752,6 +753,8 @@ class Core(object):
             except KeyError:
                 # no proximity state found for this location
                 pass
+
+            self.logger.info("Shutdown complete. %s thread(s) remaining" % threading.active_count())
             self.terminated = True
 
     # threading methods

@@ -144,20 +144,20 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError as e:
             if str(e) == "Connection lost while reading line":
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.warning("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.unlock()
                 self.terminate()
             elif str(e) != "Not connected":
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.warning("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.client.close()
             elif str(e) == "Not connected":
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.warning("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
 
         except mpd.base.ConnectionError as e:
             if str(e) == "Connection to server was reset":
-                self.logger.debug("check_connection encountered mpd.base.ConnectionError: %s" % (str(e)))
+                self.logger.warning("check_connection encountered mpd.base.ConnectionError: %s" % (str(e)))
                 self.client.close()
 
         except Exception as e:

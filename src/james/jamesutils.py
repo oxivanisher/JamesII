@@ -283,7 +283,7 @@ class JamesUtils(object):
 
             # screen handler
             streamhandler = logging.StreamHandler()
-            streamhandler.setLevel(logging.INFO)
+            streamhandler.setLevel(logging.DEBUG)
             streamhandler.setFormatter(screen_formatter)
             log.addHandler(streamhandler)
 

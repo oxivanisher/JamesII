@@ -717,23 +717,31 @@ class Core(object):
         """
         Terminate the core. This method will first call the terminate() on each plugin.
         """
+
+        # setting log level to debug, if not shutting down clean
+        if returncode:
+            self.logger.setLevel(logging.DEBUG)
+
         if not self.terminated:
             self.returncode = returncode
             self.logger.info("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
-            try:
-                self.discovery_channel.send(['byebye', self.hostname, self.uuid])
-            except Exception:
-                pass
+            with Timeout(10):
+                try:
+                    self.logger.debug("Sending byebye to discovery channel")
+                    self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+                except Exception:
+                    pass
 
             saveStats = {}
             for p in self.plugins:
+                self.logger.debug("Collecting stats for plugin %s" % p.name)
                 saveStats[p.name] = p.safe_state()
             try:
                 file = open(self.stats_file, 'w')
                 file.write(json.dumps(saveStats))
                 file.close()
-                self.logger.debug("Saving stats to %s" % (self.stats_file))
+                self.logger.debug("Saved stats to %s" % (self.stats_file))
             except IOError:
                 if self.passive:
                     self.logger.debug("Could not safe stats to file")
@@ -741,7 +749,7 @@ class Core(object):
                     self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
-                self.logger.info("Calling terminate() on plugin %s" % p.name)
+                self.logger.debug("Calling terminate() on plugin %s" % p.name)
                 p.terminate()
             try:
                 file = open(self.proximity_state_file, 'w')

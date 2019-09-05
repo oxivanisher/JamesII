@@ -144,29 +144,29 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError as e:
             if str(e) == "Connection lost while reading line":
-                self.logger.warning("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.unlock()
                 self.terminate()
             elif str(e) != "Not connected":
-                self.logger.warning("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.client.close()
             elif str(e) == "Not connected":
-                self.logger.warning("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
 
         except mpd.base.ConnectionError as e:
             if str(e) == "Connection to server was reset":
-                self.logger.warning("check_connection encountered mpd.base.ConnectionError: %s" % (str(e)))
+                self.logger.debug("check_connection encountered mpd.base.ConnectionError: %s" % (str(e)))
                 self.client.close()
 
         except Exception as e:
             self.client.close()
             if hasattr(e, 'errno'):
                 if e.errno == 32:
-                    self.logger.warning("connect encountered pipe error")
+                    self.logger.debug("connect encountered pipe error")
                 elif e.errno == 111:
-                    self.logger.warning("connect is unable to connect to MPD daemon.")
+                    self.logger.debug("connect is unable to connect to MPD daemon.")
                 else:
                     self.logger.error('connect unhandled exception: %s' % (e))
             else:

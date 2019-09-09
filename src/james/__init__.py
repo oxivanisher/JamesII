@@ -724,7 +724,7 @@ class Core(object):
 
         if not self.terminated:
             self.returncode = returncode
-            self.logger.info("Core.terminate() called. My %s threads shall die now." % threading.active_count())
+            self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             with Timeout(10):
                 try:

@@ -94,6 +94,8 @@ class MpdClientWorker(object):
         # self.client = PersistentMPDClient() # not working test. if it still crashes, needs to be tested
         self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
+        self.hidden_errors = ["Not connected"]
+
         self.check_connection()
 
     def sig_timeout_handler(self, signum, frame):
@@ -147,6 +149,8 @@ class MpdClientWorker(object):
                 self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.unlock()
                 self.terminate()
+            elif str(e) in self.hidden_errors:
+                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
 #                self.client.close()

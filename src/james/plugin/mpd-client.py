@@ -149,7 +149,7 @@ class MpdClientWorker(object):
                 self.terminate()
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
-                self.client.close()
+#                self.client.close()
 
         except Exception as e:
             self.client.close()

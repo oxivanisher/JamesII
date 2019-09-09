@@ -147,17 +147,8 @@ class MpdClientWorker(object):
                 self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
                 self.unlock()
                 self.terminate()
-            elif str(e) != "Not connected":
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
-                self.client.close()
-            elif str(e) == "Not connected":
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
-
-        except mpd.base.ConnectionError as e:
-            if str(e) == "Connection to server was reset":
-                self.logger.debug("check_connection encountered mpd.base.ConnectionError: %s" % (str(e)))
                 self.client.close()
 
         except Exception as e:
@@ -423,7 +414,9 @@ class MpdClientPlugin(Plugin):
             radio_on_command.create_subcommand(station, self.config['stations'][station], None)
 
     def terminate(self):
+        self.logger.debug("Terminating MPD client worker")
         self.client_worker.terminate()
+        self.logger.debug("Calling  wait_for_threads for MPD")
         self.wait_for_threads(self.worker_threads)
 
     def activate_talkover(self, args):

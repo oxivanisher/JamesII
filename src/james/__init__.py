@@ -728,37 +728,37 @@ class Core(object):
 
             with Timeout(10):
                 try:
-                    self.logger.debug("Sending byebye to discovery channel")
+                    self.logger.info("Sending byebye to discovery channel")
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
                 except Exception:
                     pass
 
             saveStats = {}
             for p in self.plugins:
-                self.logger.debug("Collecting stats for plugin %s" % p.name)
+                self.logger.info("Collecting stats for plugin %s" % p.name)
                 saveStats[p.name] = p.safe_state()
             try:
                 file = open(self.stats_file, 'w')
                 file.write(json.dumps(saveStats))
                 file.close()
-                self.logger.debug("Saved stats to %s" % (self.stats_file))
+                self.logger.info("Saved stats to %s" % (self.stats_file))
             except IOError:
                 if self.passive:
-                    self.logger.debug("Could not safe stats to file")
+                    self.logger.info("Could not safe stats to file")
                 else:
                     self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
-                self.logger.debug("Calling terminate() on plugin %s" % p.name)
+                self.logger.info("Calling terminate() on plugin %s" % p.name)
                 p.terminate()
             try:
                 file = open(self.proximity_state_file, 'w')
                 file.write(json.dumps(self.proximity_status.status[self.location]))
                 file.close()
-                self.logger.debug("Saving proximity status to %s" % (self.proximity_state_file))
+                self.logger.info("Saving proximity status to %s" % (self.proximity_state_file))
             except IOError:
                 if self.passive:
-                    self.logger.debug("Could not safe proximity status to file")
+                    self.logger.info("Could not safe proximity status to file")
                 else:
                     self.logger.warning("Could not safe proximity status to file")
             except KeyError:

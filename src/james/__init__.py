@@ -728,15 +728,16 @@ class Core(object):
 
             with Timeout(10):
                 try:
-                    self.logger.info("Sending byebye to discovery channel")
+                    self.logger.info("Sending byebye to discovery channel (with 10 seconds timeout)")
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
                 except Exception:
                     pass
 
             saveStats = {}
             for p in self.plugins:
-                self.logger.info("Collecting stats for plugin %s" % p.name)
-                saveStats[p.name] = p.safe_state()
+                self.logger.info("Collecting stats for plugin %s (with 5 seconds timeout)" % p.name)
+                with Timeout(5):
+                    saveStats[p.name] = p.safe_state()
             try:
                 file = open(self.stats_file, 'w')
                 file.write(json.dumps(saveStats))
@@ -749,8 +750,9 @@ class Core(object):
                     self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
-                self.logger.info("Calling terminate() on plugin %s" % p.name)
-                p.terminate()
+                self.logger.info("Calling terminate() on plugin %s (with 5 seconds timeout)" % p.name)
+                with Timeout(5):
+                    p.terminate()
             try:
                 file = open(self.proximity_state_file, 'w')
                 file.write(json.dumps(self.proximity_status.status[self.location]))

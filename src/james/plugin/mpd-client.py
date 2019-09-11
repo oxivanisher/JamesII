@@ -88,6 +88,7 @@ class MpdClientWorker(object):
         self.myport = myport
         self.pretalk_volume = None
         self.worker_lock = threading.Lock()
+
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
@@ -595,8 +596,12 @@ class MpdClientPlugin(Plugin):
 
     def return_status(self):
         self.logger.debug('Showing status')
+        self.logger.warning("Unlocking mpd client worker")
+        self.client_worker.unlock()
         status = self.client_worker.status()
+        self.logger.warning("Requesting status of mpd client worker")
         currentsong = self.client_worker.currentsong()
+        self.logger.warning("Requesting current song of mpd client worker")
 
         name = ""
         title = ""

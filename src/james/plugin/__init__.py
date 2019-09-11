@@ -60,8 +60,8 @@ class Plugin(object):
     def terminate(self):
         pass
 
-    def safe_state(self):
-        return self.return_status()
+    def safe_state(self, verbose = False):
+        return self.return_status(verbose)
 
     def load_state(self, name, defaultValue):
         try:

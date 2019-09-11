@@ -737,7 +737,7 @@ class Core(object):
             for p in self.plugins:
                 self.logger.info("Collecting stats for plugin %s (with 5 seconds timeout)" % p.name)
                 with Timeout(5):
-                    saveStats[p.name] = p.safe_state()
+                    saveStats[p.name] = p.safe_state(True)
             try:
                 file = open(self.stats_file, 'w')
                 file.write(json.dumps(saveStats))

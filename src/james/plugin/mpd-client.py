@@ -594,14 +594,17 @@ class MpdClientPlugin(Plugin):
             else:
                 self.core.add_timeout(0, self.radio_off, False)
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         self.logger.debug('Showing status')
-        self.logger.warning("Unlocking mpd client worker")
+        if verbose:
+            self.logger.warning("Unlocking mpd client worker")
         self.client_worker.unlock()
         status = self.client_worker.status()
-        self.logger.warning("Requesting status of mpd client worker")
+        if verbose:
+            self.logger.warning("Requesting status of mpd client worker")
         currentsong = self.client_worker.currentsong()
-        self.logger.warning("Requesting current song of mpd client worker")
+        if verbose:
+            self.logger.warning("Requesting current song of mpd client worker")
 
         name = ""
         title = ""

@@ -289,7 +289,7 @@ class CronPlugin(Plugin):
         seconds = int(time.time() % 60)
         self.core.add_timeout((60 - seconds), self.crontab_daemon_loop)
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['jobs'] = len(self.crontab.events)
         ret['jobsRun'] = self.jobsRun

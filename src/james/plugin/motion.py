@@ -216,7 +216,7 @@ class MotionPlugin(Plugin):
             self.core.add_timeout(0, self.cmd_on, None)
         return True
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['watches'] = self.watches
         ret['movementsDetected'] = self.movementsDetected

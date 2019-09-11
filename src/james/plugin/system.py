@@ -209,7 +209,7 @@ class SystemPlugin(Plugin):
                     self.logger.info('Unknown command (%s)' % e)
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         coreData = {}
         coreData['master'] = self.core.master
         coreData['uuid'] = self.core.uuid

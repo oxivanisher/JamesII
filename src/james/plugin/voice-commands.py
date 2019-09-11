@@ -281,7 +281,7 @@ class VoiceCommandsPlugin(Plugin):
             except IOError:
                 self.logger.warning("Could not safe unknown words to file!")
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         self.workerLock.acquire()
         ret['nowRecording'] = self.workerWorking

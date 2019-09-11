@@ -181,7 +181,7 @@ class GoogleCalendarPlugin(Plugin):
             self.core.add_timeout(0, self.cmd_calendar_speak, None)
 
     # status
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['eventFetches'] = self.eventFetches
         ret['eventsFetched'] = self.eventsFetched

@@ -302,7 +302,7 @@ class ProximityPlugin(Plugin):
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['proximityChecks'] = self.proximityChecks
         ret['proximityUpdates'] = self.proximityUpdates

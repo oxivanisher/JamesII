@@ -154,7 +154,7 @@ class TimerPlugin(Plugin):
         self.saved_commands = saved_commands_new
         self.core.add_timeout(1, self.command_daemon_loop)
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['waitingCommands'] = len(self.saved_commands)
         ret['commandsRun'] = self.commandsRun

@@ -223,7 +223,7 @@ class TransmissionPlugin(Plugin):
         return ' '.join(new_words)
 
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['connected'] = False
         if self.connection_ok():

@@ -728,7 +728,7 @@ class JabberPlugin(Plugin):
             self.logger.debug('Alerting (%s)' % ' '.join(args))
             self.send_xmpp_muc_message(['Alert: ' + ' '.join(args)])
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['recievedMuc'] = self.recievedMuc
         ret['recievedChat'] = self.recievedChat

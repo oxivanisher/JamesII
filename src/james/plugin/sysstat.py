@@ -108,7 +108,7 @@ class SysstatPlugin(Plugin):
         return ret
 
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         try:
             ret['uptime'] = time.time() - psutil.boot_time()

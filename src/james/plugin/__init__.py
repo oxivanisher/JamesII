@@ -225,7 +225,7 @@ class Plugin(object):
         self.core.add_timeout(0, self.send_response, self.uuid, 'broadcast', message)
 
     # return plugin data
-    def return_status(self):
+    def return_status(self, verbose = False):
         return {}
 
     def cmd_show_plugin_status(self, args):

@@ -65,7 +65,7 @@ class WakeOnLanPlugin(Plugin):
                     ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
                 self.logger.info(ret)
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['wakeups'] = self.wakeups
         return ret

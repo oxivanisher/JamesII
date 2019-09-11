@@ -71,7 +71,7 @@ class RGBLEDPlugin(Plugin):
     def off(self):
         self.send_over_i2c(0)
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         self.logger.debug('Showing status')
         ret = {}
         ret['sunrises'] = self.sunrises

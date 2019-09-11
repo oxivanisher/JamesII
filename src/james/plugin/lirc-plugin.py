@@ -247,7 +247,7 @@ class LircPlugin(Plugin):
         self.workerRunning = False
         self.workerLock.release()
 
-    def return_status(self):
+    def return_status(self, verbose = False):
         ret = {}
         ret['commandsSent'] = self.commandsSent
         ret['commandsRecieved'] = self.commandsRecieved

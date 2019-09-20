@@ -6,6 +6,7 @@ import time
 import atexit
 import json
 import random
+from bluetooth import *
 
 from james.plugin import *
 
@@ -101,13 +102,12 @@ class ProximityPlugin(Plugin):
 
     def discover(self, args):
         self.logger.debug('Discovering bluetooth hosts...')
-        lines = self.utils.popenAndWait(['hcitool', 'scan'])
-        lines = self.utils.list_unicode_cleanup(lines)
+
+        nearby_devices = discover_devices(lookup_names=True)
         hosts = {}
-        if len(lines) > 1:
-            for line in lines[1:]:
-                values = line.split()
-                hosts[values[0]] = values[1]
+        if len(nearby_devices):
+            for name, addr in nearby_devices:
+                hosts[addr] = name
         self.logger.debug('Found %s bluetooth hosts' % len(hosts))
         return(hosts)
 

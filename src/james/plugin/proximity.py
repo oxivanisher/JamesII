@@ -108,8 +108,8 @@ class ProximityPlugin(Plugin):
         if len(nearby_devices):
             for name, addr in nearby_devices:
                 hosts[addr] = name
-        self.logger.debug('Found %s bluetooth hosts' % len(hosts))
-        return(hosts)
+        self.logger.debug('Found %s bluetooth hosts' % len(nearby_devices))
+        return hosts
 
     def show_persons(self, args):
         ret = []
@@ -145,13 +145,12 @@ class ProximityPlugin(Plugin):
                 if self.core.config['persons'][person]['bt_devices']:
                     for name in self.core.config['persons'][person]['bt_devices'].keys():
                         mac = self.core.config['persons'][person]['bt_devices'][name]
-                        ret = self.utils.popenAndWait(['/usr/bin/hcitool', 'info', mac])
+                        ret = self.utils.popenAndWait(['/usr/bin/l2ping', '-c', '1', mac])
                         clear_list = filter(lambda s: s != '', ret)
 
                         for line in clear_list:
-                            if "Device Name:" in line:
-                                args = line.split(':')
-                                hosts.append((mac, args[1].strip()))
+                            if "bytes from" in line:
+                                hosts.append((mac, mac))
             except KeyError:
                 # person has no bt_devices
                 pass

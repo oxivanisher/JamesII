@@ -1,5 +1,6 @@
-vhost   : test
-host    : hostname
-password: test
-port    : 5672
-user    : test
+vhost     : test
+host      : hostname
+password  : test
+port      : 5672
+user      : test
+# myhostname: james_hostname # optional for specifying hostname, i.e. when python does not detect the correct hostname

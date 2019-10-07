@@ -1,6 +1,7 @@
 #this does exactly nothing right now
-vhost   : //str
-host    : //str
-password: /str
-port    : 5672
-user    : /str
+vhost     : //str
+host      : //str
+password  : /str
+port      : 5672
+user      : /str
+myhostname: /str

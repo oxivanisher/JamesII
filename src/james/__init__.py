@@ -96,7 +96,6 @@ class Core(object):
         self.timeout_queue = Queue.Queue()
         self.terminated = False
         self.returncode = 0
-        self.hostname = socket.getfqdn().split('.')[0].lower()
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
@@ -113,6 +112,18 @@ class Core(object):
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.stats_file = os.path.join(os.path.expanduser("~"), ".james_stats")
         self.core_lock = threading.RLock()
+
+        # Load broker configuration here, in case the hostname has to be specified
+        try:
+            self.brokerconfig = config.YamlConfig("../config/broker.yaml").get_values()
+        except Exception as e:
+            raise BrokerConfigNotLoaded()
+
+        if 'myhostname' in self.brokerconfig.keys():
+            self.hostname = self.brokerconfig['myhostname']
+        else:
+            self.hostname = socket.getfqdn().split('.')[0].lower()
+
         self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
 
@@ -159,13 +170,6 @@ class Core(object):
             signal.signal(signal.SIGQUIT,self.on_kill_sig)
             signal.signal(signal.SIGTSTP,self.on_kill_sig)
             signal.signal(signal.SIGSEGV,self.on_fault_sig)
-
-
-        # Load broker configuration
-        try:
-            self.brokerconfig = config.YamlConfig("../config/broker.yaml").get_values()
-        except Exception as e:
-            raise BrokerConfigNotLoaded()
 
         # Load master configuration
         self.config = None

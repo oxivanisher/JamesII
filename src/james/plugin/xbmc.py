@@ -159,7 +159,6 @@ class XbmcPlugin(Plugin):
 
     def get_active_player(self):
         # get active player
-        activePlayer = False
         activePlayerRaw = self.utils.convert_from_unicode(self.send_rpc("Player.GetActivePlayers"))
         try:
             for activePlayer in activePlayerRaw['result']:
@@ -170,7 +169,7 @@ class XbmcPlugin(Plugin):
 
         return False
 
-    def get_active_file(self, player = None):
+    def get_active_file(self, player=None):
         if not player:
             player = self.get_active_player()
 
@@ -194,7 +193,7 @@ class XbmcPlugin(Plugin):
 
         return False
 
-    def get_active_player_details(self, player = None):
+    def get_active_player_details(self, player=None):
         if not player:
             player = self.get_active_player()
 
@@ -228,15 +227,15 @@ class XbmcPlugin(Plugin):
         if not newstatus['status'][self.core.location]:
             self.core.add_timeout(0, self.cmd_stop, None)
 
-    def return_status(self, verbose = False):
+    def return_status(self):
         player = self.get_active_player()
         actSpeed = ""
         actPercentage = 0.0
         actTime = {}
         actTotaltime = {}
-        actFile = ""
-        actFileId = ""
-        actType = ""
+        actFile = "unknown"
+        actFileId = "unknown"
+        actType = "unknown"
         niceName = ""
         niceStatus = "Stopped"
         niceTime = ""
@@ -253,12 +252,20 @@ class XbmcPlugin(Plugin):
             actTime = actPlayerData['time']
             actTotaltime = actPlayerData['totaltime']
 
-            actFile = self.get_active_file(player)['label']
-            actType = self.get_active_file(player)['type']
+            try:
+                actFile = self.get_active_file(player)['label']
+            except TypeError:
+                pass
+
+            try:
+                actType = self.get_active_file(player)['type']
+            except TypeError:
+                pass
+
             try:
                 actFileId = self.get_active_file(player)['id']
             except TypeError:
-                actType = 'unknown'
+                pass
 
             if actType == 'unknown':
                 niceName = actFile

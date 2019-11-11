@@ -227,7 +227,7 @@ class XbmcPlugin(Plugin):
         if not newstatus['status'][self.core.location]:
             self.core.add_timeout(0, self.cmd_stop, None)
 
-    def return_status(self):
+    def return_status(self, verbose=False):
         player = self.get_active_player()
         actSpeed = ""
         actPercentage = 0.0

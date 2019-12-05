@@ -1,0 +1,11 @@
+PyYAML
+pika
+storm
+Flask
+psutil
+pytz
+python-mpd2
+transmissionrpc
+Flask-SQLAlchemy
+google-api-python-client
+google-calendar-api-client-python

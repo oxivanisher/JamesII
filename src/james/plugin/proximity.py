@@ -126,9 +126,11 @@ class ProximityPlugin(Plugin):
     def always_at_home(self, args):
         if args[0] == "true":
             self.alwaysAtHome = True
+            self.core.proximity_event(True, 'btproximity')
             return ["Always at home override ENABLED"]
         else:
             self.alwaysAtHome = False
+            self.core.proximity_event(False, 'btproximity')
             return ["Always at home override DISABLED"]
 
     # proximity daemon methods

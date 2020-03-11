@@ -55,6 +55,9 @@ class ProximityPlugin(Plugin):
             # wait 3 seconds before working
             self.core.add_timeout(0, self.proximity_check_daemon)
 
+        # publish the override state
+        self.core.proximity_event(self.alwaysAtHome, 'override')
+
     def load_saved_state(self):
         try:
             file = open(self.persons_status_file, 'r')
@@ -126,11 +129,11 @@ class ProximityPlugin(Plugin):
     def always_at_home(self, args):
         if args[0] == "true":
             self.alwaysAtHome = True
-            self.core.proximity_event(True, 'btproximity')
+            self.core.proximity_event(True, 'override')
             return ["Always at home override ENABLED"]
         else:
             self.alwaysAtHome = False
-            self.core.proximity_event(False, 'btproximity')
+            self.core.proximity_event(False, 'override')
             return ["Always at home override DISABLED"]
 
     # proximity daemon methods
@@ -277,10 +280,7 @@ class ProximityPlugin(Plugin):
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
-                if self.alwaysAtHome:
-                    self.core.proximity_event(True, 'btproximity')
-                else:
-                    self.core.proximity_event(self.status, 'btproximity')
+                self.core.proximity_event(self.status, 'btproximity')
             elif self.missing_count < int(self.config['miss_count']):
                 self.logger.info('Proximity missingcounter increased to %s of %s' %
                                  (self.missing_count, self.config['miss_count']))
@@ -293,10 +293,7 @@ class ProximityPlugin(Plugin):
         if oldstatus != self.status and self.status:
             if self.missing_count >= int(self.config['miss_count']):
                 message.append('Proximity is stopping to watch.')
-                if self.alwaysAtHome:
-                    self.core.proximity_event(True, 'btproximity')
-                else:
-                    self.core.proximity_event(self.status, 'btproximity')
+                self.core.proximity_event(self.status, 'btproximity')
             else:
                 message = []
             # making sure, the missing counter is reset every time someone is around

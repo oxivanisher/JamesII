@@ -124,13 +124,12 @@ class ProximityPlugin(Plugin):
         return ret
 
     def always_at_home(self, args):
-        ret = []
         if args[0] == "true":
             self.alwaysAtHome = True
-            ret.append("Always at home override ENABLED")
+            return ["Always at home override ENABLED"]
         else:
             self.alwaysAtHome = False
-            ret.append("Always at home override DISABLED")
+            return ["Always at home override DISABLED"]
 
     # proximity daemon methods
     def proximity_check_daemon(self):

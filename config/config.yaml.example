@@ -129,8 +129,8 @@ xbmc:
   node_name:
    host       : localhost
    port       : 8080
-   username   : 
-   password   : 
+   username   :
+   password   :
 
 raspberry:
  nodes:

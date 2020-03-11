@@ -30,6 +30,7 @@ class ProximityPlugin(Plugin):
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
                 self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
                 self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.prepair_pair)
+                self.commands.create_subcommand('always_at_home', 'Override to be always at home (true/false)', self.always_at_home)
 
         for person in self.core.config['persons'].keys():
             self.persons_status[person] = False
@@ -41,6 +42,7 @@ class ProximityPlugin(Plugin):
 
         self.load_state('proximityChecks', 0)
         self.load_state('proximityUpdates', 0)
+        self.load_state('alwaysAtHome', False)
         self.lastProximityCheckStart = 0
         self.lastProximityCheckEnd = 0
         self.lastProximityCheckDuration = 0
@@ -120,6 +122,12 @@ class ProximityPlugin(Plugin):
             else:
                 ret.append("%10s is not here" % (person))
         return ret
+
+    def always_at_home(self, args):
+        if args[0] == "true":
+            self.alwaysAtHome = True
+        else:
+            self.alwaysAtHome = False
 
     # proximity daemon methods
     def proximity_check_daemon(self):
@@ -265,7 +273,10 @@ class ProximityPlugin(Plugin):
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
-                self.core.proximity_event(self.status, 'btproximity')
+                if self.alwaysAtHome:
+                    self.core.proximity_event(True, 'btproximity')
+                else:
+                    self.core.proximity_event(self.status, 'btproximity')
             elif self.missing_count < int(self.config['miss_count']):
                 self.logger.info('Proximity missingcounter increased to %s of %s' %
                                  (self.missing_count, self.config['miss_count']))
@@ -278,7 +289,10 @@ class ProximityPlugin(Plugin):
         if oldstatus != self.status and self.status:
             if self.missing_count >= int(self.config['miss_count']):
                 message.append('Proximity is stopping to watch.')
-                self.core.proximity_event(self.status, 'btproximity')
+                if self.alwaysAtHome:
+                    self.core.proximity_event(True, 'btproximity')
+                else:
+                    self.core.proximity_event(self.status, 'btproximity')
             else:
                 message = []
             # making sure, the missing counter is reset every time someone is around
@@ -306,6 +320,7 @@ class ProximityPlugin(Plugin):
         ret = {}
         ret['proximityChecks'] = self.proximityChecks
         ret['proximityUpdates'] = self.proximityUpdates
+        ret['alwaysAtHome'] = self.alwaysAtHome
         ret['lastProximityCheckStart'] = self.lastProximityCheckStart
         ret['lastProximityCheckEnd'] = self.lastProximityCheckEnd
         ret['lastProximityCheckDuration'] = self.lastProximityCheckDuration
@@ -323,6 +338,7 @@ descriptor = {
     'class': ProximityPlugin,
     'detailsNames': {'proximityChecks': "Run proximity checks",
                      'proximityUpdates': "Proximity status changes",
+                     'alwaysAtHome': "Always at home override active",
                      'lastProximityCheckStart': "Last Proximity check start",
                      'lastProximityCheckEnd': "Last Proximity check end",
                      'currentProximitySleep': "Current sleep time",

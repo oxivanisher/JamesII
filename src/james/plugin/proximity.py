@@ -10,6 +10,7 @@ from bluetooth import *
 
 from james.plugin import *
 
+
 # FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
 # where do we keep the store of mac adresses? objects, objects, objects
 
@@ -23,7 +24,7 @@ class ProximityPlugin(Plugin):
         self.persons_status = {}
 
         if os.path.isfile('/usr/bin/hcitool'):
-            self.commands.create_subcommand('discover', 'Scan for visible bluetooth devices', self.discover)
+            # self.commands.create_subcommand('discover', 'Scan for visible bluetooth devices', self.discover)
             self.commands.create_subcommand('test', 'Test for local bluetooth devices', self.test)
             if self.core.os_username == 'root':
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
@@ -44,12 +45,12 @@ class ProximityPlugin(Plugin):
         self.lastProximityCheckEnd = 0
         self.lastProximityCheckDuration = 0
         self.currentProximitySleep = 0
-        self.missingcount = -1
+        self.missing_count = -1
         self.messageCache = []
 
     def start(self):
         if self.core.os_username == 'root':
-            # wait 3 seconds befor working
+            # wait 3 seconds before working
             self.core.add_timeout(0, self.proximity_check_daemon)
 
     def load_saved_state(self):
@@ -58,17 +59,17 @@ class ProximityPlugin(Plugin):
             # self.persons_status = self.utils.convert_from_unicode(json.loads(file.read()))
             self.persons_status = json.loads(file.read())
             file.close()
-            self.logger.debug("Loading persons status from %s" % (self.persons_status_file))
+            self.logger.debug("Loading persons status from %s" % self.persons_status_file)
         except IOError:
             pass
         pass
 
     def save_state(self):
         try:
-            file = open(self.persons_status_file, 'w')
-            file.write(json.dumps(self.persons_status))
-            file.close()
-            self.logger.debug("Saving persons status to %s" % (self.persons_status_file))
+            file_handler = open(self.persons_status_file, 'w')
+            file_handler.write(json.dumps(self.persons_status))
+            file_handler.close()
+            self.logger.debug("Saving persons status to %s" % self.persons_status_file)
         except IOError:
             self.logger.warning("Could not save persons status to file!")
 
@@ -81,35 +82,35 @@ class ProximityPlugin(Plugin):
             for line in lines[1:]:
                 values = line.split()
                 devices[values[1]] = values[0]
-        return(devices)
+        return devices
 
     def prepair_pair(self, args):
-        key = random.randint(1000,9999)
+        key = random.randint(1000, 9999)
         pairMsg = "Bluetooth pairing key is: %s" % key
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
         pairData = [args[0], key]
         self.core.add_timeout(0, self.pair, pairData)
         return pairMsg
 
-    def pair(self, pairData):
+    def pair(self, pair_data):
         p = subprocess.Popen(['bluez-simple-agent',
-                              'hci0', pairData[0]],
+                              'hci0', pair_data[0]],
                              stdout=subprocess.PIPE,
                              stdin=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
-        pair_out = p.communicate(input=str(pairData[1]) + '\n')[0]
+        pair_out = p.communicate(input=str(pair_data[1]) + '\n')[0]
         self.logger.debug("BT Logging output: %s" % pair_out)
 
-    def discover(self, args):
-        self.logger.debug('Discovering bluetooth hosts...')
-
-        nearby_devices = discover_devices(lookup_names=True)
-        hosts = {}
-        if len(nearby_devices):
-            for name, addr in nearby_devices:
-                hosts[addr] = name
-        self.logger.debug('Found %s bluetooth hosts' % len(nearby_devices))
-        return hosts
+    # def discover(self, args):
+    #     self.logger.debug('Discovering bluetooth hosts...')
+    #
+    #     nearby_devices = discover_devices(lookup_names=True)
+    #     hosts = {}
+    #     if len(nearby_devices):
+    #         for name, addr in nearby_devices:
+    #             hosts[addr] = name
+    #     self.logger.debug('Found %s bluetooth hosts' % len(nearby_devices))
+    #     return hosts
 
     def show_persons(self, args):
         ret = []
@@ -133,9 +134,9 @@ class ProximityPlugin(Plugin):
     def proximity_check(self, args):
         self.lastProximityCheckStart = time.time()
         self.worker_threads.append(self.core.spawnSubprocess(self.proximity_check_worker,
-                                  self.proximity_check_callback,
-                                  None,
-                                  self.logger))
+                                                             self.proximity_check_callback,
+                                                             None,
+                                                             self.logger))
 
     def proximity_check_worker(self):
         self.logger.debug('Starting proximity scan')
@@ -164,7 +165,7 @@ class ProximityPlugin(Plugin):
         self.proximityChecks += 1
         self.lastProximityCheckEnd = time.time()
         self.lastProximityCheckDuration = self.lastProximityCheckEnd - self.lastProximityCheckStart
-        self.oldstatus = self.status
+        oldstatus = self.status
         self.status = False  # True means that someone is around
         old_hosts_online = self.hosts_online
         new_hosts_online = []
@@ -254,34 +255,34 @@ class ProximityPlugin(Plugin):
 
         # use the missingcounter to be able to work around BT devices which not always answer
         if not self.status:
-            self.missingcount += 1
-            if self.missingcount == 0:
+            self.missing_count += 1
+            if self.missing_count == 0:
                 # this only happens on the very first run after startup to suppress the message
                 pass
-            elif self.missingcount == int(self.config['miss_count']):
+            elif self.missing_count == int(self.config['miss_count']):
                 message = list(set(self.messageCache))
                 self.messageCache = []
                 message.append('Proximity is now watching!')
                 self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
-            elif self.missingcount < int(self.config['miss_count']):
+            elif self.missing_count < int(self.config['miss_count']):
                 self.logger.info('Proximity missingcounter increased to %s of %s' %
-                                 (self.missingcount, self.config['miss_count']))
+                                 (self.missing_count, self.config['miss_count']))
                 self.messageCache = self.messageCache + message
                 message = []
             else:
                 # since the count keeps counting, just ignore it
                 pass
 
-        if self.oldstatus != self.status and self.status:
-            if self.missingcount >= int(self.config['miss_count']):
+        if oldstatus != self.status and self.status:
+            if self.missing_count >= int(self.config['miss_count']):
                 message.append('Proximity is stopping to watch.')
                 self.core.proximity_event(self.status, 'btproximity')
             else:
                 message = []
             # making sure, the missing counter is reset every time someone is around
-            self.missingcount = 0
+            self.missing_count = 0
 
         if len(message):
             self.send_command(['jab', 'msg', ', '.join(message)])
@@ -295,13 +296,13 @@ class ProximityPlugin(Plugin):
     def process_discovery_event_callback(self):
         self.logger.debug('Publishing proximity event')
         self.proxy_send_lock = False
-        self.core.publish_proximity_status({ self.core.location : self.core.proximity_status.get_status_here() },
+        self.core.publish_proximity_status({self.core.location: self.core.proximity_status.get_status_here()},
                                            'btproximity')
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
 
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         ret = {}
         ret['proximityChecks'] = self.proximityChecks
         ret['proximityUpdates'] = self.proximityUpdates
@@ -313,18 +314,19 @@ class ProximityPlugin(Plugin):
         ret['nextCheckIn'] = self.lastProximityCheckEnd + self.currentProximitySleep - time.time()
         return ret
 
+
 descriptor = {
-    'name' : 'proximity',
-    'help' : 'Proximity detection plugin',
-    'command' : 'prox',
-    'mode' : PluginMode.MANAGED,
-    'class' : ProximityPlugin,
-    'detailsNames' : { 'proximityChecks' : "Run proximity checks",
-                       'proximityUpdates' : "Proximity status changes",
-                       'lastProximityCheckStart' : "Last Proximity check start",
-                       'lastProximityCheckEnd' : "Last Proximity check end",
-                       'currentProximitySleep' : "Current sleep time",
-                       'currentProximityState' : "Current proximity state",
-                       'nextCheckIn' : "Next check in",
-                       'lastProximityCheckDuration' : "Last Proximity check duration" }
+    'name': 'proximity',
+    'help': 'Proximity detection plugin',
+    'command': 'prox',
+    'mode': PluginMode.MANAGED,
+    'class': ProximityPlugin,
+    'detailsNames': {'proximityChecks': "Run proximity checks",
+                     'proximityUpdates': "Proximity status changes",
+                     'lastProximityCheckStart': "Last Proximity check start",
+                     'lastProximityCheckEnd': "Last Proximity check end",
+                     'currentProximitySleep': "Current sleep time",
+                     'currentProximityState': "Current proximity state",
+                     'nextCheckIn': "Next check in",
+                     'lastProximityCheckDuration': "Last Proximity check duration"}
 }

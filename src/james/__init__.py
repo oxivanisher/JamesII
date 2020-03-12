@@ -49,17 +49,17 @@ class Timeout():
     """Timeout class using ALARM signal."""
     class Timeout(Exception):
         pass
- 
+
     def __init__(self, sec):
         self.sec = sec
- 
+
     def __enter__(self):
         signal.signal(signal.SIGALRM, self.raise_timeout)
         signal.alarm(self.sec)
- 
+
     def __exit__(self, *args):
         signal.alarm(0)    # disable alarm
- 
+
     def raise_timeout(self, *args):
         raise Timeout.Timeout()
 
@@ -533,7 +533,7 @@ class Core(object):
         """
         message = jamesmessage.JamesMessage(self, "received message")
         message.set(msg)
-        
+
         for p in self.plugins:
             p.process_message(message)
 
@@ -544,7 +544,7 @@ class Core(object):
         update the local storage.
         """
         if msg['location'] == self.location:
-            self.logger.debug("Recieved persons_status update: %s. Saving it to core." % msg['persons_status'])
+            self.logger.debug("Received persons_status update: %s. Saving it to core." % msg['persons_status'])
             self.persons_status = self.utils.convert_from_unicode(msg['persons_status'])
 
     def send_persons_status(self, persons_status, pluginname):
@@ -564,7 +564,7 @@ class Core(object):
                                               'plugin' : pluginname,
                                               'location' : self.location})
         except Exception as e:
-            self.logger.warning("Could not send persons status (%s)" % (e))    
+            self.logger.warning("Could not send persons status (%s)" % (e))
 
     # proximity channel methods
     def proximity_listener(self, msg):
@@ -578,7 +578,7 @@ class Core(object):
             oldState = self.proximity_status.get_status_here()
             self.proximity_status.update_all_status(msg['status'], msg['plugin'])
             if msg['status'][self.location] != oldState:
-                self.logger.debug("Recieved proximity update (listener). Calling process_proximity_event on plugins.")
+                self.logger.debug("Received proximity update (listener). Calling process_proximity_event on plugins.")
                 for p in self.plugins:
                     p.process_proximity_event(msg)
         except KeyError:
@@ -713,7 +713,7 @@ class Core(object):
 
     def lock_core(self):
         self.core_lock.acquire()
-    
+
     def unlock_core(self):
         self.core_lock.release()
 

@@ -538,7 +538,7 @@ class JabberPlugin(Plugin):
             # ignore my own messages
             if not message.getBody():
                 self.logger.debug("Received empty group chat message")
-            if not jid_from == self.config['muc_nick']:
+            elif not jid_from == self.config['muc_nick']:
                 try:
                     jid_ress = jid_data[1]
 

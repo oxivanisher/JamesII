@@ -23,7 +23,18 @@ class ProximityPlugin(Plugin):
         self.hosts_online = []
         self.persons_status = {}
 
-        if os.path.isfile('/usr/bin/hcitool'):
+        # check required tools
+        self.tools = {'hcitool': '/usr/bin/hcitool',
+                      'l2ping': '/usr/bin/l2ping',
+                      'bluez-simple-agent': 'bluez-simple-agent'}
+
+        for tool in self.tools.keys():
+            if os.path.isfile(self.tools[tool]):
+                self.logger.debug("%s found in %s" % (tool, self.tools[tool]))
+            else:
+                self.logger.warning("%s NOT found in %s" % (tool, self.tools[tool]))
+
+        if os.path.isfile(self.tools['hcitool']):
             # self.commands.create_subcommand('discover', 'Scan for visible bluetooth devices', self.discover)
             self.commands.create_subcommand('test', 'Test for local bluetooth devices', self.test)
             if self.core.os_username == 'root':
@@ -57,7 +68,7 @@ class ProximityPlugin(Plugin):
             # wait 3 seconds before working
             self.core.add_timeout(0, self.proximity_check_daemon)
 
-        # publish the override state
+        # publish the initial override state
         self.core.proximity_event(self.alwaysAtHome, 'override')
 
     def load_saved_state(self):
@@ -83,7 +94,7 @@ class ProximityPlugin(Plugin):
     # command methods
     def test(self, args):
         devices = {}
-        lines = self.utils.popenAndWait(['hcitool', 'dev'])
+        lines = self.utils.popenAndWait([self.tools['hcitool'], 'dev'])
         lines = self.utils.list_unicode_cleanup(lines)
         if len(lines) > 1:
             for line in lines[1:]:
@@ -94,14 +105,14 @@ class ProximityPlugin(Plugin):
     def prepare_pair(self, args):
         key = random.randint(1000, 9999)
         pairMsg = "Bluetooth pairing key is: %s" % key
-        lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])
+        lines = self.utils.popenAndWait([self.tools['bluez-simple-agent'], 'hci0', args[0], 'remove'])
         pairData = [args[0], key]
         self.core.add_timeout(0, self.pair, pairData)
         return pairMsg
 
     def pair(self, pair_data):
-        p = subprocess.Popen(['bluez-simple-agent',
-                              'hci0', pair_data[0]],
+        p = subprocess.Popen([self.tools['bluez-simple-agent'],
+                             'hci0', pair_data[0]],
                              stdout=subprocess.PIPE,
                              stdin=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
@@ -147,7 +158,7 @@ class ProximityPlugin(Plugin):
         sleep = self.config['sleep_short']
         if self.status:
             sleep = self.config['sleep_long']
-        self.logger.debug('Proximity scan sleeping for %s seconds' % sleep)
+        self.logger.debug('Bluetooth proximity scan sleeping for %s seconds' % sleep)
         self.currentProximitySleep = sleep
         self.core.add_timeout(sleep, self.proximity_check_daemon)
 
@@ -159,14 +170,14 @@ class ProximityPlugin(Plugin):
                                                              self.logger))
 
     def proximity_check_worker(self):
-        self.logger.debug('Starting proximity scan')
+        self.logger.debug('Starting bluetooth proximity scan')
         hosts = []
         for person in self.core.config['persons'].keys():
             try:
                 if self.core.config['persons'][person]['bt_devices']:
                     for name in self.core.config['persons'][person]['bt_devices'].keys():
                         mac = self.core.config['persons'][person]['bt_devices'][name]
-                        ret = self.utils.popenAndWait(['/usr/bin/l2ping', '-c', '1', mac])
+                        ret = self.utils.popenAndWait([self.tools['l2ping'], '-c', '1', mac])
                         clear_list = filter(lambda s: s != '', ret)
 
                         for line in clear_list:
@@ -207,7 +218,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.logger.info('Proximity found %s' % (name))
+                self.logger.info('Bluetooth proximity found %s' % (name))
 
         for (mac, name) in old_hosts_online:
             notfound = True
@@ -215,7 +226,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.logger.info('Proximity lost %s' % (name))
+                self.logger.info('Bluetooth proximity lost %s' % (name))
 
         # registering the person for these devices as detected
         for (mac, name) in values:
@@ -260,9 +271,9 @@ class ProximityPlugin(Plugin):
                 for person in new_persons_status:
                     if new_persons_status[person]:
                         isHere.append(person)
-                self.logger.info('Now at home: ' + ', '.join(isHere))
+                self.logger.info('Bluetooth proximity: Now at home: ' + ', '.join(isHere))
             else:
-                self.logger.info('Nobody is at home')
+                self.logger.info('Bluetooth proximity: Nobody is at home')
 
         message = []
         if personsCame:

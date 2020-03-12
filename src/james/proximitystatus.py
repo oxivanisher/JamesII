@@ -36,9 +36,9 @@ class ProximityStatus(object):
         # if required, fire new event and return if the state has changed
         if state_before != state_after:
             self.core.add_timeout(0, self.core.proximity_event, state_after, proximity_type)
-            return True
-        else:
-            return False
+
+        # return the new state
+        return state_after
 
     def get_all_status(self):
         return self.status

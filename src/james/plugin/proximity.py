@@ -30,7 +30,9 @@ class ProximityPlugin(Plugin):
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
                 self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
                 self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.prepare_pair)
-                self.commands.create_subcommand('always_at_home', 'Override to be always at home (true/false)', self.always_at_home)
+                self.commands.create_subcommand('always_at_home', 'Override to be always at home (true/false)',
+                                                self.always_at_home)
+                self.commands.create_subcommand('show', 'Show detailed information on states', self.show_details)
 
         for person in self.core.config['persons'].keys():
             self.persons_status[person] = False
@@ -121,10 +123,13 @@ class ProximityPlugin(Plugin):
         ret = []
         for person in self.persons_status.keys():
             if self.persons_status[person]:
-                ret.append("%10s is here" % (person))
+                ret.append("%10s is here" % person)
             else:
-                ret.append("%10s is not here" % (person))
+                ret.append("%10s is not here" % person)
         return ret
+
+    def show_details(self, args):
+        return self.core.proximity_status.details()
 
     def always_at_home(self, args):
         if args[0] == "true":

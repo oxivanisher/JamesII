@@ -112,7 +112,7 @@ class ProximityPlugin(Plugin):
 
     def pair(self, pair_data):
         p = subprocess.Popen([self.tools['bluez-simple-agent'],
-                             'hci0', pair_data[0]],
+                              'hci0', pair_data[0]],
                              stdout=subprocess.PIPE,
                              stdin=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
@@ -155,9 +155,9 @@ class ProximityPlugin(Plugin):
     # proximity daemon methods
     def proximity_check_daemon(self):
         self.proximity_check(None)
-        sleep = self.config['sleep_short']
+        sleep = self.config['sleep_short'] + random.randint(-2, 2)
         if self.status:
-            sleep = self.config['sleep_long']
+            sleep = self.config['sleep_long'] + random.randint(-2, 2)
         self.logger.debug('Bluetooth proximity scan sleeping for %s seconds' % sleep)
         self.currentProximitySleep = sleep
         self.core.add_timeout(sleep, self.proximity_check_daemon)

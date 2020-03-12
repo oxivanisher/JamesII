@@ -60,9 +60,9 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 	sudo pip-2.7 install pytz
 
 ### Optional (Plugin specific):
-* bluetooth (proximity plugin)
 * espeak (espeak plugin)
 * motion (motion plugin)
+* python-bluez (proximity plugin)
 * python-mpd2 (mpd plugin)
 * python-xmpp (jabber plugin)
 * python-dbus (dbus notification plugin)

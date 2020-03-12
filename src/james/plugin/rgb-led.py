@@ -73,7 +73,7 @@ class RGBLEDPlugin(Plugin):
             return [msg]
 
     def cmd_off(self, args):
-        self.off()
+        self.off(args)
         return ["LEDs switched off"]
 
     def sunrise(self):
@@ -92,7 +92,7 @@ class RGBLEDPlugin(Plugin):
     def fire(self, args):
         self.send_over_i2c(5)
 
-    def off(self):
+    def off(self, args):
         self.send_over_i2c(0)
 
     # react on proximity events

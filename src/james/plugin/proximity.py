@@ -174,7 +174,7 @@ class ProximityPlugin(Plugin):
                                                              self.logger))
 
     def proximity_check_worker(self):
-        self.logger.debug('Starting bluetooth proximity scan')
+        self.logger.debug('Starting bluetooth proximity scan for <%s>' % self.core.location)
         hosts = []
         for person in self.core.config['persons'].keys():
             try:
@@ -222,7 +222,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.logger.info('Bluetooth proximity found %s' % (name))
+                self.logger.info('Bluetooth proximity found %s at <%s>' % (name, self.core.location))
 
         for (mac, name) in old_hosts_online:
             notfound = True
@@ -230,7 +230,7 @@ class ProximityPlugin(Plugin):
                 if test_mac == mac:
                     notfound = False
             if notfound:
-                self.logger.info('Bluetooth proximity lost %s' % (name))
+                self.logger.info('Bluetooth proximity lost %s at <%s>' % (name, self.core.location))
 
         # registering the person for these devices as detected
         for (mac, name) in values:
@@ -275,9 +275,9 @@ class ProximityPlugin(Plugin):
                 for person in new_persons_status:
                     if new_persons_status[person]:
                         isHere.append(person)
-                self.logger.info('Bluetooth proximity: Now at home: ' + ', '.join(isHere))
+                self.logger.info('Bluetooth proximity: Now at <%s>: ' % self.core.location + ', '.join(isHere))
             else:
-                self.logger.info('Bluetooth proximity: Nobody is at home')
+                self.logger.info('Bluetooth proximity: Nobody is at <%s>' % self.core.location)
 
         message = []
         if personsCame:
@@ -297,7 +297,8 @@ class ProximityPlugin(Plugin):
             elif self.missing_count == int(self.config['miss_count']):
                 message = list(set(self.messageCache))
                 self.messageCache = []
-                message.append('Bluetooth proximity is starting to watch!')
+                message.append('Bluetooth proximity is starting to watch on %s for <%s>!' %
+                               (self.core.hostname, self.core.location))
                 self.logger.info("Bluetooth proximity missingcounter reached its max (%s), sending proximity status: "
                                  "%s@%s" % (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
@@ -312,7 +313,8 @@ class ProximityPlugin(Plugin):
 
         if oldstatus != self.status and self.status:
             if self.missing_count >= int(self.config['miss_count']):
-                message.append('Bluetooth proximity is stopping to watch.')
+                message.append('Bluetooth proximity is stopping to watch on %s for <%s>!' %
+                               (self.core.hostname, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
             else:
                 message = []

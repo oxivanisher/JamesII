@@ -15,8 +15,6 @@ class ProximityStatus(object):
         if not len(newstatus):
             self.core.logger.error("ProximityStatus.update_all_status empty: %s from %s" % (newstatus, proximity_type))
 
-        self.status = newstatus
-
         # calculate state before applying the new information
         state_before = False
         for plugin in self.internal_states.keys():
@@ -32,6 +30,10 @@ class ProximityStatus(object):
             if self.internal_states[plugin]:
                 state_after = True
 
+        # apply new state
+        self.status = newstatus
+
+        # if required, fire new event
         if state_before != state_after:
             self.core.add_timeout(0, self.core.proximity_event, state_after, proximity_type)
 

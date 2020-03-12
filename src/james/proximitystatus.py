@@ -1,16 +1,15 @@
-
 import copy
+
 
 class ProximityStatus(object):
     def __init__(self, core):
-        self.status = {}
-        self.status['home'] = False
+        self.status = {'home': False}
         self.core = core
 
     def set_status_here(self, value, plugin):
         if self.status[self.core.location] != value:
             self.core.proximity_event(value, plugin)
-    
+
     def update_all_status(self, newstatus, plugin):
         if not len(newstatus):
             self.core.logger.error("ProximityStatus.update_all_status: %s from %s" % (newstatus, plugin))

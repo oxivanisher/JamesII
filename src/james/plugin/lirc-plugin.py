@@ -186,12 +186,12 @@ class LircPlugin(Plugin):
             self.logger.warning('LIRC_CFG_FILE (%s) not found. Plugin will not work!' % LIRC_CFG_FILE)
             self.workerRunning = False
 
-        self.load_state('commandsRecieved', 0)
+        self.load_state('commandsReceived', 0)
         self.load_state('commandsSent', 0)
 
     def send_ir_command(self, command):
         self.logger.info('IR Received command request (%s)' % command)
-        self.commandsRecieved += 1
+        self.commandsReceived += 1
         self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_send(self, args):
@@ -250,7 +250,7 @@ class LircPlugin(Plugin):
     def return_status(self, verbose = False):
         ret = {}
         ret['commandsSent'] = self.commandsSent
-        ret['commandsRecieved'] = self.commandsRecieved
+        ret['commandsReceived'] = self.commandsReceived
         return ret
 
     # react on proximity events
@@ -286,5 +286,5 @@ descriptor = {
     'mode' : PluginMode.MANAGED,
     'class' : LircPlugin,
     'detailsNames' : { 'commandsSent' : "IR Commands sent",
-                       'commandsRecieved' : "IR Commands recieved"}
+                       'commandsReceived' : "IR Commands received"}
 }

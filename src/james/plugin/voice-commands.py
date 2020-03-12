@@ -75,7 +75,7 @@ class VoiceThread(PluginThread):
                 self.play_stream(nullSound * int(44100 * stepTime))
 
     def play_herz_for(self, herz, duration):
-        herz = float(herz) 
+        herz = float(herz)
         samples = int(44100 * float(duration))
         rawSound = ''
         for sample in range(samples):
@@ -97,15 +97,15 @@ class VoiceThread(PluginThread):
         p = pyaudio.PyAudio()
 
         self.streamIn = p.open(format = pyaudio.paInt16,
-                        channels = self.channels, 
-                        rate = self.rate, 
+                        channels = self.channels,
+                        rate = self.rate,
                         input = True,
                         output = False,
                         frames_per_buffer = chunk)
 
         self.streamOut = p.open(format = pyaudio.paInt16,
-                        channels = self.channels, 
-                        rate = self.rate, 
+                        channels = self.channels,
+                        rate = self.rate,
                         input = False,
                         output = True,
                         frames_per_buffer = chunk)
@@ -132,7 +132,7 @@ class VoiceThread(PluginThread):
 
             if working:
                 if len(data) % 2 != 0:
-                    self.logger.warning("Recieved invalid data from audio stream")
+                    self.logger.warning("Received invalid data from audio stream")
                 for j in range(0, chunk / 2):
                     sample = struct.unpack('h', data[j*2:j*2+2])[0]
                     x = abs(sample / float(2**15-1))
@@ -244,7 +244,7 @@ class VoiceCommandsPlugin(Plugin):
         self.playSounds = []
         self.playBeeps = []
         self.load_state('unknownWords', [])
-        
+
         self.voiceThread = VoiceThread(self,
                                        self.core,
                                        self.config['nodes'][self.core.hostname]['threshold'],

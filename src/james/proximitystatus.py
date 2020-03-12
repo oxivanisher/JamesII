@@ -53,8 +53,8 @@ class ProximityStatus(object):
     def details(self):
         ret = ["Global states (location: state):"]
         for location in self.status.keys():
-            ret.append("%10s: %s" % (location, self.status[location]))
+            ret.append("%20s: %s" % (location, self.status[location]))
         ret.append("Internal state for location %s (plugin: state):" % self.core.location)
         for proximity_type in self.internal_states.keys():
-            ret.append("%10s: %s" % (proximity_type, self.internal_states[proximity_type]))
+            ret.append("%20s: %s" % (proximity_type, self.internal_states[proximity_type]))
         return ret

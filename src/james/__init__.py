@@ -576,7 +576,7 @@ class Core(object):
         try:
             self.logger.debug("core.proximity_listener: %s" % msg)
             old_status = self.proximity_status.get_status_here()
-            new_status = self.proximity_status.update_and_return_status(msg['status'], msg['plugin'])
+            new_status = self.proximity_status.update_and_return_status_here(msg['status'], msg['plugin'])
 
             if old_status != new_status:
                 self.logger.debug("Received proximity update (listener). Calling process_proximity_event on plugins.")

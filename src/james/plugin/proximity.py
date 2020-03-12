@@ -29,7 +29,7 @@ class ProximityPlugin(Plugin):
             if self.core.os_username == 'root':
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
                 self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
-                self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.prepair_pair)
+                self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.prepare_pair)
                 self.commands.create_subcommand('always_at_home', 'Override to be always at home (true/false)', self.always_at_home)
 
         for person in self.core.config['persons'].keys():
@@ -89,7 +89,7 @@ class ProximityPlugin(Plugin):
                 devices[values[1]] = values[0]
         return devices
 
-    def prepair_pair(self, args):
+    def prepare_pair(self, args):
         key = random.randint(1000, 9999)
         pairMsg = "Bluetooth pairing key is: %s" % key
         lines = self.utils.popenAndWait(['bluez-simple-agent', 'hci0', args[0], 'remove'])

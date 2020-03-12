@@ -11,7 +11,7 @@ class ProximityStatus(object):
     #     if self.status[self.core.location] != value:
     #         self.core.proximity_event(value, plugin)
 
-    def update_and_check_status(self, newstatus, proximity_type):
+    def update_and_return_status(self, newstatus, proximity_type):
         if not len(newstatus):
             self.core.logger.error("ProximityStatus.update_and_check_status empty: %s from %s" % (newstatus, proximity_type))
 

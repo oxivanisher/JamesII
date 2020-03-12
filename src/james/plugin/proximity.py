@@ -295,8 +295,7 @@ class ProximityPlugin(Plugin):
                 self.messageCache = []
                 message.append('Bluetooth proximity is starting to watch!')
                 self.logger.info("Bluetooth proximity missingcounter reached its max (%s), sending proximity status: "
-                                 "%s@%s" %
-                                 (self.config['miss_count'], self.status, self.core.location))
+                                 "%s@%s" % (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
             elif self.missing_count < int(self.config['miss_count']):
                 self.logger.info('Bluetooth proximity missingcounter increased to %s of %s' %

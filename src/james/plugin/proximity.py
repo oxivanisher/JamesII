@@ -268,7 +268,7 @@ class ProximityPlugin(Plugin):
         # saving the actual persons detected
         self.persons_status = new_persons_status
 
-        # use the missingcounter to be able to work around BT devices which not always answer
+        # use the missingcounter to be able to work around BT devices which not always answer ping
         if not self.status:
             self.missing_count += 1
             if self.missing_count == 0:

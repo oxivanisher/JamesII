@@ -11,9 +11,9 @@ class ProximityStatus(object):
     #     if self.status[self.core.location] != value:
     #         self.core.proximity_event(value, plugin)
 
-    def update_all_status(self, newstatus, proximity_type):
+    def update_and_check_status(self, newstatus, proximity_type):
         if not len(newstatus):
-            self.core.logger.error("ProximityStatus.update_all_status empty: %s from %s" % (newstatus, proximity_type))
+            self.core.logger.error("ProximityStatus.update_and_check_status empty: %s from %s" % (newstatus, proximity_type))
 
         # calculate state before applying the new information
         state_before = False
@@ -33,9 +33,12 @@ class ProximityStatus(object):
         # apply new state
         self.status = newstatus
 
-        # if required, fire new event
+        # if required, fire new event and return if the state has changed
         if state_before != state_after:
             self.core.add_timeout(0, self.core.proximity_event, state_after, proximity_type)
+            return True
+        else:
+            return False
 
     def get_all_status(self):
         return self.status

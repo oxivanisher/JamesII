@@ -314,7 +314,7 @@ class Core(object):
 
         self.logger.debug('Plugins available: %s' % len(loaded_plugins))
         for (plugin_name, plugin_error) in plugin_warnings:
-            self.logger.debug('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
+            self.logger.warning('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
         for plugin_name in plugin_descr_error:
             self.logger.error('Plugin %s has no valid descriptor' % plugin_name)
 

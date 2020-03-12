@@ -1,4 +1,3 @@
-
 import smbus
 
 from james.plugin import *
@@ -30,27 +29,27 @@ class RGBLEDPlugin(Plugin):
 
     def cmd_sunrise(self, args):
         self.sunrise()
-        return (["Sunrise enabled"])
+        return ["Sunrise enabled"]
 
     def cmd_color(self, args):
         self.color(args)
-        return (["Fixed color set to %s" % ', '.join(args)])
+        return ["Fixed color set to %s" % ', '.join(args)]
 
     def cmd_fade(self, args):
         self.fade(args)
-        return (["Fade to color %s" % ', '.join(args)])
+        return ["Fade to color %s" % ', '.join(args)]
 
     def cmd_rainbow(self, args):
         self.rainbow(args)
-        return (["Show rainbow colors"])
+        return ["Show rainbow colors"]
 
     def cmd_fire(self, args):
         self.fire(args)
-        return (["Show fire"])
+        return ["Show fire"]
 
     def cmd_off(self, args):
         self.off()
-        return (["LEDs switched off"])
+        return ["LEDs switched off"]
 
     def sunrise(self):
         self.sunrises += 1
@@ -71,17 +70,16 @@ class RGBLEDPlugin(Plugin):
     def off(self):
         self.send_over_i2c(0)
 
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         self.logger.debug('Showing status')
-        ret = {}
-        ret['sunrises'] = self.sunrises
-        return ret
+        return {'sunrises': self.sunrises}
+
 
 descriptor = {
-    'name' : 'rgb-led',
-    'help' : 'Interface to RGB LEDs over a arduino attached to I2C',
-    'command' : 'rgb',
-    'mode' : PluginMode.MANAGED,
-    'class' : RGBLEDPlugin,
-    'detailsNames' : { 'sunrises' : "Sunrises" }
+    'name': 'rgb-led',
+    'help': 'Interface to RGB LEDs over a arduino attached to I2C',
+    'command': 'rgb',
+    'mode': PluginMode.MANAGED,
+    'class': RGBLEDPlugin,
+    'detailsNames': {'sunrises': "Sunrises"}
 }

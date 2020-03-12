@@ -145,10 +145,14 @@ class ProximityPlugin(Plugin):
     def always_at_home(self, args):
         if args[0] == "true":
             self.alwaysAtHome = True
+            self.logger.info("Proximity always_at_home override ENABLED, sending proximity status: "
+                             "%s@%s" % (self.alwaysAtHome, self.core.location))
             self.core.proximity_event(True, 'override')
             return ["Always at home override ENABLED"]
         else:
             self.alwaysAtHome = False
+            self.logger.info("Proximity always_at_home override DISABLED, sending proximity status: "
+                             "%s@%s" % (self.alwaysAtHome, self.core.location))
             self.core.proximity_event(False, 'override')
             return ["Always at home override DISABLED"]
 

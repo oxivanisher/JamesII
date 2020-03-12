@@ -14,21 +14,31 @@ class ProximityStatus(object):
     def update_all_status(self, newstatus, proximity_type):
         if not len(newstatus):
             self.core.logger.error("ProximityStatus.update_all_status empty: %s from %s" % (newstatus, proximity_type))
-        if self.status[self.core.location] != newstatus[self.core.location]:
-            fire_event = True
-        else:
-            fire_event = False
 
         self.status = newstatus
 
-        if fire_event:
-            self.core.add_timeout(0, self.core.proximity_event, newstatus[self.core.location], proximity_type)
+        # calculate state before applying the new information
+        state_before = False
+        for plugin in self.internal_states.keys():
+            if self.internal_states[plugin]:
+                state_before = True
+
+        # apply the new state state internally
+        self.internal_states[proximity_type] = newstatus[self.core.location]
+
+        # calculate state after applying the new information
+        state_after = False
+        for plugin in self.internal_states.keys():
+            if self.internal_states[plugin]:
+                state_after = True
+
+        if state_before != state_after:
+            self.core.add_timeout(0, self.core.proximity_event, state_after, proximity_type)
 
     def get_all_status(self):
         return self.status
 
     def check_for_change(self, proximity_type):
-        ret = False
         newstatus = copy.deepcopy(self.status)
 
         # If the proximity_type is not known, ensure it exists
@@ -36,6 +46,7 @@ class ProximityStatus(object):
             self.internal_states[proximity_type] = False
 
         # Check if any proximity_type is true (somebody is at home)
+        ret = False
         for plugin in self.internal_states.keys():
             if self.internal_states[plugin]:
                 ret = True

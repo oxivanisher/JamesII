@@ -559,10 +559,10 @@ class Core(object):
         """
         self.logger.debug('Publishing persons status update %s from plugin %s' % (persons_status, pluginname))
         try:
-            self.persons_status_channel.send({'persons_status' : persons_status,
-                                              'host' : self.hostname,
-                                              'plugin' : pluginname,
-                                              'location' : self.location})
+            self.persons_status_channel.send({'persons_status': persons_status,
+                                              'host': self.hostname,
+                                              'plugin': pluginname,
+                                              'location': self.location})
         except Exception as e:
             self.logger.warning("Could not send persons status (%s)" % (e))
 

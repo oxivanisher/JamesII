@@ -28,24 +28,49 @@ class RGBLEDPlugin(Plugin):
             self.logger.info("send_over_i2c encountered a IOError: %s" % (str(e)))
 
     def cmd_sunrise(self, args):
-        self.sunrise()
-        return ["Sunrise enabled"]
+        if self.core.proximity_status.get_status_here():
+            self.sunrise()
+            return ["Sunrise enabled"]
+        else:
+            msg="Sunrise not activated. You are not here."
+            self.logger.info(msg)
+            return [msg]
 
     def cmd_color(self, args):
-        self.color(args)
-        return ["Fixed color set to %s" % ', '.join(args)]
+        if self.core.proximity_status.get_status_here():
+            self.color(args)
+            return ["Fixed color set to %s" % ', '.join(args)]
+        else:
+            msg="Fixed color not activated. You are not here."
+            self.logger.info(msg)
+            return [msg]
 
     def cmd_fade(self, args):
-        self.fade(args)
-        return ["Fade to color %s" % ', '.join(args)]
+        if self.core.proximity_status.get_status_here():
+            self.fade(args)
+            return ["Fade to color %s" % ', '.join(args)]
+        else:
+            msg="Fade to color not activated. You are not here."
+            self.logger.info(msg)
+            return [msg]
 
     def cmd_rainbow(self, args):
-        self.rainbow(args)
-        return ["Show rainbow colors"]
+        if self.core.proximity_status.get_status_here():
+            self.rainbow(args)
+            return ["Show rainbow colors"]
+        else:
+            msg="Rainbow not activated. You are not here."
+            self.logger.info(msg)
+            return [msg]
 
     def cmd_fire(self, args):
-        self.fire(args)
-        return ["Show fire"]
+        if self.core.proximity_status.get_status_here():
+            self.fire(args)
+            return ["Show fire"]
+        else:
+            msg="Fire not activated. You are not here."
+            self.logger.info(msg)
+            return [msg]
 
     def cmd_off(self, args):
         self.off()
@@ -69,6 +94,17 @@ class RGBLEDPlugin(Plugin):
 
     def off(self):
         self.send_over_i2c(0)
+
+    # react on proximity events
+    def process_proximity_event(self, newstatus):
+        if (time.time() - self.core.startup_timestamp) > 10:
+            self.logger.debug("RGB-LED Processing proximity event")
+            if newstatus['status'][self.core.location]:
+                # If automatic RGB LED on coming home should be implemented, this is the place for it
+                # See the MPD Client for details.
+                pass
+            else:
+                self.core.add_timeout(0, self.off, False)
 
     def return_status(self, verbose=False):
         self.logger.debug('Showing status')

@@ -1,7 +1,6 @@
 import xmpp
 import sys
 import time
-import inspect
 
 from james.plugin import *
 
@@ -13,7 +12,6 @@ from james.plugin import *
 # http://comments.gmane.org/gmane.network.jabber.lib.xmpppy/663
 # http://nullege.com/codes/search/xmpp.Client.reconnectAndReauth
 # http://xmpp.org/extensions/xep-0045.html/#disco-occupant
-from src.james.plugin import PluginThread
 
 
 class JabberThread(PluginThread):

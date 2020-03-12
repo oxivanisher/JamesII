@@ -282,12 +282,13 @@ class ProximityPlugin(Plugin):
             elif self.missing_count == int(self.config['miss_count']):
                 message = list(set(self.messageCache))
                 self.messageCache = []
-                message.append('Proximity is now watching!')
-                self.logger.info("Missingcounter reached its max (%s), sending proximity status: %s@%s" %
+                message.append('Bluetooth proximity is starting to watch!')
+                self.logger.info("Bluetooth proximity missingcounter reached its max (%s), sending proximity status: "
+                                 "%s@%s" %
                                  (self.config['miss_count'], self.status, self.core.location))
                 self.core.proximity_event(self.status, 'btproximity')
             elif self.missing_count < int(self.config['miss_count']):
-                self.logger.info('Proximity missingcounter increased to %s of %s' %
+                self.logger.info('Bluetooth proximity missingcounter increased to %s of %s' %
                                  (self.missing_count, self.config['miss_count']))
                 self.messageCache = self.messageCache + message
                 message = []
@@ -297,7 +298,7 @@ class ProximityPlugin(Plugin):
 
         if oldstatus != self.status and self.status:
             if self.missing_count >= int(self.config['miss_count']):
-                message.append('Proximity is stopping to watch.')
+                message.append('Bluetooth proximity is stopping to watch.')
                 self.core.proximity_event(self.status, 'btproximity')
             else:
                 message = []
@@ -314,7 +315,7 @@ class ProximityPlugin(Plugin):
                 self.core.add_timeout(3, self.process_discovery_event_callback)
 
     def process_discovery_event_callback(self):
-        self.logger.debug('Publishing proximity event')
+        self.logger.debug('Publishing bluetooth proximity event')
         self.proxy_send_lock = False
         self.core.publish_proximity_status({self.core.location: self.core.proximity_status.get_status_here()},
                                            'btproximity')

@@ -585,33 +585,37 @@ class Core(object):
             # this proximity event is not for our location. just ignore it for now
             pass
 
-    def proximity_event(self, changedstatus, pluginname):
+    def proximity_event(self, changedstatus, proximity_type):
         """
         If the local proximity state has changed, call the publish method
         """
         newstatus = {}
-        oldstatus = self.proximity_status.get_all_status_copy()
+        oldstatus = self.proximity_status.check_for_change(proximity_type)
 
-        if oldstatus[self.location] != changedstatus:
-            newstatus[self.location] = changedstatus
-        else:
-            newstatus[self.location] = oldstatus[self.location]
-        self.logger.debug("publish_proximity_status: %s from %s" % (newstatus, pluginname))
-        self.publish_proximity_status(newstatus, pluginname)
+        for location in oldstatus.keys():
+            if location == self.location:
+                if oldstatus[location] != changedstatus:
+                    newstatus[location] = changedstatus
+                    continue
 
-    def publish_proximity_status(self, newstatus, pluginname):
-        self.add_timeout(0, self.publish_proximity_status_callback, newstatus, pluginname)
+            newstatus[location] = oldstatus[location]
 
-    def publish_proximity_status_callback(self, newstatus, pluginname):
+        self.logger.debug("publish_proximity_status: %s from %s" % (newstatus, proximity_type))
+        self.publish_proximity_status(newstatus, proximity_type)
+
+    def publish_proximity_status(self, newstatus, proximity_type):
+        self.add_timeout(0, self.publish_proximity_status_callback, newstatus, proximity_type)
+
+    def publish_proximity_status_callback(self, newstatus, proximity_type):
         """
         send the newstatus proximity status over the proximity channel.
         """
-        self.logger.debug("Publishing proximity status update %s from plugin %s" % (newstatus, pluginname))
+        self.logger.debug("Publishing proximity status update %s from plugin %s" % (newstatus, proximity_type))
         try:
-            self.proximity_channel.send({'status' : newstatus,
-                                         'host' : self.hostname,
-                                         'plugin' : pluginname,
-                                         'location' : self.location})
+            self.proximity_channel.send({'status': newstatus,
+                                         'host': self.hostname,
+                                         'plugin': proximity_type,
+                                         'location': self.location})
         except Exception as e:
             self.logger.warning("Could not send proximity status (%s)" % (e))
 

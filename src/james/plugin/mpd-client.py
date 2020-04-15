@@ -391,7 +391,6 @@ class MpdClientPlugin(Plugin):
 
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
 
-
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
@@ -431,17 +430,17 @@ class MpdClientPlugin(Plugin):
             self.talkover_volume = int(status['volume'])
         if self.client_worker.setvol(self.config['talk_volume']):
             self.talkoverActive = True
-            return (["Activate talkover"])
+            return ["Activate talkover"]
         else:
-            return (["Unable to connect to MPD"])
+            return ["Unable to connect to MPD"]
 
     def deactivate_talkover(self, args):
         self.logger.debug('Deactivating talkover')
         if self.client_worker.setvol(self.talkover_volume):
             self.talkoverActive = False
-            return (["Deactivate talkover"])
+            return ["Deactivate talkover"]
         else:
-            return (["Unable to connect to MPD"])
+            return ["Unable to connect to MPD"]
 
     def toggle_talkover(self, args):
         if self.talkoverActive:
@@ -459,9 +458,9 @@ class MpdClientPlugin(Plugin):
         self.logger.debug('Radio off')
         if self.client_worker.stop():
             self.client_worker.clear()
-            return (["Radio off"])
+            return ["Radio off"]
         else:
-            return (["Unable to connect to MPD"])
+            return ["Unable to connect to MPD"]
 
     def radio_on(self, args):
         self.client_worker.lock()
@@ -485,10 +484,10 @@ class MpdClientPlugin(Plugin):
         if self.client_worker.play_url(radio_url, self.config['norm_volume']):
             self.radioStarted += 1
             self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
-            return (["Playing station %s" % radio_name])
+            return ["Playing station %s" % radio_name]
         else:
             self.logger.debug("Unable to connect to MPD")
-            return (["Unable to connect to MPD"])
+            return ["Unable to connect to MPD"]
 
     def radio_toggle(self, args):
         self.logger.debug('Radio toggle')
@@ -500,22 +499,22 @@ class MpdClientPlugin(Plugin):
                 self.client_worker.play()
             else:
                 self.radio_on(args)
-            return (["Toggling radio"])
+            return ["Toggling radio"]
         else:
-            return (["Unable to connect to MPD"])
+            return ["Unable to connect to MPD"]
 
     def cmd_set_volume(self, args):
         try:
             volume = int(args[0])
-            if volume >= 0 and volume <= 100:
+            if 0 <= volume <= 100:
                 if self.client_worker.setvol(volume):
-                    return (["Volume set to: %s" % volume])
+                    return ["Volume set to: %s" % volume]
         except Exception:
             volume = None
             pass
 
         self.logger.debug("Unable to set the volume to: %s" % volume)
-        return (["Unable to set the volume to: %s" % volume])
+        return ["Unable to set the volume to: %s" % volume]
 
     def mpd_sleep(self, args):
         self.sleeps += 1
@@ -547,7 +546,7 @@ class MpdClientPlugin(Plugin):
                 if self.core.proximity_status.get_status_here():
                     if self.fade_in_progress:
                         self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
-                        return (["MPD Wakeup mode NOT activated due other fade in progress"])
+                        return ["MPD Wakeup mode NOT activated due other fade in progress"]
                     else:
                         self.radio_off(None)
                         self.client_worker.play_url(self.stations[self.config['wakeup_st']], 0)
@@ -559,16 +558,16 @@ class MpdClientPlugin(Plugin):
                         self.thread.start()
                         self.worker_threads.append(self.thread)
                         self.logger.info("MPD Wakeup mode activated")
-                        return (["MPD Wakeup mode activated"])
+                        return ["MPD Wakeup mode activated"]
                 else:
                     self.logger.info("Wakeup not activated. You are not here.")
-                    return (["Wakeup not activated. You are not here."])
+                    return ["Wakeup not activated. You are not here."]
             else:
                 self.logger.info("Wakeup not activated. Radio is already playing.")
-                return (["Wakeup not activated. Radio is already playing."])
+                return ["Wakeup not activated. Radio is already playing."]
         else:
             self.logger.info("Wakeup not activated. Unable to connect to MPD.")
-            return (["Wakeup not activated. Unable to connect to MPD."])
+            return ["Wakeup not activated. Unable to connect to MPD."]
 
     def fade_ended(self):
         self.fades += 1
@@ -625,15 +624,8 @@ class MpdClientPlugin(Plugin):
             elif status['state'] == "pause":
                 str_status = "Paused"
 
-        ret = {}
-        ret['state'] = str_status
-        ret['title'] = title
-        ret['name'] = name
-        ret['volume'] = volume
-        ret['radioStarted'] = self.radioStarted
-        ret['wakeups'] = self.wakeups
-        ret['sleeps'] = self.sleeps
-        ret['fades'] = self.fades
+        ret = {'state': str_status, 'title': title, 'name': name, 'volume': volume, 'radioStarted': self.radioStarted,
+               'wakeups': self.wakeups, 'sleeps': self.sleeps, 'fades': self.fades}
         return ret
 
 descriptor = {

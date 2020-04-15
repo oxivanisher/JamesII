@@ -819,6 +819,8 @@ class Core(object):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = exc_tb.tb_frame.f_code.co_filename
             self.logger.critical("Exception 2 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+            # if some event let the client crash, remove it from the list so that the node does not loop forever
+            self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
 
     def spawnSubprocess(self, target, onExit, target_args = None, logger = None):
         """

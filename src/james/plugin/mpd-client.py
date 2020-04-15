@@ -586,12 +586,11 @@ class MpdClientPlugin(Plugin):
             self.logger.debug("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
                 if self.config['nodes'][self.core.hostname]['coming_home']:
-                    self.core.add_timeout(0, self.radio_on([self.config['nodes'][self.core.hostname]['coming_home']]),
-                                          False)
+                    self.core.add_timeout(0, self.radio_on, self.config['nodes'][self.core.hostname]['coming_home'])
             else:
                 self.core.add_timeout(0, self.radio_off, False)
 
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         self.logger.debug('Showing status')
         if verbose:
             self.logger.warning("Unlocking mpd client worker")

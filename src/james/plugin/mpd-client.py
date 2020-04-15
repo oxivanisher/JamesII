@@ -586,7 +586,7 @@ class MpdClientPlugin(Plugin):
             self.logger.debug("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
                 if self.config['nodes'][self.core.hostname]['coming_home']:
-                    self.core.add_timeout(0, self.radio_on(self.config['nodes'][self.core.hostname]['coming_home']),
+                    self.core.add_timeout(0, self.radio_on([self.config['nodes'][self.core.hostname]['coming_home']]),
                                           False)
             else:
                 self.core.add_timeout(0, self.radio_off, False)

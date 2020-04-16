@@ -1,6 +1,6 @@
 
 import sys
-import wiringpi2
+import wiringpi
 import time
 import threading
 import atexit
@@ -65,7 +65,7 @@ class RaspberryThread(PluginThread):
             wiringpi2.pinMode(pin, 0)
             current_state = self.read_pin(pin)
             self.pin_state_cache['switch'][pin] = { 'count' : 0, 'state' : current_state}
-        
+
         for pin in self.led_pins:
             wiringpi2.pinMode(pin, 1)
             wiringpi2.digitalWrite(pin, 0)
@@ -231,7 +231,7 @@ class RaspberryPlugin(Plugin):
             self.turn_off_led(3)
         else:
             self.turn_on_led(3)
-    
+
     def terminate(self):
         self.worker_must_exit()
 
@@ -328,7 +328,7 @@ class RaspberryPlugin(Plugin):
     # james system event handler
     def process_proximity_event(self, newstatus):
         self.logger.debug("Processing proximity event")
-        
+
         if newstatus['status'][self.core.location]:
             self.core.add_timeout(0, self.turn_off_led, 3)
             self.messages_waiting_count = 0

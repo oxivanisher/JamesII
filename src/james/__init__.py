@@ -193,7 +193,7 @@ class Core(object):
             mode_output = "passive"
 
         # Show welcome header
-        self.logger.debug("JamesII starting up (%s mode)" % (mode_output))
+        self.logger.debug("JamesII starting up (%s mode)" % mode_output)
 
         # Create global connection
         connected = False

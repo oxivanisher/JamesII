@@ -269,7 +269,7 @@ class JamesUtils(object):
                   stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
         return ret.split("\n")
 
-    def getLogger(self, name, parent = None):
+    def getLogger(self, name, parent=None):
 
         if parent:
             return parent.getChild(name)
@@ -283,7 +283,7 @@ class JamesUtils(object):
 
             # screen handler
             streamhandler = logging.StreamHandler()
-            streamhandler.setLevel(logging.INFO)
+            streamhandler.setLevel(logging.DEBUG)
             streamhandler.setFormatter(screen_formatter)
             log.addHandler(streamhandler)
 

@@ -59,7 +59,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 	sudo port install py27-yaml py27-pika py27-psutil py27-pip
 	sudo pip-2.7 install pytz
 
-### Optional (Plugin specific):
+### Optional (Plugin specific, mostly raspbian packages):
 * espeak (espeak plugin)
 * motion (motion plugin)
 * python-bluez (proximity plugin)
@@ -71,6 +71,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-pyaudio (voice-commands plugin)
 * python-flask, Flask-SQLAlchemy (httpserver)
 * python-storm (httpserver plugin)
+* wiringpi (raspberrypi plugin)
 
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \
@@ -128,7 +129,6 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 #### RaspberryPi Plugin:
 
 	My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
-	Checkout and read (!) include/install_wiring_pi.sh
 
 ## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol

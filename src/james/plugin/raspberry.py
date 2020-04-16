@@ -1,13 +1,10 @@
 
-import sys
 import wiringpi
 import time
 import threading
-import atexit
-
-# https://github.com/WiringPi/WiringPi2-Python
 
 from james.plugin import *
+
 
 class BlinkLed(object):
     # led blink class, returns true when finished
@@ -38,6 +35,7 @@ class BlinkLed(object):
             return True
         else:
             return False
+
 
 class RaspberryThread(PluginThread):
 
@@ -175,6 +173,7 @@ class RaspberryThread(PluginThread):
             wiringpi.digitalWrite(pin, 0)
         self.plugin.on_worker_exit()
 
+
 class RaspberryPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -257,18 +256,18 @@ class RaspberryPlugin(Plugin):
         try:
             pin = int(args[0])
             self.turn_on_led(pin)
-            return(["Led %s will be switched on" % pin])
+            return ["Led %s will be switched on" % pin]
         except Exception as e:
-            return(["Syntax error (%s)" % (e)])
+            return ["Syntax error (%s)" % (e)]
 
     def cmd_led_off(self, args):
         args = self.utils.list_unicode_cleanup(args)
         try:
             pin = int(args[0])
             self.turn_off_led(pin)
-            return(["Led %s will be switched off" % pin])
+            return ["Led %s will be switched off" % pin]
         except Exception as e:
-            return(["Syntax error (%s)" % (e)])
+            return ["Syntax error (%s)" % (e)]
 
     def cmd_rasp_quit(self, args):
         return self.worker_must_exit()

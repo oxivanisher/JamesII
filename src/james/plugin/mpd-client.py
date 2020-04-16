@@ -585,9 +585,13 @@ class MpdClientPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("MPD Processing proximity event")
             if newstatus['status'][self.core.location]:
+                self.logger.debug("Somebody is home. Check to see if a coming_home radio station is configured.")
                 if self.config['nodes'][self.core.hostname]['coming_home']:
+                    self.logger.debug("coming_home radio station is %s, starting to play." %
+                                      self.config['nodes'][self.core.hostname]['coming_home'])
                     self.core.add_timeout(0, self.radio_on, [self.config['nodes'][self.core.hostname]['coming_home']])
             else:
+                self.logger.debug("Nobody is at home. Stopping radio.")
                 self.core.add_timeout(0, self.radio_off, False)
 
     def return_status(self, verbose=False):

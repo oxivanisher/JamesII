@@ -89,6 +89,15 @@ audio_output {
 }
 ```
 
+##### lircd
+If you use a DIY IR reciever or sender, you have to configure `/boot/config.txt` on Raspberry Pis
+something like this:
+```
+[all]
+dtoverlay=gpio-ir,gpio_pin=25
+dtoverlay=gpio-ir-tx,gpio_pin=4
+```
+
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \
 	python-transmissionrpc python-pylirc python-pip python-storm python-flask

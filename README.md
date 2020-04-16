@@ -75,6 +75,20 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 #### pip packages (`pip install XXX`)
 * wiringpi (raspberrypi plugin, pip install)
 
+#### Notes on some plugins
+##### mpd and espeak
+If the mpd and espeak plugins are used together, ensure to use the "software" mixer for mpd, or the
+mpd plugin will also regulate the volume of espeak.
+Example `/etc/mpd.conf`:
+```
+audio_output {
+        type            "alsa"
+        name            "My ALSA Device"
+        mixer_type      "software"      # optional
+        mixer_device    "default"       # optional
+}
+```
+
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \
 	python-transmissionrpc python-pylirc python-pip python-storm python-flask

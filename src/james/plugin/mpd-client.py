@@ -593,6 +593,8 @@ class MpdClientPlugin(Plugin):
             else:
                 self.logger.debug("Nobody is at home. Stopping radio.")
                 self.core.add_timeout(0, self.radio_off, False)
+        else:
+            self.logger.debug("MPD NOT Processing proximity event, since only 10 seconds have past since core startup")
 
     def return_status(self, verbose=False):
         self.logger.debug('Showing status')

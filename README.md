@@ -59,7 +59,8 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 	sudo port install py27-yaml py27-pika py27-psutil py27-pip
 	sudo pip-2.7 install pytz
 
-### Optional (Plugin specific, mostly raspbian packages):
+### Optional (Plugin specific):
+#### Raspbian packages (`apt install XXX`)
 * espeak (espeak plugin)
 * motion (motion plugin)
 * python-bluez (proximity plugin)
@@ -71,7 +72,8 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-pyaudio (voice-commands plugin)
 * python-flask, Flask-SQLAlchemy (httpserver)
 * python-storm (httpserver plugin)
-* wiringpi (raspberrypi plugin)
+#### pip packages (`pip install XXX`)
+* wiringpi (raspberrypi plugin, pip install)
 
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion python-xmpp python-dbus \

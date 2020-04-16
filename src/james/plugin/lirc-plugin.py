@@ -179,8 +179,9 @@ class LircPlugin(Plugin):
             self.workerLock = threading.Lock()
             self.workerRunning = True
 
-            self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
-            self.lirc_thread.start()
+            if self.config['nodes'][self.core.hostname]['rcvCommands']:
+                self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
+                self.lirc_thread.start()
 
         else:
             self.logger.warning('LIRC_CFG_FILE (%s) not found. Plugin will not work!' % LIRC_CFG_FILE)

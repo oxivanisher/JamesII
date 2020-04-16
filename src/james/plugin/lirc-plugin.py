@@ -259,23 +259,26 @@ class LircPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("LIRC processing proximity event")
             try:
-                for entry in self.config['nodes'][self.core.hostname]['proximityToggle']:
-                    for command in entry.keys():
-                        self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
+                if 'proximityToggle' in self.config['nodes'][self.core.hostname].keys():
+                    for entry in self.config['nodes'][self.core.hostname]['proximityToggle']:
+                        for command in entry.keys():
+                            self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
             except TypeError:
                 pass
             if newstatus['status'][self.core.location]:
                 try:
-                    for entry in self.config['nodes'][self.core.hostname]['proximityHome']:
-                        for command in entry.keys():
-                            self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
+                    if 'proximityHome' in self.config['nodes'][self.core.hostname].keys():
+                        for entry in self.config['nodes'][self.core.hostname]['proximityHome']:
+                            for command in entry.keys():
+                                self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
                 except TypeError:
                     pass
             else:
                 try:
-                    for entry in self.config['nodes'][self.core.hostname]['proximityGone']:
-                        for command in entry.keys():
-                            self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
+                    if 'proximityGone' in self.config['nodes'][self.core.hostname].keys():
+                        for entry in self.config['nodes'][self.core.hostname]['proximityGone']:
+                            for command in entry.keys():
+                                self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
                 except TypeError:
                     pass
         return True

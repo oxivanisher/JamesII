@@ -179,7 +179,7 @@ class LircPlugin(Plugin):
             self.workerLock = threading.Lock()
             self.workerRunning = True
 
-            if self.config['nodes'][self.core.hostname]['rcvCommands']:
+            if 'rcvCommands' in self.config['nodes'][self.core.hostname].keys():
                 self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
                 self.lirc_thread.start()
 

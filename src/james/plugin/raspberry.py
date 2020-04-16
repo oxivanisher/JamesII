@@ -48,27 +48,27 @@ class RaspberryThread(PluginThread):
         self.led_pins = led_pins
         self.plugin = plugin
         self.pin_state_cache = {}
-        # wiringpi2 = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
-        wiringpi2.wiringPiSetup()
-        # wiringpi2.wiringPiSetupSys()
-        # wiringpi2.wiringPiSetupGpio()
+        # wiringpi = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
+        wiringpi.wiringPiSetup()
+        # wiringpi.wiringPiSetupSys()
+        # wiringpi.wiringPiSetupGpio()
         self.led_blink_list = []
 
     def rasp_init(self):
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
-            wiringpi2.pinMode(pin, 0)
+            wiringpi.pinMode(pin, 0)
             self.pin_state_cache['buttons'][pin] = 0
 
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
-            wiringpi2.pinMode(pin, 0)
+            wiringpi.pinMode(pin, 0)
             current_state = self.read_pin(pin)
             self.pin_state_cache['switch'][pin] = { 'count' : 0, 'state' : current_state}
 
         for pin in self.led_pins:
-            wiringpi2.pinMode(pin, 1)
-            wiringpi2.digitalWrite(pin, 0)
+            wiringpi.pinMode(pin, 1)
+            wiringpi.digitalWrite(pin, 0)
 
     def work(self):
         self.rasp_init()
@@ -162,17 +162,17 @@ class RaspberryThread(PluginThread):
 
     def set_led(self, led_id, mode):
         if mode:
-            wiringpi2.digitalWrite(led_id, 1)
+            wiringpi.digitalWrite(led_id, 1)
         else:
-            wiringpi2.digitalWrite(led_id, 0)
+            wiringpi.digitalWrite(led_id, 0)
 
     def read_pin(self, pin):
-        return wiringpi2.digitalRead(pin)
+        return wiringpi.digitalRead(pin)
 
     # called when the worker ends
     def on_exit(self, result):
         for pin in self.button_pins + self.switch_pins + self.led_pins:
-            wiringpi2.digitalWrite(pin, 0)
+            wiringpi.digitalWrite(pin, 0)
         self.plugin.on_worker_exit()
 
 class RaspberryPlugin(Plugin):

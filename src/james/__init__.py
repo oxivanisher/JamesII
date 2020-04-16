@@ -808,9 +808,11 @@ class Core(object):
                 self.logger.critical("Exception 1 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
 
         # Process events
+        current_timeout = None
         try:
             now = time.time()
             for timeout in self.timeouts:
+                current_timeout = timeout
                 if timeout.deadline <= now:
                     self.logger.debug('Processing timeout %s' % timeout.handler)
                     timeout.handler(*timeout.args, **timeout.kwargs)
@@ -820,7 +822,9 @@ class Core(object):
             fname = exc_tb.tb_frame.f_code.co_filename
             self.logger.critical("Exception 2 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
             # if some event let the client crash, remove it from the list so that the node does not loop forever
-            self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
+            #
+            self.timeouts.remove(current_timeout)
+
 
     def spawnSubprocess(self, target, onExit, target_args = None, logger = None):
         """

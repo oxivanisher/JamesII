@@ -183,6 +183,7 @@ class Core(object):
                 self.logger.debug('Setting loglevel to INFO')
                 self.logger.setLevel(logging.INFO)
         except Exception as e:
+            self.logging.warning(e)
             mode_output = "client"
 
         # check for passive mode

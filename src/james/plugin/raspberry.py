@@ -147,10 +147,9 @@ class RaspberryThread(PluginThread):
                 if self.pull[pin] == "down":
                     button_pressed = not button_pressed
 
-
                 if button_pressed:
                     self.pin_state_cache['buttons'][pin] += 1
-                    self.logger.debug("Button press registered")
+                    # self.logger.debug("Button press registered")
                     if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
                         if len(self.led_pins) > 1:
                             self.led_blink(1, 1)

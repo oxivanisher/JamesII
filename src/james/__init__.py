@@ -513,7 +513,7 @@ class Core(object):
         else:
             if self.config != new_config:
                 if self.uuid == sender_uuid == self.master_node:
-                    cfg_diff = set(self.config.items()) - set(new_config.items())
+                    cfg_diff = set(self.config.items()) ^ set(new_config.items())
                     self.logger.warning("Somehow, we sent a new config event if we already are the master! "
                                         "There is probably a problem in our config: %s" % cfg_diff)
                 else:

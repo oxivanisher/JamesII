@@ -128,6 +128,7 @@ class RaspberryThread(PluginThread):
             for pin in self.button_pins:
                 if not self.read_pin(pin):
                     self.pin_state_cache['buttons'][pin] += 1
+                    self.logger.debug("Button press registered")
                     if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
                         if len(self.led_pins) > 1:
                             self.led_blink(1, 1)
@@ -135,6 +136,7 @@ class RaspberryThread(PluginThread):
                     # 100 counts are ~+ 1 second
                     if self.pin_state_cache['buttons'][pin]:
                         duration = int(self.pin_state_cache['buttons'][pin] / 100) + 1
+                        self.logger.debug("Button release registered after %s" % duration)
                         self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
                         if len(self.led_pins) > 2:
                             self.led_blink(2, duration)
@@ -146,6 +148,7 @@ class RaspberryThread(PluginThread):
                 if self.pin_state_cache['switch'][pin]['state'] == new_state:
                     self.pin_state_cache['switch'][pin]['count'] += 1
                 else:
+                    self.logger.debug("Swtich change registered")
                     self.plugin.core.add_timeout(0, self.plugin.on_switch_change, pin, new_state)
                     self.pin_state_cache['switch'][pin]['state'] = new_state
                     self.pin_state_cache['switch'][pin]['count'] = 0

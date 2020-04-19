@@ -415,7 +415,7 @@ class MpdClientPlugin(Plugin):
             # def methodName(self):
             #     print "baem"
             #     self.radio_on(self.config['stations'][station])
-            radio_on_command.create_subcommand(station, self.config['stations'][station], None)
+            radio_on_command.create_subcommand(station, self.config['stations'][station], self.radio_on)
 
     def terminate(self):
         self.logger.debug("Terminating MPD client worker")

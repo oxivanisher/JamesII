@@ -45,13 +45,15 @@ class RaspberryThread(PluginThread):
         self.switch_pins = switch_pins
         self.led_pins = led_pins
         self.plugin = plugin
-        self.pull = pull
         self.pin_state_cache = {}
         # wiringpi = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
         wiringpi.wiringPiSetup()
         # wiringpi.wiringPiSetupSys()
         # wiringpi.wiringPiSetupGpio()
         self.led_blink_list = []
+        self.pull = {}
+        for pin in pull.keys():
+            self.pull[int(pin)] = pull[pin]
 
     def rasp_init(self):
         self.pin_state_cache['switch'] = {}
@@ -66,6 +68,7 @@ class RaspberryThread(PluginThread):
 
         # defaulting to pullup if not set explicitly
         for pin in self.button_pins:
+            pin = int(pin)
             if pin not in self.pull.keys():
                 self.pull[pin] = "up"
 

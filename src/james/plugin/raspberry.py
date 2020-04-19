@@ -54,11 +54,18 @@ class RaspberryThread(PluginThread):
         self.pull_up = pull_up
 
     def rasp_init(self):
+        for pin in self.pull_up.keys():
+            if self.pull_up[pin]:
+                self.logger.info("Raspberry plugin pulling up pin %s" % pin)
+                wiringpi.pullUpDnControl(int(pin), 2)
+            else:
+                self.logger.info("Raspberry plugin pulling down pin %s" % pin)
+                wiringpi.pullUpDnControl(int(pin), 1)
+
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
             wiringpi.pinMode(pin, 0)
-            current_state = self.read_pin(pin)
-            self.pin_state_cache['switch'][pin] = {'count': 0, 'state': current_state}
+            self.pin_state_cache['switch'][pin] = {'count': 0, 'state': self.read_pin(pin)}
 
         for pin in self.led_pins:
             wiringpi.pinMode(pin, 1)
@@ -67,15 +74,7 @@ class RaspberryThread(PluginThread):
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
             wiringpi.pinMode(pin, 0)
-            self.pin_state_cache['buttons'][pin] = 0
-
-        for pin in self.pull_up.keys():
-            if self.pull_up[pin]:
-                self.logger.info("Raspberry plugin pulling up pin %s" % pin)
-                wiringpi.pullUpDnControl(int(pin), 2)
-            else:
-                self.logger.info("Raspberry plugin pulling down pin %s" % pin)
-                wiringpi.pullUpDnControl(int(pin), 1)
+            self.pin_state_cache['buttons'][pin] = {'count': 0, 'state': self.read_pin(pin)}
 
     def work(self):
         self.rasp_init()
@@ -135,33 +134,28 @@ class RaspberryThread(PluginThread):
 
             # check for pressed buttons
             for pin in self.button_pins:
-                if self.read_pin(pin):
-                    button_pressed = True
+                if self.read_pin(pin) != self.pin_state_cache['buttons'][pin]['state']:
+                    self.pin_state_cache['buttons'][pin]['state'] = self.read_pin(pin)
+                    button_state_changed = True
+                    self.logger.debug("Button state change registered for pin %s" % pin)
                 else:
-                    button_pressed = False
+                    button_state_changed = False
 
-                # inverting logic for pulled down pins
-                # if pin in self.pull_up.keys():
-                #     if not self.pull_up[pin]:
-                #         button_pressed = not button_pressed
-
-                if button_pressed:
-                    self.pin_state_cache['buttons'][pin] += 1
-                    if self.pin_state_cache['buttons'][pin] == 1:
-                        self.logger.debug("Button press registered for pin %s" % pin)
-
-                    if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
+                if self.pin_state_cache['buttons'][pin]['state']:
+                    self.pin_state_cache['buttons'][pin]['count'] += 1
+                    if (self.pin_state_cache['buttons'][pin]['count'] % 100) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
                         if len(self.led_pins) > 1:
                             self.led_blink(1, 1)
-                else:
+
+                if button_state_changed and not self.pin_state_cache['buttons'][pin]['state']:
                     # 100 counts are ~+ 1 second
-                    if self.pin_state_cache['buttons'][pin]:
-                        duration = int(self.pin_state_cache['buttons'][pin] / 100) + 1
-                        self.logger.debug("Button release registered after %s" % duration)
+                    if self.pin_state_cache['buttons'][pin]['count']:
+                        duration = int(self.pin_state_cache['buttons'][pin]['count'] / 100) + 1
+                        self.logger.debug("Button on pin %s release registered after %s" % (pin, duration))
                         self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
                         if len(self.led_pins) > 2:
                             self.led_blink(2, duration)
-                            self.pin_state_cache['buttons'][pin] = 0
+                        self.pin_state_cache['buttons'][pin]['count'] = 0
 
             # check for switch states
             for pin in self.switch_pins:
@@ -234,13 +228,14 @@ class RaspberryPlugin(Plugin):
 
         self.switch_pins = []
         self.switch_commands = {}
-        try:
-            for command in self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['switches']):
-                self.switch_commands[(command['pin'], True)] = command['cmd_on'].split()
-                self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
-                self.switch_pins.append(command['pin'])
-        except Exception as e:
-            self.logger.debug("Rasp Switch load Exception (%s)" % e)
+        if 'switches' in self.config['nodes'][self.core.hostname].keys():
+            try:
+                for command in self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['switches']):
+                    self.switch_commands[(command['pin'], True)] = command['cmd_on'].split()
+                    self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
+                    self.switch_pins.append(command['pin'])
+            except Exception as e:
+                self.logger.debug("Rasp Switch load Exception (%s)" % e)
 
         if core.os_username == 'root':
             self.commands.create_subcommand('quit', 'Quits the raspberry worker', self.cmd_rasp_quit)

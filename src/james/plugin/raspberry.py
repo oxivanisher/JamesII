@@ -76,10 +76,10 @@ class RaspberryThread(PluginThread):
 
         for pin in self.pull.keys():
             if self.pull[pin] == "up":
-                self.logger.debug("Pulling up pin %s" % pin)
+                self.logger.info("Raspberry plugin pulling up pin %s" % pin)
                 wiringpi.pullUpDnControl(int(pin), 2)
             else:
-                self.logger.debug("Pulling down pin %s" % pin)
+                self.logger.info("Raspberry plugin pulling down pin %s" % pin)
                 wiringpi.pullUpDnControl(int(pin), 1)
 
     def work(self):

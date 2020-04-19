@@ -134,7 +134,17 @@ class RaspberryThread(PluginThread):
 
             # check for pressed buttons
             for pin in self.button_pins:
-                if not self.read_pin(pin):
+                button_pressed = False
+                if pin not in self.pull.keys():
+                    self.pull[pin] == "up"
+                if self.pull[pin] == "down":
+                    if self.read_pin(pin):
+                        button_pressed = True
+                else:
+                    if not self.read_pin(pin):
+                        button_pressed = True
+
+                if button_pressed:
                     self.pin_state_cache['buttons'][pin] += 1
                     self.logger.debug("Button press registered")
                     if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:

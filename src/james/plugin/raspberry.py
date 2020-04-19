@@ -69,6 +69,11 @@ class RaspberryThread(PluginThread):
             wiringpi.pinMode(pin, 1)
             wiringpi.digitalWrite(pin, 0)
 
+        # defaulting to pullup if not set explicitly
+        for pin in self.button_pins:
+            if pin not in self.pull.keys():
+                self.pull[pin] = "up"
+
         for pin in self.pull.keys():
             if self.pull[pin] == "up":
                 self.logger.debug("Pulling up pin %s" % pin)
@@ -135,10 +140,6 @@ class RaspberryThread(PluginThread):
 
             # check for pressed buttons
             for pin in self.button_pins:
-                button_pressed = False
-                if pin not in self.pull.keys():
-                    self.pull[pin] = "up"
-
                 if self.read_pin(pin):
                     button_pressed = True
                 else:

@@ -182,9 +182,12 @@ class Core(object):
             if not self.config['core']['debug']:
                 self.logger.debug('Setting loglevel to INFO')
                 self.logger.setLevel(logging.INFO)
-        except Exception as e:
-            self.logging.warning(e)
+        except FileNotFoundError as e:
+            self.logger.info("No configuration file found. Defaulting to client mode.")
             mode_output = "client"
+        except Exception as e:
+            self.logger.warning("Unable to load config even tough the file exists! %s" % e)
+            sys.exit(2)
 
         # check for passive mode
         if passive:

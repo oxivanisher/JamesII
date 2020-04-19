@@ -189,6 +189,7 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_blink = []
         self.messages_waiting_count = 0
 
+        self.led_pins = []
         if 'led_pins' in self.config['nodes'][self.core.hostname].keys():
             for led_pin in self.config['nodes'][self.core.hostname]['led_pins']:
                 self.led_pins.append(led_pin)

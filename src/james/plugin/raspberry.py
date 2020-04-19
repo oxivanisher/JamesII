@@ -51,16 +51,19 @@ class RaspberryThread(PluginThread):
         # wiringpi.wiringPiSetupSys()
         # wiringpi.wiringPiSetupGpio()
         self.led_blink_list = []
-        self.pull = {}
+        self.pull_up = {}
         for pin in pull.keys():
-            self.pull[int(pin)] = pull[pin]
+            if pull[pin] == "up":
+                self.pull_up[int(pin)] = True
+            else:
+                self.pull_up[int(pin)] = False
 
     def rasp_init(self):
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
             wiringpi.pinMode(pin, 0)
             current_state = self.read_pin(pin)
-            self.pin_state_cache['switch'][pin] = { 'count' : 0, 'state' : current_state}
+            self.pin_state_cache['switch'][pin] = {'count': 0, 'state': current_state}
 
         for pin in self.led_pins:
             wiringpi.pinMode(pin, 1)
@@ -69,19 +72,19 @@ class RaspberryThread(PluginThread):
         # defaulting to pullup if not set explicitly
         for pin in self.button_pins:
             pin = int(pin)
-            if pin not in self.pull.keys():
-                self.pull[pin] = "up"
+            if pin not in self.pull_up.keys():
+                self.pull_up[pin] = True
 
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
             wiringpi.pinMode(pin, 0)
-            if self.pull[pin] == "up":
+            if self.pull_up[pin]:
                 self.pin_state_cache['buttons'][pin] = 0
             else:
                 self.pin_state_cache['buttons'][pin] = 1
 
-        for pin in self.pull.keys():
-            if self.pull[pin] == "up":
+        for pin in self.pull_up.keys():
+            if self.pull_up[pin]:
                 self.logger.info("Raspberry plugin pulling up pin %s" % pin)
                 wiringpi.pullUpDnControl(int(pin), 2)
             else:
@@ -176,7 +179,7 @@ class RaspberryThread(PluginThread):
                 if self.pin_state_cache['switch'][pin]['state'] == new_state:
                     self.pin_state_cache['switch'][pin]['count'] += 1
                 else:
-                    self.logger.debug("Swtich change registered")
+                    self.logger.debug("Switch change registered")
                     self.plugin.core.add_timeout(0, self.plugin.on_switch_change, pin, new_state)
                     self.pin_state_cache['switch'][pin]['state'] = new_state
                     self.pin_state_cache['switch'][pin]['count'] = 0

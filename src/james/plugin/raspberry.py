@@ -141,14 +141,14 @@ class RaspberryThread(PluginThread):
                     button_pressed = False
 
                 # inverting logic for pulled down pins
-                if pin in self.pull_up.keys():
-                    if not self.pull_up[pin]:
-                        button_pressed = not button_pressed
+                # if pin in self.pull_up.keys():
+                #     if not self.pull_up[pin]:
+                #         button_pressed = not button_pressed
 
                 if button_pressed:
                     self.pin_state_cache['buttons'][pin] += 1
                     if self.pin_state_cache['buttons'][pin] == 1:
-                        self.logger.debug("Button press registered")
+                        self.logger.debug("Button press registered for pin %s" % pin)
 
                     if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
                         if len(self.led_pins) > 1:

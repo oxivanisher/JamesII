@@ -54,11 +54,6 @@ class RaspberryThread(PluginThread):
         self.led_blink_list = []
 
     def rasp_init(self):
-        self.pin_state_cache['buttons'] = {}
-        for pin in self.button_pins:
-            wiringpi.pinMode(pin, 0)
-            self.pin_state_cache['buttons'][pin] = 0
-
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
             wiringpi.pinMode(pin, 0)
@@ -73,6 +68,14 @@ class RaspberryThread(PluginThread):
         for pin in self.button_pins:
             if pin not in self.pull.keys():
                 self.pull[pin] = "up"
+
+        self.pin_state_cache['buttons'] = {}
+        for pin in self.button_pins:
+            wiringpi.pinMode(pin, 0)
+            if self.pull[pin] == "up":
+                self.pin_state_cache['buttons'][pin] = 0
+            else:
+                self.pin_state_cache['buttons'][pin] = 1
 
         for pin in self.pull.keys():
             if self.pull[pin] == "up":

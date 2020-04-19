@@ -74,7 +74,7 @@ class RaspberryThread(PluginThread):
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
             wiringpi.pinMode(pin, 0)
-            self.pin_state_cache['buttons'][pin] = {'count': 0, 'state': self.read_pin(pin)}
+            self.pin_state_cache['buttons'][pin] = {'count': 0, 'state': self.read_pin(pin), 'start': self.read_pin(pin)}
 
     def work(self):
         self.rasp_init()
@@ -134,20 +134,20 @@ class RaspberryThread(PluginThread):
 
             # check for pressed buttons
             for pin in self.button_pins:
-                if self.read_pin(pin) != self.pin_state_cache['buttons'][pin]['state']:
+                if self.read_pin(pin) != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['state'] = self.read_pin(pin)
                     button_state_changed = True
                     self.logger.debug("Button state change registered for pin %s" % pin)
                 else:
                     button_state_changed = False
 
-                if self.pin_state_cache['buttons'][pin]['state']:
+                if self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['count'] += 1
                     if (self.pin_state_cache['buttons'][pin]['count'] % 100) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
                         if len(self.led_pins) > 1:
                             self.led_blink(1, 1)
 
-                if button_state_changed and not self.pin_state_cache['buttons'][pin]['state']:
+                if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == self.pin_state_cache['buttons'][pin]['start']:
                     # 100 counts are ~+ 1 second
                     if self.pin_state_cache['buttons'][pin]['count']:
                         duration = int(self.pin_state_cache['buttons'][pin]['count'] / 100) + 1

@@ -39,7 +39,7 @@ class BlinkLed(object):
 
 class RaspberryThread(PluginThread):
 
-    def __init__(self, plugin, button_pins, switch_pins, led_pins, pull={}):
+    def __init__(self, plugin, button_pins, switch_pins, led_pins, pull):
         super(RaspberryThread, self).__init__(plugin)
         self.button_pins = button_pins
         self.switch_pins = switch_pins
@@ -71,10 +71,11 @@ class RaspberryThread(PluginThread):
 
         for pin in self.pull.keys():
             if self.pull[pin] == "up":
+                self.logger.debug("Pulling up pin %s" % pin)
                 wiringpi.pullUpDnControl(int(pin), 2)
             else:
+                self.logger.debug("Pulling down pin %s" % pin)
                 wiringpi.pullUpDnControl(int(pin), 1)
-
 
     def work(self):
         self.rasp_init()
@@ -205,7 +206,6 @@ class RaspberryPlugin(Plugin):
     def __init__(self, core, descriptor):
 
         super(RaspberryPlugin, self).__init__(core, descriptor)
-
 
         self.rasp_thread = False
         self.worker_exit = False

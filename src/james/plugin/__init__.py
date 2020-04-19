@@ -307,7 +307,7 @@ class Factory(object):
     def get_plugin_class(cls, name):
         try:
             return cls.descriptors[name]['class']
-        except KeyError, e:
+        except KeyError as e:
             raise PluginNotAvailable("Plugin '%s' not available" % (name))
 
     @classmethod
@@ -335,14 +335,14 @@ class Factory(object):
             try:
                 plugin = imp.load_module(name, *info)
                 available_plugins.append(name)
-            except ImportError, e:
+            except ImportError as e:
                 plugin_warning.append((name, e))
                 continue
             # Check plugin descriptor
             try:
                 descriptor = plugin.__dict__['descriptor']
                 cls.register_plugin(descriptor)
-            except KeyError, e:
+            except KeyError as e:
                 plugin_descr_error.append(name)
                 continue
 

@@ -512,8 +512,11 @@ class Core(object):
                 self.location = 'home'
         else:
             if self.config != new_config:
-                self.logger.info("The configuration file has changed. Exiting!")
-                self.terminate()
+                if self.uuid == sender_uuid == self.master_node:
+                    self.logger.warning("Somehow, we sent a new config event if we already are the master :shrug: .. ignoring it")
+                else:
+                    self.logger.info("The configuration file has changed. Exiting!")
+                    self.terminate()
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node has changed.")
                 self.master_node = sender_uuid

@@ -283,28 +283,33 @@ class RaspberryPlugin(Plugin):
 
     # utility methods for the gpio
     def turn_on_led(self, pin):
+        self.logger.debug("Turning led on")
         self.worker_lock.acquire()
         self.waiting_leds_on.append(pin)
         self.worker_lock.release()
 
     def turn_off_led(self, pin):
+        self.logger.debug("Turning led off")
         self.worker_lock.acquire()
         self.waiting_leds_off.append(pin)
         self.worker_lock.release()
 
     def blink_led(self, pin, amount = 1, sleep = 5):
+        self.logger.debug("Blinking led")
         self.worker_lock.acquire()
         self.waiting_leds_blink.append((pin, amount, sleep))
         self.worker_lock.release()
 
     # methods for worker process
     def on_button_press(self, pin, duration):
+        self.logger.debug("Button press registered")
         try:
             self.send_command(self.button_commands[(pin, duration)])
         except Exception as e:
             self.logger.debug("Button press error (%s)" % e)
 
     def on_switch_change(self, pin, new_state):
+        self.logger.debug("Switch change registered")
         try:
             self.send_command(self.switch_commands[(pin, new_state)])
         except Exception as e:

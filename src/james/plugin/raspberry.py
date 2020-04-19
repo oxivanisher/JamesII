@@ -129,14 +129,16 @@ class RaspberryThread(PluginThread):
                 if not self.read_pin(pin):
                     self.pin_state_cache['buttons'][pin] += 1
                     if (self.pin_state_cache['buttons'][pin] % 100) == 0 or self.pin_state_cache['buttons'][pin] == 2:
-                        self.led_blink(1, 1)
+                        if 1 in self.led_pins.keys():
+                            self.led_blink(1, 1)
                 else:
                     # 100 counts are ~+ 1 second
                     if self.pin_state_cache['buttons'][pin]:
                         duration = int(self.pin_state_cache['buttons'][pin] / 100) + 1
                         self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
-                        self.led_blink(2, duration)
-                        self.pin_state_cache['buttons'][pin] = 0
+                        if 2 in self.led_pins.keys():
+                            self.led_blink(2, duration)
+                            self.pin_state_cache['buttons'][pin] = 0
 
             # check for switch states
             for pin in self.switch_pins:
@@ -333,10 +335,12 @@ class RaspberryPlugin(Plugin):
         self.logger.debug("Processing proximity event")
 
         if newstatus['status'][self.core.location]:
-            self.core.add_timeout(0, self.turn_off_led, 3)
-            self.messages_waiting_count = 0
+            if 3 in self.led_pins.keys():
+                self.core.add_timeout(0, self.turn_off_led, 3)
+                self.messages_waiting_count = 0
         else:
-            self.core.add_timeout(0, self.turn_on_led, 3)
+            if 3 in self.led_pins.keys():
+                self.core.add_timeout(0, self.turn_on_led, 3)
 
     def process_message(self, message):
         self.logger.debug("Processing message event")
@@ -344,11 +348,14 @@ class RaspberryPlugin(Plugin):
         # at home
         if self.core.proximity_status.status[self.core.location]:
             if message.level == 1:
-                self.blink_led(0, 3)
+                if 0 in self.led_pins.keys():
+                    self.blink_led(0, 3)
             if message.level == 2:
-                self.blink_led(1, 3)
+                if 1 in self.led_pins.keys():
+                    self.blink_led(1, 3)
             if message.level == 3:
-                self.blink_led(3, 3)
+                if 3 in self.led_pins.keys():
+                    self.blink_led(3, 3)
         else:
             self.messages_waiting_count += 1
 
@@ -357,7 +364,8 @@ class RaspberryPlugin(Plugin):
 
         # at home
         if self.core.proximity_status.status[self.core.location]:
-            self.blink_led(1, 2)
+            if 1 in self.led_pins.keys():
+                self.blink_led(1, 2)
 
 descriptor = {
     'name' : 'raspberry',

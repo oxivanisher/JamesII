@@ -39,12 +39,13 @@ class BlinkLed(object):
 
 class RaspberryThread(PluginThread):
 
-    def __init__(self, plugin, button_pins, switch_pins, led_pins):
+    def __init__(self, plugin, button_pins, switch_pins, led_pins, pull={}):
         super(RaspberryThread, self).__init__(plugin)
         self.button_pins = button_pins
         self.switch_pins = switch_pins
         self.led_pins = led_pins
         self.plugin = plugin
+        self.pull = pull
         self.pin_state_cache = {}
         # wiringpi = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
         wiringpi.wiringPiSetup()
@@ -67,6 +68,13 @@ class RaspberryThread(PluginThread):
         for pin in self.led_pins:
             wiringpi.pinMode(pin, 1)
             wiringpi.digitalWrite(pin, 0)
+
+        for pin in self.pull.keys():
+            if self.pull[pin] == "up":
+                wiringpi.pullUpDnControl(pin_or_port_num, 2)
+            else:
+                wiringpi.pullUpDnControl(pin_or_port_num, 1)
+
 
     def work(self):
         self.rasp_init()
@@ -193,6 +201,10 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_off = []
         self.waiting_leds_blink = []
         self.messages_waiting_count = 0
+
+        self.pull = {}
+        if 'pull' in self.config['nodes'][self.core.hostname].keys():
+            self.pull = self.config['nodes'][self.core.hostname]['pull']
 
         self.led_pins = []
         if 'led_pins' in self.config['nodes'][self.core.hostname].keys():
@@ -326,7 +338,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = False
         self.worker_lock.release()
-        self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins)
+        self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull)
         self.rasp_thread.start()
         self.logger.info('Rasp worker starting')
         return ['Rasp worker starting']

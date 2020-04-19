@@ -520,9 +520,11 @@ class Core(object):
                     self.logger.warning("Somehow, we sent a new config event if we already are the master! "
                                         "There is probably a problem in our config (keys old: %s, new: %s)"
                                         ": %s" % (len(self.config.keys()), len(new_configkeys()), ", ".join(cfg_diff)))
-                else:
-                    self.logger.info("The configuration file has changed. Exiting!")
+                elif self.master:
+                    self.logger.warning("I thought I am the master, but thing seemed to have changed. Exiting!")
                     self.terminate()
+                else:
+                    self.logger.info("Received config from master")
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node has changed.")
                 self.master_node = sender_uuid

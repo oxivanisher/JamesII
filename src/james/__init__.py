@@ -518,8 +518,8 @@ class Core(object):
                         if not key in new_config:
                             cfg_diff.append(key)
                     self.logger.warning("Somehow, we sent a new config event if we already are the master! "
-                                        "There is probably a problem in our config (len old: %s - len new: %s)"
-                                        ": %s" % (len(self.config), len(new_config), ", ".join(cfg_diff)))
+                                        "There is probably a problem in our config (keys old: %s, new: %s)"
+                                        ": %s" % (len(self.config.keys()), len(new_configkeys()), ", ".join(cfg_diff)))
                 else:
                     self.logger.info("The configuration file has changed. Exiting!")
                     self.terminate()

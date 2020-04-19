@@ -154,7 +154,8 @@ class RaspberryThread(PluginThread):
                 else:
                     button_pressed = False
 
-                if self.pull[pin] == "down":
+                # inverting logic for pulled down pins
+                if not self.pull_up[pin]:
                     button_pressed = not button_pressed
 
                 if button_pressed:

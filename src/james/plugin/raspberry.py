@@ -71,9 +71,9 @@ class RaspberryThread(PluginThread):
 
         for pin in self.pull.keys():
             if self.pull[pin] == "up":
-                wiringpi.pullUpDnControl(pin_or_port_num, 2)
+                wiringpi.pullUpDnControl(pin, 2)
             else:
-                wiringpi.pullUpDnControl(pin_or_port_num, 1)
+                wiringpi.pullUpDnControl(pin, 1)
 
 
     def work(self):

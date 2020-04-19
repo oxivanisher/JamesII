@@ -39,7 +39,7 @@ class BlinkLed(object):
 
 class RaspberryThread(PluginThread):
 
-    def __init__(self, plugin, button_pins, switch_pins, led_pins, pull):
+    def __init__(self, plugin, button_pins, switch_pins, led_pins, pull_up):
         super(RaspberryThread, self).__init__(plugin)
         self.button_pins = button_pins
         self.switch_pins = switch_pins
@@ -51,12 +51,7 @@ class RaspberryThread(PluginThread):
         # wiringpi.wiringPiSetupSys()
         # wiringpi.wiringPiSetupGpio()
         self.led_blink_list = []
-        self.pull_up = {}
-        for pin in pull.keys():
-            if pull[pin] == "up":
-                self.pull_up[int(pin)] = True
-            else:
-                self.pull_up[int(pin)] = False
+        self.pull_up = pull_up
 
     def rasp_init(self):
         self.pin_state_cache['switch'] = {}
@@ -69,19 +64,10 @@ class RaspberryThread(PluginThread):
             wiringpi.pinMode(pin, 1)
             wiringpi.digitalWrite(pin, 0)
 
-        # defaulting to pullup if not set explicitly
-        for pin in self.button_pins:
-            pin = int(pin)
-            if pin not in self.pull_up.keys():
-                self.pull_up[pin] = True
-
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
             wiringpi.pinMode(pin, 0)
-            if self.pull_up[pin]:
-                self.pin_state_cache['buttons'][pin] = 0
-            else:
-                self.pin_state_cache['buttons'][pin] = 1
+            self.pin_state_cache['buttons'][pin] = 0
 
         for pin in self.pull_up.keys():
             if self.pull_up[pin]:
@@ -155,8 +141,9 @@ class RaspberryThread(PluginThread):
                     button_pressed = False
 
                 # inverting logic for pulled down pins
-                if not self.pull_up[pin]:
-                    button_pressed = not button_pressed
+                if pin in self.pull_up.keys():
+                    if not self.pull_up[pin]:
+                        button_pressed = not button_pressed
 
                 if button_pressed:
                     self.pin_state_cache['buttons'][pin] += 1
@@ -225,9 +212,9 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_blink = []
         self.messages_waiting_count = 0
 
-        self.pull = {}
-        if 'pull' in self.config['nodes'][self.core.hostname].keys():
-            self.pull = self.config['nodes'][self.core.hostname]['pull']
+        self.pull_up = {}
+        if 'pull_up' in self.config['nodes'][self.core.hostname].keys():
+            self.pull_up = self.config['nodes'][self.core.hostname]['pull_up']
 
         self.led_pins = []
         if 'led_pins' in self.config['nodes'][self.core.hostname].keys():
@@ -361,7 +348,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = False
         self.worker_lock.release()
-        self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull)
+        self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull_up)
         self.rasp_thread.start()
         self.logger.info('Rasp worker starting')
         return ['Rasp worker starting']

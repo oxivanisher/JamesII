@@ -157,9 +157,9 @@ raspberry:
 #    - pin     : 5
 #      cmd_on  : espeak say switch 5 on
 #      cmd_off : espeak say switch 5 off
-    pull:
-     4: down
-     5: up
+    pull_up:
+     4: True
+     5: False
 transmission:
  dont_say:
   - iso

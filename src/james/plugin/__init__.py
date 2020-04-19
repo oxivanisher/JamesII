@@ -257,7 +257,7 @@ class PluginThread(threading.Thread):
             pass
         except KeyError:
             pass
-        self.logger.debug('Thread initialized')
+        self.logger.debug('Plugin thread initialized for %s' % self.plugin)
 
     def work(self):
         """

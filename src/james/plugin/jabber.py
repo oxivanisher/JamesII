@@ -603,7 +603,7 @@ class JabberPlugin(Plugin):
                 help_text = self.jabber_cmd_help(command[1:])
                 header_text = ['Subcommands for (%s) are:' % best_match.name]
                 if best_match == self.core.ghost_commands:
-                    header_text = ['Commands are:']
+                    header_text = ['Commands are test:']
                     help_text.append("%-20s %s" % ('+', 'Command Aliases'))
                     for command in sorted(self.core.config['core']['command_aliases'].keys()):
                         help_text.append(

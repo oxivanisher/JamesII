@@ -391,7 +391,7 @@ class MpdClientPlugin(Plugin):
 
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
 
-        radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
+        radio_command = self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)

@@ -96,15 +96,15 @@ class Plugin(object):
         self.core.send_response(uuid, name, body, self.core.hostname, self.name)
 
     def handle_request(self, uuid, name, body, host, plugin):
-        runCommand = True
+        run_command = True
         if body[0][0] == '@':
-            runCommand = False
+            run_command = False
             hosts = body[0].replace('@', '').split(',')
-            if self.core.hostname in hosts:
+            if self.core.hostname.lower() in [x.lower() for x in hosts]:
                 body = body[1:]
-                runCommand = True
+                run_command = True
 
-        if runCommand:
+        if run_command:
             if name == 'cmd':
                 args = self.utils.list_unicode_cleanup(body)
 
@@ -149,15 +149,15 @@ class Plugin(object):
                 pass
 
         elif name == 'cmd':
-            runCommand = True
+            run_command = True
             if body[0][0] == '@':
-                runCommand = False
+                run_command = False
                 hosts = body[0].replace('@', '').split(',')
-                if self.core.hostname in hosts:
+                if self.core.hostname.lower() in [x.lower() for x in hosts]:
                     body = body[1:]
-                    runCommand = True
+                    run_command = True
 
-            if runCommand:
+            if run_command:
                 args = self.utils.list_unicode_cleanup(body)
 
                 try:

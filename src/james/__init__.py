@@ -182,7 +182,7 @@ class Core(object):
             if not self.config['core']['debug']:
                 self.logger.debug('Setting loglevel to INFO')
                 self.logger.setLevel(logging.INFO)
-        except (FileNotFoundError, IOError):
+        except IOError:
             self.logger.info("No configuration file found. Defaulting to client mode.")
             mode_output = "client"
         except Exception as e:

@@ -35,7 +35,7 @@ do
 	then
 		GITPULL=true
 		echo -e "\nJamesII graceful shutdown detected\n"
-		sleep 1
+		sleep 3
 	elif [[ $RESULT -eq 2 ]];
 	then
 		GITPULL=false

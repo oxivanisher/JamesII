@@ -511,7 +511,7 @@ class Core(object):
             except Exception as e:
                 self.location = 'home'
         else:
-            if self.config != new_config:
+            if cmp(self.config, new_config) == 0:
                 if self.uuid == sender_uuid == self.master_node:
                     cfg_diff = []
                     for key in self.config.keys():

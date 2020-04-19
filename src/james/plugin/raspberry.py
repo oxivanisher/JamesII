@@ -134,14 +134,14 @@ class RaspberryThread(PluginThread):
 
             # check for pressed buttons
             for pin in self.button_pins:
-                if self.read_pin(pin) != self.pin_state_cache['buttons'][pin]['start']:
+                if self.read_pin(pin) != self.pin_state_cache['buttons'][pin]['state']:
                     self.pin_state_cache['buttons'][pin]['state'] = self.read_pin(pin)
                     button_state_changed = True
                     self.logger.debug("Button state change registered for pin %s" % pin)
                 else:
                     button_state_changed = False
 
-                if self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
+                if not button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['count'] += 1
                     if (self.pin_state_cache['buttons'][pin]['count'] % 100) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
                         if len(self.led_pins) > 1:

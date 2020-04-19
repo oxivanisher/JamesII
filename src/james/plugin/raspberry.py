@@ -180,7 +180,6 @@ class RaspberryPlugin(Plugin):
 
         super(RaspberryPlugin, self).__init__(core, descriptor)
 
-        self.led_pins = [0, 1, 2, 3]
 
         self.rasp_thread = False
         self.worker_exit = False
@@ -189,6 +188,9 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_off = []
         self.waiting_leds_blink = []
         self.messages_waiting_count = 0
+
+        for led_pin in self.config['nodes'][self.core.hostname]['led_pins']:
+            self.led_pins.append(led_pin)
 
         self.button_pins = []
         self.button_commands = {}

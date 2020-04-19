@@ -135,6 +135,11 @@ xbmc:
 raspberry:
  nodes:
   node_name:
+   led_pins:
+    - 1
+    - 2
+    - 3
+    - 4
    buttons:
     - pin     : 4
       seconds : 1

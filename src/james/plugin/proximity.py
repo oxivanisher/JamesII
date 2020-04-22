@@ -228,7 +228,7 @@ class ProximityPlugin(Plugin):
             notfound = True
             new_hosts_online.append((mac, name))
             for (test_mac, test_name) in old_hosts_online:
-                if test_mac == mac:
+                if test_mac.lower() == mac.lower():
                     notfound = False
             if notfound:
                 self.logger.info('Bluetooth proximity found %s at <%s>' % (name, self.core.location))
@@ -236,7 +236,7 @@ class ProximityPlugin(Plugin):
         for (mac, name) in old_hosts_online:
             notfound = True
             for (test_mac, test_name) in new_hosts_online:
-                if test_mac == mac:
+                if test_mac.lower() == mac.lower():
                     notfound = False
             if notfound:
                 self.logger.info('Bluetooth proximity lost %s at <%s>' % (name, self.core.location))

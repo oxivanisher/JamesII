@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#pip install google-api-python-client
+# pip install google-api-python-client
 
 import gflags
 import httplib2
@@ -12,6 +12,7 @@ from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.tools import run
 
 from james.plugin import *
+
 
 class GoogleCalendarPlugin(Plugin):
 
@@ -30,23 +31,24 @@ class GoogleCalendarPlugin(Plugin):
         FLAGS = gflags.FLAGS
         FLAGS.auth_local_webserver = False
         FLOW = OAuth2WebServerFlow(
-            client_id = '474730164735-f9l08rmhjihi6vhgckf1p3pmnolnf3sc.apps.googleusercontent.com',
-            client_secret = self.config['client_secret'],
-            scope = 'https://www.googleapis.com/auth/calendar',
-            user_agent = 'james2/001a')
+            client_id='474730164735-f9l08rmhjihi6vhgckf1p3pmnolnf3sc.apps.googleusercontent.com',
+            client_secret=self.config['client_secret'],
+            scope='https://www.googleapis.com/auth/calendar',
+            user_agent='james2/001a')
 
         storage = Storage(os.path.join(os.path.expanduser("~"), ".james_gcal_dat"))
         credentials = storage.get()
-        if credentials is None or credentials.invalid == True:
+        if credentials is None or credentials.invalid is True:
             credentials = run(FLOW, storage)
 
         http = httplib2.Http()
         http = credentials.authorize(http)
 
-        self.service = build(serviceName='calendar', version='v3', http=http, developerKey='AIzaSyAIE6TwzGnQcPn4vDgXoUoOtNDK__x6ong')
+        self.service = build(serviceName='calendar', version='v3', http=http,
+                             developerKey='AIzaSyAIE6TwzGnQcPn4vDgXoUoOtNDK__x6ong')
 
     # internal commands
-    def fetchEvents(self, calendarId, pageToken=None):
+    def fetchEvents(self, calendar_id, page_token=None):
         events = {}
         today = True
         tzStr = datetime.datetime.now(self.timeZone).strftime('%z')
@@ -59,14 +61,14 @@ class GoogleCalendarPlugin(Plugin):
 
         try:
             events = self.service.events().list(
-                calendarId = calendarId,
-                singleEvents = True,
-                maxResults = 1000,
-                orderBy = 'startTime',
-                timeMin = tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
-                timeMax = tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
-                pageToken = pageToken,
-                ).execute()
+                calendarId=calendar_id,
+                singleEvents=True,
+                maxResults=1000,
+                orderBy='startTime',
+                timeMin=tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
+                timeMax=tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
+                pageToken=page_token,
+            ).execute()
             self.eventFetches += 1
         except Exception as e:
             if e == '':
@@ -138,7 +140,7 @@ class GoogleCalendarPlugin(Plugin):
                     retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 
-                    if now > eventTimeStart and now < eventTimeEnd:
+                    if eventTimeStart < now < eventTimeEnd:
                         retStr = "Until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
                     elif now < eventTimeStart:
                         retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
@@ -185,18 +187,17 @@ class GoogleCalendarPlugin(Plugin):
             self.core.add_timeout(0, self.cmd_calendar_speak, None)
 
     # status
-    def return_status(self, verbose = False):
-        ret = {}
-        ret['eventFetches'] = self.eventFetches
-        ret['eventsFetched'] = self.eventsFetched
+    def return_status(self, verbose=False):
+        ret = {'eventFetches': self.eventFetches, 'eventsFetched': self.eventsFetched}
         return ret
 
+
 descriptor = {
-    'name' : 'gcal',
-    'help' : 'Google Calendar integration',
-    'command' : 'gcal',
-    'mode' : PluginMode.MANAGED,
-    'class' : GoogleCalendarPlugin,
-    'detailsNames' : { 'eventFetches' : "Amount of event fetches",
-                       'eventsFetched' : "Amount of events fetched" }
+    'name': 'gcal',
+    'help': 'Google Calendar integration',
+    'command': 'gcal',
+    'mode': PluginMode.MANAGED,
+    'class': GoogleCalendarPlugin,
+    'detailsNames': {'eventFetches': "Amount of event fetches",
+                     'eventsFetched': "Amount of events fetched"}
 }

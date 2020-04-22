@@ -536,6 +536,7 @@ class Core(object):
                     self.terminate()
                 else:
                     self.logger.info("Received config from master. Reloading config on all plugins.")
+                    self.config = new_config
                     for p in self.plugins:
                         p.reload_config()
             elif self.master_node != sender_uuid:

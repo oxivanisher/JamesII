@@ -121,7 +121,7 @@ class GoogleCalendarPlugin(Plugin):
 
             # ignore ignored_events from config
             if event['summary'] == self.config['ignored_events']:
-                next
+                continue
 
             # whole day event:
             if 'date' in event['start'].keys():

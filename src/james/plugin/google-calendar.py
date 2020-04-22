@@ -31,7 +31,7 @@ class GoogleCalendarPlugin(Plugin):
         FLAGS = gflags.FLAGS
         FLAGS.auth_local_webserver = False
         FLOW = OAuth2WebServerFlow(
-            client_id='474730164735-f9l08rmhjihi6vhgckf1p3pmnolnf3sc.apps.googleusercontent.com',
+            client_id=self.config['client_id'],
             client_secret=self.config['client_secret'],
             scope='https://www.googleapis.com/auth/calendar',
             user_agent='james2/001a')
@@ -45,7 +45,7 @@ class GoogleCalendarPlugin(Plugin):
         http = credentials.authorize(http)
 
         self.service = build(serviceName='calendar', version='v3', http=http,
-                             developerKey='AIzaSyAIE6TwzGnQcPn4vDgXoUoOtNDK__x6ong')
+                             developerKey=self.config['developer_key'])
 
     # internal commands
     def fetchEvents(self, calendar_id, page_token=None):

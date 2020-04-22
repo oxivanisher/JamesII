@@ -252,6 +252,8 @@ wakeonlan:
 
 gcal:
  client_secret: Get Yours from Google!
+ client_id: Get Yours from Google!
+ developer_key: Get Yours from Google!
  nodes:
   - node_name
 

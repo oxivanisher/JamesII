@@ -120,7 +120,7 @@ class GoogleCalendarPlugin(Plugin):
             now = datetime.datetime.now()
 
             # ignore ignored_events from config
-            if event['summary'] == self.config['ignored_events']:
+            if event['summary'] in self.config['ignored_events']:
                 continue
 
             # whole day event:

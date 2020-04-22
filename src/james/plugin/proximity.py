@@ -247,7 +247,7 @@ class ProximityPlugin(Plugin):
                 try:
                     if self.core.config['persons'][person]['bt_devices']:
                         for device in self.core.config['persons'][person]['bt_devices'].values():
-                            if device == mac:
+                            if device.lower() == mac.lower():
                                 persons_detected.append(person)
                                 new_persons_status[person] = True
                 except KeyError:

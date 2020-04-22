@@ -621,10 +621,10 @@ class Core(object):
 
         for location in old_status.keys():
             if location == self.location:
-                if old_status[location] != changed_status:
+                if forced:
                     new_status[location] = changed_status
                     continue
-                elif forced:
+                elif old_status[location] != changed_status:
                     new_status[location] = changed_status
                     continue
 

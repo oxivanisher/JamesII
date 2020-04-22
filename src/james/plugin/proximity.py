@@ -71,6 +71,10 @@ class ProximityPlugin(Plugin):
         # publish the initial override state
         self.core.proximity_event(self.alwaysAtHome, 'override')
 
+        # publish the btproximity state (core only publishes something, if it has changed.
+        # so loading the state from file should be save.)
+        self.core.proximity_event(self.status, 'btproximity')
+
     def load_saved_state(self):
         try:
             # load saved proximity persons

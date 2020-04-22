@@ -119,6 +119,10 @@ class GoogleCalendarPlugin(Plugin):
             retStr = False
             now = datetime.datetime.now()
 
+            # ignore ignored_events from config
+            if event['summary'] == self.config['ignored_events']:
+                next
+
             # whole day event:
             if 'date' in event['start'].keys():
                 if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d'):
@@ -142,7 +146,7 @@ class GoogleCalendarPlugin(Plugin):
             if retStr:
                 if event['status'] == "tentative":
                     retStr += " possibly "
-                    # evil is: 
+                    # evil is:
                 retStr += event['summary']
                 retList.append(retStr)
 

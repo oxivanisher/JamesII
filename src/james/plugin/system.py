@@ -33,6 +33,7 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
             self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
+            self.commands.create_subcommand('reload', 'Quits the JamesII core wich reloads the config.', self.cmd_quit_core)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
@@ -112,6 +113,15 @@ class SystemPlugin(Plugin):
 
         self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
 
+    def cmd_quit_core(self, args):
+        if self.core.master:
+            message = self.core.new_message(self.name)
+            message.header = ("Bye bye, james core is shutting down.")
+            message.level = 2
+            message.send()
+
+            self.core.terminate()
+
     def cmd_ping(self, args):
         self.core.ping_nodes()
 
@@ -142,7 +152,7 @@ class SystemPlugin(Plugin):
                 args = allData[pluginName]
                 for key in sorted(args.keys()):
                     pluginData.append((Factory.descriptors[pluginName]['detailsNames'][key], args[key]))
-                
+
                 displayData.append((pluginName, pluginData))
 
         for (plugin, pluginData) in displayData:

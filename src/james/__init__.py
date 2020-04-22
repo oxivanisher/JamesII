@@ -247,6 +247,17 @@ class Core(object):
                     self.logger.warning("Keyboard interrupt detected. Exiting...")
                     sys.exit(3)
                     pass
+                except pika.exceptions.ChannelClosed:
+                    # channel closed error
+                    self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
+                except pika.exceptions.ConnectionClosed:
+                    # connection closed error
+                    self.logger.critical("Lost connection to RabbitMQ server! (ConnectionClosed)")
+                except pika.exceptions.AMQPConnectionError:
+                    # disconnection error
+                    self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
+                except Timeout.Timeout:
+                    self.logger.critical("Detected hanging core. Exiting...")
 
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.

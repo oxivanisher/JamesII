@@ -73,11 +73,16 @@ class ProximityPlugin(Plugin):
 
     def load_saved_state(self):
         try:
-            file = open(self.persons_status_file, 'r')
-            # self.persons_status = self.utils.convert_from_unicode(json.loads(file.read()))
-            self.persons_status = json.loads(file.read())
-            file.close()
+            # load saved proximity persons
             self.logger.debug("Loading persons status from %s" % self.persons_status_file)
+            proximity_file = open(self.core.persons_status_file, 'r')
+            self.persons_status = json.loads(proximity_file.read())
+            proximity_file.close()
+
+            # read saved location proximity from core (which comes from the saved file)
+            self.logger.debug("Reading and using local proximity state from core")
+            self.status = self.core.proximity_status.status[self.core.location]
+
         except IOError:
             pass
         pass

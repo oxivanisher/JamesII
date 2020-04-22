@@ -535,7 +535,9 @@ class Core(object):
                     self.logger.warning("I thought I am the master, but thing seemed to have changed. Exiting!")
                     self.terminate()
                 else:
-                    self.logger.info("Received config from master")
+                    self.logger.info("Received config from master. Reloading config on all plugins.")
+                    for cfg_plugin in self.plugins:
+                        cfg_plugin(reload_config)
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node has changed.")
                 self.master_node = sender_uuid

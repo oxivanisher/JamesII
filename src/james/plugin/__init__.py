@@ -7,18 +7,21 @@ import threading
 import time
 import logging
 
+
 class CommandNotFound(Exception):
     pass
+
 
 class PluginMode:
     AUTOLOAD = 0
     MANAGED = 1
     MANUAL = 2
 
+
 class Plugin(object):
 
     def __init__(self, core, descriptor):
-        self.uuid = str(uuid.uuid1()) 
+        self.uuid = str(uuid.uuid1())
         self.name = descriptor['name']
         self.core = core
         self.utils = self.core.utils
@@ -35,11 +38,8 @@ class Plugin(object):
 
         self.data_commands.create_subcommand('status', 'Returns status informations', self.return_status)
 
-        try:
-            self.config = self.core.config[self.name]
-        except KeyError:
-            self.config = None
-            pass
+        self.config = None
+        self.reload_config()
 
         self.logger = self.utils.getLogger(self.name, self.core.logger)
         try:
@@ -53,6 +53,13 @@ class Plugin(object):
             pass
 
         self.worker_threads = []
+
+    def reload_config(self):
+        try:
+            self.config = self.core.config[self.name]
+        except KeyError:
+            self.config = None
+            pass
 
     def start(self):
         pass
@@ -240,6 +247,7 @@ class Plugin(object):
 
     def alert(self, args):
         pass
+
 
 class PluginThread(threading.Thread):
 

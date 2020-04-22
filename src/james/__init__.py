@@ -535,7 +535,7 @@ class Core(object):
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
                     self.terminate()
                 else:
-                    self.logger.info("Received config from master. Reloading config on all plugins.")
+                    self.logger.warning("Received config from master. Reloading config on all plugins.")
                     self.config = new_config
                     for p in self.plugins:
                         p.reload_config()

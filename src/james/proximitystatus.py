@@ -22,7 +22,7 @@ class ProximityStatus(object):
             if self.internal_states[loop_type]:
                 state_before = True
 
-        # apply the new state state internally
+        # apply the new state internally
         self.internal_states[proximity_type] = newstatus[self.core.location]
 
         # calculate state after applying the new information

@@ -94,12 +94,14 @@ class GoogleCalendarPlugin(Plugin):
         return personClientIds
 
     def requestEvents(self):
-        self.logger.debug("requestEvents")
+        self.logger.debug("requestEvents from google calendar")
         allEvents = []
         personClientIds = self.getCalendarIds()
 
         for person in personClientIds.keys():
+            self.logger.debug("fetching calendars for person: %s" % person)
             for calendar in personClientIds[person]:
+                self.logger.debug("fetching calendar: %s" % calendar)
                 events = False
                 while not events:
                     events = self.fetchEvents(calendar)
@@ -115,6 +117,8 @@ class GoogleCalendarPlugin(Plugin):
                     else:
                         break
 
+                self.logger.debug("fetched %s events" % len(allEvents))
+
         retList = []
         for (person, event) in allEvents:
             self.eventsFetched += 1
@@ -123,6 +127,7 @@ class GoogleCalendarPlugin(Plugin):
 
             # ignore ignored_events from config
             if event['summary'] in self.config['ignored_events']:
+                self.logger.debug("Ignoring event because of ignored_events: %s" % event)
                 continue
 
             # whole day event:
@@ -153,6 +158,7 @@ class GoogleCalendarPlugin(Plugin):
                 retList.append(retStr)
 
         if len(retList):
+            self.logger.debug("Returning %s events" % len(retList))
             return retList
         # if len(retList):
         #     return ['Calendar events: '] + retList + ['End of calendar']

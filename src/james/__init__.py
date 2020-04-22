@@ -612,7 +612,7 @@ class Core(object):
             # this proximity event is not for our location. just ignore it for now
             pass
 
-    def proximity_event(self, changed_status, proximity_type):
+    def proximity_event(self, changed_status, proximity_type, forced=False):
         """
         If the local proximity state has changed, call the publish method
         """
@@ -622,6 +622,9 @@ class Core(object):
         for location in old_status.keys():
             if location == self.location:
                 if old_status[location] != changed_status:
+                    new_status[location] = changed_status
+                    continue
+                elif forced:
                     new_status[location] = changed_status
                     continue
 

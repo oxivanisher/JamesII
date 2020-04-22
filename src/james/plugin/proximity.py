@@ -73,7 +73,7 @@ class ProximityPlugin(Plugin):
 
         # publish the btproximity state (core only publishes something, if it has changed.
         # so loading the state from file should be save.)
-        self.core.proximity_event(self.status, 'btproximity')
+        self.core.proximity_event(self.status, 'btproximity', True)
 
     def load_saved_state(self):
         try:

@@ -74,7 +74,7 @@ class ProximityPlugin(Plugin):
     def load_saved_state(self):
         try:
             # load saved proximity persons
-            self.logger.debug("Loading persons status from %s" % self.persons_status_file)
+            self.logger.debug("Loading persons status from %s" % self.core.persons_status_file)
             proximity_file = open(self.core.persons_status_file, 'r')
             self.persons_status = json.loads(proximity_file.read())
             proximity_file.close()

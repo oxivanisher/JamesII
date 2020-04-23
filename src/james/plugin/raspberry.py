@@ -91,7 +91,7 @@ class RaspberryThread(PluginThread):
         # counting but calculating the time a button was pressed with timestamps
         while active:
             # this magic calculates the next sleep time based on the last run to about 0.01 sec
-            loop_start = time.time()
+            loop_start = time.time() * 1000
 
             # new_millis = int(round(time.time() * 1000))
             # diff = new_millis - millis
@@ -185,7 +185,7 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['state'] = new_state
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
-            sleep_time = self.loop_sleep - (time.time() - loop_start)
+            sleep_time = self.loop_sleep - (time.time() * 1000 - loop_start)
             self.logger.debug("Loop sleep_time is %s" % sleep_time)
             if sleep_time > 0:
                 time.sleep(sleep_time)

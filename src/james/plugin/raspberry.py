@@ -148,7 +148,7 @@ class RaspberryThread(PluginThread):
                     button_state_changed = False
 
                 # button is newly pressed
-                if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
+                if button_state_changed and self.pin_state_cache['switch'][pin]['count'] == 0 and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['pressed'] = time.time()
 
                 # button is still pressed this loop, this could possibly be removed, if the "second blink" is removed

@@ -155,30 +155,22 @@ class RaspberryThread(PluginThread):
 
                 # button is newly pressed
                 if button_state_changed and self.pin_state_cache['buttons'][pin]['count'] == 0 and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
+                    self.logger.debug("Button press registered for pin %s" % pin)
                     self.pin_state_cache['buttons'][pin]['pressed'] = time.time()
 
-                # button is still pressed this loop, this could possibly be removed, if the "second blink" is removed
-                # this was optimized, by using not 100 loops per second, but only 5
+                # button is still pressed this loop
                 if not button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['count'] += 1
-                    # if (self.pin_state_cache['buttons'][pin]['count'] % 5) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
-                    #     if len(self.led_pins) > 1:
-                    #         self.led_blink(1, 1)
 
                 # button is released
                 if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == self.pin_state_cache['buttons'][pin]['start']:
                     duration = math.floor(time.time() - self.pin_state_cache['buttons'][pin]['pressed'])
-                    if duration:
-                        self.logger.debug("Button on pin %s release registered after %s seconds" % (pin, duration))
-
-                    # 100 counts are ~+ 1 second
-                    if self.pin_state_cache['buttons'][pin]['count']:
-                        duration = int(self.pin_state_cache['buttons'][pin]['count'] / 5) + 1
-                        self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
-                        if len(self.led_pins) > 2:
-                            self.led_blink(2, duration)
-                        self.pin_state_cache['buttons'][pin]['count'] = 0
-                        self.pin_state_cache['buttons'][pin]['pressed'] = 0
+                    self.logger.debug("Button on pin %s release registered after %s seconds" % (pin, duration))
+                    self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
+                    if len(self.led_pins) > 2:
+                        self.led_blink(2, duration)
+                    self.pin_state_cache['buttons'][pin]['count'] = 0
+                    self.pin_state_cache['buttons'][pin]['pressed'] = 0
 
             # check for switch states
             for pin in self.switch_pins:

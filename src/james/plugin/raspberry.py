@@ -53,7 +53,7 @@ class RaspberryThread(PluginThread):
         # wiringpi.wiringPiSetupGpio()
         self.led_blink_list = []
         self.pull_up = pull_up
-        self.loop_sleep = 200
+        self.loop_sleep = 100
 
     def rasp_init(self):
         for pin in self.pull_up.keys():

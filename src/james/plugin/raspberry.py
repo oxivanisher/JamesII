@@ -164,7 +164,7 @@ class RaspberryThread(PluginThread):
 
                 # button is released
                 if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == self.pin_state_cache['buttons'][pin]['start']:
-                    duration = math.floor(time.time() - self.pin_state_cache['buttons'][pin]['pressed'])
+                    duration = int(math.floor(time.time() - self.pin_state_cache['buttons'][pin]['pressed']))
                     self.logger.debug("Button on pin %s release registered after %s seconds" % (pin, duration))
                     self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
                     if len(self.led_pins) > 2:

@@ -188,7 +188,7 @@ class RaspberryThread(PluginThread):
             sleep_time = self.loop_sleep - (time.time() * 1000 - loop_start)
             self.logger.debug("Loop sleep_time is %s" % sleep_time)
             if sleep_time > 0:
-                time.sleep(sleep_time)
+                time.sleep(sleep_time / 1000)
 
         for pin in self.led_pins:
             self.set_led(pin, True)

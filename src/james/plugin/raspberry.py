@@ -186,8 +186,8 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
             sleep_time = self.loop_sleep - (time.time() - loop_start)
+            self.logger.debug("Loop sleep_time is %s" % sleep_time)
             if sleep_time > 0:
-                self.logger.debug("Loop sleep_time is %s" % sleep_time)
                 time.sleep(sleep_time)
 
         for pin in self.led_pins:

@@ -155,9 +155,9 @@ class RaspberryThread(PluginThread):
                 # this was optimized, by using not 100 loops per second, but only 5
                 if not button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['count'] += 1
-                    if (self.pin_state_cache['buttons'][pin]['count'] % 5) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
-                        if len(self.led_pins) > 1:
-                            self.led_blink(1, 1)
+                    # if (self.pin_state_cache['buttons'][pin]['count'] % 5) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
+                    #     if len(self.led_pins) > 1:
+                    #         self.led_blink(1, 1)
 
                 # button is released
                 if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == self.pin_state_cache['buttons'][pin]['start']:

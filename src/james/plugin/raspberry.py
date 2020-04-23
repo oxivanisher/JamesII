@@ -2,6 +2,7 @@
 import wiringpi
 import time
 import threading
+import math
 
 from james.plugin import *
 
@@ -16,6 +17,7 @@ class BlinkLed(object):
         self.counter = 0
         self.led_state = True
         self.thread.set_led(self.pin, True)
+        self.loop_sleep = 200
 
     def check(self):
         self.counter += 1
@@ -85,13 +87,17 @@ class RaspberryThread(PluginThread):
         last_diff = 10
 
         # sleeping for 1/100 sec seems to be a good value for raspberry
+        # nope, pi zero w does not like that. the logic was changed to use self.loop_sleep in millis and not use
+        # counting but calculating the time a button was pressed with timestamps
         while active:
             # this magic calculates the next sleep time based on the last run to about 0.01 sec
-            new_millis = int(round(time.time() * 1000))
-            diff = new_millis - millis
-            sleep_time = (20 - ((diff + last_diff )/ 2 )) * 0.001
-            last_diff = diff
-            millis = new_millis
+            loop_start = time.time()
+
+            # new_millis = int(round(time.time() * 1000))
+            # diff = new_millis - millis
+            # sleep_time = (20 - ((diff + last_diff )/ 2 )) * 0.001
+            # last_diff = diff
+            # millis = new_millis
 
             # debug output
             # loop_count += 1
@@ -141,21 +147,32 @@ class RaspberryThread(PluginThread):
                 else:
                     button_state_changed = False
 
+                # button is newly pressed
+                if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
+                    self.pin_state_cache['buttons'][pin]['pressed'] = time.time()
+
+                # button is still pressed this loop, this could possibly be removed, if the "second blink" is removed
+                # this was optimized, by using not 100 loops per second, but only 5
                 if not button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['count'] += 1
-                    if (self.pin_state_cache['buttons'][pin]['count'] % 100) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
+                    if (self.pin_state_cache['buttons'][pin]['count'] % 5) == 0 or self.pin_state_cache['buttons'][pin]['count'] == 2:
                         if len(self.led_pins) > 1:
                             self.led_blink(1, 1)
 
+                # button is released
                 if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == self.pin_state_cache['buttons'][pin]['start']:
+                    duration = math.floor(time.time() - self.pin_state_cache['buttons'][pin]['pressed'])
+                    if duration:
+                        self.logger.debug("Button on pin %s release registered after %s seconds" % (pin, duration))
+
                     # 100 counts are ~+ 1 second
-                    if self.pin_state_cache['buttons'][pin]['count']:
-                        duration = int(self.pin_state_cache['buttons'][pin]['count'] / 100) + 1
-                        self.logger.debug("Button on pin %s release registered after %s" % (pin, duration))
+                    if self.pin_state_cache['buttons'][pin]['pressed']:
+                        duration = int(self.pin_state_cache['buttons'][pin]['count'] / 5) + 1
                         self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
                         if len(self.led_pins) > 2:
                             self.led_blink(2, duration)
                         self.pin_state_cache['buttons'][pin]['count'] = 0
+                        self.pin_state_cache['buttons'][pin]['pressed'] = 0
 
             # check for switch states
             for pin in self.switch_pins:
@@ -168,7 +185,9 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['state'] = new_state
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
+            sleep_time = self.loop_sleep - (time.time() - loop_start)
             if sleep_time > 0:
+                self.logger.debug("Loop sleep_time is %s" % sleep_time)
                 time.sleep(sleep_time)
 
         for pin in self.led_pins:

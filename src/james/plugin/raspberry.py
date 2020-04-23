@@ -17,7 +17,6 @@ class BlinkLed(object):
         self.counter = 0
         self.led_state = True
         self.thread.set_led(self.pin, True)
-        self.loop_sleep = 200
 
     def check(self):
         self.counter += 1
@@ -54,6 +53,7 @@ class RaspberryThread(PluginThread):
         # wiringpi.wiringPiSetupGpio()
         self.led_blink_list = []
         self.pull_up = pull_up
+        self.loop_sleep = 200
 
     def rasp_init(self):
         for pin in self.pull_up.keys():

@@ -166,7 +166,7 @@ class RaspberryThread(PluginThread):
                         self.logger.debug("Button on pin %s release registered after %s seconds" % (pin, duration))
 
                     # 100 counts are ~+ 1 second
-                    if self.pin_state_cache['buttons'][pin]['pressed']:
+                    if self.pin_state_cache['buttons'][pin]['count']:
                         duration = int(self.pin_state_cache['buttons'][pin]['count'] / 5) + 1
                         self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
                         if len(self.led_pins) > 2:

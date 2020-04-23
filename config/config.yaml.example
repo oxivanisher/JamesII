@@ -142,7 +142,8 @@ raspberry:
     - 4
    buttons:
     - pin     : 4
-      seconds : 1
+      seconds : 0
+      # attention: this is seconds the button is held. so 0 is also possible if the button is just tipped
       command : mpd radio toggle
     - pin     : 4
       seconds : 3

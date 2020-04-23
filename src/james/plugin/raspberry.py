@@ -138,10 +138,15 @@ class RaspberryThread(PluginThread):
 
             self.plugin.worker_lock.release()
 
+            # only once, read the initial state
+            for pin in self.button_pins:
+                self.pin_state_cache['buttons'][pin]['start'] = self.read_pin(pin)
+
             # check for pressed buttons
             for pin in self.button_pins:
-                if self.read_pin(pin) != self.pin_state_cache['buttons'][pin]['state']:
-                    self.pin_state_cache['buttons'][pin]['state'] = self.read_pin(pin)
+                current_state = self.read_pin(pin)
+                if current_state != self.pin_state_cache['buttons'][pin]['state']:
+                    self.pin_state_cache['buttons'][pin]['state'] = current_state
                     button_state_changed = True
                     self.logger.debug("Button state change registered for pin %s" % pin)
                 else:

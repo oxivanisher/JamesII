@@ -67,7 +67,8 @@ class RaspberryThread(PluginThread):
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
             wiringpi.pinMode(pin, 0)
-            self.pin_state_cache['switch'][pin] = {'count': 0, 'state': self.read_pin(pin)}
+            self.pin_state_cache['switch'][pin] = {'count': 0,
+                                                   'state': self.read_pin(pin)}
 
         for pin in self.led_pins:
             wiringpi.pinMode(pin, 1)
@@ -76,7 +77,11 @@ class RaspberryThread(PluginThread):
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
             wiringpi.pinMode(pin, 0)
-            self.pin_state_cache['buttons'][pin] = {'count': 0, 'state': self.read_pin(pin), 'start': self.read_pin(pin)}
+            initial_state = self.read_pin(pin)
+            self.pin_state_cache['buttons'][pin] = {'count': 0,
+                                                    'state': initial_state,
+                                                    'start': initial_state,
+                                                    'pressed': 0}
 
     def work(self):
         self.rasp_init()
@@ -137,10 +142,6 @@ class RaspberryThread(PluginThread):
             self.plugin.waiting_leds_blink = []
 
             self.plugin.worker_lock.release()
-
-            # only once, read the initial state
-            for pin in self.button_pins:
-                self.pin_state_cache['buttons'][pin]['start'] = self.read_pin(pin)
 
             # check for pressed buttons
             for pin in self.button_pins:

@@ -122,7 +122,8 @@ class Core(object):
         if 'myhostname' in self.brokerconfig.keys():
             self.hostname = self.brokerconfig['myhostname']
         else:
-            self.hostname = socket.getfqdn().split('.')[0].lower()
+            # self.hostname = socket.getfqdn().split('.')[0].lower()
+            self.hostname = socket.gethostname().lower()
 
         self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)

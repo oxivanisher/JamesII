@@ -54,11 +54,15 @@ class Timeout():
         self.sec = sec
 
     def __enter__(self):
-        signal.signal(signal.SIGALRM, self.raise_timeout)
-        signal.alarm(self.sec)
+        # Fixme: Windows has no support for signal.SIGALRM
+        if os.name == 'posix':
+            signal.signal(signal.SIGALRM, self.raise_timeout)
+            signal.alarm(self.sec)
 
     def __exit__(self, *args):
-        signal.alarm(0)    # disable alarm
+        # Fixme: Windows has no support for signal.SIGALRM
+        if os.name == 'posix':
+            signal.alarm(0)    # disable alarm
 
     def raise_timeout(self, *args):
         raise Timeout.Timeout()
@@ -168,9 +172,12 @@ class Core(object):
         if catchSignals:
             signal.signal(signal.SIGINT,self.on_kill_sig)
             signal.signal(signal.SIGTERM,self.on_kill_sig)
-            signal.signal(signal.SIGQUIT,self.on_kill_sig)
-            signal.signal(signal.SIGTSTP,self.on_kill_sig)
             signal.signal(signal.SIGSEGV,self.on_fault_sig)
+
+            # Fixme: Windows has no support for some signals
+            if os.name == 'posix':
+                signal.signal(signal.SIGQUIT, self.on_kill_sig)
+                signal.signal(signal.SIGTSTP,self.on_kill_sig)
 
         # Load master configuration
         self.config = None

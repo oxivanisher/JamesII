@@ -107,7 +107,7 @@ class MonitorPlugin(Plugin):
         message['timestamp'] = localtime()
 
         formated_output = self.format_output(message)
-        print self.process_log_message(formated_output)
+        print(self.process_log_message(formated_output))
 
 descriptor = {
     'name' : 'monitor',

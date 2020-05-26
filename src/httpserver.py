@@ -45,7 +45,7 @@ try:
     cfgFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../config/httpserver.yaml')
     config = james.config.YamlConfig(cfgFile).get_values()
 except IOError:
-    print "Unable to load config"
+    print("Unable to load config")
     sys.quit(1)
 
 if not config['port']:
@@ -297,13 +297,13 @@ def send_command():
 @app.route('/api/get/commands', methods = ['GET'])
 @requires_auth
 def get_command_responses_json():
-    print get_command_responses()
+    print(get_command_responses())
     return flask.jsonify( { 'aaData' : get_command_responses() } )
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['GET'])
 @requires_auth
 def get_task(task_id):
-    task = filter(lambda t: t['id'] == task_id, tasks)
+    task = [t for t in tasks if t['id'] == task_id]
     if len(task) == 0:
         abort(404)
     return flask.jsonify( { 'task': task[0] } )

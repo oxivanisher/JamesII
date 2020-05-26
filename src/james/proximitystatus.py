@@ -18,7 +18,7 @@ class ProximityStatus(object):
 
         # calculate state before applying the new information
         state_before = False
-        for loop_type in self.internal_states.keys():
+        for loop_type in list(self.internal_states.keys()):
             if self.internal_states[loop_type]:
                 state_before = True
 
@@ -27,7 +27,7 @@ class ProximityStatus(object):
 
         # calculate state after applying the new information
         state_after = False
-        for loop_type in self.internal_states.keys():
+        for loop_type in list(self.internal_states.keys()):
             if self.internal_states[loop_type]:
                 state_after = True
 
@@ -49,12 +49,12 @@ class ProximityStatus(object):
         newstatus = copy.deepcopy(self.status)
 
         # If the proximity_type is not known, ensure it exists
-        if proximity_type not in self.internal_states.keys():
+        if proximity_type not in list(self.internal_states.keys()):
             self.internal_states[proximity_type] = False
 
         # Check if any proximity_type is true (somebody is at home)
         ret = False
-        for plugin in self.internal_states.keys():
+        for plugin in list(self.internal_states.keys()):
             if self.internal_states[plugin]:
                 ret = True
 
@@ -62,7 +62,7 @@ class ProximityStatus(object):
         return newstatus
 
     def get_status_here(self):
-        if self.core.location in self.status.keys():
+        if self.core.location in list(self.status.keys()):
             return self.status[self.core.location]
         else:
             self.core.logger.debug("ProximityStatus.get_status_here: Location '%s' not found" % self.core.location)
@@ -70,9 +70,9 @@ class ProximityStatus(object):
 
     def details(self):
         ret = ["Global states (location: state):"]
-        for location in self.status.keys():
+        for location in list(self.status.keys()):
             ret.append("%20s: %s" % (location, self.status[location]))
         ret.append("Internal state for location %s (plugin: state):" % self.core.location)
-        for proximity_type in self.internal_states.keys():
+        for proximity_type in list(self.internal_states.keys()):
             ret.append("%20s: %s" % (proximity_type, self.internal_states[proximity_type]))
         return ret

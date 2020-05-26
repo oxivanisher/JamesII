@@ -1,5 +1,5 @@
 
 
-import logserver
-import loghandler
+from . import logserver
+from . import loghandler
 

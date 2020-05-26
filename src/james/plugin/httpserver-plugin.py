@@ -165,9 +165,9 @@ class HttpServerPlugin(Plugin):
     def process_command_response(self, args, host, plugin):
         newEntry = DbCommandResponse()
         newEntry.time = int(time.time())
-        newEntry.host = unicode(host)
-        newEntry.plugin = unicode(plugin)
-        newEntry.data = unicode(json.dumps(args))
+        newEntry.host = str(host)
+        newEntry.plugin = str(plugin)
+        newEntry.data = str(json.dumps(args))
         self.store.add(newEntry)
         self.store.commit()
         self.logger.debug('Saved command response from %s' % host)
@@ -175,41 +175,41 @@ class HttpServerPlugin(Plugin):
     def process_broadcast_command_response(self, args, host, plugin):
         newEntry = DbBroadcastCommandResponse()
         newEntry.time = int(time.time())
-        newEntry.host = unicode(host)
-        newEntry.plugin = unicode(plugin)
-        newEntry.data = unicode(json.dumps(args))
+        newEntry.host = str(host)
+        newEntry.plugin = str(plugin)
+        newEntry.data = str(json.dumps(args))
         self.store.add(newEntry)
         self.store.commit()
         self.logger.debug('Saved broadcast command response from %s' % host)
 
     def process_data_response(self, uuid, name, currentStatus, hostname, plugin):
         if name == 'status':
-            existingUuid = self.store.get(DbHostname, unicode(uuid))
+            existingUuid = self.store.get(DbHostname, str(uuid))
             if not existingUuid:
                 newEntry = DbHostname()
-                newEntry.uuid = unicode(uuid)
-                newEntry.hostname = unicode(hostname)
+                newEntry.uuid = str(uuid)
+                newEntry.hostname = str(hostname)
                 self.store.add(newEntry)
                 self.store.commit()
                 self.logger.debug('Processed new Host UUID: %s %s' % (hostname, uuid))
 
-            result = self.store.find(DbStatus, And(DbStatus.uuid == unicode(uuid), DbStatus.plugin == unicode(plugin))).one()
+            result = self.store.find(DbStatus, And(DbStatus.uuid == str(uuid), DbStatus.plugin == str(plugin))).one()
             if result:
                 result.time = int(time.time())
-                result.data = unicode(json.dumps(currentStatus))
+                result.data = str(json.dumps(currentStatus))
             else:
                 newEntry = DbStatus()
-                newEntry.uuid = unicode(uuid)
-                newEntry.plugin = unicode(plugin)
+                newEntry.uuid = str(uuid)
+                newEntry.plugin = str(plugin)
                 newEntry.time = int(time.time())
-                newEntry.data = unicode(json.dumps(currentStatus))
+                newEntry.data = str(json.dumps(currentStatus))
                 self.store.add(newEntry)
             self.store.commit()
             self.logger.debug('Processed data status update from %s@%s (%s)' % (plugin, hostname, uuid))
 
     def alert(self, args):
         newEntry = DbAlertResponse()
-        newEntry.data = unicode(json.dumps(' '.join(args).split(';')))
+        newEntry.data = str(json.dumps(' '.join(args).split(';')))
         newEntry.time = int(time.time())
         self.store.add(newEntry)
         self.store.commit()

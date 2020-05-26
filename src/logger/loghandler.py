@@ -3,8 +3,8 @@ import logging
 import logging.handlers
 import time
 import threading
-import Queue
-import logserver
+import queue
+from . import logserver
 
 from storm.locals import *
 
@@ -25,18 +25,18 @@ class RecordSaverWorkerThread(threading.Thread):
         if not self.config['port']:
             self.config['port'] = 3306
         dbConnectionString = "%s://%s:%s@%s:%s/%s" % (self.config['schema'], self.config['user'], self.config['password'], self.config['host'], self.config['port'], self.config['database'])
-        print "Connecting to db: %s" % dbConnectionString
+        print("Connecting to db: %s" % dbConnectionString)
         
         self.database = create_database(dbConnectionString)
         try:
             self.database.connect()
             self.store = Store(self.database)
         except Exception as e:
-            print "Unable to connect to MySql server: %s" % e
+            print("Unable to connect to MySql server: %s" % e)
             return
         # print "Connected"
         try:
-            print self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
+            print(self.store.execute("CREATE TABLE log_entries (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
                                                             relativeCreated FLOAT, \
                                                             process INTEGER, \
                                                             module TEXT, \
@@ -61,7 +61,7 @@ class RecordSaverWorkerThread(threading.Thread):
                                                             hostname TEXT, \
                                                             uuid TEXT, \
                                                             plugin TEXT, \
-                                                            p_child TEXT)", noresult=True)
+                                                            p_child TEXT)", noresult=True))
             # print "Table created"
         except Exception as e:
             # print "Table not created"
@@ -69,7 +69,7 @@ class RecordSaverWorkerThread(threading.Thread):
         self.store.commit()
         self.store.flush()
         self.connecting = False
-        print "Connecting ended. Starting to store records."
+        print("Connecting ended. Starting to store records.")
 
     def commit_store(self):
         now = time.time()
@@ -79,7 +79,7 @@ class RecordSaverWorkerThread(threading.Thread):
                 self.store.commit()
                 self.store.flush()
             except Exception as e:
-                print "MySql connection error: %s" % e
+                print("MySql connection error: %s" % e)
 
     def save_record(self, record):
         self.counter += 1
@@ -87,47 +87,47 @@ class RecordSaverWorkerThread(threading.Thread):
         newRecord = StormLogEntry()
         newRecord.relativeCreated     = record.relativeCreated
         newRecord.process             = record.process
-        newRecord.module              = unicode(record.module)
-        newRecord.funcName            = unicode(record.funcName)
-        newRecord.message             = unicode(record.message)
-        newRecord.filename            = unicode(record.filename)
+        newRecord.module              = str(record.module)
+        newRecord.funcName            = str(record.funcName)
+        newRecord.message             = str(record.message)
+        newRecord.filename            = str(record.filename)
         newRecord.levelno             = record.levelno
-        newRecord.processName         = unicode(record.processName)
+        newRecord.processName         = str(record.processName)
         newRecord.lineno              = record.lineno
-        newRecord.asctime             = unicode(record.asctime)
-        newRecord.msg                 = unicode(record.msg)
-        newRecord.args                = unicode(record.args)
-        newRecord.exc_text            = unicode(record.exc_text)
-        newRecord.name                = unicode(record.name)
+        newRecord.asctime             = str(record.asctime)
+        newRecord.msg                 = str(record.msg)
+        newRecord.args                = str(record.args)
+        newRecord.exc_text            = str(record.exc_text)
+        newRecord.name                = str(record.name)
         newRecord.thread              = record.thread
         newRecord.created             = record.created
-        newRecord.threadName          = unicode(record.threadName)
+        newRecord.threadName          = str(record.threadName)
         newRecord.msecs               = record.msecs
-        newRecord.pathname            = unicode(record.pathname)
-        newRecord.exc_info            = unicode(record.exc_info)
-        newRecord.levelname           = unicode(record.levelname)
+        newRecord.pathname            = str(record.pathname)
+        newRecord.exc_info            = str(record.exc_info)
+        newRecord.levelname           = str(record.levelname)
 
         args = record.name.split('.')
 
         try:
-            newRecord.hostname        = unicode(args[0])
+            newRecord.hostname        = str(args[0])
         except:
-            newRecord.hostname        = unicode("")
+            newRecord.hostname        = str("")
             pass
         try:
-            newRecord.uuid            = unicode(args[1])
+            newRecord.uuid            = str(args[1])
         except:
-            newRecord.uuid            = unicode("")
+            newRecord.uuid            = str("")
             pass
         try:
-            newRecord.plugin          = unicode(args[2])
+            newRecord.plugin          = str(args[2])
         except:
-            newRecord.plugin          = unicode("")
+            newRecord.plugin          = str("")
             pass
         try:
-            newRecord.p_child         = unicode('.'.join(args[3:]))
+            newRecord.p_child         = str('.'.join(args[3:]))
         except:
-            newRecord.p_child         = unicode("")
+            newRecord.p_child         = str("")
             pass
 
         if self.connecting:
@@ -138,7 +138,7 @@ class RecordSaverWorkerThread(threading.Thread):
             self.commit_store()
 
         if (self.counter % 50) == 0:
-            print "Totally stored records: %10s" % self.counter
+            print("Totally stored records: %10s" % self.counter)
 
     def run(self):
         self.connect_db()
@@ -148,13 +148,13 @@ class RecordSaverWorkerThread(threading.Thread):
                 record = self.queue.get(True, 1)
                 self.save_record(record)
                 self.commit_store()
-            except Queue.Empty:
+            except queue.Empty:
                 pass
 
     def terminate(self):
         self.terminated = True
         self.join()
-        print "worker exiting"
+        print("worker exiting")
 
 class StormLogEntry(object):
     __storm_table__ = "log_entries"
@@ -189,7 +189,7 @@ class StormLogEntry(object):
 class RecordSaver(logserver.LogServerHandler):
     def __init__(self, config):
         self.config = config
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.worker_lock = threading.Lock()
         self.workerMustExit = False
         self.db_thread = RecordSaverWorkerThread(self, self.queue, self.config)

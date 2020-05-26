@@ -1,8 +1,8 @@
 
 import json
 import uuid
-import urllib
-import httplib
+import urllib.request, urllib.parse, urllib.error
+import http.client
 
 from james.plugin import *
 
@@ -47,11 +47,11 @@ class XbmcPlugin(Plugin):
 
         data = json.dumps(rawData)
         try:
-            h = httplib.HTTPConnection(self.connection_string)
+            h = http.client.HTTPConnection(self.connection_string)
             h.request('POST', '/jsonrpc', data, headers)
             r = h.getresponse()
             rpcReturn = json.loads(r.read())[0]
-            if 'error' in rpcReturn.keys():
+            if 'error' in list(rpcReturn.keys()):
                 self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
                 return False
             else:

@@ -63,9 +63,9 @@ class LircThread(PluginThread):
 
     def create_lircrc(self, lircrcConfig):
         configReturn = []
-        for remote in lircrcConfig.keys():
+        for remote in list(lircrcConfig.keys()):
             for key_dict in lircrcConfig[remote]:
-                for key in key_dict.keys():
+                for key in list(key_dict.keys()):
                     configReturn.append("begin")
                     configReturn.append("\tremote = %s" % remote)
                     configReturn.append("\tbutton = %s" % key)
@@ -98,7 +98,7 @@ class Lirc:
         """
         Return a list of devices.
         """
-        return self.codes.keys()
+        return list(self.codes.keys())
 
 
     def parse(self):
@@ -179,7 +179,7 @@ class LircPlugin(Plugin):
             self.workerLock = threading.Lock()
             self.workerRunning = True
 
-            if 'rcvCommands' in self.config['nodes'][self.core.hostname].keys():
+            if 'rcvCommands' in list(self.config['nodes'][self.core.hostname].keys()):
                 self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
                 self.lirc_thread.start()
 
@@ -229,7 +229,7 @@ class LircPlugin(Plugin):
         try:
             for remote in self.config['nodes'][self.core.hostname]['rcvCommands']:
                 for command in self.config['nodes'][self.core.hostname]['rcvCommands'][remote]:
-                    for key in command.keys():
+                    for key in list(command.keys()):
                         ret.append('%-15s %-15s %s' % (remote, key, command[key]))
         except TypeError:
             pass
@@ -259,25 +259,25 @@ class LircPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("LIRC processing proximity event")
             try:
-                if 'proximityToggle' in self.config['nodes'][self.core.hostname].keys():
+                if 'proximityToggle' in list(self.config['nodes'][self.core.hostname].keys()):
                     for entry in self.config['nodes'][self.core.hostname]['proximityToggle']:
-                        for command in entry.keys():
+                        for command in list(entry.keys()):
                             self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
             except TypeError:
                 pass
             if newstatus['status'][self.core.location]:
                 try:
-                    if 'proximityHome' in self.config['nodes'][self.core.hostname].keys():
+                    if 'proximityHome' in list(self.config['nodes'][self.core.hostname].keys()):
                         for entry in self.config['nodes'][self.core.hostname]['proximityHome']:
-                            for command in entry.keys():
+                            for command in list(entry.keys()):
                                 self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
                 except TypeError:
                     pass
             else:
                 try:
-                    if 'proximityGone' in self.config['nodes'][self.core.hostname].keys():
+                    if 'proximityGone' in list(self.config['nodes'][self.core.hostname].keys()):
                         for entry in self.config['nodes'][self.core.hostname]['proximityGone']:
-                            for command in entry.keys():
+                            for command in list(entry.keys()):
                                 self.core.add_timeout(0, self.cmd_send, [command, entry[command]])
                 except TypeError:
                     pass

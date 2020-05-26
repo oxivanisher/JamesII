@@ -239,7 +239,7 @@ class Plugin(object):
         ret = []
         data = self.return_status()
         try:
-            for key in self.return_status().keys():
+            for key in list(self.return_status().keys()):
                 ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
             return ret
         except AttributeError:
@@ -293,17 +293,17 @@ class Factory(object):
 
     @classmethod
     def register_plugin(cls, descriptor):
-        if not 'name' in descriptor.keys():
+        if not 'name' in list(descriptor.keys()):
             raise Exception("Plugin descriptor has no name field")
-        if not 'help' in descriptor.keys():
+        if not 'help' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no help field" % descriptor['name'])
-        if not 'command' in descriptor.keys():
+        if not 'command' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no command field" % descriptor['name'])
-        if not 'mode' in descriptor.keys():
+        if not 'mode' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no mode field" % descriptor['name'])
-        if not 'class' in descriptor.keys():
+        if not 'class' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no class field" % descriptor['name'])
-        if not 'detailsNames' in descriptor.keys():
+        if not 'detailsNames' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no detailsNames field" % descriptor['name'])
 
         cls.descriptors[descriptor['name']] = descriptor
@@ -320,7 +320,7 @@ class Factory(object):
 
     @classmethod
     def enum_plugin_classes_with_mode(cls, mode):
-        for name, descriptor in cls.descriptors.iteritems():
+        for name, descriptor in cls.descriptors.items():
             if descriptor['mode'] == mode:
                 yield descriptor['class']
 

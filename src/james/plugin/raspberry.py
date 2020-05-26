@@ -56,7 +56,7 @@ class RaspberryThread(PluginThread):
         self.loop_sleep = 100
 
     def rasp_init(self):
-        for pin in self.pull_up.keys():
+        for pin in list(self.pull_up.keys()):
             if self.pull_up[pin]:
                 self.logger.info("Raspberry plugin pulling up pin %s" % pin)
                 wiringpi.pullUpDnControl(int(pin), 2)
@@ -225,11 +225,11 @@ class RaspberryPlugin(Plugin):
         self.messages_waiting_count = 0
 
         self.pull_up = {}
-        if 'pull_up' in self.config['nodes'][self.core.hostname].keys():
+        if 'pull_up' in list(self.config['nodes'][self.core.hostname].keys()):
             self.pull_up = self.config['nodes'][self.core.hostname]['pull_up']
 
         self.led_pins = []
-        if 'led_pins' in self.config['nodes'][self.core.hostname].keys():
+        if 'led_pins' in list(self.config['nodes'][self.core.hostname].keys()):
             for led_pin in self.config['nodes'][self.core.hostname]['led_pins']:
                 self.led_pins.append(led_pin)
 
@@ -244,7 +244,7 @@ class RaspberryPlugin(Plugin):
 
         self.switch_pins = []
         self.switch_commands = {}
-        if 'switches' in self.config['nodes'][self.core.hostname].keys():
+        if 'switches' in list(self.config['nodes'][self.core.hostname].keys()):
             try:
                 for command in self.utils.convert_from_unicode(self.config['nodes'][self.core.hostname]['switches']):
                     self.switch_commands[(command['pin'], True)] = command['cmd_on'].split()

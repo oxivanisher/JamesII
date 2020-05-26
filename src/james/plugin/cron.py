@@ -20,7 +20,7 @@ class AllMatch(set):
 allMatch = AllMatch()
 
 def conv_to_set(obj):  # Allow single integer to be provided
-    if isinstance(obj, (int,long)):
+    if isinstance(obj, int):
         return set([obj])  # Single item
     if not isinstance(obj, set):
         obj = set(obj)
@@ -99,7 +99,7 @@ class CronTab(object):
         ret.append(ret_format % ('id', 'act', 'mins', 'hours', 'days', 'months', 'dow', 'command'))
         for e in self.events:
             event_data = e.show()
-            for key in event_data.keys():
+            for key in list(event_data.keys()):
                 if event_data[key] == AllMatch():
                     event_data[key] = "*"
                 elif key == "act":

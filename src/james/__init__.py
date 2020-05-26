@@ -10,19 +10,19 @@ import copy
 import getpass
 import threading
 import subprocess
-import Queue
+import queue
 import time
 import atexit
 import logging, logging.handlers
 import signal
 
-import plugin
-import config
-import command
-import broadcastchannel
-import proximitystatus
-import jamesutils
-import jamesmessage
+from . import plugin
+from . import config
+from . import command
+from . import broadcastchannel
+from . import proximitystatus
+from . import jamesutils
+from . import jamesmessage
 
 # also pika hack
 # import logging
@@ -93,7 +93,7 @@ class Core(object):
     def __init__(self, passive = False, catchSignals = True):
         self.plugins = []
         self.timeouts = []
-        self.timeout_queue = Queue.Queue()
+        self.timeout_queue = queue.Queue()
         self.terminated = False
         self.returncode = 0
         self.startup_timestamp = time.time()
@@ -119,7 +119,7 @@ class Core(object):
         except Exception as e:
             raise BrokerConfigNotLoaded()
 
-        if 'myhostname' in self.brokerconfig.keys():
+        if 'myhostname' in list(self.brokerconfig.keys()):
             self.hostname = self.brokerconfig['myhostname']
         else:
             # self.hostname = socket.getfqdn().split('.')[0].lower()
@@ -164,7 +164,7 @@ class Core(object):
         #         pass
 
         # catching signals
-        self.signal_names = dict((k, v) for v, k in signal.__dict__.iteritems() if v.startswith('SIG'))
+        self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
         if catchSignals:
             signal.signal(signal.SIGINT,self.on_kill_sig)
             signal.signal(signal.SIGTERM,self.on_kill_sig)
@@ -340,7 +340,7 @@ class Core(object):
             self.logger.debug("Loading plugin '%s'" % (name))
             c = plugin.Factory.get_plugin_class(name)
             self.instantiate_plugin(c)
-        except plugin.PluginNotAvailable, e:
+        except plugin.PluginNotAvailable as e:
             self.logger.warning(e)
 
     def autoload_plugins(self):
@@ -500,11 +500,12 @@ class Core(object):
             """Call process_discovery_event() on each started plugin."""
             p.process_discovery_event(msg)
 
-    def config_listener(self, (new_config, sender_uuid)):
+    def config_listener(self, xxx_todo_changeme):
         """
         Listens for configurations on the configuration channel. If we get a
         changed version of the config (= new config on master node) we will exit.
         """
+        (new_config, sender_uuid) = xxx_todo_changeme
         if not self.config:
             try:
                 if not new_config['core']['debug']:
@@ -526,12 +527,12 @@ class Core(object):
             if cmp(self.config, new_config) == 0:
                 if self.uuid == sender_uuid == self.master_node:
                     cfg_diff = []
-                    for key in self.config.keys():
+                    for key in list(self.config.keys()):
                         if not key in new_config:
                             cfg_diff.append(key)
                     self.logger.warning("Somehow, we sent a new config event if we already are the master! "
                                         "There is probably a problem in our config (keys old: %s, new: %s)"
-                                        ": %s" % (len(self.config.keys()), len(new_configkeys()), ", ".join(cfg_diff)))
+                                        ": %s" % (len(list(self.config.keys())), len(new_configkeys()), ", ".join(cfg_diff)))
                 elif self.master:
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
                     self.terminate()
@@ -623,7 +624,7 @@ class Core(object):
         new_status = {}
         old_status = self.proximity_status.check_for_change(proximity_type)
 
-        for location in old_status.keys():
+        for location in list(old_status.keys()):
             if location == self.location:
                 if forced:
                     new_status[location] = changed_status
@@ -669,7 +670,7 @@ class Core(object):
         """
         if self.master:
             nodes_online = []
-            for node in self.nodes_online.keys():
+            for node in list(self.nodes_online.keys()):
                 nodes_online.append(self.nodes_online[node])
             self.logger.debug('Publishing online nodes: %s' % nodes_online)
 
@@ -833,7 +834,7 @@ class Core(object):
             try:
                 timeout = self.timeout_queue.get_nowait()
                 self.timeouts.append(timeout)
-            except Queue.Empty:
+            except queue.Empty:
                 break
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -849,7 +850,7 @@ class Core(object):
                 if timeout.deadline <= now:
                     self.logger.debug('Processing timeout %s' % timeout.handler)
                     timeout.handler(*timeout.args, **timeout.kwargs)
-            self.timeouts = filter(lambda t: t.deadline > now, self.timeouts)
+            self.timeouts = [t for t in self.timeouts if t.deadline > now]
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = exc_tb.tb_frame.f_code.co_filename

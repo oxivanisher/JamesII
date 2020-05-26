@@ -237,12 +237,12 @@ class JamesUtils(object):
         sock.sendto(send_data, ('<broadcast>', 7))
 
     def convert_from_unicode(self, data):
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             return str(data)
         elif isinstance(data, collections.Mapping):
-            return dict(map(self.convert_from_unicode, data.iteritems()))
+            return dict(list(map(self.convert_from_unicode, iter(data.items()))))
         elif isinstance(data, collections.Iterable):
-            return type(data)(map(self.convert_from_unicode, data))
+            return type(data)(list(map(self.convert_from_unicode, data)))
         else:
             return data
 
@@ -256,7 +256,7 @@ class JamesUtils(object):
                 self.listUnicodeCleanuptmp = data
             args = data
 
-        args = filter(lambda s: s != '', args)
+        args = [s for s in args if s != '']
         return args
 
     def popenAndWait(self, command):

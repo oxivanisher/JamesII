@@ -98,7 +98,7 @@ class GoogleCalendarPlugin(Plugin):
         allEvents = []
         personClientIds = self.getCalendarIds()
 
-        for person in personClientIds.keys():
+        for person in list(personClientIds.keys()):
             self.logger.debug("fetching calendars for person: %s" % person)
             for calendar in personClientIds[person]:
                 self.logger.debug("fetching calendar: %s" % calendar)
@@ -131,14 +131,14 @@ class GoogleCalendarPlugin(Plugin):
                 continue
 
             # whole day event:
-            if 'date' in event['start'].keys():
+            if 'date' in list(event['start'].keys()):
                 if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d'):
                     retStr = "Today "
                 else:
                     retStr = "Tomorrow "
 
             # normal event:
-            elif 'dateTime' in event['start'].keys():
+            elif 'dateTime' in list(event['start'].keys()):
                 eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTimeStart.day > datetime.datetime.now().day:
@@ -184,7 +184,7 @@ class GoogleCalendarPlugin(Plugin):
                     retList.append(cal['id'] + ": " + cal['summary'])
             return retList
         except Exception as e:
-            print e
+            print(e)
 
     # internal
     def process_proximity_event(self, newstatus):

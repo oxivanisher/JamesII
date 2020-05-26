@@ -314,7 +314,7 @@ class VoiceCommandsPlugin(Plugin):
             replacedWords = []
             filteredList = []
             for word in rawTextList:
-                if word in self.replace.keys():
+                if word in list(self.replace.keys()):
                     replacedWords.append(word)
                     filteredList.append(self.replace[word])
                 else:
@@ -336,7 +336,7 @@ class VoiceCommandsPlugin(Plugin):
                 self.playBeeps.append((440, 3, 0.15))
             else:
                 commandFound = None
-                for command in self.voiceCommands.keys():
+                for command in list(self.voiceCommands.keys()):
                     if command in ' '.join(filteredList):
                         commandFound = self.voiceCommands[command]
                 depth = -1

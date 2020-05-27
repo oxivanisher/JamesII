@@ -1,4 +1,3 @@
-
 import time
 import datetime
 import pytz
@@ -8,6 +7,7 @@ import collections
 import subprocess
 import logging
 import re
+
 
 class JamesUtils(object):
 
@@ -48,16 +48,18 @@ class JamesUtils(object):
         event = datetime.datetime.fromtimestamp(timestamp, timezone)
         event_timestamp = int(event.strftime('%s'))
         last_midnight_timestamp = int(timezone.localize(now.replace(hour=0, minute=0, second=0, microsecond=0,
-                                                               tzinfo=None), is_dst=None).strftime('%s'))
+                                                                    tzinfo=None), is_dst=None).strftime('%s'))
         next_midnight_timestamp = last_midnight_timestamp + 86400
         past_newyear_timestamp = int(timezone.localize(now.replace(day=1, month=1, hour=0, minute=0, second=0,
-                                                              microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
+                                                                   microsecond=0, tzinfo=None), is_dst=None).strftime(
+            '%s'))
         future_newyear_timestamp = int(timezone.localize(now.replace(day=31, month=12, hour=23, minute=59, second=59,
-                                                              microsecond=0, tzinfo=None), is_dst=None).strftime('%s'))
+                                                                     microsecond=0, tzinfo=None), is_dst=None).strftime(
+            '%s'))
         if age == 0:
             return 'just now'
 
-        #FIXME 2 if bloecke fuer zukunft und vergangenheit
+        # FIXME 2 if bloecke fuer zukunft und vergangenheit
         elif age < 60 and age >= 0:
             if age == 1:
                 return '%s second ago' % (age)
@@ -104,7 +106,8 @@ class JamesUtils(object):
                                              event.strftime('%S'))
         elif intime <= 604800 and intime >= 0:
             return event.strftime('next %A at %H:%M:%S')
-        elif event_timestamp > future_newyear_timestamp and event_timestamp < (future_newyear_timestamp + 31556952): #NOT leap year save!
+        elif event_timestamp > future_newyear_timestamp and event_timestamp < (
+                future_newyear_timestamp + 31556952):  # NOT leap year save!
             return event.strftime('next year on %A the %d of %B at %H:%M:%S')
 
         else:
@@ -158,7 +161,7 @@ class JamesUtils(object):
             if wait_secondsStart != wait_seconds:
                 args.pop(0)
 
-        return( wait_seconds, args )
+        return (wait_seconds, args)
 
     def time_string2seconds(self, arg):
         # converts 12:22 and 12:22:33 into seconds
@@ -192,7 +195,7 @@ class JamesUtils(object):
 
     def get_time_string(self):
         now = datetime.datetime.now()
-        
+
         return "%s:%02d" % (now.hour, now.minute)
 
     def bytes2human(self, n):
@@ -200,7 +203,7 @@ class JamesUtils(object):
         symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
         prefix = {}
         for i, s in enumerate(symbols):
-            prefix[s] = 1 << (i+1)*10
+            prefix[s] = 1 << (i + 1) * 10
         for s in reversed(symbols):
             if n >= prefix[s]:
                 value = float(n) / prefix[s]
@@ -221,10 +224,10 @@ class JamesUtils(object):
             macaddress = macaddress.replace(sep, '')
         else:
             raise ValueError('Incorrect MAC address format')
-     
+
         # Pad the synchronization stream.
         data = ''.join(['FFFFFFFFFFFF', macaddress * 20])
-        send_data = '' 
+        send_data = ''
 
         # Split up the hex values and pack.
         for i in range(0, len(data), 2):
@@ -266,7 +269,7 @@ class JamesUtils(object):
         logger = self.getLogger('jamesutils', self.core.logger)
         logger.debug('popenAndWait: %s' % command)
         ret = subprocess.Popen(command, \
-                  stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+                               stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
         return ret.split("\n")
 
     def getLogger(self, name, parent=None):
@@ -298,3 +301,15 @@ class JamesUtils(object):
                 pass
 
             return log
+
+
+# http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C
+class StrToBytes:
+    def __init__(self, fileobj):
+        self.fileobj = fileobj
+
+    def read(self, size):
+        return self.fileobj.read(size).encode()
+
+    def readline(self, size=-1):
+        return self.fileobj.readline(size).encode()

@@ -146,7 +146,7 @@ class Core(object):
 
         # setting up pika loggers
         # pika.base_connection.logger = self.utils.getLogger('pika.adapters.base_connection', None)
-        # pika.base_connection.logger.setLevel(logger.INFO)
+        # pika.base_connection.logheartbeat_intervalger.setLevel(logger.INFO)
         # pika.blocking_connection.logger = self.utils.getLogger('pika.adapters.blocking_connection', None)
         # pika.blocking_connection.LOGGER.setLevel(logger.INFO)
 
@@ -215,8 +215,7 @@ class Core(object):
                 self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                     port = self.brokerconfig['port'],
                                                                                     virtual_host = self.brokerconfig['vhost'],
-                                                                                    credentials = cred,
-                                                                                    heartbeat_interval = 30)) #retry with newer pika than 0.9.14 !
+                                                                                    credentials = cred))
             connected = True
         except Exception as e:
             self.logger.warning("Could not connect to RabbitMQ server on default port! %s" % e)
@@ -229,8 +228,7 @@ class Core(object):
                     self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
                                                                                         port = self.brokerconfig['fallbackport'],
                                                                                         virtual_host = self.brokerconfig['vhost'],
-                                                                                        credentials = cred,
-                                                                                        heartbeat_interval = 30)) #retry with newer pika than 0.9.14 !
+                                                                                        credentials = cred))
             except Exception as e:
                 self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)
                 sys.exit(2)

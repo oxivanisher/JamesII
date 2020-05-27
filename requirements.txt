@@ -15,32 +15,48 @@
 pika
 PyYAML
 pytz
-#psutil
+
+# plugin sysstat
+psutil
 
 #dns
 #jsonrpclib
 
-# desktop notification?
+# plugin dbus-notify
 #dbus
 
-# XMPP
-#xmpp
+# plugin jabber
+#python-xmpp debian package (https://packages.debian.org/buster/python-xmpp) was used. needs replacing!
 
-# bluetooth
+# plugin proximity
 #PyBluez
 
-# i2c
+# plugin rgb-led
 #smbus2
 
-# MPD
+# plugin mpd-client
 #python-mpd2
 
-# transmission
+# plugin transmission
 #transmissionrpc
 
-# lirc
+# plugin lirc-plugin
 #pylirc
 
+# plugin cli
+#readline
+
+# voice-commands
+#pyaudio
+
+# plugin google-calendar
+google-calendar-api-client-python
+
+# plugin httpserver-plugin
+storm
+
+# plugin raspberry
+#wiringpi
 
 # pip freeze
 # asn1crypto==0.24.0

@@ -115,8 +115,8 @@ class Command(object):
         return_list = []
         for subcommand in list(self.subcommands.keys()):
             return_list.append({
-                'name' : self.subcommands[subcommand].name,
-                'help' : self.subcommands[subcommand].help,
-                'hide' : self.subcommands[subcommand].hide
+                'name': self.subcommands[subcommand].name,
+                'help': self.subcommands[subcommand].help,
+                'hide': self.subcommands[subcommand].hide
                 })
         return return_list

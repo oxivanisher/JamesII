@@ -1,7 +1,7 @@
 # James II: Your Butler brought to the next level.
 The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
-The system is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/).
-Module documentation nightly updated: http://oxi.ch/JamesII/
+The system is also very handy in combination with RaspberryPi's ([www.raspberrypi.org/](http://www.raspberrypi.org/)).
+~~Module documentation nightly updated:~~ [~~oxi.ch/JamesII/~~](http://oxi.ch/JamesII/)
 
 ## Things / Services you can use or interact with:
 * CLI (managed) interface with history and command completion
@@ -11,7 +11,8 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Jabber (managed) as a messaging front-end and interface (has also MUC support)
 * Monitor (managed) to show what is going on in the console
 * Motion (managed) to watch over your home and also to automatically start webradio when you get up on weekends
-* Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out for gn8 or wakeup)
+* Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out for gn8, wakeup or
+noise)
 * Proximity (managed) to scan the area for known bluetooth mac addresses
 * Raspberry (managed) interactive interface with buttons/switches and LEDs to interact with the real world
 * Sysstat (autoload) to request information's about the host like mounts, net info, memory info, ...
@@ -45,8 +46,8 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 
 ## You Need:
 * python
-* python-pika (https://github.com/pika/pika)
-* python-psutil (sysstat plugin, http://code.google.com/p/psutil/)
+* python-pika ([github.com/pika/pika](https://github.com/pika/pika))
+* python-psutil (sysstat plugin, [code.google.com/p/psutil/](http://code.google.com/p/psutil/))
 * python-tz
 * python-yaml
 * screen (always handy)
@@ -67,8 +68,8 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * python-mpd2 (mpd plugin)
 * python-xmpp (jabber plugin)
 * python-dbus (dbus notification plugin)
-* python-transmissionrpc (transmission plugin, https://bitbucket.org/blueluna/transmissionrpc/wiki/Home)
-* python-pylirc (lirc plugin, http://aron.ws/projects/lirc_rpi/)
+* python-transmissionrpc (transmission plugin, [bitbucket.org/blueluna/transmissionrpc/wiki/Home](https://bitbucket.org/blueluna/transmissionrpc/wiki/Home))
+* python-pylirc (lirc plugin, [aron.ws/projects/lirc_rpi/](http://aron.ws/projects/lirc_rpi/)
 * python-pyaudio (voice-commands plugin)
 * python-flask, Flask-SQLAlchemy (httpserver)
 * python-storm (httpserver plugin)
@@ -76,6 +77,10 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * wiringpi (raspberrypi plugin, pip install)
 
 #### Notes on some plugins
+#### mpd noise
+The noise command plays a file from the mpd library in a endless loop (or until i.e. a wakeup command is sent).
+This file needs to be added to the library manually! I downloaded mine from
+[www.audiocheck.net/testtones_pinknoise.php](https://www.audiocheck.net/testtones_pinknoise.php)
 ##### mpd and espeak
 If the mpd and espeak plugins are used together, ensure to use the "software" mixer for mpd, or the
 mpd plugin will also regulate the volume of espeak.

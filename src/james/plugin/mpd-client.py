@@ -234,12 +234,15 @@ class MpdClientWorker(object):
     def play_file(self, filename):
         if self.check_connection():
             self.lock()
-            self.client.clear()
-            self.client.add(filename)
-            self.client.repeat(1)
-            self.client.single(1)
-            self.client.setvol(0)
-            self.client.play()
+            try:
+                self.client.clear()
+                self.client.add(filename)
+                self.client.repeat(1)
+                self.client.single(1)
+                self.client.setvol(0)
+                self.client.play()
+            except mpd.base.CommandError:
+                self.logger.warning("Error starting noise")
             self.unlock()
             self.logger.debug("Playing")
             return True

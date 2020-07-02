@@ -405,13 +405,13 @@ class MpdClientPlugin(Plugin):
         self.stations = {}
 
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
+        self.commands.create_subcommand('noise', 'Start mpd noise mode', self.mpd_noise)
 
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
         radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'], self.mpd_sleep)
-        radio_command.create_subcommand('noise', 'Start mpd noise mode', self.mpd_noise)
         radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'], self.mpd_wakeup)
         radio_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
 

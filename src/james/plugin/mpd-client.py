@@ -238,6 +238,7 @@ class MpdClientWorker(object):
             self.client.add(filename)
             self.client.repeat(1)
             self.client.single(1)
+            self.client.setvol(0)
             self.client.play()
             self.unlock()
             self.logger.debug("Playing")

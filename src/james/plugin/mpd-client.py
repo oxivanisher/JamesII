@@ -573,7 +573,7 @@ class MpdClientPlugin(Plugin):
                 self.thread = FadeThread(self,
                                          self.client_worker,
                                          self.config['wakeup_fade'],
-                                         self.config['nois_volume'])
+                                         self.config['noise_volume'])
                 self.thread.start()
                 self.worker_threads.append(self.thread)
                 self.logger.info("MPD Noise mode activated")

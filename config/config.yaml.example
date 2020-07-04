@@ -214,7 +214,7 @@ mpd-client:
  sleep_fade : 1800
  # max and talkover (for espeak) volume for mpd
  norm_volume: 80
- nois_volume: 40
+ noise_volume: 40
  talk_volume: 30
  nodes:
  # mpd server configurations

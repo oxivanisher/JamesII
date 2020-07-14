@@ -278,6 +278,7 @@ class MpdClientWorker(object):
         if self.check_connection():
             self.lock()
             tmp_status = self.client.status()
+            tmp_status['currentsong'] = self.client.currentsong()
             self.unlock()
             return tmp_status
 
@@ -586,7 +587,20 @@ class MpdClientPlugin(Plugin):
         self.wakeups += 1
         tmp_state = self.client_worker.status()
         if tmp_state:
+            activate = False
+
+            if 'file' in tmp_state['currentsong'].keys():
+                if tmp_state['currentsong']['file'] == self.config['noise_file']:
+                    activate = True
+                    self.logger.info("Wakeup activating since the noise file is playing.")
+
             if tmp_state['state'] != 'play':
+                activate = True
+            else:
+                self.logger.info("Wakeup not activated. Radio is already playing.")
+                return ["Wakeup not activated. Radio is already playing."]
+
+            if activate:
                 self.logger.debug('Activating wakeup mode')
                 if self.core.proximity_status.get_status_here():
                     if self.fade_in_progress:
@@ -607,9 +621,6 @@ class MpdClientPlugin(Plugin):
                 else:
                     self.logger.info("Wakeup not activated. You are not here.")
                     return ["Wakeup not activated. You are not here."]
-            else:
-                self.logger.info("Wakeup not activated. Radio is already playing.")
-                return ["Wakeup not activated. Radio is already playing."]
         else:
             self.logger.info("Wakeup not activated. Unable to connect to MPD.")
             return ["Wakeup not activated. Unable to connect to MPD."]

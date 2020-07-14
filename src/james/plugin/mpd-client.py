@@ -593,8 +593,7 @@ class MpdClientPlugin(Plugin):
                 if tmp_state['currentsong']['file'] == self.config['noise_file']:
                     activate = True
                     self.logger.info("Wakeup activating since the noise file is playing.")
-
-            if tmp_state['state'] != 'play':
+            elif tmp_state['state'] != 'play':
                 activate = True
             else:
                 self.logger.info("Wakeup not activated. Radio is already playing.")

@@ -591,8 +591,6 @@ class MpdClientPlugin(Plugin):
 
             if 'file' in tmp_state['currentsong'].keys():
                 if tmp_state['currentsong']['file'] == self.config['noise_file']:
-                    self.client_worker.stop()
-                    self.client_worker.clear()
                     activate = True
                     self.logger.info("Wakeup activating since the noise file is playing.")
             elif tmp_state['state'] != 'play':

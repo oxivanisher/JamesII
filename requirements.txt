@@ -51,6 +51,8 @@ psutil
 
 # plugin google-calendar
 google-calendar-api-client-python
+# python-gflags (3.1.2)            - Obsolete. Please migrate to absl-py instead.
+oauth2client==1.4.12
 
 # plugin httpserver-plugin
 storm

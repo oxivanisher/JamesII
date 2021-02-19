@@ -27,7 +27,20 @@ do
 	fi
 
 	echo -e "..:: Starting james.py ($(date)) ::..\n"
-	sudo cp ./JamesII.log ./JamesII.log.old
+	
+	# Log cleanup to not fill the disks
+	if [[ -f .james_console_log ]];
+	then
+		echo -e "Truncating .james_console_log\n"
+		sudo truncate -s0 ./.james_console_log
+	fi
+	
+	if [[ -f ./JamesII.log.old ]];
+	then
+		echo -e "\nRemoving old ./JamesII.log.old"
+		sudo rm ./JamesII.log.old
+	fi
+	
 	sudo truncate -s0 ./JamesII.log
 	sudo chmod 666 ./JamesII.log
 	sudo script -q -c "./james.py" -e ./.james_console_log ; RESULT=${PIPESTATUS[0]}

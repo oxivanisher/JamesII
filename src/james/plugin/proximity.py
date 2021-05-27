@@ -66,7 +66,7 @@ class ProximityPlugin(Plugin):
     def start(self):
         if self.core.os_username == 'root':
             # wait 3 seconds before working
-            self.core.add_timeout(0, self.proximity_check_daemon)
+            self.core.add_timeout(3, self.proximity_check_daemon)
 
         # publish the initial override state
         self.core.proximity_event(self.alwaysAtHome, 'override')

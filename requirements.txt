@@ -9,3 +9,4 @@ transmissionrpc
 Flask-SQLAlchemy
 google-api-python-client
 google-calendar-api-client-python
+httplib2

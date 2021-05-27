@@ -1,10 +1,10 @@
 
 import json
 import uuid
-import urllib
-import httplib
+import httplib2
 
 from james.plugin import *
+
 
 class XbmcPlugin(Plugin):
 
@@ -22,17 +22,6 @@ class XbmcPlugin(Plugin):
         broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
         broadcase_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
 
-        user_string = ""
-        if self.config['nodes'][self.core.hostname]['username']:
-            user_string = self.config['nodes'][self.core.hostname]['username']
-        if self.config['nodes'][self.core.hostname]['password']:
-            user_string = user_string + ":" + self.config['nodes'][self.core.hostname]['password']
-        if user_string:
-            user_string = user_string + "@"
-        server_string = "%s:%s" % (self.config['nodes'][self.core.hostname]['host'],
-                                   self.config['nodes'][self.core.hostname]['port'])
-        self.connection_string = "http://%s%s" % (user_string, server_string)
-
         self.updateNode = False
         if self.core.hostname in self.config['updatenodes']:
             self.updateNode = True
@@ -40,58 +29,62 @@ class XbmcPlugin(Plugin):
 
         self.commands.create_subcommand('test', 'test message', self.get_active_player_details)
 
-    def send_rpc(self, method, params = {}):
+    def send_rpc(self, method, params=None):
+        if params is None:
+            params = {}
+
         id = str(uuid.uuid1())
-        headers = { 'Content-Type': 'application/json' }
-        rawData = [{"jsonrpc":"2.0", 'id':id, 'method':method, 'params':params}]
+        h = httplib2.Http()
+        h.add_credentials(self.config['nodes'][self.core.hostname]['username'],
+                          self.config['nodes'][self.core.hostname]['password'])
 
-        data = json.dumps(rawData)
+        server_string = "http://%s:%s/jsonrpc" % (self.config['nodes'][self.core.hostname]['host'],
+                                                  self.config['nodes'][self.core.hostname]['port'])
+
+        raw_data = [{"jsonrpc": "2.0", 'id': id, 'method': method, 'params': params}]
+
+        data = json.dumps(raw_data)
         try:
-            h = httplib.HTTPConnection(self.connection_string)
-            h.request('POST', '/jsonrpc', data, headers)
-            r = h.getresponse()
-            rpcReturn = json.loads(r.read())[0]
-            if 'error' in rpcReturn.keys():
-                self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+            resp, content = h.request(server_string, "POST", body=data, headers={'Content-Type': 'application/json'})
+            if resp.status != 200:
+                self.logger.debug('Unable to process RPC request %s: (%s) (%s)' % (resp.status, raw_data, resp))
                 return False
             else:
-                return rpcReturn
+                try:
+                    return json.loads(resp)[0]
+                except Exception:
+                    return True
 
-            if rpcReturn['error'] == 'OK':
-                return True
-            else:
-                self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
-                return False
         except Exception as e:
             self.logger.warning('Unable to connect to XBMC: %s' % e)
             return False
 
     def send_rpc_message(self, title, message):
-        return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})
+        return self.send_rpc("GUI.ShowNotification", {"title": title, "message": message})
 
     def cmd_pause(self, args):
-        playerId = self.get_active_player()
+        player_id = self.get_active_player()
         pause = False
-        if playerId:
-            if self.get_active_player_details(playerId)['speed'] == 1:
+        if player_id:
+            if self.get_active_player_details(player_id)['speed'] == 1:
                 pause = True
         if pause:
-            self.send_rpc("Player.PlayPause", {"playerid" : playerId})
+            self.send_rpc("Player.PlayPause", {"playerid": player_id})
             return ["Paused"]
         return ["Not paused"]
 
     def cmd_toggle(self, args):
-        playerId = self.get_active_player()
+        player_id = self.get_active_player()
         pause = False
-        if playerId:
-            self.send_rpc("Player.PlayPause", {"playtogglederid" : playerId})
+        if player_id:
+            self.send_rpc("Player.PlayPause", {"playtogglederid": player_id})
             return ["Toggled"]
         return ["Not toggled"]
 
     def cmd_stop(self, args):
-        playerId = self.get_active_player()
-        if playerId:
-            self.send_rpc("Player.STOP", {"playerid" : playerId})
+        player_id = self.get_active_player()
+        if player_id:
+            self.send_rpc("Player.STOP", {"playerid": player_id})
             return ["Stopped"]
         return ["Not stopped"]
 
@@ -116,10 +109,10 @@ class XbmcPlugin(Plugin):
 
     def cmd_info(self, args):
         status = self.return_status()
-        niceStatus = "Stopped"
+        nice_status = "Stopped"
         if status['actId']:
-            niceStatus = "%s: %s %s" % (status['niceStatus'], status['niceName'], status['niceTime'])
-        return niceStatus
+            nice_status = "%s: %s %s" % (status['nice_status'], status['niceName'], status['niceTime'])
+        return nice_status
 
     def alert(self, args):
         data = ' '.join(args).split(";")
@@ -159,9 +152,9 @@ class XbmcPlugin(Plugin):
 
     def get_active_player(self):
         # get active player
-        activePlayerRaw = self.utils.convert_from_unicode(self.send_rpc("Player.GetActivePlayers"))
+        active_player_raw = self.utils.convert_from_unicode(self.send_rpc("Player.GetActivePlayers"))
         try:
-            for activePlayer in activePlayerRaw['result']:
+            for activePlayer in active_player_raw['result']:
                 if activePlayer['playerid']:
                     return activePlayer['playerid']
         except TypeError:
@@ -175,19 +168,19 @@ class XbmcPlugin(Plugin):
 
         # get active item
         if player:
-            playItemRaw = self.send_rpc("Player.GetItem", {"playerid" : player})
+            play_item_raw = self.send_rpc("Player.GetItem", {"playerid": player})
 
             try:
-                fLabel = playItemRaw['result']['item']['label']
-                fType = playItemRaw['result']['item']['type']
-                fId = -1
+                f_label = play_item_raw['result']['item']['label']
+                f_type = play_item_raw['result']['item']['type']
+                f_id = -1
 
-                if playItemRaw['result']['item']['type'] != 'unknown':
-                    fId = playItemRaw['result']['item']['id']
+                if play_item_raw['result']['item']['type'] != 'unknown':
+                    f_id = play_item_raw['result']['item']['id']
 
-                return { 'label' : fLabel,
-                         'type'  : fType,
-                         'id'    : fId }
+                return {'label': f_label,
+                        'type': f_type,
+                        'id': f_id}
             except TypeError:
                 pass
 
@@ -198,29 +191,34 @@ class XbmcPlugin(Plugin):
             player = self.get_active_player()
 
         if player:
-            playItemRaw = self.send_rpc("Player.GetProperties", {"playerid" : player, "properties" : [ "speed", "percentage", "time", "totaltime" ] })
+            play_item_raw = self.send_rpc("Player.GetProperties",
+                                          {"playerid": player,
+                                           "properties": ["speed", "percentage", "time", "totaltime"]})
             try:
-                return { 'speed' : playItemRaw['result']['speed'],
-                         'percentage' : playItemRaw['result']['percentage'],
-                         'time' : playItemRaw['result']['time'],
-                         'totaltime' : playItemRaw['result']['totaltime'] }
+                return {'speed': play_item_raw['result']['speed'],
+                        'percentage': play_item_raw['result']['percentage'],
+                        'time': play_item_raw['result']['time'],
+                        'totaltime': play_item_raw['result']['totaltime']}
             except TypeError:
                 pass            
 
         return False
 
-    def get_episode_details(self, epId):
-        episodeDBRaw = self.send_rpc("VideoLibrary.GetEpisodeDetails", {"episodeid" : epId, "properties" : ["episode", "showtitle", "season", "firstaired"]})
-        return { 'label' : episodeDBRaw['result']['episodedetails']['label'],
-                 'episode' : episodeDBRaw['result']['episodedetails']['episode'],
-                 'showtitle' : episodeDBRaw['result']['episodedetails']['showtitle'],
-                 'firstaired' : episodeDBRaw['result']['episodedetails']['firstaired'],
-                 'season' : episodeDBRaw['result']['episodedetails']['season'] }
+    def get_episode_details(self, ep_id):
+        episode_dbraw = self.send_rpc("VideoLibrary.GetEpisodeDetails",
+                                      {"episodeid": ep_id,
+                                       "properties": ["episode", "showtitle", "season", "firstaired"]})
+        return {'label': episode_dbraw['result']['episodedetails']['label'],
+                'episode': episode_dbraw['result']['episodedetails']['episode'],
+                'showtitle': episode_dbraw['result']['episodedetails']['showtitle'],
+                'firstaired': episode_dbraw['result']['episodedetails']['firstaired'],
+                'season': episode_dbraw['result']['episodedetails']['season'] }
 
-    def get_movie_details(self, movieId):
-        movieDBRaw = self.send_rpc("VideoLibrary.GetMovieDetails", {"movieid" : movieId, "properties" : ["year", "originaltitle"]})
-        return { 'year' : movieDBRaw['result']['moviedetails']['year'],
-                 'originaltitle' : movieDBRaw['result']['moviedetails']['originaltitle'] }
+    def get_movie_details(self, movie_id):
+        movie_dbraw = self.send_rpc("VideoLibrary.GetMovieDetails",
+                                    {"movieid": movie_id, "properties": ["year", "originaltitle"]})
+        return {'year': movie_dbraw['result']['moviedetails']['year'],
+                'originaltitle': movie_dbraw['result']['moviedetails']['originaltitle']}
 
     def process_proximity_event(self, newstatus):
         self.logger.debug("XBMC Processing proximity event")
@@ -229,90 +227,83 @@ class XbmcPlugin(Plugin):
 
     def return_status(self, verbose=False):
         player = self.get_active_player()
-        actSpeed = ""
-        actPercentage = 0.0
-        actTime = {}
-        actTotaltime = {}
-        actFile = "unknown"
-        actFileId = "unknown"
-        actType = "unknown"
-        niceName = ""
-        niceStatus = "Stopped"
-        niceTime = ""
-        actDetails = {}
+        act_speed = ""
+        act_percentage = 0.0
+        act_time = {}
+        act_totaltime = {}
+        act_file = "unknown"
+        act_file_id = "unknown"
+        act_type = "unknown"
+        nice_name = ""
+        nice_status = "Stopped"
+        nice_time = ""
+        act_details = {}
         if player:
-            actPlayerData = self.get_active_player_details(player)
+            act_player_data = self.get_active_player_details(player)
 
             try:
-                actSpeed = actPlayerData['speed']
+                act_speed = act_player_data['speed']
             except TypeError:
                 pass
 
-            actPercentage = actPlayerData['percentage']
-            actTime = actPlayerData['time']
-            actTotaltime = actPlayerData['totaltime']
+            act_percentage = act_player_data['percentage']
+            act_time = act_player_data['time']
+            act_totaltime = act_player_data['totaltime']
 
             try:
-                actFile = self.get_active_file(player)['label']
-            except TypeError:
-                pass
-
-            try:
-                actType = self.get_active_file(player)['type']
+                act_file = self.get_active_file(player)['label']
             except TypeError:
                 pass
 
             try:
-                actFileId = self.get_active_file(player)['id']
+                act_type = self.get_active_file(player)['type']
             except TypeError:
                 pass
 
-            if actType == 'unknown':
-                niceName = actFile
-                niceType = "Youtube"
+            try:
+                act_file_id = self.get_active_file(player)['id']
+            except TypeError:
+                pass
 
-            elif actType == 'episode':
-                actDetails = self.get_episode_details(actFileId)
-                niceName = "%s S%02dE%02d %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
-                niceType = "Series"
+            if act_type == 'unknown':
+                nice_name = act_file
+                nice_type = "Youtube"
 
-            elif actType == 'movie':
-                niceType = "Movie"
-                actDetails = self.get_movie_details(actFileId)
-                if actDetails['year'] > 0:
-                    niceName = "%s (%s)" % (actDetails['originaltitle'], actDetails['year'])
+            elif act_type == 'episode':
+                act_details = self.get_episode_details(act_file_id)
+                nice_name = "%s S%02dE%02d %s (%s)" % (act_details['showtitle'], act_details['season'],
+                                                       act_details['episode'], act_details['label'],
+                                                       act_details['firstaired'])
+                nice_type = "Series"
+
+            elif act_type == 'movie':
+                nice_type = "Movie"
+                act_details = self.get_movie_details(act_file_id)
+                if act_details['year'] > 0:
+                    nice_name = "%s (%s)" % (act_details['originaltitle'], act_details['year'])
                 else:
-                    niceName = actDetails['originaltitle']
+                    nice_name = act_details['originaltitle']
 
-            niceTime = "%s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(actPercentage, 0),
-                                                           actTime['hours'],
-                                                           actTime['minutes'],
-                                                           actTime['seconds'],
-                                                           actTotaltime['hours'],
-                                                           actTotaltime['minutes'],
-                                                           actTotaltime['seconds'] )
-            if actSpeed == 0:
-                niceStatus = "Paused (%s)" % niceType
-            if actSpeed == 1:
-                niceStatus = "Playing (%s)" % niceType
+            nice_time = "%s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(act_percentage, 0),
+                                                              act_time['hours'],
+                                                              act_time['minutes'],
+                                                              act_time['seconds'],
+                                                              act_totaltime['hours'],
+                                                              act_totaltime['minutes'],
+                                                              act_totaltime['seconds'] )
+            if act_speed == 0:
+                nice_status = "Paused (%s)" % nice_type
+            if act_speed == 1:
+                nice_status = "Playing (%s)" % nice_type
             else:
-                niceStatus = "Playing at %sx (%s)" % (actSpeed, niceType)
+                nice_status = "Playing at %sx (%s)" % (act_speed, nice_type)
 
-        ret = {}
-        ret['updates'] = self.updates
-        ret['niceName'] = niceName
-        ret['updateNode'] = self.updateNode
-        ret['actFile'] = actFile
-        ret['actId'] = actFileId
-        ret['actType'] = actType
-        ret['actDetails'] = actDetails
-        ret['actSpeed'] = actSpeed
-        ret['actPercentage'] = actPercentage
-        ret['actTime'] = actTime
-        ret['actTotaltime'] = actTotaltime
-        ret['niceStatus'] = niceStatus
-        ret['niceTime'] = niceTime
+        ret = {'updates': self.updates, 'nice_name': nice_name, 'updateNode': self.updateNode, 'act_file': act_file,
+               'actId': act_file_id, 'act_type': act_type, 'act_details': act_details, 'act_speed': act_speed,
+               'act_percentage': act_percentage, 'act_time': act_time, 'act_totaltime': act_totaltime,
+               'nice_status': nice_status, 'nice_time': nice_time}
         return ret
+
 
 descriptor = {
     'name' : 'xbmc',

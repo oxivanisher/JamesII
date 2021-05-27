@@ -31,7 +31,7 @@ class XbmcPlugin(Plugin):
             user_string = user_string + "@"
         server_string = "%s:%s" % (self.config['nodes'][self.core.hostname]['host'],
                                    self.config['nodes'][self.core.hostname]['port'])
-        self.connection_string = "%s%s" % (user_string, server_string)
+        self.connection_string = "http://%s%s" % (user_string, server_string)
 
         self.updateNode = False
         if self.core.hostname in self.config['updatenodes']:

@@ -304,6 +304,7 @@ class JamesUtils(object):
 
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C
+# https://stackoverflow.com/questions/39146039/pickle-typeerror-a-bytes-like-object-is-required-not-str
 class StrToBytes:
     def __init__(self, fileobj):
         self.fileobj = fileobj

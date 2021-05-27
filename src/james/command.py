@@ -110,6 +110,7 @@ class Command(object):
     @classmethod
     def deserialize(cls, data):
         return pickle.loads(data)
+        # return pickle.loads(data.encode())
 
     def list(self, args=None):
         return_list = []

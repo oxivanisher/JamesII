@@ -211,6 +211,7 @@ mpd-client:
  # fade time in seconds for the wakeup and sleep timers
  wakeup_fade: 900
  sleep_fade : 1800
+ sleep_volume_reduction: 10
  # max and talkover (for espeak) volume for mpd
  norm_volume: 80
  talk_volume: 30

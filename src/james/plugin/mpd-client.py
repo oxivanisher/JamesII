@@ -525,7 +525,7 @@ class MpdClientPlugin(Plugin):
             else:
                 self.radio_off(None)
                 self.client_worker.play_url(self.stations[self.config['sleep_st']],
-                                        int(self.config['norm_volume']) - 30)
+                                        int(self.config['norm_volume']) - self.config['sleep_volume_reduction'])
 
                 self.thread = FadeThread(self,
                                          self.client_worker,

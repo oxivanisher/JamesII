@@ -1,4 +1,3 @@
-
 import os
 import json
 import pika
@@ -15,6 +14,8 @@ import time
 import atexit
 import logging, logging.handlers
 import signal
+# import jsons
+# import pickle
 
 from . import plugin
 from . import config
@@ -36,17 +37,26 @@ except AttributeError:
     class PikaLogDummy(object):
         def debug(*args):
             pass
+
+
     pika.adapters.blocking_connection.log = PikaLogDummy()
+
 
 class PluginNotFound(Exception):
     pass
+
+
 class BrokerConfigNotLoaded(Exception):
     pass
+
+
 class AddTimeoutHandlerMissing(Exception):
     pass
 
+
 class Timeout():
     """Timeout class using ALARM signal."""
+
     class Timeout(Exception):
         pass
 
@@ -62,13 +72,14 @@ class Timeout():
     def __exit__(self, *args):
         # Fixme: Windows has no support for signal.SIGALRM
         if os.name == 'posix':
-            signal.alarm(0)    # disable alarm
+            signal.alarm(0)  # disable alarm
 
     def raise_timeout(self, *args):
         raise Timeout.Timeout()
 
+
 class ThreadedCore(threading.Thread):
-    def __init__(self, passive = False):
+    def __init__(self, passive=False):
         super(ThreadedCore, self).__init__()
         self.core = Core(passive, False)
         self.utils = jamesutils.JamesUtils(self.core)
@@ -92,9 +103,10 @@ class ThreadedCore(threading.Thread):
     def on_exit(self, result):
         return result
 
+
 class Core(object):
 
-    def __init__(self, passive = False, catchSignals = True):
+    def __init__(self, passive=False, catch_signals=True):
         self.plugins = []
         self.timeouts = []
         self.timeout_queue = queue.Queue()
@@ -169,15 +181,15 @@ class Core(object):
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
-        if catchSignals:
-            signal.signal(signal.SIGINT,self.on_kill_sig)
-            signal.signal(signal.SIGTERM,self.on_kill_sig)
-            signal.signal(signal.SIGSEGV,self.on_fault_sig)
+        if catch_signals:
+            signal.signal(signal.SIGINT, self.on_kill_sig)
+            signal.signal(signal.SIGTERM, self.on_kill_sig)
+            signal.signal(signal.SIGSEGV, self.on_fault_sig)
 
             # Fixme: Windows has no support for some signals
             if os.name == 'posix':
                 signal.signal(signal.SIGQUIT, self.on_kill_sig)
-                signal.signal(signal.SIGTSTP,self.on_kill_sig)
+                signal.signal(signal.SIGTSTP, self.on_kill_sig)
 
         # Load master configuration
         self.config = None
@@ -212,10 +224,11 @@ class Core(object):
         try:
             cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
             with Timeout(300):
-                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
-                                                                                    port = self.brokerconfig['port'],
-                                                                                    virtual_host = self.brokerconfig['vhost'],
-                                                                                    credentials = cred))
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host'],
+                                                                                    port=self.brokerconfig['port'],
+                                                                                    virtual_host=self.brokerconfig[
+                                                                                        'vhost'],
+                                                                                    credentials=cred))
             connected = True
         except Exception as e:
             self.logger.warning("Could not connect to RabbitMQ server on default port! %s" % e)
@@ -225,12 +238,15 @@ class Core(object):
             try:
                 cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
                 with Timeout(300):
-                    self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.brokerconfig['host'],
-                                                                                        port = self.brokerconfig['fallbackport'],
-                                                                                        virtual_host = self.brokerconfig['vhost'],
-                                                                                        credentials = cred))
+                    self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host'],
+                                                                                        port=self.brokerconfig[
+                                                                                            'fallbackport'],
+                                                                                        virtual_host=self.brokerconfig[
+                                                                                            'vhost'],
+                                                                                        credentials=cred))
             except Exception as e:
-                self.logger.critical("Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)
+                self.logger.critical(
+                    "Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)
                 sys.exit(2)
 
         # Create discovery & configuration channels
@@ -277,7 +293,8 @@ class Core(object):
         # registring network logger handlers
         if self.config['netlogger']['nodes']:
             for target_host in self.config['netlogger']['nodes']:
-                self.logger.debug('Adding NetLogger host %s:%s' % (target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT))
+                self.logger.debug(
+                    'Adding NetLogger host %s:%s' % (target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT))
                 socketHandler = logging.handlers.SocketHandler(target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
                 socketHandler.setLevel(logging.DEBUG)
                 self.logger.addHandler(socketHandler)
@@ -355,7 +372,6 @@ class Core(object):
             manual_plugins.append(c.name)
         self.logger.debug("Ignoring manual plugins: %s" % ', '.join(manual_plugins))
 
-
         autoloaded_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
             autoloaded_plugins.append(c.name)
@@ -389,11 +405,13 @@ class Core(object):
     # command channel methods
     def send_request(self, uuid, name, body, host, plugin):
         """Sends a request."""
-        self.add_timeout(0, self.request_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.request_channel.send,
+                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
         # self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def send_response(self, uuid, name, body, host, plugin):
-        self.add_timeout(0, self.response_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.response_channel.send,
+                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
         # self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def request_listener(self, msg):
@@ -409,11 +427,13 @@ class Core(object):
     # data channel methods
     def send_data_request(self, uuid, name, body, host, plugin):
         """Sends a data request."""
-        self.add_timeout(0, self.data_request_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.data_request_channel.send,
+                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
         # self.data_request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def send_data_response(self, uuid, name, body, host, plugin):
-        self.add_timeout(0, self.data_response_channel.send, {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+        self.add_timeout(0, self.data_response_channel.send,
+                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
         # self.data_response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
 
     def data_request_listener(self, msg):
@@ -460,7 +480,10 @@ class Core(object):
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
-                    self.discovery_channel.send(['commands', p.commands.serialize()])
+                    # print(p.commands)
+                    # self.discovery_channel.send(['commands', p.commands.serialize()])
+                    # self.discovery_channel.send(['commands', jsons.dump(p.commands)])
+                    self.discovery_channel.send(['commands', p.commands])
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
@@ -471,7 +494,10 @@ class Core(object):
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
             # self.logger.debug('Node commands received')
-            self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
+            # self.ghost_commands.merge_subcommand(jsons.load(msg[1]))
+            # self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
+            # self.ghost_commands.merge_subcommand(jsons.load(msg[1], command.Command))
+            self.ghost_commands.merge_subcommand(msg[1])
 
         elif msg[0] == 'nodes_online':
             """We received a new nodes_online list. Replace our current one."""
@@ -529,15 +555,14 @@ class Core(object):
             except Exception as e:
                 self.location = 'home'
         else:
-            if cmp(self.config, new_config) == 0:
+            if self.config == new_config:
                 if self.uuid == sender_uuid == self.master_node:
                     cfg_diff = []
                     for key in list(self.config.keys()):
-                        if not key in new_config:
+                        if key not in new_config:
                             cfg_diff.append(key)
                     self.logger.warning("Somehow, we sent a new config event if we already are the master! "
-                                        "There is probably a problem in our config (keys old: %s, new: %s)"
-                                        ": %s" % (len(list(self.config.keys())), len(new_configkeys()), ", ".join(cfg_diff)))
+                                        "There is probably a problem in our config: %s" % (", ".join(cfg_diff)))
                 elif self.master:
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
                     self.terminate()
@@ -557,7 +582,7 @@ class Core(object):
         """
         self.message_channel.send(msg)
 
-    def new_message(self, name = "uninitialized_message"):
+    def new_message(self, name="uninitialized_message"):
         """
         Returns a new instance of JamesMessage.
         """
@@ -701,7 +726,8 @@ class Core(object):
         # Broadcast command list
         for p in self.plugins:
             if p.commands:
-                self.discovery_channel.send(['commands', p.commands.serialize()])
+                # self.discovery_channel.send(['commands', jsons.dump(p.commands)])
+                self.discovery_channel.send(['commands', p.commands])
 
         if self.passive:
             self.logger.debug(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
@@ -720,7 +746,7 @@ class Core(object):
                     self.process_timeouts()
                 with Timeout(180):
                     self.unlock_core()
-                    #self.logger.debug("process events")
+                    # self.logger.debug("process events")
                 # cpu utilization from 100% to 0%
                 time.sleep(0.1)
             except KeyboardInterrupt:
@@ -742,7 +768,7 @@ class Core(object):
                 self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
 
-            #if i hang with threads or subthreads or stuff, comment the following block!
+            # if i hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = exc_tb.tb_frame.f_code.co_filename
@@ -761,7 +787,7 @@ class Core(object):
     def unlock_core(self):
         self.core_lock.release()
 
-    def terminate(self, returncode = 0):
+    def terminate(self, returncode=0):
         """
         Terminate the core. This method will first call the terminate() on each plugin.
         """
@@ -844,7 +870,8 @@ class Core(object):
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = exc_tb.tb_frame.f_code.co_filename
-                self.logger.critical("Exception 1 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+                self.logger.critical(
+                    "Exception 1 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
 
         # Process events
         current_timeout = None
@@ -859,13 +886,13 @@ class Core(object):
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = exc_tb.tb_frame.f_code.co_filename
-            self.logger.critical("Exception 2 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+            self.logger.critical(
+                "Exception 2 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
             # if some event let the client crash, remove it from the list so that the node does not loop forever
             #
             self.timeouts.remove(current_timeout)
 
-
-    def spawnSubprocess(self, target, onExit, target_args = None, logger = None):
+    def spawnSubprocess(self, target, onExit, target_args=None, logger=None):
         """
         Spawns a subprocess with call target and calls onExit with the return
         when finished
@@ -873,6 +900,7 @@ class Core(object):
         if not logger:
             logger = self.logger
         logger.debug('Spawning subprocess (%s)' % target)
+
         def runInThread(target, onExit, target_args):
             if target_args != None:
                 self.logger.debug('Ending subprocess (%s)' % target)
@@ -902,4 +930,3 @@ class Core(object):
     #     message.level = 2
     #     message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
     #     message.send()
-

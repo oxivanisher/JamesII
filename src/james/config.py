@@ -4,8 +4,9 @@ import io
 import json
 import yaml
 
+
 class YamlConfig (object):
-    def __init__(self, filename = None):
+    def __init__(self, filename=None):
         self.filename = filename
         self.values = {}
         if filename:

@@ -38,7 +38,7 @@ class JabberThread(PluginThread):
         self.logger.debug("XMPP connect called")
         # setup connection
         jid = xmpp.protocol.JID(self.cfg_jid)
-        self.conn = xmpp.Client(jid.getDomain(), debug=[])
+        self.conn = xmpp.Client(jid.getDomain(), debug=['TLS'])
         conres = self.conn.connect()
 
         if not conres:
@@ -50,16 +50,16 @@ class JabberThread(PluginThread):
 
         if self.active:
             if conres != 'tls':
-                self.logger.warning("Unable to estabilish secure connection - TLS failed!")
+                self.logger.warning("Unable to establish secure connection - TLS failed!")
 
-            authres = self.conn.auth(jid.getNode(), self.password)
+            authres = self.conn.auth(jid.getNode(), self.password, resource=jid.getResource())
 
             if not authres:
                 self.logger.error("Unable to authorize on %s - check login/password." % jid.getDomain())
                 self.active = False
             if authres != 'sasl':
                 self.logger.warning(
-                    "Warning: unable to perform SASL auth on %s. Old authentication method used!" % server)
+                    "Warning: unable to perform SASL auth on %s. Old authentication method used!" % jid.getDomain())
 
             # lets go online
             self.conn.sendInitPresence(requestRoster=1)

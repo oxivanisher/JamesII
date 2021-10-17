@@ -1,10 +1,10 @@
-
 import sys
 import time
 import psutil
 import datetime
 
 from james.plugin import *
+
 
 class SysstatPlugin(Plugin):
 
@@ -23,14 +23,14 @@ class SysstatPlugin(Plugin):
         return_str = []
         for partition in partitions:
             usage = psutil.disk_usage(partition.mountpoint)
-            return_str.append("%s on %s as %s has %s%% used and %s free." % \
-                    (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free))
+            return_str.append("%s on %s as %s has %s%% used and %s free." %
+                              (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free))
         return return_str
 
     def sysstat_uptime(self, args):
-        return (['The System started %s, JamesII %s.' % \
-                (self.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))), 
-                self.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))])
+        return (['The System started %s, JamesII %s.' %
+                 (self.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))),
+                  self.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))])
 
     def sysstat_net(self, args):
         interfaces = psutil.network_io_counters(pernic=True)
@@ -38,23 +38,22 @@ class SysstatPlugin(Plugin):
         for interface in interfaces:
             if interface != "lo":
                 netif = interfaces[interface]
-                return_str.append("%-5s Sent: %-8s Recv: %-8s" % \
-                                    (interface, 
-                                    self.utils.bytes2human(netif.bytes_sent),
-                                    self.utils.bytes2human(netif.bytes_recv)))
+                return_str.append("%-5s Sent: %-8s Recv: %-8s" %
+                                  (interface, self.utils.bytes2human(netif.bytes_sent),
+                                   self.utils.bytes2human(netif.bytes_recv)))
         return return_str
 
     def sysstat_who(self, args):
         users = psutil.get_users()
         return_str = []
         for user in users:
-            return_str.append("%-15s %-15s %s (%s)" % \
-                                (user.name,
-                                user.terminal or '-',
-                                self.utils.get_short_age(user.started),
-                                #datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
-                                user.host)
-            )
+            return_str.append("%-15s %-15s %s (%s)" %
+                              (user.name,
+                               user.terminal or '-',
+                               self.utils.get_short_age(user.started),
+                               # datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
+                               user.host)
+                              )
         return return_str
 
     def sysstat_cpu(self, args):
@@ -74,19 +73,19 @@ class SysstatPlugin(Plugin):
         return_str = []
 
         if data['mem_avail']:
-            return_str.append("memory used %s/%s %s%%; avail %s; free %s" % \
-                                (self.utils.bytes2human(data['mem'].used),
-                                self.utils.bytes2human(data['mem'].total),
-                                data['mem'].percent,
-                                self.utils.bytes2human(data['mem'].available),
-                                self.utils.bytes2human(data['mem'].free)))
+            return_str.append("memory used %s/%s %s%%; avail %s; free %s" %
+                              (self.utils.bytes2human(data['mem'].used),
+                               self.utils.bytes2human(data['mem'].total),
+                               data['mem'].percent,
+                               self.utils.bytes2human(data['mem'].available),
+                               self.utils.bytes2human(data['mem'].free)))
 
         if data['swap_avail']:
-            return_str.append("swap used %s/%s %s%%; free %s" % \
-                                (self.utils.bytes2human(data['swap'].used),
-                                self.utils.bytes2human(data['swap'].total),
-                                data['swap'].percent,
-                                self.utils.bytes2human(data['swap'].free)))
+            return_str.append("swap used %s/%s %s%%; free %s" %
+                              (self.utils.bytes2human(data['swap'].used),
+                               self.utils.bytes2human(data['swap'].total),
+                               data['swap'].percent,
+                               self.utils.bytes2human(data['swap'].free)))
 
         return return_str
 
@@ -104,11 +103,10 @@ class SysstatPlugin(Plugin):
             ret['swap'] = psutil.swap_memory()
         except AttributeError as e:
             ret['swap_avail'] = False
-        
+
         return ret
 
-
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         ret = {}
         try:
             ret['uptime'] = time.time() - psutil.boot_time()
@@ -126,7 +124,7 @@ class SysstatPlugin(Plugin):
             ret['cpuLoadAvg'] = int(total / psutil.cpu_count())
         except AttributeError:
             ret['cpuLoadAvg'] = int(total / psutil.NUM_CPUS)
-            
+
         ret['cpuThreads'] = len(cpus)
 
         data = self.get_sysstat_mem()
@@ -157,24 +155,24 @@ class SysstatPlugin(Plugin):
 
         return ret
 
-descriptor = {
-    'name' : 'sysstat',
-    'help' : 'Psutil system information',
-    'command' : 'stat',
-    'mode' : PluginMode.AUTOLOAD,
-    'class' : SysstatPlugin,
-    'detailsNames' : { 'uptime' : "System uptime",
-                       'cpuLoadAvg' : "Cpu load average percent",
-                       'cpuThreads' : "Cpu threads",
-                       'cpuThreadsLoad' : "Cpu threads Load percents",
-                       'ramTotal' : "Ram total",
-                       'ramFree' : "Ram free",
-                       'ramAvail' : "Ram available",
-                       'ramUsed' : "Ram used",
-                       'ramPercent' : "Ram used percent",
-                       'swapTotal' : "Swap total",
-                       'swapFree' : "Swap free",
-                       'swapUsed' : "Swap used",
-                       'swapPercent' : "Swap used percent"}
-}
 
+descriptor = {
+    'name': 'sysstat',
+    'help': 'Psutil system information',
+    'command': 'stat',
+    'mode': PluginMode.AUTOLOAD,
+    'class': SysstatPlugin,
+    'detailsNames': {'uptime': "System uptime",
+                     'cpuLoadAvg': "Cpu load average percent",
+                     'cpuThreads': "Cpu threads",
+                     'cpuThreadsLoad': "Cpu threads Load percents",
+                     'ramTotal': "Ram total",
+                     'ramFree': "Ram free",
+                     'ramAvail': "Ram available",
+                     'ramUsed': "Ram used",
+                     'ramPercent': "Ram used percent",
+                     'swapTotal': "Swap total",
+                     'swapFree': "Swap free",
+                     'swapUsed': "Swap used",
+                     'swapPercent': "Swap used percent"}
+}

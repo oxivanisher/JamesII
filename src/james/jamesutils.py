@@ -314,3 +314,7 @@ class StrToBytes:
 
     def readline(self, size=-1):
         return self.fileobj.readline(size).encode()
+
+
+def cmp(a, b):
+    return (a > b) - (a < b)

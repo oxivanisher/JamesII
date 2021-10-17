@@ -251,7 +251,8 @@ class JamesUtils(object):
 
     def list_unicode_cleanup(self, data):
         try:
-            args = [s.encode('utf-8', errors='ignore').strip() for s in data]
+            # args = [s.encode('utf-8', errors='ignore').strip() for s in data]
+            args = [s.strip() for s in data]
         except UnicodeDecodeError as e:
             if self.listUnicodeCleanuptmp != data:
                 logger = self.getLogger('jamesutils')
@@ -310,10 +311,12 @@ class StrToBytes:
         self.fileobj = fileobj
 
     def read(self, size):
-        return self.fileobj.read(size).encode()
+        # return self.fileobj.read(size).encode()
+        return self.fileobj.read(size)
 
     def readline(self, size=-1):
-        return self.fileobj.readline(size).encode()
+        # return self.fileobj.readline(size).encode()
+        return self.fileobj.readline(size)
 
 
 def cmp(a, b):

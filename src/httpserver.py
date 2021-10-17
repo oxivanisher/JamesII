@@ -132,10 +132,12 @@ def convert_Time_to_String(time):
     return datetime.datetime.fromtimestamp(timeInt).strftime('%d.%m.%Y %H:%M:%S')
 
 def decode_multiline_list(data):
-    return utils.convert_from_unicode(json.loads(data))
+    # return utils.convert_from_unicode(json.loads(data))
+    return data
 
 def decode_unicode(data):
-    return utils.convert_from_unicode(data)
+    # return utils.convert_from_unicode(data)
+    return data
 
 def check_auth(username, password):
     """This function is called to check if a username /

@@ -561,8 +561,12 @@ class Core(object):
                     for key in list(self.config.keys()):
                         if key not in new_config:
                             cfg_diff.append(key)
-                    self.logger.warning("Somehow, we sent a new config event if we already are the master! "
-                                        "There is probably a problem in our config: %s" % (", ".join(cfg_diff)))
+                    if len(cfg_diff):
+                        self.logger.warning("Somehow, we sent a new config event if we already are the master! "
+                                            "There is probably a problem in our config: %s" % (", ".join(cfg_diff)))
+                    else:
+                        self.logger.info("Sent a new config probably after startup.")
+
                 elif self.master:
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
                     self.terminate()

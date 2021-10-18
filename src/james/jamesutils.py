@@ -269,8 +269,8 @@ class JamesUtils(object):
         """
         logger = self.getLogger('jamesutils', self.core.logger)
         logger.debug('popenAndWait: %s' % command)
-        ret = subprocess.Popen(command, \
-                               stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+        ret = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
+        logger.debug('popenAndWait return: %s' % ret)
         return ret.split("\n")
 
     def getLogger(self, name, parent=None):

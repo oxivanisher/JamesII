@@ -23,8 +23,8 @@ echo -e "..:: Starting james.py ($(date)) ::..\n"
 if [ -f "../venv/bin/python" ];
 then
 	pwd
-	sudo "../venv/bin/python ./james.py"
+	sudo ../venv/bin/python ./james.py
 else
-	sudo "./james.py"
+	sudo ./james.py
 fi	
 rm /var/lock/JamesII.pid

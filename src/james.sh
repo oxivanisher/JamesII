@@ -22,6 +22,7 @@ echo -e ""
 echo -e "..:: Starting james.py ($(date)) ::..\n"
 if [ -f "../venv/bin/python" ];
 then
+	pwd
 	sudo "../venv/bin/python ./james.py"
 else
 	sudo "./james.py"

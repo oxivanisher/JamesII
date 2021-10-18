@@ -11,8 +11,8 @@ class EvdevThread(PluginThread):
         super(EvdevThread, self).__init__(plugin)
 
         self.plugin = plugin
-        self.logger.debug("EVDEV Device: %s" % self.evdev_device)
         self.evdev_device = evdev.InputDevice(evdev_device)
+        self.logger.debug("EVDEV Device: %s" % self.evdev_device)
 
     def work(self):
         blocking = 0

@@ -78,7 +78,6 @@ class EvdevPlugin(Plugin):
     def send_ir_command(self, event):
         data = evdev.categorize(event)
         self.logger.debug('IR Received keycode request (%s)' % data.keycode)
-        print(self.config['nodes'][self.core.hostname]['rcvCommands'].keys())
         if data.keycode in self.config['nodes'][self.core.hostname]['rcvCommands'].keys():
             command = self.config['nodes'][self.core.hostname]['rcvCommands'][data.keycode]
             self.logger.info('IR Received command request (%s)' % command)

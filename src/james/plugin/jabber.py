@@ -52,7 +52,7 @@ class JabberThread(PluginThread):
             if conres != 'tls':
                 self.logger.warning("Unable to establish secure connection - TLS failed!")
 
-            authres = self.conn.auth(jid.getNode(), self.password, resource=jid.getResource())
+            authres = self.conn.auth(jid.getNode(), self.password.decode('UTF-8'), resource=jid.getResource())
 
             if not authres:
                 self.logger.error("Unable to authorize on %s - check login/password." % jid.getDomain())

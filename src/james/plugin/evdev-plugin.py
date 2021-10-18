@@ -80,13 +80,12 @@ class EvdevPlugin(Plugin):
         data = evdev.categorize(event)
         self.logger.debug('IR Received keycode request (%s)' % data.keycode)
         for entry in self.config['nodes'][self.core.hostname]['rcvCommands']:
-            print(entry)
-            name, command = entry.items()
-            if name == data.keycode:
-                command = self.config['nodes'][self.core.hostname]['rcvCommands'][data.keycode]
-                self.logger.info('IR Received command request (%s)' % command)
-                self.commandsReceived += 1
-                self.core.add_timeout(0, self.send_command, command.split())
+            for key in entry.keys():
+                if key == data.keycode:
+                    command = self.config['nodes'][self.core.hostname]['rcvCommands'][data.keycode]
+                    self.logger.info('IR Received command request (%s)' % command)
+                    self.commandsReceived += 1
+                    self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_list_rcv(self, args):
         ret = []

@@ -12,7 +12,7 @@ class EvdevThread(PluginThread):
 
         self.plugin = plugin
         self.evdev_device = evdev.InputDevice(evdev_device)
-        self.logger.debug("EVDEV Device: %s" % self.evdev_device)
+        self.logger.debug("EVDEV Device: %s" % evdev_device)
 
     def work(self):
         blocking = 0
@@ -60,7 +60,7 @@ class EvdevPlugin(Plugin):
         for path, name, phys in self.get_all_devices():
             if name == self.config['nodes'][self.core.hostname]['device_name']:
                 self.logger.info("Spawning worker for evdev %s" % name)
-                self.evdev_worker_thread = EvdevThread(self, self.config['nodes'][self.core.hostname]['device_name'])
+                self.evdev_worker_thread = EvdevThread(self, path)
                 self.evdev_worker_thread.start()
                 break
 

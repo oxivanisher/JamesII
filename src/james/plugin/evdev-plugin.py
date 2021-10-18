@@ -1,6 +1,7 @@
 
 import evdev
 import time
+import asyncio
 
 from james.plugin import *
 
@@ -15,9 +16,47 @@ class EvdevThread(PluginThread):
         self.logger.debug("EVDEV Device: %s" % evdev_device)
 
     def work(self):
-        blocking = 0
-        run = 1
+        # blocking = 0
+        # run = 1
         try:
+
+            dev = self.evdev_device
+
+            async def helper(dev):
+                blocking = 0
+
+                async for event in dev.async_read_loop():
+
+                    if not blocking:
+                        self.plugin.workerLock.acquire()
+                        run = self.plugin.workerRunning
+                        self.plugin.workerLock.release()
+                        if run:
+                            time.sleep(0.5)
+                        else:
+                            break
+
+                    blocking = 0
+
+                    if event.type == evdev.ecodes.EV_KEY:
+                        self.plugin.send_ir_command(event)
+                        blocking = 1
+
+            loop = asyncio.get_event_loop()
+            loop.run_forever(helper(dev))
+
+            run = True
+            while run:
+                self.plugin.workerLock.acquire()
+                run = self.plugin.workerRunning
+                self.plugin.workerLock.release()
+                if run:
+                    time.sleep(0.5)
+                else:
+                    loop.stop()
+                    break
+
+            """
             while run:
                 for event in self.evdev_device.read_loop():
 
@@ -36,6 +75,8 @@ class EvdevThread(PluginThread):
                         self.plugin.send_ir_command(event)
                         blocking = 1
                 break
+            """
+
 
         except RuntimeError as e:
             self.logger.warning('EVDEV Plugin could not be loaded. Retrying in 5 seconds. %s' % e)
@@ -78,11 +119,13 @@ class EvdevPlugin(Plugin):
     def send_ir_command(self, event):
         data = evdev.categorize(event)
         self.logger.debug('IR Received keycode request (%s)' % data.keycode)
-        if data.keycode in self.config['nodes'][self.core.hostname]['rcvCommands'].keys():
-            command = self.config['nodes'][self.core.hostname]['rcvCommands'][data.keycode]
-            self.logger.info('IR Received command request (%s)' % command)
-            self.commandsReceived += 1
-            self.core.add_timeout(0, self.send_command, command.split())
+        for entry in self.config['nodes'][self.core.hostname]['rcvCommands']:
+            name, command = entry.items()
+            if name == data.keycode:
+                command = self.config['nodes'][self.core.hostname]['rcvCommands'][data.keycode]
+                self.logger.info('IR Received command request (%s)' % command)
+                self.commandsReceived += 1
+                self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_list_rcv(self, args):
         ret = []

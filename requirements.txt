@@ -34,6 +34,8 @@ xmpppy
 
 # plugin proximity
 #PyBluez
+# apt install libbluetooth-dev
+git+https://github.com/pybluez/pybluez.git@master
 
 # plugin rgb-led
 smbus2

@@ -82,8 +82,8 @@ class EvdevPlugin(Plugin):
             for key in entry.keys():
                 if key == data.keycode:
                     self.logger.info('IR Received command request (%s)' % entry[key])
-        self.commandsReceived += 1
-        self.core.add_timeout(0, self.send_command, entry[key].split())
+                    self.commandsReceived += 1
+                    self.core.add_timeout(0, self.send_command, entry[key].split())
 
     def cmd_list_rcv(self, args):
         ret = []

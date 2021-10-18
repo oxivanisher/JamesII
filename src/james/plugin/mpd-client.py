@@ -183,7 +183,7 @@ class MpdClientWorker(object):
         if self.worker_lock.locked():
             self.worker_lock.release()
 
-    def play_url(self, uri, volume = -1):
+    def play_url(self, uri, volume=-1):
         self.logger.debug('Trying to play URI (%s) with volume (%s)' % (uri, volume))
         if self.check_connection():
             self.lock()

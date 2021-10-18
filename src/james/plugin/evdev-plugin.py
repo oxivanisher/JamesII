@@ -6,7 +6,7 @@
 # http://pylirc.cvs.sourceforge.net/viewvc/pylirc/pylirc/doc/simple.txt?revision=1.4&view=markup
 # https://code.fluendo.com/remotecontrol/trac/browser/trunk/test/test-pylirc.py
 
-import pylirc
+import evdev
 import time
 import tempfile
 import os
@@ -14,14 +14,13 @@ from subprocess import call
 
 from james.plugin import *
 
-LIRC_CFG_FILE = '/etc/lirc/lircd.conf'
 
-class LircThread(PluginThread):
+class EvdevThread(PluginThread):
 
     def __init__(self, plugin, rcv_config):
-        super(LircThread, self).__init__(plugin)
+        super(EvdevThread, self).__init__(plugin)
 
-        self.prog = 'JamesII-lirc'
+        self.prog = 'JamesII-evdev'
 
         self.tempFile = tempfile.NamedTemporaryFile(suffix="-%s" % self.prog, delete=False)
         self.tmpFileName = self.tempFile.name
@@ -79,7 +78,8 @@ class LircThread(PluginThread):
         pylirc.exit()
         os.unlink(self.tmpFileName)
 
-class Lirc:
+
+class Evdev:
     # THANK YOU! https://github.com/slimjim777/web-irsend/blob/master/lirc/lirc.py
     """
     Parses the lircd.conf file and can send remote commands through irsend.
@@ -160,10 +160,10 @@ class Lirc:
         call(['irsend', 'SEND_ONCE', '--count', count, device_id, message])
 
 
-class LircPlugin(Plugin):
+class EvdevPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(LircPlugin, self).__init__(core, descriptor)
+        super(EvdevPlugin, self).__init__(core, descriptor)
 
         listCommand = self.commands.create_subcommand('list', ('Will list certain things'), None)
         listCommand.create_subcommand('send', ('Will return all sendable commands'), self.cmd_list_send)
@@ -174,13 +174,13 @@ class LircPlugin(Plugin):
 
         self.logger.debug('Loading lircd config from %s' % LIRC_CFG_FILE)
         if os.path.exists(LIRC_CFG_FILE):
-            self.lircParse = Lirc(LIRC_CFG_FILE)
+            self.lircParse = Evdev(LIRC_CFG_FILE)
 
             self.workerLock = threading.Lock()
             self.workerRunning = True
 
             if 'rcvCommands' in list(self.config['nodes'][self.core.hostname].keys()):
-                self.lirc_thread = LircThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
+                self.lirc_thread = EvdevThread(self, self.config['nodes'][self.core.hostname]['rcvCommands'])
                 self.lirc_thread.start()
 
         else:
@@ -213,7 +213,6 @@ class LircPlugin(Plugin):
         self.logger.warning('Unknown IR Remote/Command: (%s)' % (' '.join(args)))
         return 'Unknown IR Remote/Command: (%s)' % (' '.join(args))
 
-
     def cmd_list_send(self, args):
         ret = []
         try:
@@ -241,7 +240,6 @@ class LircPlugin(Plugin):
             for code in self.lircParse.codes[dev]:
                 ret.append('%-15s %-15s %s' % (dev, code, self.lircParse.codes[dev][code]))
         return ret
-
 
     def terminate(self):
         self.workerLock.acquire()
@@ -283,12 +281,13 @@ class LircPlugin(Plugin):
                     pass
         return True
 
+
 descriptor = {
-    'name' : 'lirc-client',
-    'help' : 'Interface to LIRC',
-    'command' : 'lirc',
+    'name' : 'evdev-client',
+    'help' : 'Interface to EVDEV',
+    'command' : 'evdev',
     'mode' : PluginMode.MANAGED,
-    'class' : LircPlugin,
+    'class' : EvdevPlugin,
     'detailsNames' : { 'commandsSent' : "IR Commands sent",
                        'commandsReceived' : "IR Commands received"}
 }

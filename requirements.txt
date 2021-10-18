@@ -36,7 +36,7 @@ xmpppy
 #PyBluez
 
 # plugin rgb-led
-#smbus2
+smbus2
 
 # plugin mpd-client
 python-mpd2
@@ -45,7 +45,9 @@ python-mpd2
 #transmissionrpc
 
 # plugin lirc-plugin
-#pylirc
+# pylirc2
+# replaced with evdev
+evdev
 
 # plugin cli
 #readline
@@ -56,13 +58,18 @@ python-mpd2
 # plugin google-calendar
 google-calendar-api-client-python
 # python-gflags (3.1.2)            - Obsolete. Please migrate to absl-py instead.
-oauth2client==1.4.12
+python-gflags
+oauth2client
+#==1.4.12
+# google-api-python-client==1.7.11
+# google-auth==1.7.1
+# google-auth-httplib2==0.0.3
 
 # plugin httpserver-plugin
 storm~=0.25
 
 # plugin raspberry
-#wiringpi
+wiringpi
 
 # pip freeze
 # asn1crypto==0.24.0

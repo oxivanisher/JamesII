@@ -80,7 +80,7 @@ voice-commands:
    timeout  : 2
    keyword  : computer
 
-lirc-client:
+evdev-client:
  nodes:
   node_name:
    proximityToggle:

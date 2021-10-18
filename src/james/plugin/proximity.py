@@ -191,6 +191,7 @@ class ProximityPlugin(Plugin):
                     for name in list(self.core.config['persons'][person]['bt_devices'].keys()):
                         mac = self.core.config['persons'][person]['bt_devices'][name]
                         ret = self.utils.popenAndWait([self.tools['l2ping'], '-c', '1', mac])
+                        print(ret)
                         clear_list = [s for s in ret if s != '']
 
                         for line in clear_list:

@@ -33,8 +33,9 @@ psutil~=5.8.0
 xmpppy
 
 # plugin proximity
-#PyBluez
 # apt install libbluetooth-dev
+# and revert to PyBluez when https://github.com/pybluez/pybluez/issues/416 is closed
+#PyBluez
 git+https://github.com/pybluez/pybluez.git@master
 
 # plugin rgb-led

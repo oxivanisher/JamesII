@@ -82,7 +82,7 @@ class EvdevPlugin(Plugin):
         for entry in self.config['nodes'][self.core.hostname]['rcvCommands']:
             for key in entry.keys():
                 if key == data.keycode:
-                    command = self.config['nodes'][self.core.hostname]['rcvCommands'][data.keycode]
+                    command = entry[key]
                     self.logger.info('IR Received command request (%s)' % command)
                     self.commandsReceived += 1
                     self.core.add_timeout(0, self.send_command, command.split())

@@ -36,13 +36,13 @@ xmpppy
 # apt install libbluetooth-dev
 # and revert to PyBluez when https://github.com/pybluez/pybluez/issues/416 is closed
 #PyBluez
-git+https://github.com/pybluez/pybluez.git@master
+#git+https://github.com/pybluez/pybluez.git@master  > works
 
 # plugin rgb-led
-smbus2
+# smbus2 > works
 
 # plugin mpd-client
-python-mpd2
+# python-mpd2 > works
 
 # plugin transmission
 #transmissionrpc

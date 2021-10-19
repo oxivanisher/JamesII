@@ -5,6 +5,7 @@ from james.plugin import *
 
 # https://bitbucket.org/blueluna/transmissionrpc/wiki/Home
 
+
 class TransmissionPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -52,7 +53,7 @@ class TransmissionPlugin(Plugin):
         def candy_output(tid, qpos, status, rate, peers, eta, ratio, name):
             if isinstance(ratio, float):
                 ratio = round(ratio, 3)
-            elif ratio <= 0:
+            elif int(ratio) <= 0:
                 ratio = "-"
 
             if rate == "0B":

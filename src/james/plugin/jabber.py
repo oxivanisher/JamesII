@@ -38,7 +38,7 @@ class JabberThread(PluginThread):
         self.logger.debug("XMPP connect called")
         # setup connection
         jid = xmpp.protocol.JID(self.cfg_jid)
-        self.conn = xmpp.Client(jid.getDomain(), debug=['TLS'])
+        self.conn = xmpp.Client(jid.getDomain(), debug=[]) # debug can be 'always'
         conres = self.conn.connect()
 
         if not conres:

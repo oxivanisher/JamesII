@@ -1,7 +1,6 @@
 # James II: Your Butler brought to the next level.
 The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system is also very handy in combination with RaspberryPi's (http://www.raspberrypi.org/).
-Module documentation nightly updated: http://oxi.ch/JamesII/
 
 ## Things / Services you can use or interact with:
 * CLI (managed) interface with history and command completion
@@ -22,6 +21,17 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Kodi (managed) to trigger database updates and display onscreen messages
 * Evdev (managed) to be controlled by IR devices (you have to configure your evdev things yourself!)
 * Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )
+
+### Python 3
+JamesII was partially ported to python 3. The core things are working, but there might be errors found in the future.
+The most errors had to do with UTF-8, encoding and decoding things. The following plugins where not tested with python
+3:
+* Dbus-Notify
+* HTTP Server
+* Monitor
+* Motion
+* Voice-Commands
+* Wakeonlan
 
 #### Plugin modes explanation:
 * Manual: Passive plugins are run exclusively, normally with a separate bash command

@@ -1,8 +1,8 @@
 
 import json
 import uuid
-import urllib.request, urllib.parse, urllib.error
 import http.client
+import base64
 
 from james.plugin import *
 
@@ -23,17 +23,16 @@ class KodiPlugin(Plugin):
         broadcast_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
         broadcast_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
 
-        user_string = ""
+        auth_string = ""
         if self.config['nodes'][self.core.hostname]['username']:
-            user_string = self.config['nodes'][self.core.hostname]['username']
+            auth_string = self.config['nodes'][self.core.hostname]['username']
         if self.config['nodes'][self.core.hostname]['password']:
-            user_string = user_string + ":" + self.config['nodes'][self.core.hostname]['password']
-        if user_string:
-            user_string = user_string + "@"
-        server_string = "%s:%s" % (self.config['nodes'][self.core.hostname]['host'],
-                                   self.config['nodes'][self.core.hostname]['port'])
-        self.connection_string = "%s%s" % (user_string, server_string)
+            auth_string = auth_string + ":" + self.config['nodes'][self.core.hostname]['password']
 
+        self.connection_headers = {'Content-Type': 'application/json'}
+        if auth_string:
+            self.connection_headers["Authorization"] = "Basic {}".format(base64.b64encode(bytes(f"{auth_string}",
+                                                                                                "utf-8")).decode("ascii"))
         self.updateNode = False
         if self.core.hostname in self.config['updatenodes']:
             self.updateNode = True
@@ -43,13 +42,13 @@ class KodiPlugin(Plugin):
 
     def send_rpc(self, method, params={}):
         id = str(uuid.uuid1())
-        headers = { 'Content-Type': 'application/json' }
         rawData = [{"jsonrpc":"2.0", 'id':id, 'method':method, 'params':params}]
 
         data = json.dumps(rawData)
         try:
-            h = http.client.HTTPConnection(self.connection_string)
-            h.request('POST', '/jsonrpc', data, headers)
+            h = http.client.HTTPConnection(self.config['nodes'][self.core.hostname]['host'],
+                                           port=self.config['nodes'][self.core.hostname]['port'])
+            h.request('POST', '/jsonrpc', data, self.connection_headers)
             r = h.getresponse()
             rpcReturn = json.loads(r.read())[0]
             if 'error' in list(rpcReturn.keys()):
@@ -58,11 +57,6 @@ class KodiPlugin(Plugin):
             else:
                 return rpcReturn
 
-            # if rpcReturn['error'] == 'OK':
-            #     return True
-            # else:
-            #     self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
-            #     return False
         except Exception as e:
             self.logger.warning('Unable to connect to Kodi: %s' % e)
             return False

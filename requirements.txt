@@ -12,7 +12,7 @@
 # google-calendar-api-client-python
 
 # Base
-# pika replaced by jsons
+pika
 PyYAML
 pytz
 
@@ -45,7 +45,7 @@ xmpppy
 # python-mpd2 > works
 
 # plugin transmission
-#transmissionrpc
+transmissionrpc
 
 # plugin lirc-plugin
 # pylirc2
@@ -67,6 +67,7 @@ oauth2client
 # google-api-python-client==1.7.11
 # google-auth==1.7.1
 # google-auth-httplib2==0.0.3
+httplib2
 
 # plugin httpserver-plugin
 storm
@@ -140,8 +141,8 @@ wiringpi
 # Werkzeug==0.10.4
 # wheel==0.32.3
 
-transmissionrpc~=0.11
-httplib2~=0.20.1
-google-api-python-client~=2.26.1
-pika~=1.2.0
-Flask~=2.0.2
+#transmissionrpc~=0.11
+#httplib2~=0.20.1
+#google-api-python-client~=2.26.1
+#pika~=1.2.0
+#Flask~=2.0.2

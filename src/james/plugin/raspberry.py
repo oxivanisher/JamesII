@@ -9,7 +9,7 @@ from james.plugin import *
 
 class BlinkLed(object):
     # led blink class, returns true when finished
-    def __init__(self, thread, pin, amount, cycles = 5):
+    def __init__(self, thread, pin, amount, cycles=5):
         self.thread = thread
         self.pin = pin
         self.amount = amount * 2 - 1
@@ -191,22 +191,22 @@ class RaspberryThread(PluginThread):
             self.set_led(pin, True)
 
     # rasp gpio methods
-    def led_blink(self, pin, amount = 1, cycles = 5):
+    def led_blink(self, pin, amount=1, cycles=5):
         self.led_blink_list.append(BlinkLed(self, pin, amount, cycles))
 
-    def set_led(self, led_id, mode):
+    def set_led(self, led_pin, mode):
         if mode:
-            wiringpi.digitalWrite(led_id, 1)
+            wiringpi.digitalWrite(led_pin, 1)
         else:
-            wiringpi.digitalWrite(led_id, 0)
+            wiringpi.digitalWrite(led_pin, 0)
 
     def read_pin(self, pin):
         return wiringpi.digitalRead(pin)
 
     # called when the worker ends
     def on_exit(self, result):
-        for pin in self.button_pins + self.switch_pins + self.led_pins:
-            wiringpi.digitalWrite(pin, 0)
+        for led_pin in self.button_pins + self.switch_pins + self.led_pins:
+            wiringpi.digitalWrite(led_pin, 0)
         self.plugin.on_worker_exit()
 
 
@@ -379,10 +379,12 @@ class RaspberryPlugin(Plugin):
 
         if newstatus['status'][self.core.location]:
             if len(self.led_pins) > 3:
+                self.logger.debug("Processing proximity event and enabling LED")
                 self.core.add_timeout(0, self.turn_off_led, 3)
                 self.messages_waiting_count = 0
         else:
             if len(self.led_pins) > 3:
+                self.logger.debug("Processing proximity event and disabling LED")
                 self.core.add_timeout(0, self.turn_on_led, 3)
 
     def process_message(self, message):

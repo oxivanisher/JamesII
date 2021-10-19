@@ -315,9 +315,9 @@ class XbmcPlugin(Plugin):
         return ret
 
 descriptor = {
-    'name' : 'xbmc',
-    'help' : 'Xbmc test module',
-    'command' : 'xbmc',
+    'name' : 'kodi',
+    'help' : 'Kodi module',
+    'command' : 'kodi',
     'mode' : PluginMode.MANAGED,
     'class' : XbmcPlugin,
     'detailsNames' : { 'updates' : "Database updates initated",

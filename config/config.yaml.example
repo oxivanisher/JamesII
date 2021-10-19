@@ -61,10 +61,10 @@ voice-commands:
   voltio: 'video'
  commands:
   welcome guest: 'alert dear guest... i welcome you. have a plesant stay.'
-  be quiet: 'xbmc stop && mpd radio off'
-  stop video: 'xbmc stop'
-  pause video: 'xbmc pause'
-  resume video: 'xbmc pause'
+  be quiet: 'kodi stop && mpd radio off'
+  stop video: 'kodi stop'
+  pause video: 'kodi pause'
+  resume video: 'kodi pause'
   test: 'alert test ok'
   sleep: 'gn8'
   good night: 'gn8'
@@ -81,20 +81,17 @@ voice-commands:
    keyword  : computer
 
 evdev-client:
- nodes:
-  node_name:
-   proximityToggle:
-#    - logitech_z906: KEY_POWER
-   proximityHome:
-    # - logitech_z906: KEY_POWER
-   proximityGone:
-    # - logitech_z906: KEY_POWER
-   rcvCommands:
-#    atv_remote:
-#     - KEY_ENTER: 'mpd radio toggle'
-   sendCommands:
-#    logitech_z906:
-#     - KEY_POWER
+  debug: False
+  nodes:
+    node_name:
+      device_name: 'gpio_ir_recv'
+      rcvCommands:
+        - KEY_ENTER: '@mynode mpd radio off'
+        - KEY_PLAYPAUSE: '@myothernode mpd radio on'
+        - KEY_UP: ''
+        - KEY_DOWN: 'gn8'
+        - KEY_LEFT: 'some command'
+        - KEY_RIGHT: '@mynode rgb off'
 
 http-server:
  updatetimeout: 60
@@ -124,7 +121,7 @@ motion:
   node_name:
     watch_cmd : 'say good morning && time && mpd radio on'
 
-xbmc:
+kodi:
  nodes:
   node_name:
    host       : localhost

@@ -139,7 +139,7 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 * eSpeak http://espeak.sourceforge.net/
 * MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
 * Transmission http://www.transmissionbt.com/
-* XBMC Mediacenter http://wiki.xbmc.org/
+* Kodi Mediacenter https://kodi.wiki/
 * Raspberry Pi http://www.raspberrypi.org/
 
 ## Thanks go to:

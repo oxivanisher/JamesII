@@ -13,7 +13,6 @@
 
 # Base
 # pika replaced by jsons
-jsons
 PyYAML~=6.0
 pytz~=2021.3
 

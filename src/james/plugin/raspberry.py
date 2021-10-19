@@ -412,6 +412,7 @@ class RaspberryPlugin(Plugin):
             if len(self.led_pins) > 1:
                 self.blink_led(1, 2)
 
+
 descriptor = {
     'name' : 'raspberry',
     'help' : 'Interface to RaspberryPi',

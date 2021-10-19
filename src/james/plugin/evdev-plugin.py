@@ -1,7 +1,6 @@
 
 import evdev
 import time
-import asyncio
 
 from james.plugin import *
 
@@ -20,23 +19,22 @@ class EvdevThread(PluginThread):
         run = 1
         try:
             while run:
-                for event in self.evdev_device.read_loop():
-
-                    if not blocking:
-                        self.plugin.workerLock.acquire()
-                        run = self.plugin.workerRunning
-                        self.plugin.workerLock.release()
-                        if run:
-                            time.sleep(0.5)
-                        else:
-                            break
-
-                    blocking = 0
-
+                event = self.evdev_device.read_one()
+                if event:
                     if event.type == evdev.ecodes.EV_KEY:
                         self.plugin.send_ir_command(event)
                         blocking = 1
-                break
+
+                if not blocking:
+                    self.plugin.workerLock.acquire()
+                    run = self.plugin.workerRunning
+                    self.plugin.workerLock.release()
+                    if run:
+                        time.sleep(0.5)
+                    else:
+                        break
+
+                blocking = 0
 
         except RuntimeError as e:
             self.logger.warning('EVDEV Plugin could not be loaded. Retrying in 5 seconds. %s' % e)

@@ -6,10 +6,11 @@ import http.client
 
 from james.plugin import *
 
-class XbmcPlugin(Plugin):
+
+class KodiPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(XbmcPlugin, self).__init__(core, descriptor)
+        super(KodiPlugin, self).__init__(core, descriptor)
 
         self.show_broadcast = False
 
@@ -18,9 +19,9 @@ class XbmcPlugin(Plugin):
         self.commands.create_subcommand('pause', 'Pause current playback', self.cmd_pause)
         self.commands.create_subcommand('stop', 'Stop current playback', self.cmd_stop)
         self.commands.create_subcommand('toggle', 'Toggle current playback', self.cmd_toggle)
-        broadcase_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
-        broadcase_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
-        broadcase_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
+        broadcast_cmd = self.commands.create_subcommand('broadcast', 'Should broadcast messages be sent', None)
+        broadcast_cmd.create_subcommand('on', 'Activates broadcast messages', self.cmd_broadcast_on)
+        broadcast_cmd.create_subcommand('off', 'Deactivates broadcast messages', self.cmd_broadcast_off)
 
         user_string = ""
         if self.config['nodes'][self.core.hostname]['username']:
@@ -40,7 +41,7 @@ class XbmcPlugin(Plugin):
 
         self.commands.create_subcommand('test', 'test message', self.get_active_player_details)
 
-    def send_rpc(self, method, params = {}):
+    def send_rpc(self, method, params={}):
         id = str(uuid.uuid1())
         headers = { 'Content-Type': 'application/json' }
         rawData = [{"jsonrpc":"2.0", 'id':id, 'method':method, 'params':params}]
@@ -57,13 +58,13 @@ class XbmcPlugin(Plugin):
             else:
                 return rpcReturn
 
-            if rpcReturn['error'] == 'OK':
-                return True
-            else:
-                self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
-                return False
+            # if rpcReturn['error'] == 'OK':
+            #     return True
+            # else:
+            #     self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+            #     return False
         except Exception as e:
-            self.logger.warning('Unable to connect to XBMC: %s' % e)
+            self.logger.warning('Unable to connect to Kodi: %s' % e)
             return False
 
     def send_rpc_message(self, title, message):
@@ -223,7 +224,7 @@ class XbmcPlugin(Plugin):
                  'originaltitle' : movieDBRaw['result']['moviedetails']['originaltitle'] }
 
     def process_proximity_event(self, newstatus):
-        self.logger.debug("XBMC Processing proximity event")
+        self.logger.debug("Kodi Processing proximity event")
         if not newstatus['status'][self.core.location]:
             self.core.add_timeout(0, self.cmd_stop, None)
 
@@ -319,7 +320,7 @@ descriptor = {
     'help' : 'Kodi module',
     'command' : 'kodi',
     'mode' : PluginMode.MANAGED,
-    'class' : XbmcPlugin,
+    'class' : KodiPlugin,
     'detailsNames' : { 'updates' : "Database updates initated",
                        'niceName' : "Active nice name",
                        'niceTime' : "Active nice time",

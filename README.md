@@ -19,7 +19,7 @@ Module documentation nightly updated: http://oxi.ch/JamesII/
 * Timer (autoload on core node) the all mighty MCP to time commands with "in" and "at"
 * Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server
 * Wakeonlan (managed) to wake up devices when you come home for example
-* Xbmc (managed) to trigger database updates and display onscreen messages
+* Kodi (managed) to trigger database updates and display onscreen messages
 * Evdev (managed) to be controlled by IR devices (you have to configure your evdev things yourself!)
 * Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )
 

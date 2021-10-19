@@ -3,7 +3,10 @@ import datetime
 import pytz
 import socket
 import struct
-import collections
+try:
+    from collections.abc import Mapping, Iterable
+except ImportError: # Python 2.7 compatibility
+    from collections import Mapping, Iterable
 import subprocess
 import logging
 import re
@@ -242,9 +245,9 @@ class JamesUtils(object):
     def convert_from_unicode(self, data):
         if isinstance(data, str):
             return str(data)
-        elif isinstance(data, collections.Mapping):
+        elif isinstance(data, Mapping):
             return dict(list(map(self.convert_from_unicode, iter(data.items()))))
-        elif isinstance(data, collections.Iterable):
+        elif isinstance(data, Iterable):
             return type(data)(list(map(self.convert_from_unicode, data)))
         else:
             return data

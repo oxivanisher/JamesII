@@ -49,8 +49,8 @@ xmpppy
 
 # plugin lirc-plugin
 # pylirc2
-# replaced with evdev
-evdev
+# replaced with evdev > since evdev is not available under windows, its not mendatory anymore
+# evdev
 
 # plugin cli
 #readline

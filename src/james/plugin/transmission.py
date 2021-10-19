@@ -73,7 +73,7 @@ class TransmissionPlugin(Plugin):
 
             ret.append(candy_output("ID", "Q Pos", "Status", "DL Speed", "Peers", "Remaining", "UL Ratio", "Name"))
             for torrent_id in self.tr_conn.get_files():
-                torrent =  self.tr_conn.info(torrent_id)[torrent_id]
+                torrent = self.tr_conn.info(torrent_id)[torrent_id]
 
                 my_eta = "-"
                 if hasattr(torrent, 'eta'):

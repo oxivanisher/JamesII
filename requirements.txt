@@ -69,7 +69,7 @@ oauth2client
 # google-auth-httplib2==0.0.3
 
 # plugin httpserver-plugin
-storm~=0.25
+storm
 
 # plugin raspberry
 wiringpi

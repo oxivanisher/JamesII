@@ -30,7 +30,7 @@ class EvdevThread(PluginThread):
                     run = self.plugin.workerRunning
                     self.plugin.workerLock.release()
                     if run:
-                        time.sleep(0.5)
+                        time.sleep(0.1)
                     else:
                         break
 

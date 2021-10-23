@@ -719,7 +719,6 @@ class Core(object):
         # Broadcast command list
         for p in self.plugins:
             if p.commands:
-                # self.discovery_channel.send(['commands', jsons.dump(p.commands)])
                 self.discovery_channel.send(['commands', p.commands])
 
         if self.passive:

@@ -834,7 +834,7 @@ class Core(object):
                 pass
 
             if threading.active_count() > 1:
-                self.logger.info("Shutdown complete. %s thread(s) remaining" % threading.active_count())
+                self.logger.info("Shutdown not yet complete. %s thread(s) remaining" % threading.active_count())
 
                 main_thread = threading.current_thread()
                 for t in threading.enumerate():
@@ -851,7 +851,8 @@ class Core(object):
                         pass
 
             else:
-                self.logger.info("Shutdown complete.")
+                self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
+                                 threading.active_count())
             self.terminated = True
 
     # threading methods

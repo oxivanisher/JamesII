@@ -231,6 +231,25 @@ class MpdClientWorker(object):
             self.logger.debug("Unable to play")
             return False
 
+    def play_file(self, filename):
+        if self.check_connection():
+            self.lock()
+            try:
+                self.client.clear()
+                self.client.add(filename)
+                self.client.repeat(1)
+                self.client.single(1)
+                self.client.setvol(0)
+                self.client.play()
+            except mpd.base.CommandError:
+                self.logger.warning("Error starting noise")
+            self.unlock()
+            self.logger.debug("Playing")
+            return True
+        else:
+            self.logger.debug("Unable to play")
+            return False
+
     def stop(self):
         if self.check_connection():
             self.lock()
@@ -259,6 +278,7 @@ class MpdClientWorker(object):
         if self.check_connection():
             self.lock()
             tmp_status = self.client.status()
+            tmp_status['currentsong'] = self.client.currentsong()
             self.unlock()
             return tmp_status
 
@@ -390,6 +410,7 @@ class MpdClientPlugin(Plugin):
         self.stations = {}
 
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
+        self.commands.create_subcommand('noise', 'Start mpd noise mode', self.mpd_noise)
 
         radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
@@ -406,6 +427,7 @@ class MpdClientPlugin(Plugin):
 
         self.load_state('radioStarted', 0)
         self.load_state('wakeups', 0)
+        self.load_state('noises', 0)
         self.load_state('sleeps', 0)
         self.load_state('fades', 0)
 
@@ -537,11 +559,47 @@ class MpdClientPlugin(Plugin):
         else:
             self.logger.info("MPD Sleep mode not activated. You are not here.")
 
+    def mpd_noise(self, args):
+        self.noises += 1
+        self.logger.debug('Activating noise mode')
+
+        if self.core.proximity_status.get_status_here():
+            if self.fade_in_progress:
+                self.logger.info("MPD Noise mode NOT activated due other fade in progress")
+                return ["MPD Noise mode NOT activated due other fade in progress"]
+            else:
+                self.radio_off(None)
+                self.client_worker.play_file(self.config['noise_file'])
+
+                self.thread = FadeThread(self,
+                                         self.client_worker,
+                                         self.config['wakeup_fade'],
+                                         self.config['noise_volume'])
+                self.thread.start()
+                self.worker_threads.append(self.thread)
+                self.logger.info("MPD Noise mode activated")
+                return ["MPD Noise mode activated"]
+        else:
+            self.logger.info("Noise not activated. You are not here.")
+            return ["Noise not activated. You are not here."]
+
     def mpd_wakeup(self, args):
         self.wakeups += 1
         tmp_state = self.client_worker.status()
         if tmp_state:
-            if tmp_state['state'] != 'play':
+            activate = False
+
+            if 'file' in tmp_state['currentsong'].keys():
+                if tmp_state['currentsong']['file'] == self.config['noise_file']:
+                    activate = True
+                    self.logger.info("Wakeup activating since the noise file is playing.")
+            elif tmp_state['state'] != 'play':
+                activate = True
+            else:
+                self.logger.info("Wakeup not activated. Radio is already playing.")
+                return ["Wakeup not activated. Radio is already playing."]
+
+            if activate:
                 self.logger.debug('Activating wakeup mode')
                 if self.core.proximity_status.get_status_here():
                     if self.fade_in_progress:
@@ -562,9 +620,6 @@ class MpdClientPlugin(Plugin):
                 else:
                     self.logger.info("Wakeup not activated. You are not here.")
                     return ["Wakeup not activated. You are not here."]
-            else:
-                self.logger.info("Wakeup not activated. Radio is already playing.")
-                return ["Wakeup not activated. Radio is already playing."]
         else:
             self.logger.info("Wakeup not activated. Unable to connect to MPD.")
             return ["Wakeup not activated. Unable to connect to MPD."]
@@ -636,8 +691,9 @@ class MpdClientPlugin(Plugin):
                 str_status = "Unknown"
 
         ret = {'state': str_status, 'title': title, 'name': name, 'volume': volume, 'radioStarted': self.radioStarted,
-               'wakeups': self.wakeups, 'sleeps': self.sleeps, 'fades': self.fades}
+               'wakeups': self.wakeups, 'noises': self.noises, 'sleeps': self.sleeps, 'fades': self.fades}
         return ret
+
 
 descriptor = {
     'name' : 'mpd-client',
@@ -651,6 +707,7 @@ descriptor = {
                        'volume' : "Volume",
                        'radioStarted' : "Radio started",
                        'wakeups' : "Wakeups",
+                       'noises' : "Noises",
                        'sleeps' : "Sleeps",
                        'fades' : "Fades" }
 }

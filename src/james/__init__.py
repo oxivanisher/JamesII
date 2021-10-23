@@ -842,12 +842,13 @@ class Core(object):
                         continue
                     if t.name == "MainThread":
                         continue
-                self.logger.info('Joining thread %s', t.name)
-                try:
-                    t.join(3.0)
-                except RuntimeError:
-                    self.logger.warning("Unable to join thread %s because we would run into a deadlock." % t.name)
-                    pass
+                    self.logger.info('Joining thread %s', t.name)
+
+                    try:
+                        t.join(3.0)
+                    except RuntimeError:
+                        self.logger.warning("Unable to join thread %s because we would run into a deadlock." % t.name)
+                        pass
 
             else:
                 self.logger.info("Shutdown complete.")

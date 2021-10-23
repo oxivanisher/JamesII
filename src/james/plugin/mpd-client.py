@@ -328,6 +328,7 @@ class FadeThread(PluginThread):
         self.mpd_client = mpd_client
         self.fade_time = fade_time
         self.target_vol = target_vol
+        self.name = "%s > Created: %s" % (self.name, self.utils.get_time_string())
 
         #calc fade_time
         self.mpd_client.lock()

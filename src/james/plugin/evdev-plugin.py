@@ -12,6 +12,7 @@ class EvdevThread(PluginThread):
 
         self.evdev_device = evdev.InputDevice(evdev_device)
         self.logger.debug("EVDEV Device: %s" % evdev_device)
+        self.name = "%s > Device: %s" % (self.name, evdev_device)
 
     def work(self):
         blocking = 0

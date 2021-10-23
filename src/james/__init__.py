@@ -833,7 +833,7 @@ class Core(object):
                 # no proximity state found for this location
                 pass
 
-            if threading.active_count():
+            if threading.active_count() > 1:
                 self.logger.info("Shutdown complete. %s thread(s) remaining" % threading.active_count())
 
                 main_thread = threading.current_thread()

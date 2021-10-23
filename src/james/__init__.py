@@ -840,8 +840,12 @@ class Core(object):
                 for t in threading.enumerate():
                     if t is main_thread:
                         continue
-                self.logger.warning('joining %s', t.name)
-                t.join(3.0)
+                self.logger.info('Joining thread %s', t.name)
+                try:
+                    t.join(3.0)
+                except RuntimeError:
+                    self.logger.warning("Unable to join thread %s because we would run into a deadlock." % t.name)
+                    pass
 
             else:
                 self.logger.info("Shutdown complete.")

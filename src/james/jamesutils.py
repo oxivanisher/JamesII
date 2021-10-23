@@ -255,7 +255,6 @@ class JamesUtils(object):
 
     def list_unicode_cleanup(self, data):
         try:
-            # args = [s.encode('utf-8', errors='ignore').strip() for s in data]
             args = [s.strip() for s in data]
         except UnicodeDecodeError as e:
             if self.listUnicodeCleanuptmp != data:

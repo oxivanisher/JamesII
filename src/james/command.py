@@ -1,13 +1,11 @@
 
 from . import jamesutils
-# from dataclasses import dataclass
 
 
 class CommandNotFound(Exception):
     pass
 
 
-# @dataclass
 class Command(object):
 
     def __init__(self, name, help='', handler=None, hide=False):

@@ -138,16 +138,6 @@ def convert_Time_to_String(time):
     return datetime.datetime.fromtimestamp(timeInt).strftime('%d.%m.%Y %H:%M:%S')
 
 
-def decode_multiline_list(data):
-    # return utils.convert_from_unicode(json.loads(data))
-    return data
-
-
-def decode_unicode(data):
-    # return utils.convert_from_unicode(data)
-    return data
-
-
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
@@ -177,7 +167,7 @@ def get_broadcast_responses():
     broadcastCommandResponses = []
     for response in DbBroadcastCommandResponse.query.all():
         broadcastCommandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
     return broadcastCommandResponses
@@ -187,7 +177,7 @@ def get_command_responses():
     commandResponses = []
     for response in DbCommandResponse.query.all():
         commandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
     return commandResponses
@@ -197,7 +187,7 @@ def get_alerts():
     alertMessages = []
     for alert in DbAlertResponse.query.all():
         alertMessages.append((convert_Time_to_String(alert.time),
-                              decode_multiline_list(alert.data)))
+                              alert.data))
     return alertMessages
 
 
@@ -206,43 +196,40 @@ def get_alerts():
 def show_status():
     hostnames = {}
     for hostname in DbHostname.query.all():
-        hostnames[decode_unicode(hostname.uuid)] = decode_unicode(hostname.hostname)
+        hostnames[hostname.uuid] = hostname.hostname
 
     systemStatus = {}
     systemStatusAge = {}
     tTime = int(time.time() - 120)
     for status in DbStatus.query.filter(DbStatus.time > tTime):
-        uuid = decode_unicode(status.uuid)
-        pluginName = decode_unicode(status.plugin)
-        data = decode_multiline_list(status.data)
         myTime = utils.get_short_age(status.time)
 
         try:
-            systemStatus[uuid]
+            systemStatus[status.uuid]
         except KeyError:
-            systemStatus[uuid] = {}
+            systemStatus[status.uuid] = {}
 
         try:
-            systemStatus[uuid][pluginName]
+            systemStatus[status.uuid][status.plugin]
         except KeyError:
-            systemStatus[uuid][pluginName] = {}
+            systemStatus[status.uuid][status.plugin] = {}
 
         try:
-            systemStatusAge[uuid]
+            systemStatusAge[status.uuid]
         except KeyError:
-            systemStatusAge[uuid] = {}
+            systemStatusAge[status.uuid] = {}
 
         try:
-            systemStatusAge[uuid][pluginName]
+            systemStatusAge[status.uuid][status.plugin]
         except KeyError:
-            systemStatusAge[uuid][pluginName] = {}
+            systemStatusAge[status.uuid][status.plugin] = {}
 
-        systemStatus[uuid][pluginName] = data
-        systemStatusAge[uuid][pluginName] = myTime
+        systemStatus[status.uuid][status.plugin] = status.data
+        systemStatusAge[status.uuid][status.plugin] = myTime
 
-    return flask.render_template('status.html', status = systemStatus,
-                                                statusAge = systemStatusAge,
-                                                hostnames = hostnames )
+    return flask.render_template('status.html', status=systemStatus,
+                                                statusAge=systemStatusAge,
+                                                hostnames=hostnames)
 
 
 @app.route('/')
@@ -255,7 +242,7 @@ def show_messages():
     for response in reversed(DbCommandResponse.query.all()):
         count += 1
         commandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
         if count >= 5:
@@ -266,7 +253,7 @@ def show_messages():
     for response in reversed(DbBroadcastCommandResponse.query.all()):
         count += 1
         broadcastCommandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
         if count >= 5:
@@ -277,7 +264,7 @@ def show_messages():
     for alert in reversed(DbAlertResponse.query.all()):
         count += 1
         alertMessages.append((convert_Time_to_String(alert.time),
-                              decode_multiline_list(alert.data)))
+                              alert.data))
         if count >= 5:
             break
 

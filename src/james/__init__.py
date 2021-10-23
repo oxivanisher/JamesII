@@ -833,7 +833,18 @@ class Core(object):
                 # no proximity state found for this location
                 pass
 
-            self.logger.info("Shutdown complete. %s thread(s) remaining" % threading.active_count())
+            if threading.active_count():
+                self.logger.info("Shutdown complete. %s thread(s) remaining" % threading.active_count())
+
+                main_thread = threading.current_thread()
+                for t in threading.enumerate():
+                    if t is main_thread:
+                        continue
+                self.logger.warning('joining %s', t.name)
+                t.join(3.0)
+
+            else:
+                self.logger.info("Shutdown complete.")
             self.terminated = True
 
     # threading methods

@@ -10,7 +10,6 @@ class EvdevThread(PluginThread):
     def __init__(self, plugin, evdev_device):
         super(EvdevThread, self).__init__(plugin)
 
-        self.plugin = plugin
         self.evdev_device = evdev.InputDevice(evdev_device)
         self.logger.debug("EVDEV Device: %s" % evdev_device)
 

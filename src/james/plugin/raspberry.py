@@ -45,7 +45,6 @@ class RaspberryThread(PluginThread):
         self.button_pins = button_pins
         self.switch_pins = switch_pins
         self.led_pins = led_pins
-        self.plugin = plugin
         self.pin_state_cache = {}
         # wiringpi = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
         wiringpi.wiringPiSetup()

@@ -1,7 +1,6 @@
-import sys
+
 import time
 import psutil
-import datetime
 
 from james.plugin import *
 

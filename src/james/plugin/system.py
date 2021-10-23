@@ -7,6 +7,7 @@ from datetime import timedelta
 
 from james.plugin import *
 
+
 class SystemPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -233,6 +234,7 @@ class SystemPlugin(Plugin):
         coreData['proximityStatus'] = self.core.proximity_status.get_status_here()
         coreData['personsStatus'] = self.core.persons_status
         return coreData
+
 
 descriptor = {
     'name' : 'system',

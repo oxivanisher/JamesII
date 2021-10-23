@@ -8,6 +8,7 @@ import ntpath
 
 from james.plugin import *
 
+
 class MotionPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -224,6 +225,7 @@ class MotionPlugin(Plugin):
         ret['camLosts'] = self.camLosts
         ret['watchMode'] = self.watch_mode
         return ret
+
 
 descriptor = {
     'name' : 'motion',

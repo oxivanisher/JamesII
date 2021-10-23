@@ -160,10 +160,6 @@ class GoogleCalendarPlugin(Plugin):
         if len(retList):
             self.logger.debug("Returning %s events" % len(retList))
             return retList
-        # if len(retList):
-        #     return ['Calendar events: '] + retList + ['End of calendar']
-        # else:
-        #     return ['No calendar events']
 
     # commands
     def cmd_calendar_show(self, args):

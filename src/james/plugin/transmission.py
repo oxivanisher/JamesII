@@ -94,23 +94,15 @@ class TransmissionPlugin(Plugin):
     def cmd_add(self, args):
         if self.connection_ok():
             args = self.utils.list_unicode_cleanup(args)
-            # message = self.core.new_message(self.name)
-            # message.level = 2
             try:
                 self.tr_conn.add_uri(args[0])
                 self.addedTorrents += 1
                 self.logger.info('Download of (%s) starting' % args[0])
                 self.send_command(['jab', 'msg', 'Torrent download started'])
-                # message.header = ("Torrent download started")
-                # message.body = args[0]
-                # message.send()
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:
                 self.logger.warning('Torrent download not started due error (%s)' % args[0])
                 self.send_command(['jab', 'msg', 'Torrent download not started due error (%s)' % args[0]])
-                # message.header = ("Torrent download not started due error")
-                # message.body = args[0]
-                # message.send()
                 pass
             except IndexError:
                 return ["Syntax error!"]
@@ -225,7 +217,6 @@ class TransmissionPlugin(Plugin):
                 new_words.append(word)
         return ' '.join(new_words)
 
-
     def return_status(self, verbose = False):
         ret = {}
         ret['connected'] = False
@@ -233,6 +224,7 @@ class TransmissionPlugin(Plugin):
             ret['connected'] = True
         ret['addedTorrents'] = self.addedTorrents
         return ret
+
 
 descriptor = {
     'name' : 'transmission',

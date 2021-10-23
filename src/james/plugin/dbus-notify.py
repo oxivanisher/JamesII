@@ -1,11 +1,10 @@
 
-import sys
 import dbus
-from dbus.mainloop.glib import DBusGMainLoop
 
 from james.plugin import *
 
 # this plugin is based on http://code.google.com/p/spotify-notify/
+
 
 class DbusNotifyPlugin(Plugin):
 
@@ -111,6 +110,7 @@ class DbusNotifyPlugin(Plugin):
             )
         except Exception as e:
             pass
+
 
 descriptor = {
     'name' : 'dbus-notify',

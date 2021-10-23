@@ -10,7 +10,6 @@
 # apt-get install python-poster python-pyaudio
 
 import pyaudio
-import sys
 import wave
 import subprocess
 import struct
@@ -21,6 +20,7 @@ import math
 import atexit
 
 from james.plugin import *
+
 
 class VoiceThread(PluginThread):
 
@@ -378,6 +378,7 @@ class VoiceCommandsPlugin(Plugin):
             return ['(%s) ' % len(self.unknownWords) + ', '.join(self.unknownWords)]
         else:
             return ['No unknown words']
+
 
 descriptor = {
     'name' : 'voice-commands',

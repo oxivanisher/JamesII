@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 
-# needs packages: python-mysqldb python-storm
-
-# import commands
-import yaml
-import signal
 import sys
 
 import james.config
 import logger
 
+
 def on_kill_sig(signal, frame):
     print("Exiting...")
     tcpserver.abort = 1
     sys.exit(0)
+
 
 def main():
     try:
@@ -38,6 +35,7 @@ def main():
 
     print("Main process ended")
     return 0
+
 
 if __name__ == "__main__":
     main()

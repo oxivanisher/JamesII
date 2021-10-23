@@ -1,8 +1,8 @@
 
-import sys
 import time
 
 from james.plugin import *
+
 
 class WakeOnLanPlugin(Plugin):
 
@@ -70,6 +70,7 @@ class WakeOnLanPlugin(Plugin):
         ret['wakeups'] = self.wakeups
         return ret
 
+
 descriptor = {
     'name' : 'wakeonlan',
     'help' : 'Wake on lan plugin',
@@ -78,4 +79,3 @@ descriptor = {
     'class' : WakeOnLanPlugin,
     'detailsNames' : { 'wakeups' : "Sent wakeups" }
 }
-

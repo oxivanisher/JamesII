@@ -309,6 +309,7 @@ class KodiPlugin(Plugin):
         ret['niceTime'] = niceTime
         return ret
 
+
 descriptor = {
     'name' : 'kodi',
     'help' : 'Kodi module',

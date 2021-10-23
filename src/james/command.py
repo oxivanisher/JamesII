@@ -1,6 +1,4 @@
 
-#import pickle
-# import jsons
 from . import jamesutils
 # from dataclasses import dataclass
 
@@ -108,16 +106,6 @@ class Command(object):
 
     def __str__(self):
         return "[Command] %s" % self.name
-
-    # def serialize(self):
-    #     # return pickle.dumps(self)
-    #     return jsons.dump(self)
-    #
-    # @classmethod
-    # def deserialize(cls, data):
-    #     return jsons.load(data)
-    #     # return pickle.loads(data)
-    #     # return pickle.loads(data.encode())
 
     def list(self, args=None):
         return_list = []

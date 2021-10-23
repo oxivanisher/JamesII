@@ -1,7 +1,6 @@
-import sys
+
 import os
 import subprocess
-import getpass
 import time
 import atexit
 import json
@@ -127,17 +126,6 @@ class ProximityPlugin(Plugin):
                              stderr=subprocess.STDOUT)
         pair_out = p.communicate(input=str(pair_data[1]) + '\n')[0]
         self.logger.debug("BT Logging output: %s" % pair_out)
-
-    # def discover(self, args):
-    #     self.logger.debug('Discovering bluetooth hosts...')
-    #
-    #     nearby_devices = discover_devices(lookup_names=True)
-    #     hosts = {}
-    #     if len(nearby_devices):
-    #         for name, addr in nearby_devices:
-    #             hosts[addr] = name
-    #     self.logger.debug('Found %s bluetooth hosts' % len(nearby_devices))
-    #     return hosts
 
     def show_persons(self, args):
         ret = []

@@ -1,4 +1,3 @@
-# http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
 
 import time
 import json
@@ -14,16 +13,19 @@ from james.plugin import *
 
 # http://stackoverflow.com/questions/14444913/web-py-specify-address-and-port
 
+
 class DbCommand(object):
     __storm_table__ = "commands"
     id = Int(primary=True)
     command = Unicode()
     source = Unicode()
 
+
 class DbHostname(object):
     __storm_table__ = "hostnames"
     uuid = Unicode(primary=True)
     hostname = Unicode()
+
 
 class DbCommandResponse(object):
     __storm_table__ = "commandResponses"
@@ -33,6 +35,7 @@ class DbCommandResponse(object):
     plugin = Unicode()
     data = Unicode()
 
+
 class DbBroadcastCommandResponse(object):
     __storm_table__ = "broadcastCommandResponses"
     id = Int(primary=True)
@@ -41,11 +44,13 @@ class DbBroadcastCommandResponse(object):
     plugin = Unicode()
     data = Unicode()
 
+
 class DbAlertResponse(object):
     __storm_table__ = "alertResponses"
     id = Int(primary=True)
     time = Int()
     data = Unicode()
+
 
 class DbStatus(object):
     __storm_table__ = "status"
@@ -54,6 +59,7 @@ class DbStatus(object):
     uuid = Unicode()
     plugin = Unicode()
     data = Unicode()
+
 
 class HttpServerPlugin(Plugin):
 
@@ -216,6 +222,7 @@ class HttpServerPlugin(Plugin):
 
     def terminate(self):
         self.store.flush()
+
 
 descriptor = {
     'name' : 'httpserver-plugin',

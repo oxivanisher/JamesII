@@ -1,7 +1,5 @@
 
 import pickle
-# import jsons
-import json
 import pika
 import time
 import logging
@@ -25,15 +23,6 @@ class BroadcastChannel(object):
         logger = logging.getLogger('broadcastchannel')
         msg_sent = False
         try_count = 0
-        # body = msg
-        # body = jsons.dump(msg)
-        # body = json.dumps(msg)
-
-        # try:
-        #     body = json.dumps(msg)
-        # except TypeError:
-        #     print(msg)
-        #     raise
 
         body = pickle.dumps(msg)
 
@@ -51,10 +40,6 @@ class BroadcastChannel(object):
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):
-        # msg = jsons.load(body)
-        # msg = body
-        # msg = json.loads(body)
-
         msg = pickle.loads(body)
 
         for listener in self.listeners:

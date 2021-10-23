@@ -1,15 +1,13 @@
 
 import threading
 import sys
-import yaml
 import readline
 import os
 import atexit
 
-import james.command
-
 
 from james.plugin import *
+
 
 class ConsoleThread(threading.Thread):
 
@@ -248,6 +246,7 @@ class CliPlugin(Plugin):
                 if len(list(c.subcommands.keys())) > 0:
                     self.print_command_help_lines(c, depth + 1)
         return True
+
 
 descriptor = {
     'name' : 'cli',

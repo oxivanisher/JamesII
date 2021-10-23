@@ -1,14 +1,13 @@
 
 import os
-import sys
 import time
 import atexit
 import json
-import re
 import pytz
 import datetime
 
 from james.plugin import *
+
 
 class TimerPlugin(Plugin):
 
@@ -160,6 +159,7 @@ class TimerPlugin(Plugin):
         ret['commandsRun'] = self.commandsRun
         return ret
 
+
 descriptor = {
     'name' : 'timer',
     'help' : 'MASTER CONTROL PROGRAM for timed functions',
@@ -169,4 +169,3 @@ descriptor = {
     'detailsNames' : { 'waitingCommands' : "Waiting commands",
                        'commandsRun' : "Commands run" }
 }
-

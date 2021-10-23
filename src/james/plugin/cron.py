@@ -1,15 +1,12 @@
 
 import os
-import sys
 import time
 import atexit
 import json
-import random
-import string
-import ast
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from james.plugin import *
+
 
 # from: http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
 # Some utility classes / functions first
@@ -17,7 +14,9 @@ class AllMatch(set):
     """Universal set - match everything"""
     def __contains__(self, item): return True
 
+
 allMatch = AllMatch()
+
 
 def conv_to_set(obj):  # Allow single integer to be provided
     if isinstance(obj, int):
@@ -25,6 +24,7 @@ def conv_to_set(obj):  # Allow single integer to be provided
     if not isinstance(obj, set):
         obj = set(obj)
     return obj
+
 
 # The actual CronEvent class
 class CronEvent(object):
@@ -65,6 +65,7 @@ class CronEvent(object):
         ret['cmd'] = self.args
 
         return ret
+
 
 # crontab class
 class CronTab(object):
@@ -122,6 +123,7 @@ class CronTab(object):
                                      event_data['dow'],
                                      event_data['cmd']))
         return ret
+
 
 class CronPlugin(Plugin):
 
@@ -294,6 +296,7 @@ class CronPlugin(Plugin):
         ret['jobs'] = len(self.crontab.events)
         ret['jobsRun'] = self.jobsRun
         return ret
+
 
 descriptor = {
     'name' : 'cron',

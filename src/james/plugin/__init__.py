@@ -2,7 +2,6 @@
 import uuid
 import os
 import imp
-import sys
 import threading
 import time
 import logging
@@ -355,4 +354,3 @@ class Factory(object):
                 continue
 
         return (available_plugins, plugin_warning, plugin_descr_error)
-

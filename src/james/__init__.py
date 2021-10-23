@@ -840,6 +840,8 @@ class Core(object):
                 for t in threading.enumerate():
                     if t is main_thread:
                         continue
+                    if t.name == "MainThread":
+                        continue
                 self.logger.info('Joining thread %s', t.name)
                 try:
                     t.join(3.0)

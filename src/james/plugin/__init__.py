@@ -253,7 +253,7 @@ class PluginThread(threading.Thread):
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
-        self.name = "%s > %s" % (self.plugin.name, self.__class__.__name__)
+        self.name = "Plugin: %s > Class: %s" % (self.plugin.name, self.__class__.__name__)
         self.config = self.plugin.config
         self.utils = self.plugin.utils
         self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)

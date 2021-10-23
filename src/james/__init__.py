@@ -476,9 +476,6 @@ class Core(object):
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
-                    # print(p.commands)
-                    # self.discovery_channel.send(['commands', p.commands.serialize()])
-                    # self.discovery_channel.send(['commands', jsons.dump(p.commands)])
                     self.discovery_channel.send(['commands', p.commands])
 
         elif msg[0] == 'ping':
@@ -489,10 +486,6 @@ class Core(object):
 
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
-            # self.logger.debug('Node commands received')
-            # self.ghost_commands.merge_subcommand(jsons.load(msg[1]))
-            # self.ghost_commands.merge_subcommand(command.Command.deserialize(msg[1]))
-            # self.ghost_commands.merge_subcommand(jsons.load(msg[1], command.Command))
             self.ghost_commands.merge_subcommand(msg[1])
 
         elif msg[0] == 'nodes_online':

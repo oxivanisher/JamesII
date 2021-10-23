@@ -22,19 +22,17 @@ class EvdevThread(PluginThread):
                 event = self.evdev_device.read_one()
                 if event:
                     if event.type == evdev.ecodes.EV_KEY:
+                        self.plugin.workerLock.acquire()
                         self.plugin.send_ir_command(event)
-                        blocking = 1
+                        self.plugin.workerLock.release()
 
-                if not blocking:
-                    self.plugin.workerLock.acquire()
-                    run = self.plugin.workerRunning
-                    self.plugin.workerLock.release()
-                    if run:
-                        time.sleep(0.1)
-                    else:
-                        break
-
-                blocking = 0
+                self.plugin.workerLock.acquire()
+                run = self.plugin.workerRunning
+                self.plugin.workerLock.release()
+                if run:
+                    time.sleep(0.1)
+                else:
+                    break
 
         except RuntimeError as e:
             self.logger.warning('EVDEV Plugin could not be loaded. Retrying in 5 seconds. %s' % e)

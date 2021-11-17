@@ -187,13 +187,13 @@ class JamesUtils(object):
         return (hours * 3600 + minutes * 60 + int(seconds))
 
     def date_string2values(self, arg):
-        # converts dd-mm-yyyy into [yyyy, mm, dd]
+        # converts yyyy-mm-dd into [yyyy, mm, dd]
         try:
             data = arg.split('-')
-            if int(data[0]) > 0 and int(data[0]) < 13:
-                if int(data[1]) > 0 and int(data[1]) < 32:
-                    if int(data[2]) > 2012:
-                        return [int(data[2]), int(data[1]), int(data[0])]
+            if int(data[0]) > 2020:
+                if int(data[1]) > 0 and int(data[1]) < 13:
+                    if int(data[2]) > 0 and int(data[2]) < 32:
+                        return [int(data[0]), int(data[1]), int(data[2])]
         except Exception as e:
             return False
 

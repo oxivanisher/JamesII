@@ -102,7 +102,7 @@ class TimerPlugin(Plugin):
                 target_timestamp += 86400
             return [self.timer_at(target_timestamp, args)]
         else:
-            return ["Invalid syntax. Use timestamp or hh:mm[:ss] [dd-mm-yyyy]"]
+            return ["Invalid syntax. Use timestamp or hh:mm[:ss] [yyyy-mm-dd]"]
 
     def cmd_timer_show(self, args):
         ret = []

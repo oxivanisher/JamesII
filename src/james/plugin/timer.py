@@ -14,7 +14,7 @@ class TimerPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(TimerPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [dd-mm-yyyy])', self.cmd_timer_at)
+        self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [yyyy-mm-dd])', self.cmd_timer_at)
         self.commands.create_subcommand('remove', 'Delets a command (id)', self.cmd_timer_remove)
         self.commands.create_subcommand('in', 'Runs a command in given time (sec|1s2m3h4d5w)', self.cmd_timer_in)
         self.commands.create_subcommand('show', 'Returns a list of commands', self.cmd_timer_show)

@@ -11,7 +11,6 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 from james.plugin import *
 
@@ -64,7 +63,7 @@ class GoogleCalendarPlugin(Plugin):
         except Exception as e:
             self.logger.warning("Google calendar was unable to update due to error: %s" % e)
 
-        # self.core.add_timeout(10, self.update_after_midnight) TODO: enable me again
+        self.core.add_timeout(10, self.update_after_midnight)
 
     # internal commands
     def update_after_midnight(self):

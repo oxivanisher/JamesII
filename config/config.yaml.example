@@ -252,9 +252,8 @@ wakeonlan:
   - node_name
 
 gcal:
- client_secret: Get Yours from Google!
- client_id: Get Yours from Google!
- developer_key: Get Yours from Google!
+  ignored_events:
+    - "something recurring for example"
  nodes:
   - node_name
 

@@ -2,8 +2,8 @@
 # pip install google-api-python-client
 
 import os
+import time
 
-import httplib2
 import datetime
 import pytz
 
@@ -101,6 +101,7 @@ class GoogleCalendarPlugin(Plugin):
             self.logger.debug("fetching calendars for person: %s" % person)
             for calendar in personClientIds[person]:
                 self.logger.debug("fetching calendar: %s" % calendar)
+                calendar_events = []
                 events = False
                 while not events:
                     events = self.fetchEvents(calendar)
@@ -109,6 +110,7 @@ class GoogleCalendarPlugin(Plugin):
 
                 while True:
                     for event in events['items']:
+                        calendar_events.append(event)
                         allEvents.append((person, event))
                     page_token = events.get('nextPageToken')
                     if page_token:
@@ -116,8 +118,8 @@ class GoogleCalendarPlugin(Plugin):
                     else:
                         break
 
-                self.logger.debug("fetched %s events:" % len(allEvents))
-                for event in allEvents:
+                self.logger.debug("fetched %s events for calendar %s:" % (len(calendar_events), calendar))
+                for event in calendar_events:
                     self.logger.debug(event)
 
         retList = []

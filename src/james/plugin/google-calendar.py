@@ -32,7 +32,6 @@ class GoogleCalendarPlugin(Plugin):
         self.event_cache = []
         self.event_cache_timestamp = 0
         self.last_fetch = 0
-
         if 'cache_timeout' in self.config.keys():
             self.event_cache_timeout = self.config['cache_timeout']
         else:
@@ -113,6 +112,7 @@ class GoogleCalendarPlugin(Plugin):
 
     def requestEvents(self, show=True):
         self.logger.debug("requestEvents from google calendar")
+        self.logger.debug("a %s b %s c %s" % (time.time(), self.event_cache_timestamp, self.event_cache_timeout))
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("cache is still valid, answering with the cache data")
             return self.event_cache

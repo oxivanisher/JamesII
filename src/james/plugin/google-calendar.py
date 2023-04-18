@@ -113,44 +113,46 @@ class GoogleCalendarPlugin(Plugin):
         self.logger.debug("requestEvents from google calendar")
         self.logger.debug("a %s b %s c %s" % (time.time(), self.event_cache_timestamp, self.event_cache_timeout))
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
-            self.logger.debug("cache is still valid, answering with the cache data")
-            return self.event_cache
+            self.logger.debug("Cache is still valid, answering with the cache data")
 
-        all_events = []
-        person_client_ids = self.getCalendarIds()
+        else:
+            self.logger.debug("Cache is invalid, fetching new data")
+            self.event_cache = []
+            person_client_ids = self.getCalendarIds()
 
-        no_alarm_clock_active = False
+            no_alarm_clock_active = False
 
-        for person in list(person_client_ids.keys()):
-            self.logger.debug("Fetching calendars for person: %s" % person)
-            for calendar in person_client_ids[person]:
-                self.logger.debug("Fetching calendar: %s" % calendar)
-                calendar_events = []
-                events = False
-                while not events:
-                    events = self.fetchEvents(calendar)
-                    if not events:
-                        time.sleep(1)
+            for person in list(person_client_ids.keys()):
+                self.logger.debug("Fetching calendars for person: %s" % person)
+                for calendar in person_client_ids[person]:
+                    self.logger.debug("Fetching calendar: %s" % calendar)
+                    calendar_events = []
+                    events = False
+                    while not events:
+                        events = self.fetchEvents(calendar)
+                        if not events:
+                            time.sleep(1)
 
-                while True:
-                    for event in events['items']:
-                        calendar_events.append(event)
-                        all_events.append((person, event))
-                    page_token = events.get('nextPageToken')
-                    if page_token:
-                        events = getEvents(calendar, page_token)
-                    else:
-                        break
+                    while True:
+                        for event in events['items']:
+                            calendar_events.append(event)
+                            self.event_cache.append((person, event))
+                        page_token = events.get('nextPageToken')
+                        if page_token:
+                            events = getEvents(calendar, page_token)
+                        else:
+                            break
 
-                self.logger.debug("Fetched %s events for calendar %s:" % (len(calendar_events), calendar))
-                for event in calendar_events:
-                    self.logger.debug(event)
-            else:
-                self.logger.debug("No calendars for: %s" % person)
+                    self.logger.debug("Fetched %s events for calendar %s:" % (len(calendar_events), calendar))
+                    for event in calendar_events:
+                        self.logger.debug(event)
+                else:
+                    self.logger.debug("No calendars for: %s" % person)
 
-        self.event_cache = []
+                self.event_cache_timestamp = time.time()
+
         return_list = []
-        for (person, event) in all_events:
+        for (person, event) in self.event_cache:
             self.logger.debug("Analyzing event for %s: %s" % (person, event['summary']))
             self.eventsFetched += 1
             return_string = False
@@ -194,15 +196,14 @@ class GoogleCalendarPlugin(Plugin):
                     return_string += " possibly "
                     # evil is:
                 return_string += event['summary']
-                self.event_cache.append(return_string)
                 return_list.append(return_string)
 
-        self.event_cache_timestamp = time.time()
+
         self.logger.debug("2 a %s b %s c %s" % (time.time(), self.event_cache_timestamp, self.event_cache_timeout))
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
-        self.logging.debug("There are %s events in the cache." % len(self.event_cache))
+        self.logging.debug("There are %s events in the cache." % len(return_list))
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))

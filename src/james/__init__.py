@@ -941,9 +941,6 @@ class Core(object):
             now = time.time()
             for timeout in self.timeouts:
                 current_timeout = timeout
-                # self.logger.info('DEBUG Processing timeout %s' % timeout)
-                self.logger.info('DEBUG Processing timeout dir %s' % dir(timeout))
-                self.logger.info('DEBUG Processing timeout.handler %s' % timeout.handler)
                 if timeout.deadline <= now:
                     self.logger.debug('Processing timeout %s' % timeout.handler)
                     timeout.handler(*timeout.args, **timeout.kwargs)
@@ -951,6 +948,9 @@ class Core(object):
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = exc_tb.tb_frame.f_code.co_filename
+            self.logger.info('DEBUG Processing timeout dir %s' % dir(current_timeout))
+            self.logger.info('DEBUG Processing timeout.seconds %s' % current_timeout.seconds)
+            self.logger.info('DEBUG Processing timeout.handler %s' % current_timeout.handler)
             self.logger.critical(
                 "Exception 2 in process_timeouts: %s in %s:%s %s > %s" %
                 (e, fname, exc_tb.tb_lineno, exc_type, current_timeout))

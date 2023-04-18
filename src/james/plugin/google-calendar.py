@@ -33,7 +33,7 @@ class GoogleCalendarPlugin(Plugin):
         creds = None
 
         tokens_file = os.path.join(os.path.expanduser("~"), ".james_gcal_token.json")
-        client_secret_file = os.path.join(os.path.expanduser("~"), "james2_google_client_secret.json")
+        client_secret_file = os.path.join(os.path.expanduser("~"), ".james2_google_client_secret.json")
 
         if os.path.exists(tokens_file):
             creds = Credentials.from_authorized_user_file(tokens_file, SCOPES)
@@ -42,7 +42,7 @@ class GoogleCalendarPlugin(Plugin):
                 creds.refresh(Request())
             else:
                 if not os.path.exists(client_secret_file):
-                    raise Exception("Please provide the google client_secret.jason file (see README.md) in location"
+                    raise Exception("Please provide the google client_secret.jason file (see README.md) in location: %s"
                                     % client_secret_file)
                 flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, SCOPES)
                 creds = flow.run_local_server(port=0)
@@ -116,7 +116,9 @@ class GoogleCalendarPlugin(Plugin):
                     else:
                         break
 
-                self.logger.debug("fetched %s events" % len(allEvents))
+                self.logger.debug("fetched %s events:" % len(allEvents))
+                for event in allEvents:
+                    self.logger.debug(event)
 
         retList = []
         for (person, event) in allEvents:

@@ -123,9 +123,9 @@ class GoogleCalendarPlugin(Plugin):
         no_alarm_clock_active = False
 
         for person in list(person_client_ids.keys()):
-            self.logger.debug("fetching calendars for person: %s" % person)
+            self.logger.debug("Fetching calendars for person: %s" % person)
             for calendar in person_client_ids[person]:
-                self.logger.debug("fetching calendar: %s" % calendar)
+                self.logger.debug("Fetching calendar: %s" % calendar)
                 calendar_events = []
                 events = False
                 while not events:
@@ -143,13 +143,16 @@ class GoogleCalendarPlugin(Plugin):
                     else:
                         break
 
-                self.logger.debug("fetched %s events for calendar %s:" % (len(calendar_events), calendar))
+                self.logger.debug("Fetched %s events for calendar %s:" % (len(calendar_events), calendar))
                 for event in calendar_events:
                     self.logger.debug(event)
+            else:
+                self.logger.debug("No calendars for: %s" % person)
 
         self.event_cache = []
         return_list = []
         for (person, event) in all_events:
+            self.logger.debug("Analyzing event for %s: %s" % (person, event['summary']))
             self.eventsFetched += 1
             return_string = False
             now = datetime.datetime.now()
@@ -199,6 +202,7 @@ class GoogleCalendarPlugin(Plugin):
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
+        self.logging.debug("There are %s events in the cache." % len(self.event_cache))
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))

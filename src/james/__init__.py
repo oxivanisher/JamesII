@@ -70,9 +70,6 @@ class Timeout():
         if os.name == 'posix':
             signal.alarm(0)  # disable alarm
 
-    def __str__(self):
-        return 'Timeout seconds %s' % self.sec
-
     def raise_timeout(self, *args):
         raise Timeout.Timeout()
 
@@ -944,6 +941,9 @@ class Core(object):
             now = time.time()
             for timeout in self.timeouts:
                 current_timeout = timeout
+                self.logger.info('DEBUG Processing timeout %s' % timeout)
+                self.logger.info('DEBUG Processing timeout.sec %s' % timeout.sec)
+                self.logger.info('DEBUG Processing timeout.handler %s' % timeout.handler)
                 if timeout.deadline <= now:
                     self.logger.debug('Processing timeout %s' % timeout.handler)
                     timeout.handler(*timeout.args, **timeout.kwargs)
@@ -953,7 +953,7 @@ class Core(object):
             fname = exc_tb.tb_frame.f_code.co_filename
             self.logger.critical(
                 "Exception 2 in process_timeouts: %s in %s:%s %s > %s" %
-                (e, fname, exc_tb.tb_lineno, exc_type, current_timeout.__str__))
+                (e, fname, exc_tb.tb_lineno, exc_type, current_timeout))
             # if some event let the client crash, remove it from the list so that the node does not loop forever
             #
             self.timeouts.remove(current_timeout)

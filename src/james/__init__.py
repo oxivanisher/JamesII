@@ -70,8 +70,8 @@ class Timeout():
         if os.name == 'posix':
             signal.alarm(0)  # disable alarm
 
-    def __repr__(self):
-        return 'Seconds %s' % self.sec
+    def __str__(self):
+        return 'Timeout seconds %s' % self.sec
 
     def raise_timeout(self, *args):
         raise Timeout.Timeout()
@@ -566,7 +566,7 @@ class Core(object):
                         self.logger.warning("Somehow, we sent a new config event if we already are the master! "
                                             "There is probably a problem in our config: %s" % (", ".join(cfg_diff)))
                     else:
-                        self.logger.info("Sent a new config probably after startup.")
+                        self.logger.debug("Recieved my own config probably after I sent it because of a node startup.")
 
                 elif self.master:
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
@@ -578,7 +578,7 @@ class Core(object):
                         for p in self.plugins:
                             p.reload_config()
                     else:
-                        self.logger.warning("Received the same config I already have again.")
+                        self.logger.debug("Received the same config I already have.")
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node but not the config has changed.")
                 self.master_node = sender_uuid

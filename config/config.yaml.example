@@ -253,7 +253,10 @@ wakeonlan:
 
 gcal:
   ignored_events:
-    - "something recurring for example"
+    - something recurring for example
+  no_alarm_clock_on:
+    - vacations
+  cache_timeout: 10
  nodes:
   - node_name
 

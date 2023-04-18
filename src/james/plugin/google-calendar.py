@@ -30,6 +30,17 @@ class GoogleCalendarPlugin(Plugin):
         self.load_state('eventFetches', 0)
         self.load_state('eventsFetched', 0)
 
+        self.event_cache = []
+        self.event_cache_timestamp = 0
+        self.last_fetch = 0
+
+        self.no_alarm_clock_active = False
+
+        if 'cache_timeout' in self.config.keys():
+            self.event_cache_timeout = self.config['cache_timeout']
+        else:
+            self.event_cache_timeout = 10
+
         SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
         creds = None
 
@@ -53,9 +64,18 @@ class GoogleCalendarPlugin(Plugin):
         try:
             self.service = build('calendar', 'v3', credentials=creds)
         except Exception as e:
-            print(e)
+            self.logger.warning("Google calendar was unable to update due to error: %s" % e)
+
+        self.core.add_timeout(10, self.update_after_midnight)
 
     # internal commands
+    def update_after_midnight(self):
+        now = datetime.datetime.now()
+        seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+        seconds_until_midnight = 86400 - seconds_since_midnight + 30 # adding 30 seconds just to be sure its the next day
+        self.logger.debug(" Will fetch google calendar again in %s seconds" % seconds_until_midnight)
+        self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
+
     def fetchEvents(self, calendar_id, page_token=None):
         events = {}
 
@@ -95,12 +115,18 @@ class GoogleCalendarPlugin(Plugin):
 
     def requestEvents(self):
         self.logger.debug("requestEvents from google calendar")
-        allEvents = []
-        personClientIds = self.getCalendarIds()
+        if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
+            self.logger.debug("cache is still valid, answering with the cache data")
+            return self.event_cache
 
-        for person in list(personClientIds.keys()):
+        all_events = []
+        person_client_ids = self.getCalendarIds()
+
+        self.no_alarm_clock_active = False
+
+        for person in list(person_client_ids.keys()):
             self.logger.debug("fetching calendars for person: %s" % person)
-            for calendar in personClientIds[person]:
+            for calendar in person_client_ids[person]:
                 self.logger.debug("fetching calendar: %s" % calendar)
                 calendar_events = []
                 events = False
@@ -112,7 +138,7 @@ class GoogleCalendarPlugin(Plugin):
                 while True:
                     for event in events['items']:
                         calendar_events.append(event)
-                        allEvents.append((person, event))
+                        all_events.append((person, event))
                     page_token = events.get('nextPageToken')
                     if page_token:
                         events = getEvents(calendar, page_token)
@@ -123,55 +149,67 @@ class GoogleCalendarPlugin(Plugin):
                 for event in calendar_events:
                     self.logger.debug(event)
 
-        retList = []
-        for (person, event) in allEvents:
+        self.event_cache = []
+        for (person, event) in all_events:
             self.eventsFetched += 1
-            retStr = False
+            return_string = False
             now = datetime.datetime.now()
-
-            # ignore ignored_events from config
-            if event['summary'] in self.config['ignored_events']:
-                self.logger.debug("Ignoring event because of ignored_events: %s" % event)
-                continue
 
             # whole day event:
             if 'date' in list(event['start'].keys()):
                 if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d'):
-                    retStr = "Today "
+                    happening_today = True
+                    return_string = "Today "
                 else:
-                    retStr = "Tomorrow "
+                    happening_today = False
+                    return_string = "Tomorrow "
+
+            # check there is a "don't wake up" event present in google calendar
+            if event['summary'].lower() in self.config['no_alarm_clock'].lower():
+                self.logger.info("Found a event which activates no_alarm_clock: %s" % event['summary'])
+                self.no_alarm_clock_active = True
+
+            # ignore ignored_events from config
+            if event['summary'].lower() in self.config['ignored_events'].lower():
+                self.logger.debug("Ignoring event because of ignored_events: %s" % event)
+                return_string = False
+                continue
 
             # normal event:
             elif 'dateTime' in list(event['start'].keys()):
                 eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTimeStart.day > datetime.datetime.now().day:
-                    retStr = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                    return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 
                     if eventTimeStart < now < eventTimeEnd:
-                        retStr = "Until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
+                        return_string = "Until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
                     elif now < eventTimeStart:
-                        retStr = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                        return_string = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
 
-            if retStr:
+            if return_string:
                 if event['status'] == "tentative":
-                    retStr += " possibly "
+                    return_string += " possibly "
                     # evil is:
-                retStr += event['summary']
-                retList.append(retStr)
+                return_string += event['summary']
+                self.event_cache.append(return_string)
 
-        if len(retList):
-            self.logger.debug("Returning %s events" % len(retList))
-            return retList
+        self.event_cache_timestamp = time.time()
+
+        self.core.no_alarm_clock_update(self.no_alarm_clock_active, 'gcal')
+
+        if len(self.event_cache):
+            self.logger.debug("Returning %s events" % len(self.event_cache))
+            return self.event_cache
 
     # commands
     def cmd_calendar_show(self, args):
-        return self.requestEvents()
+        return self.requestEvents
 
     def cmd_calendar_speak(self, args):
         try:
-            self.send_command(['espeak', 'say', '. '.join(self.requestEvents())])
+            self.send_command(['espeak', 'say', '. '.join(self.requestEvents)])
         except Exception:
             return []
 

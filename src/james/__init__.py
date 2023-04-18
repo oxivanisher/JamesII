@@ -115,6 +115,7 @@ class Core(object):
         self.uuid = str(uuid.uuid1())
         self.location = 'home'
         self.proximity_status = proximitystatus.ProximityStatus(self)
+        self.no_alarm_clock = False
         self.persons_status = {}
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
@@ -316,6 +317,10 @@ class Core(object):
         self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
         self.proximity_channel.add_listener(self.proximity_listener)
 
+        self.logger.debug("RabbitMQ: Create no_alarm_clock channel")
+        self.no_alarm_clock_channel = broadcastchannel.BroadcastChannel(self, 'no_alarm_clock')
+        self.no_alarm_clock_channel.add_listener(self.no_alarm_clock_listener)
+
         self.logger.debug("RabbitMQ: Create persons_status channel")
         self.persons_status_channel = broadcastchannel.BroadcastChannel(self, 'persons_status')
         self.persons_status_channel.add_listener(self.persons_status_listener)
@@ -327,6 +332,7 @@ class Core(object):
         self.data_response_channel.add_listener(self.data_response_listener)
 
         try:
+            # This is not really working as expected. But somewhat -.-
             file = open(self.proximity_state_file, 'r')
             self.proximity_status.status[self.location] = self.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
@@ -666,7 +672,7 @@ class Core(object):
 
     def publish_proximity_status_callback(self, new_status, proximity_type):
         """
-        send the newstatus proximity status over the proximity channel.
+        send the new_status proximity status over the proximity channel.
         """
         self.logger.debug("Publishing proximity status update %s from plugin %s" % (new_status, proximity_type))
         try:
@@ -676,6 +682,45 @@ class Core(object):
                                          'location': self.location})
         except Exception as e:
             self.logger.warning("Could not send proximity status (%s)" % e)
+
+    # no_alarm_clock channel methods
+    def no_alarm_clock_listener(self, msg):
+        """
+        Listens to no_alarm_clock status changes on the no_alarm_clock channel and
+        update the local storage.
+        """
+        self.logger.debug("core.no_alarm_clock_listener: %s" % msg)
+        old_status = self.no_alarm_clock
+        new_status = msg['status']
+        if old_status != new_status:
+            self.logger.debug("Received no_alarm_clock update (listener). New value is %s" % msg['status'])
+            self.no_alarm_clock = msg['status']
+
+    def no_alarm_clock_update(self, changed_status, no_alarm_clock_source):
+        """
+        If the local no_alarm_clock state has changed, call the publish method
+        """
+        if self.no_alarm_clock != changed_status:
+            self.logger.debug("publish_no_alarm_clock_status: %s" % changed_status)
+            self.publish_no_alarm_clock_status(changed_status, no_alarm_clock_source)
+
+    def publish_no_alarm_clock_status(self, new_status, no_alarm_clock_source):
+        """
+        Distribute no_alarm_clock to all nodes
+        """
+        self.add_timeout(0, self.publish_no_alarm_clock_status_callback, new_status, no_alarm_clock_source)
+
+    def publish_no_alarm_clock_status_callback(self, new_status, no_alarm_clock_source):
+        """
+        send the new_status no_alarm_clock status over the no_alarm_clock channel.
+        """
+        self.logger.debug("Publishing no_alarm_clock status update %s from plugin %s" % (new_status, no_alarm_clock_source))
+        try:
+            self.no_alarm_clock_channel.send({'status': new_status,
+                                              'host': self.hostname,
+                                              'plugin': no_alarm_clock_source})
+        except Exception as e:
+            self.logger.warning("Could not send no_alarm_clock status (%s)" % e)
 
     # discovery methods
     def ping_nodes(self):

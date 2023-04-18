@@ -597,15 +597,21 @@ class MpdClientPlugin(Plugin):
             elif tmp_state['state'] != 'play':
                 activate = True
             else:
-                self.logger.info("Wakeup not activated. Radio is already playing.")
-                return ["Wakeup not activated. Radio is already playing."]
+                msg = "Wakeup not activated. Radio is already playing."
+                self.logger.info(msg)
+                return [msg]
 
             if activate:
                 self.logger.debug('Activating wakeup mode')
                 if self.core.proximity_status.get_status_here():
+                    if not self.core.no_alarm_clock:
+                        msg = "MPD Wakeup mode NOT activated due no_alarm_clock is set (check gcal)"
+                        self.logger.info(msg)
+                        return [msg]
                     if self.fade_in_progress:
-                        self.logger.info("MPD Wakeup mode NOT activated due other fade in progress")
-                        return ["MPD Wakeup mode NOT activated due other fade in progress"]
+                        msg = "MPD Wakeup mode NOT activated due other fade in progress"
+                        self.logger.info(msg)
+                        return [msg]
                     else:
                         self.radio_off(None)
                         self.client_worker.play_url(self.stations[self.config['wakeup_st']], 0)
@@ -616,14 +622,17 @@ class MpdClientPlugin(Plugin):
                                                  self.config['norm_volume'])
                         self.thread.start()
                         self.worker_threads.append(self.thread)
-                        self.logger.info("MPD Wakeup mode activated")
-                        return ["MPD Wakeup mode activated"]
+                        msg = "MPD Wakeup mode activated"
+                        self.logger.info(msg)
+                        return [msg]
                 else:
-                    self.logger.info("Wakeup not activated. You are not here.")
-                    return ["Wakeup not activated. You are not here."]
+                    msg = "Wakeup not activated. You are not here."
+                    self.logger.info(msg)
+                    return [msg]
         else:
-            self.logger.info("Wakeup not activated. Unable to connect to MPD.")
-            return ["Wakeup not activated. Unable to connect to MPD."]
+            msg = "Wakeup not activated. Unable to connect to MPD."
+            self.logger.info(msg)
+            return [msg]
 
     def fade_ended(self):
         self.fades += 1

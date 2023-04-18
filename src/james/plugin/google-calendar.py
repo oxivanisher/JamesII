@@ -31,7 +31,6 @@ class GoogleCalendarPlugin(Plugin):
 
         self.event_cache = []
         self.event_cache_timestamp = 0
-        self.last_fetch = 0
         if 'cache_timeout' in self.config.keys():
             self.event_cache_timeout = self.config['cache_timeout']
         else:
@@ -199,6 +198,7 @@ class GoogleCalendarPlugin(Plugin):
                 return_list.append(return_string)
 
         self.event_cache_timestamp = time.time()
+        self.logger.debug("2 a %s b %s c %s" % (time.time(), self.event_cache_timestamp, self.event_cache_timeout))
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 

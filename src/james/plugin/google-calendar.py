@@ -196,8 +196,9 @@ class GoogleCalendarPlugin(Plugin):
                 return_list.append(return_string)
 
 
-        self.logging.debug("There are %s events in the cache." % len(return_list))
-        self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
+        self.logger.debug("There are %s events in the cache." % len(return_list))
+
+        self.core.add_timeout(0, self.core.no_alarm_clock_update, no_alarm_clock_active, 'gcal')
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))

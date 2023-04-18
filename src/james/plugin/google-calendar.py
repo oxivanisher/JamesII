@@ -67,12 +67,12 @@ class GoogleCalendarPlugin(Plugin):
 
     # internal commands
     def update_after_midnight(self):
-        self.core.add_timeout(0, self.requestEvents)
+        self.core.add_timeout(0, self.requestEvents, False)
         now = datetime.datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight = int(86400 - seconds_since_midnight + 30) # adding 30 seconds just to be sure its the next day
         self.logger.debug("Google calendar was just fetched. Will fetch again in %s seconds" % seconds_until_midnight)
-        #self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
+        self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
     def fetchEvents(self, calendar_id, page_token=None):
         events = {}
@@ -111,7 +111,7 @@ class GoogleCalendarPlugin(Plugin):
         self.logger.debug("getCalendarIds: %s" % personClientIds)
         return personClientIds
 
-    def requestEvents(self, show=False):
+    def requestEvents(self, show=True):
         self.logger.debug("requestEvents from google calendar")
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("cache is still valid, answering with the cache data")
@@ -198,21 +198,13 @@ class GoogleCalendarPlugin(Plugin):
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
         if show:
-            self.core.add_timeout(0, self.requestEvents)
+            self.logger.debug("Returning %s events" % len(self.event_cache))
+            return [self.event_cache]
 
     # commands
     def cmd_calendar_show(self, args):
         # self.core.add_timeout(0, self.requestEvents, True)
         return self.requestEvents()
-
-    def cmd_calendar_show_callback(self):
-        if len(self.event_cache):
-            self.logger.debug("Returning %s events" % len(self.event_cache))
-            return [self.event_cache]
-        else:
-            pass
-            # self.core.send_message
-
 
     def cmd_calendar_speak(self, args):
         try:

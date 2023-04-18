@@ -34,8 +34,6 @@ class GoogleCalendarPlugin(Plugin):
         self.event_cache_timestamp = 0
         self.last_fetch = 0
 
-        self.no_alarm_clock_active = False
-
         if 'cache_timeout' in self.config.keys():
             self.event_cache_timeout = self.config['cache_timeout']
         else:
@@ -122,7 +120,7 @@ class GoogleCalendarPlugin(Plugin):
         all_events = []
         person_client_ids = self.getCalendarIds()
 
-        self.no_alarm_clock_active = False
+        no_alarm_clock_active = False
 
         for person in list(person_client_ids.keys()):
             self.logger.debug("fetching calendars for person: %s" % person)
@@ -167,7 +165,7 @@ class GoogleCalendarPlugin(Plugin):
             # check there is a "don't wake up" event present in google calendar
             if event['summary'].lower() in self.config['no_alarm_clock'].lower():
                 self.logger.info("Found a event which activates no_alarm_clock: %s" % event['summary'])
-                self.no_alarm_clock_active = True
+                no_alarm_clock_active = True
 
             # ignore ignored_events from config
             if event['summary'].lower() in self.config['ignored_events'].lower():
@@ -197,7 +195,7 @@ class GoogleCalendarPlugin(Plugin):
 
         self.event_cache_timestamp = time.time()
 
-        self.core.no_alarm_clock_update(self.no_alarm_clock_active, 'gcal')
+        self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
         if len(self.event_cache):
             self.logger.debug("Returning %s events" % len(self.event_cache))

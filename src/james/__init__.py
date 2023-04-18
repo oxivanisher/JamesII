@@ -70,6 +70,9 @@ class Timeout():
         if os.name == 'posix':
             signal.alarm(0)  # disable alarm
 
+    def __repr__(self):
+        return 'Seconds %s' % self.sec
+
     def raise_timeout(self, *args):
         raise Timeout.Timeout()
 

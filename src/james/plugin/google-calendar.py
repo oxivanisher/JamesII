@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 # pip install google-api-python-client
 
-import gflags
+import os
+
 import httplib2
 import datetime
 import pytz
 
-from apiclient.discovery import build
-from oauth2client.file import Storage
-from oauth2client.client import OAuth2WebServerFlow
-from oauth2client.tools import argparser, run_flow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 from james.plugin import *
 
@@ -27,47 +29,45 @@ class GoogleCalendarPlugin(Plugin):
         self.load_state('eventFetches', 0)
         self.load_state('eventsFetched', 0)
 
-        args = argparser.parse_args()
-        args.noauth_local_webserver = True
-        flow = OAuth2WebServerFlow(
-            client_id=self.config['client_id'],
-            client_secret=self.config['client_secret'],
-            scope='https://www.googleapis.com/auth/calendar',
-            user_agent='james2/001a')
+        SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+        creds = None
 
-        storage = Storage(os.path.join(os.path.expanduser("~"), ".james_gcal_dat"))
-        credentials = storage.get()
-        if credentials is None or credentials.invalid is True:
-            credentials = run_flow(flow, storage, args)
+        tokens_file = os.path.join(os.path.expanduser("~"), ".james_gcal_token.json")
+        client_secret_file = os.path.join(os.path.expanduser("~"), "james2_google_client_secret.json")
 
-        http = httplib2.Http()
-        http = credentials.authorize(http)
+        if os.path.exists(tokens_file):
+            creds = Credentials.from_authorized_user_file(tokens_file, SCOPES)
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                if not os.path.exists(client_secret_file):
+                    raise Exception("Please provide the google client_secret.jason file (see README.md) in location"
+                                    % client_secret_file)
+                flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, SCOPES)
+                creds = flow.run_local_server(port=0)
+            with open(tokens_file, 'w') as token:
+                token.write(creds.to_json())
 
-        self.service = build(serviceName='calendar', version='v3', http=http,
-                             developerKey=self.config['developer_key'])
+        try:
+            self.service = build('calendar', 'v3', credentials=creds)
+        except Exception as e:
+            print(e)
 
     # internal commands
     def fetchEvents(self, calendar_id, page_token=None):
         events = {}
-        today = True
-        tzStr = datetime.datetime.now(self.timeZone).strftime('%z')
-        tzStr2 = tzStr[:3] + ':' + tzStr[3:]
 
         tStart = datetime.datetime.now(self.timeZone)
         tEnd = datetime.datetime.now(self.timeZone)
-        if int(datetime.datetime.now(self.timeZone).strftime('%H')) > 12:
-            tEnd += datetime.timedelta(days=1)
 
         try:
-            events = self.service.events().list(
-                calendarId=calendar_id,
-                singleEvents=True,
-                maxResults=1000,
-                orderBy='startTime',
-                timeMin=tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
-                timeMax=tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
-                pageToken=page_token,
-            ).execute()
+            events = self.service.events().list(calendarId='primary',
+                                                maxResults=100,
+                                                singleEvents=True,
+                                                timeMin=tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
+                                                timeMax=tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
+                                                orderBy='startTime').execute()
             self.eventFetches += 1
         except Exception as e:
             if e == '':

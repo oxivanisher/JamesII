@@ -62,7 +62,7 @@ class GoogleCalendarPlugin(Plugin):
         tEnd = datetime.datetime.now(self.timeZone)
 
         try:
-            events = self.service.events().list(calendarId='primary',
+            events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,
                                                 singleEvents=True,
                                                 timeMin=tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",

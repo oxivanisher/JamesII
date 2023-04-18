@@ -487,6 +487,9 @@ class Core(object):
                 if p.commands:
                     self.discovery_channel.send(['commands', p.commands])
 
+            # send current no_alarm_clock value
+            self.no_alarm_clock_update(self.no_alarm_clock, 'core')
+
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
             if not self.master:

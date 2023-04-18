@@ -68,6 +68,7 @@ class GoogleCalendarPlugin(Plugin):
 
     # internal commands
     def update_after_midnight(self):
+        self.requestEvents()
         now = datetime.datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight = 86400 - seconds_since_midnight + 30 # adding 30 seconds just to be sure its the next day

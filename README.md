@@ -48,7 +48,7 @@ The most errors had to do with UTF-8, encoding and decoding things. The followin
 
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
-* Google Calendar integration > is working but needs documentations. In short, save your `client_secret.json` to `~/.james2_google_client_secret.json`
+* Google Calendar integration > is working but needs documentations. In short, save your [`client_secret.json`](https://developers.google.com/calendar/api/quickstart/python) to `~/.james2_google_client_secret.json`
 * YAML Schema to detect wrong config files
 * Doorbell extension for RaspberryPi Plugin
 * plugin requirement checks before load for external files

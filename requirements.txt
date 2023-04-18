@@ -1,4 +1,4 @@
-# orig content of requirements.txt:
+# orig content of requirements.txt before python3:
 # PyYAML
 # pika
 # storm
@@ -11,6 +11,7 @@
 # google-api-python-client
 # google-calendar-api-client-python
 
+# Python 3 imports
 # Base
 pika
 PyYAML
@@ -42,7 +43,7 @@ xmpppy
 # smbus2 > works
 
 # plugin mpd-client
-# python-mpd2 > works
+python-mpd2
 
 # plugin transmission
 transmissionrpc
@@ -59,15 +60,6 @@ evdev
 #pyaudio
 
 # plugin google-calendar
-# google-calendar-api-client-python
-# python-gflags (3.1.2)            - Obsolete. Please migrate to absl-py instead.
-# python-gflags
-# oauth2client
-#==1.4.12
-# google-api-python-client==1.7.11
-# google-auth==1.7.1
-# google-auth-httplib2==0.0.3
-# httplib2
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
@@ -78,7 +70,7 @@ storm
 # plugin raspberry
 wiringpi
 
-# pip freeze
+# pip freeze for python2 to python3 migration
 # asn1crypto==0.24.0
 # blinker==1.4
 # cachetools==3.1.1

@@ -81,8 +81,9 @@ class PersistentMPDClient(mpd.MPDClient):
             print("Connection refused.")
 
 
-class MpdClientWorker(object):
+class MpdClientWorker(PluginThread):
     def __init__(self, plugin, myhost, myport):
+        super(MpdClientWorker, self).__init__(plugin)
         self.plugin = plugin
         self.myhost = myhost
         self.myport = myport
@@ -320,6 +321,8 @@ class MpdClientWorker(object):
             self.logger.debug("Could not disconnect because we are not connected.")
         self.logger.debug("Disconnected, worker exititing")
 
+    def on_exit(self, result):
+        self.plugin.on_worker_exit()
 
 class FadeThread(PluginThread):
 

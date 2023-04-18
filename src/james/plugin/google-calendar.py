@@ -15,6 +15,7 @@ from googleapiclient.errors import HttpError
 
 from james.plugin import *
 
+
 class GoogleCalendarPlugin(Plugin):
 
     def __init__(self, core, descriptor):

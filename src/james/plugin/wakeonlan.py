@@ -61,7 +61,7 @@ class WakeOnLanPlugin(Plugin):
 
                 ret = []
                 for (name, mac, person) in self.wol_devices:
-                    self.core.add_timeout(0, self.utils.wake_on_lan, mac)
+                    self.core.add_timeout(0, self.utils.wake_on_lan, str(mac))
                     ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
                 self.logger.info(ret)
 

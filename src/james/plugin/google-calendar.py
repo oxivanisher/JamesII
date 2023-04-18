@@ -148,6 +148,7 @@ class GoogleCalendarPlugin(Plugin):
                     self.logger.debug(event)
 
         self.event_cache = []
+        return_string = []
         for (person, event) in all_events:
             self.eventsFetched += 1
             return_string = False

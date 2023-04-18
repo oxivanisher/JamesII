@@ -1,5 +1,4 @@
 
-import sys
 import atexit
 import json
 import time
@@ -8,6 +7,7 @@ import tempfile
 import os
 
 from james.plugin import *
+
 
 class EspeakPlugin(Plugin):
 
@@ -278,6 +278,7 @@ class EspeakPlugin(Plugin):
         ret['talkoverActive'] = self.talkover
         ret['messagesSpoke'] = self.messagesSpoke
         return ret
+
 
 descriptor = {
     'name' : 'espeak',

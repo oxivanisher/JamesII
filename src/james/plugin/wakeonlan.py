@@ -1,8 +1,8 @@
 
-import sys
 import time
 
 from james.plugin import *
+
 
 class WakeOnLanPlugin(Plugin):
 
@@ -11,9 +11,9 @@ class WakeOnLanPlugin(Plugin):
 
         self.core = core
         self.wol_devices = []
-        for person in self.core.config['persons'].keys():
+        for person in list(self.core.config['persons'].keys()):
             try:
-                for name in self.core.config['persons'][person]['eth_devices'].keys():
+                for name in list(self.core.config['persons'][person]['eth_devices'].keys()):
                     self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name], person))
             except KeyError:
                 pass
@@ -70,6 +70,7 @@ class WakeOnLanPlugin(Plugin):
         ret['wakeups'] = self.wakeups
         return ret
 
+
 descriptor = {
     'name' : 'wakeonlan',
     'help' : 'Wake on lan plugin',
@@ -78,4 +79,3 @@ descriptor = {
     'class' : WakeOnLanPlugin,
     'detailsNames' : { 'wakeups' : "Sent wakeups" }
 }
-

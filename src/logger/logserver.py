@@ -1,8 +1,8 @@
 
-import cPickle
+import pickle
 import logging
 import logging.handlers
-import SocketServer
+import socketserver
 import struct
 import socket
 
@@ -15,7 +15,7 @@ class LogServerHandler(object):
         pass
 
 
-class LogServerRequestHandler(SocketServer.StreamRequestHandler):
+class LogServerRequestHandler(socketserver.StreamRequestHandler):
     """Handler for a streaming logging request.
 
     This basically logs the record using whatever logging policy is
@@ -60,13 +60,13 @@ class LogServerRequestHandler(SocketServer.StreamRequestHandler):
             self.handleLogRecord(record)
 
     def unPickle(self, data):
-        return cPickle.loads(data)
+        return pickle.loads(data)
 
     def handleLogRecord(self, record):
         for handler in self.server.handlers:
             handler.handle_log_record(record)
 
-class LogServer(SocketServer.ThreadingTCPServer):
+class LogServer(socketserver.ThreadingTCPServer):
     """simple TCP socket-based logging receiver suitable for testing.
     """
 
@@ -74,7 +74,7 @@ class LogServer(SocketServer.ThreadingTCPServer):
 
     def __init__(self, host='localhost',
                  port=logging.handlers.DEFAULT_TCP_LOGGING_PORT):
-        SocketServer.ThreadingTCPServer.__init__(self, (host, port), LogServerRequestHandler)
+        socketserver.ThreadingTCPServer.__init__(self, (host, port), LogServerRequestHandler)
         self.abort = 0
         self.timeout = 1
         self.logname = None

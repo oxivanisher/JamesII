@@ -1,7 +1,6 @@
-import sys
+
 import os
 import subprocess
-import getpass
 import time
 import atexit
 import json
@@ -28,7 +27,7 @@ class ProximityPlugin(Plugin):
                       'l2ping': '/usr/bin/l2ping',
                       'bluez-simple-agent': 'bluez-simple-agent'}
 
-        for tool in self.tools.keys():
+        for tool in list(self.tools.keys()):
             if os.path.isfile(self.tools[tool]):
                 self.logger.debug("%s found in %s" % (tool, self.tools[tool]))
             else:
@@ -45,7 +44,7 @@ class ProximityPlugin(Plugin):
                                                 self.always_at_home)
                 self.commands.create_subcommand('show', 'Show detailed information on states', self.show_details)
 
-        for person in self.core.config['persons'].keys():
+        for person in list(self.core.config['persons'].keys()):
             self.persons_status[person] = False
 
         atexit.register(self.save_state)
@@ -128,20 +127,9 @@ class ProximityPlugin(Plugin):
         pair_out = p.communicate(input=str(pair_data[1]) + '\n')[0]
         self.logger.debug("BT Logging output: %s" % pair_out)
 
-    # def discover(self, args):
-    #     self.logger.debug('Discovering bluetooth hosts...')
-    #
-    #     nearby_devices = discover_devices(lookup_names=True)
-    #     hosts = {}
-    #     if len(nearby_devices):
-    #         for name, addr in nearby_devices:
-    #             hosts[addr] = name
-    #     self.logger.debug('Found %s bluetooth hosts' % len(nearby_devices))
-    #     return hosts
-
     def show_persons(self, args):
         ret = []
-        for person in self.persons_status.keys():
+        for person in list(self.persons_status.keys()):
             if self.persons_status[person]:
                 ret.append("%10s is here" % person)
             else:
@@ -185,13 +173,13 @@ class ProximityPlugin(Plugin):
     def proximity_check_worker(self):
         self.logger.debug('Starting bluetooth proximity scan for <%s>' % self.core.location)
         hosts = []
-        for person in self.core.config['persons'].keys():
+        for person in list(self.core.config['persons'].keys()):
             try:
                 if self.core.config['persons'][person]['bt_devices']:
-                    for name in self.core.config['persons'][person]['bt_devices'].keys():
+                    for name in list(self.core.config['persons'][person]['bt_devices'].keys()):
                         mac = self.core.config['persons'][person]['bt_devices'][name]
                         ret = self.utils.popenAndWait([self.tools['l2ping'], '-c', '1', mac])
-                        clear_list = filter(lambda s: s != '', ret)
+                        clear_list = [s for s in ret if s != '']
 
                         for line in clear_list:
                             if "bytes from" in line:
@@ -217,7 +205,7 @@ class ProximityPlugin(Plugin):
         new_persons_status = {}
 
         # resetting persons detected
-        for person in self.core.config['persons'].keys():
+        for person in list(self.core.config['persons'].keys()):
             new_persons_status[person] = False
 
         if len(values) > 0:
@@ -243,10 +231,10 @@ class ProximityPlugin(Plugin):
 
         # registering the person for these devices as detected
         for (mac, name) in values:
-            for person in self.core.config['persons'].keys():
+            for person in list(self.core.config['persons'].keys()):
                 try:
                     if self.core.config['persons'][person]['bt_devices']:
-                        for device in self.core.config['persons'][person]['bt_devices'].values():
+                        for device in list(self.core.config['persons'][person]['bt_devices'].values()):
                             if device.lower() == mac.lower():
                                 persons_detected.append(person)
                                 new_persons_status[person] = True
@@ -264,7 +252,7 @@ class ProximityPlugin(Plugin):
         personsChanged = False
         personsLeft = []
         personsCame = []
-        for person in new_persons_status.keys():
+        for person in list(new_persons_status.keys()):
             try:
                 self.persons_status[person]
             except KeyError:

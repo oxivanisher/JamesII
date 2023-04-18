@@ -1,6 +1,5 @@
 
 
-
 class Status(object):
 
     def __init__(self, name):
@@ -13,7 +12,6 @@ class Status(object):
 
     def remove_listener(self, handler):
         self.listeners.remove(handler)
-
 
 
 class AvatarStatus(Status):
@@ -35,9 +33,11 @@ class Person(object):
         self.name = name
         return self
 
+
 class DeviceKind:
     BLUETOOTH = 0
     ETHERNET = 1
+
 
 class Device(object):
     def __init__(self):
@@ -49,6 +49,3 @@ class Device(object):
 
     def create_device(self):
         return self
-
-
-

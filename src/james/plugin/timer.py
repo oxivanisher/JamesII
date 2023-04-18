@@ -1,21 +1,20 @@
 
 import os
-import sys
 import time
 import atexit
 import json
-import re
 import pytz
 import datetime
 
 from james.plugin import *
+
 
 class TimerPlugin(Plugin):
 
     def __init__(self, core, descriptor):
         super(TimerPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [dd-mm-yyyy])', self.cmd_timer_at)
+        self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [yyyy-mm-dd])', self.cmd_timer_at)
         self.commands.create_subcommand('remove', 'Delets a command (id)', self.cmd_timer_remove)
         self.commands.create_subcommand('in', 'Runs a command in given time (sec|1s2m3h4d5w)', self.cmd_timer_in)
         self.commands.create_subcommand('show', 'Returns a list of commands', self.cmd_timer_show)
@@ -103,7 +102,7 @@ class TimerPlugin(Plugin):
                 target_timestamp += 86400
             return [self.timer_at(target_timestamp, args)]
         else:
-            return ["Invalid syntax. Use timestamp or hh:mm[:ss] [dd-mm-yyyy]"]
+            return ["Invalid syntax. Use timestamp or hh:mm[:ss] [yyyy-mm-dd]"]
 
     def cmd_timer_show(self, args):
         ret = []
@@ -160,6 +159,7 @@ class TimerPlugin(Plugin):
         ret['commandsRun'] = self.commandsRun
         return ret
 
+
 descriptor = {
     'name' : 'timer',
     'help' : 'MASTER CONTROL PROGRAM for timed functions',
@@ -169,4 +169,3 @@ descriptor = {
     'detailsNames' : { 'waitingCommands' : "Waiting commands",
                        'commandsRun' : "Commands run" }
 }
-

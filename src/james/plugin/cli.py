@@ -1,15 +1,13 @@
 
 import threading
 import sys
-import yaml
 import readline
 import os
 import atexit
 
-import james.command
-
 
 from james.plugin import *
+
 
 class ConsoleThread(threading.Thread):
 
@@ -53,7 +51,7 @@ class ConsoleThread(threading.Thread):
 
             # check for keyboard interrupt
             try:
-                line = raw_input()
+                line = input()
             except KeyboardInterrupt:
                 # http://bytes.com/topic/python/answers/43936-canceling-interrupting-raw_input
                 self.plugin.core.add_timeout(0, self.plugin.core.terminate)
@@ -116,15 +114,15 @@ class ConsoleThread(threading.Thread):
 
                 # keep keywords that start with correct text
                 args.append('')
-                self.keywords = filter(lambda name: name.startswith(args[0]), self.keywords)
-                self.keywords = map(lambda name: name + " ", self.keywords)
+                self.keywords = [name for name in self.keywords if name.startswith(args[0])]
+                self.keywords = [name + " " for name in self.keywords]
 
                 return self.keywords[0] if len(self.keywords) > 0 else None
             else:
                 return self.keywords[state] if len(self.keywords) > state else None
 
-        except Exception, e:
-            print e.__repr__()
+        except Exception as e:
+            print(e.__repr__())
 
 
 class CliPlugin(Plugin):
@@ -171,11 +169,11 @@ class CliPlugin(Plugin):
 
     def process_command_response(self, args, host, plugin):
         for line in args:
-            print ("D%11s@%-10s > %s" % (plugin, host, line))
+            print(("D%11s@%-10s > %s" % (plugin, host, line)))
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:
-            print ("B%11s@%-10s > %s" % (plugin, host, line))
+            print(("B%11s@%-10s > %s" % (plugin, host, line)))
 
     def timeout_handler(self):
         self.core.terminate()
@@ -189,7 +187,7 @@ class CliPlugin(Plugin):
                 temp_str = "(master)"
             else:
                 temp_str = ""
-            print("%-10s %-8s %s" % (self.core.nodes_online[node], temp_str, node))
+            print(("%-10s %-8s %s" % (self.core.nodes_online[node], temp_str, node)))
         return True
 
     def cmd_exit(self, args):
@@ -220,23 +218,23 @@ class CliPlugin(Plugin):
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:
-                    print("%s:" % (command.help))
+                    print(("%s:" % (command.help)))
                 self.print_command_help_lines(command)
             else:
                 print ("Command not found")
 
         else:
-            print ("%-20s %s" % ('Command:', 'Description:'))
+            print(("%-20s %s" % ('Command:', 'Description:')))
 
-            print ("%-20s %s" % ('+', 'Local CLI Commands'))
+            print(("%-20s %s" % ('+', 'Local CLI Commands')))
             self.print_command_help_lines(self.commands, 1)
 
-            print ("%-20s %s" % ('+', 'Remote Commands'))
+            print(("%-20s %s" % ('+', 'Remote Commands')))
             self.print_command_help_lines(self.core.ghost_commands, 1)
 
-            print ("%-20s %s" % ('+', 'Command Aliases'))
+            print(("%-20s %s" % ('+', 'Command Aliases')))
             for command in sorted(self.core.config['core']['command_aliases'].keys()):
-                print "|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command])
+                print("|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command]))
 
         return True
 
@@ -244,10 +242,11 @@ class CliPlugin(Plugin):
         for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
-                print ("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
-                if len(c.subcommands.keys()) > 0:
+                print(("|%-19s %s" % (depth * "-" + " " + c.name, c.help)))
+                if len(list(c.subcommands.keys())) > 0:
                     self.print_command_help_lines(c, depth + 1)
         return True
+
 
 descriptor = {
     'name' : 'cli',

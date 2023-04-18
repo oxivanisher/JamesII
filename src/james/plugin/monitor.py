@@ -3,6 +3,7 @@ from time import localtime, strftime
 
 from james.plugin import *
 
+
 class MonitorPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -107,7 +108,8 @@ class MonitorPlugin(Plugin):
         message['timestamp'] = localtime()
 
         formated_output = self.format_output(message)
-        print self.process_log_message(formated_output)
+        print(self.process_log_message(formated_output))
+
 
 descriptor = {
     'name' : 'monitor',

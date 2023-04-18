@@ -1,5 +1,5 @@
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import time
 import mpd
 import signal
@@ -183,7 +183,7 @@ class MpdClientWorker(object):
         if self.worker_lock.locked():
             self.worker_lock.release()
 
-    def play_url(self, uri, volume = -1):
+    def play_url(self, uri, volume=-1):
         self.logger.debug('Trying to play URI (%s) with volume (%s)' % (uri, volume))
         if self.check_connection():
             self.lock()
@@ -196,9 +196,9 @@ class MpdClientWorker(object):
 
             url_found = False
             try:
-                for source in urllib2.urlopen(uri):
+                for source in urllib.request.urlopen(uri):
                     if source != "":
-                        self.client.add(source.strip().replace('icy://', 'http://'))
+                        self.client.add(source.decode('UTF-8').strip().replace('icy://', 'http://'))
                         url_found = True
             except Exception as e:
                 self.logger.warning('Unable to open URL (%s): %s' % (uri, e))
@@ -328,6 +328,7 @@ class FadeThread(PluginThread):
         self.mpd_client = mpd_client
         self.fade_time = fade_time
         self.target_vol = target_vol
+        self.name = "%s > Created: %s" % (self.name, self.utils.get_time_string())
 
         #calc fade_time
         self.mpd_client.lock()
@@ -431,7 +432,7 @@ class MpdClientPlugin(Plugin):
         self.load_state('sleeps', 0)
         self.load_state('fades', 0)
 
-        for station in self.config['stations'].keys():
+        for station in list(self.config['stations'].keys()):
             self.stations[station] = self.config['stations'][station]
             # methodName = 'tuneToStation_' + station
             # def methodName(self):
@@ -472,7 +473,7 @@ class MpdClientPlugin(Plugin):
 
     def cmd_list_stations(self, args):
         ret = []
-        for station in self.stations.keys():
+        for station in list(self.stations.keys()):
             ret.append("%-12s %s" % (station, self.stations[station]))
         return ret
 
@@ -670,17 +671,17 @@ class MpdClientPlugin(Plugin):
 
         if status:
             str_status = status['state']
-            if 'volume' in status.keys():
+            if 'volume' in list(status.keys()):
                 volume = status['volume']
             else:
                 volume = "-1"
 
-            if 'name' in currentsong.keys():
+            if 'name' in list(currentsong.keys()):
                 name = currentsong['name']
-            if 'title' in currentsong.keys():
+            if 'title' in list(currentsong.keys()):
                 title = currentsong['title']
 
-            if 'state' in status.keys():
+            if 'state' in list(status.keys()):
                 if status['state'] == "play":
                     str_status = "Playing"
                 elif status['state'] == "stop":
@@ -693,6 +694,7 @@ class MpdClientPlugin(Plugin):
         ret = {'state': str_status, 'title': title, 'name': name, 'volume': volume, 'radioStarted': self.radioStarted,
                'wakeups': self.wakeups, 'noises': self.noises, 'sleeps': self.sleeps, 'fades': self.fades}
         return ret
+
 
 descriptor = {
     'name' : 'mpd-client',

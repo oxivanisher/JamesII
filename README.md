@@ -1,7 +1,6 @@
 # James II: Your Butler brought to the next level.
 The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system is also very handy in combination with RaspberryPi's ([www.raspberrypi.org/](http://www.raspberrypi.org/)).
-~~Module documentation nightly updated:~~ [~~oxi.ch/JamesII/~~](http://oxi.ch/JamesII/)
 
 ## Things / Services you can use or interact with:
 * CLI (managed) interface with history and command completion
@@ -20,9 +19,20 @@ noise)
 * Timer (autoload on core node) the all mighty MCP to time commands with "in" and "at"
 * Transmission (managed) to add/remove/start/stop torrent downloads on a transmission server
 * Wakeonlan (managed) to wake up devices when you come home for example
-* Xbmc (managed) to trigger database updates and display onscreen messages
-* LIRC (managed) to control or be controlled by IR devices (you have to configure your /etc/lirc/lircd.conf yourself!)
+* Kodi (managed) to trigger database updates and display onscreen messages
+* Evdev (managed) to be controlled by IR devices (you have to configure your evdev things yourself!)
 * Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )
+
+### Python 3
+JamesII was partially ported to python 3. The core things are working, but there might be errors found in the future.
+The most errors had to do with UTF-8, encoding and decoding things. The following plugins where not tested with python
+3:
+* Dbus-Notify
+* HTTP Server
+* Monitor
+* Motion
+* Voice-Commands
+* Wakeonlan
 
 #### Plugin modes explanation:
 * Manual: Passive plugins are run exclusively, normally with a separate bash command
@@ -45,34 +55,13 @@ noise)
 * Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
 ## You Need:
-* python
-* python-pika ([github.com/pika/pika](https://github.com/pika/pika))
-* python-psutil (sysstat plugin, [code.google.com/p/psutil/](http://code.google.com/p/psutil/))
-* python-tz
-* python-yaml
-* screen (always handy)
-
-#### Debian/Ubuntu:
-	apt-get install python-yaml python-pika python-psutil python-tz
-
-#### OS X (Mac Ports):
-	sudo port select --set python python27
-	sudo port install py27-yaml py27-pika py27-psutil py27-pip
-	sudo pip-2.7 install pytz
+* python3
+* ideally a venv to install all the requirements in `requirements.txt`
 
 ### Optional (Plugin specific):
 #### Raspbian packages (`apt install XXX`)
 * espeak (espeak plugin)
 * motion (motion plugin)
-* python-bluez (proximity plugin)
-* python-mpd2 (mpd plugin)
-* python-xmpp (jabber plugin)
-* python-dbus (dbus notification plugin)
-* python-transmissionrpc (transmission plugin, [bitbucket.org/blueluna/transmissionrpc/wiki/Home](https://bitbucket.org/blueluna/transmissionrpc/wiki/Home))
-* python-pylirc (lirc plugin, [aron.ws/projects/lirc_rpi/](http://aron.ws/projects/lirc_rpi/)
-* python-pyaudio (voice-commands plugin)
-* python-flask, Flask-SQLAlchemy (httpserver)
-* python-storm (httpserver plugin)
 #### pip packages (`pip install XXX`)
 * wiringpi (raspberrypi plugin, pip install)
 
@@ -94,7 +83,7 @@ audio_output {
 }
 ```
 
-##### lircd
+##### evdev
 If you use a DIY IR reciever or sender, you have to configure `/boot/config.txt` on Raspberry Pis
 something like this:
 ```
@@ -104,9 +93,7 @@ dtoverlay=gpio-ir-tx,gpio_pin=4
 ```
 
 #### Debian/Ubuntu:
-	apt-get install bluetooth espeak motion python-xmpp python-dbus \
-	python-transmissionrpc python-pylirc python-pip python-storm python-flask
-	pip install python-mpd2 Flask-SQLAlchemy
+	apt-get install bluetooth espeak motion
 
 ## Installation:
 * Clone JamesII to a directory as user "youruser"
@@ -167,7 +154,7 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 * eSpeak http://espeak.sourceforge.net/
 * MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
 * Transmission http://www.transmissionbt.com/
-* XBMC Mediacenter http://wiki.xbmc.org/
+* Kodi Mediacenter https://kodi.wiki/
 * Raspberry Pi http://www.raspberrypi.org/
 
 ## Thanks go to:

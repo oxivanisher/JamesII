@@ -5,6 +5,7 @@ from james.plugin import *
 
 # https://bitbucket.org/blueluna/transmissionrpc/wiki/Home
 
+
 class TransmissionPlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -25,7 +26,8 @@ class TransmissionPlugin(Plugin):
         self.commands.create_subcommand('force', 'Force download a torrent', self.cmd_force)
         self.commands.create_subcommand('stop', 'Stopps a torrent', self.cmd_stop)
         self.commands.create_subcommand('remove', 'Removes a torrent', self.cmd_remove)
-        self.commands.create_subcommand('test', 'Checks if the connection to the transmission host is working', self.cmd_test_connection)
+        self.commands.create_subcommand('test', 'Checks if the connection to the transmission host is working',
+                                        self.cmd_test_connection)
 
     def connect(self):
         try:
@@ -52,8 +54,9 @@ class TransmissionPlugin(Plugin):
         def candy_output(tid, qpos, status, rate, peers, eta, ratio, name):
             if isinstance(ratio, float):
                 ratio = round(ratio, 3)
-            elif ratio <= 0:
-                ratio = "-"
+            elif isinstance(ratio, int):
+                if int(ratio) <= 0:
+                    ratio = "-"
 
             if rate == "0B":
                 rate = "-"
@@ -61,22 +64,21 @@ class TransmissionPlugin(Plugin):
             if peers == 0:
                 peers = "-"
 
-            return "%3s %5s %-18s %10s %6s %9s %8s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers, eta, ratio, name)
+            return "%3s %5s %-18s %10s %6s %9s %8s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers,
+                                                          eta, ratio, name)
 
         ret = []
         if self.connection_ok():
             ret.append("Currently available torrents:")
 
-            # (u'rateDownload', 1473000)
-            # (u'peersConnected', 247)
-
             ret.append(candy_output("ID", "Q Pos", "Status", "DL Speed", "Peers", "Remaining", "UL Ratio", "Name"))
             for torrent_id in self.tr_conn.get_files():
-                torrent =  self.tr_conn.info(torrent_id)[torrent_id]
+                torrent = self.tr_conn.info(torrent_id)[torrent_id]
 
-                my_eta = "-"
-                if hasattr(torrent, 'eta'):
+                try:
                     my_eta = torrent.eta
+                except ValueError:
+                    my_eta = "-"
 
                 dl_rate = self.utils.bytes2human(torrent.rateDownload)
                 # with this code block you see all the attributes of the torrent
@@ -92,23 +94,15 @@ class TransmissionPlugin(Plugin):
     def cmd_add(self, args):
         if self.connection_ok():
             args = self.utils.list_unicode_cleanup(args)
-            # message = self.core.new_message(self.name)
-            # message.level = 2
             try:
                 self.tr_conn.add_uri(args[0])
                 self.addedTorrents += 1
                 self.logger.info('Download of (%s) starting' % args[0])
                 self.send_command(['jab', 'msg', 'Torrent download started'])
-                # message.header = ("Torrent download started")
-                # message.body = args[0]
-                # message.send()
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:
                 self.logger.warning('Torrent download not started due error (%s)' % args[0])
                 self.send_command(['jab', 'msg', 'Torrent download not started due error (%s)' % args[0]])
-                # message.header = ("Torrent download not started due error")
-                # message.body = args[0]
-                # message.send()
                 pass
             except IndexError:
                 return ["Syntax error!"]
@@ -189,7 +183,8 @@ class TransmissionPlugin(Plugin):
             try:
                 for torrent_id in self.tr_conn.get_files():
                     torrent =  self.tr_conn.info(torrent_id)[torrent_id]
-                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 and torrent.leftUntilDone == 0 and torrent.progress == 100:
+                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1\
+                            and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
                         self.send_command(['jab', 'msg', 'Torrent of %s finished' % newname])
@@ -222,7 +217,6 @@ class TransmissionPlugin(Plugin):
                 new_words.append(word)
         return ' '.join(new_words)
 
-
     def return_status(self, verbose = False):
         ret = {}
         ret['connected'] = False
@@ -230,6 +224,7 @@ class TransmissionPlugin(Plugin):
             ret['connected'] = True
         ret['addedTorrents'] = self.addedTorrents
         return ret
+
 
 descriptor = {
     'name' : 'transmission',

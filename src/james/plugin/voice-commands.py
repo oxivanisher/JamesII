@@ -10,7 +10,6 @@
 # apt-get install python-poster python-pyaudio
 
 import pyaudio
-import sys
 import wave
 import subprocess
 import struct
@@ -21,6 +20,7 @@ import math
 import atexit
 
 from james.plugin import *
+
 
 class VoiceThread(PluginThread):
 
@@ -314,7 +314,7 @@ class VoiceCommandsPlugin(Plugin):
             replacedWords = []
             filteredList = []
             for word in rawTextList:
-                if word in self.replace.keys():
+                if word in list(self.replace.keys()):
                     replacedWords.append(word)
                     filteredList.append(self.replace[word])
                 else:
@@ -336,7 +336,7 @@ class VoiceCommandsPlugin(Plugin):
                 self.playBeeps.append((440, 3, 0.15))
             else:
                 commandFound = None
-                for command in self.voiceCommands.keys():
+                for command in list(self.voiceCommands.keys()):
                     if command in ' '.join(filteredList):
                         commandFound = self.voiceCommands[command]
                 depth = -1
@@ -378,6 +378,7 @@ class VoiceCommandsPlugin(Plugin):
             return ['(%s) ' % len(self.unknownWords) + ', '.join(self.unknownWords)]
         else:
             return ['No unknown words']
+
 
 descriptor = {
     'name' : 'voice-commands',

@@ -2,10 +2,11 @@
 import sys
 import socket
 import time
-import commands
+import subprocess
 from datetime import timedelta
 
 from james.plugin import *
+
 
 class SystemPlugin(Plugin):
 
@@ -41,7 +42,7 @@ class SystemPlugin(Plugin):
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
 
     def get_ip(self, args):
-        return [commands.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
+        return [subprocess.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
                          "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
 
     def get_uptime(self, args):
@@ -128,7 +129,7 @@ class SystemPlugin(Plugin):
     def cmd_nodes_show(self, args):
         nodes_online_dict = {}
         nodes_online_list = []
-        for uuid in self.core.nodes_online.keys():
+        for uuid in list(self.core.nodes_online.keys()):
             hostname = self.core.nodes_online[uuid]
             try:
                 nodes_online_dict[hostname]
@@ -136,7 +137,7 @@ class SystemPlugin(Plugin):
                 nodes_online_dict[hostname] = 0
             nodes_online_dict[hostname] += 1
 
-        for node in nodes_online_dict.keys():
+        for node in list(nodes_online_dict.keys()):
             nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
@@ -233,6 +234,7 @@ class SystemPlugin(Plugin):
         coreData['proximityStatus'] = self.core.proximity_status.get_status_here()
         coreData['personsStatus'] = self.core.persons_status
         return coreData
+
 
 descriptor = {
     'name' : 'system',

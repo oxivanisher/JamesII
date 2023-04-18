@@ -2,7 +2,6 @@
 import uuid
 import os
 import imp
-import sys
 import threading
 import time
 import logging
@@ -197,7 +196,7 @@ class Plugin(object):
         for thread in threadList:
             if thread.is_alive():
                 self.logger.info("Waiting 3 seconds for thread %s of %s to exit" % (thread.name, self.name))
-                thread.join(3)
+                thread.join(3.0)
 
         self.logger.info("All threads of %s ended" % self.name)
 
@@ -239,7 +238,7 @@ class Plugin(object):
         ret = []
         data = self.return_status()
         try:
-            for key in self.return_status().keys():
+            for key in list(self.return_status().keys()):
                 ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
             return ret
         except AttributeError:
@@ -254,6 +253,7 @@ class PluginThread(threading.Thread):
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
+        self.name = "Plugin: %s > Class: %s" % (self.plugin.name, self.__class__.__name__)
         self.config = self.plugin.config
         self.utils = self.plugin.utils
         self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
@@ -293,17 +293,17 @@ class Factory(object):
 
     @classmethod
     def register_plugin(cls, descriptor):
-        if not 'name' in descriptor.keys():
+        if not 'name' in list(descriptor.keys()):
             raise Exception("Plugin descriptor has no name field")
-        if not 'help' in descriptor.keys():
+        if not 'help' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no help field" % descriptor['name'])
-        if not 'command' in descriptor.keys():
+        if not 'command' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no command field" % descriptor['name'])
-        if not 'mode' in descriptor.keys():
+        if not 'mode' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no mode field" % descriptor['name'])
-        if not 'class' in descriptor.keys():
+        if not 'class' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no class field" % descriptor['name'])
-        if not 'detailsNames' in descriptor.keys():
+        if not 'detailsNames' in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no detailsNames field" % descriptor['name'])
 
         cls.descriptors[descriptor['name']] = descriptor
@@ -320,7 +320,7 @@ class Factory(object):
 
     @classmethod
     def enum_plugin_classes_with_mode(cls, mode):
-        for name, descriptor in cls.descriptors.iteritems():
+        for name, descriptor in cls.descriptors.items():
             if descriptor['mode'] == mode:
                 yield descriptor['class']
 
@@ -355,4 +355,3 @@ class Factory(object):
                 continue
 
         return (available_plugins, plugin_warning, plugin_descr_error)
-

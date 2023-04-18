@@ -4,7 +4,6 @@
 import os
 import sys
 import flask
-import signal
 import time
 import json
 import datetime
@@ -45,7 +44,7 @@ try:
     cfgFile = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../config/httpserver.yaml')
     config = james.config.YamlConfig(cfgFile).get_values()
 except IOError:
-    print "Unable to load config"
+    print("Unable to load config")
     sys.quit(1)
 
 if not config['port']:
@@ -55,6 +54,7 @@ dbConnectionString = "%s://%s:%s@%s:%s/%s" % (config['schema'], config['user'], 
 app.config['SQLALCHEMY_DATABASE_URI'] = dbConnectionString
 db = SQLAlchemy(app)
 app.debug = False
+
 
 class DbCommand(db.Model):
     __tablename__ = 'commands'
@@ -66,6 +66,7 @@ class DbCommand(db.Model):
         self.command = command
         self.source = source
 
+
 class DbHostname(db.Model):
     __tablename__ = 'hostnames'
     uuid = db.Column(db.Text, primary_key=True)
@@ -74,6 +75,7 @@ class DbHostname(db.Model):
     def __init__(self, uuid, hostname):
         self.uuid = uuid
         self.hostname = hostname
+
 
 class DbCommandResponse(db.Model):
     __tablename__ = 'commandResponses'
@@ -89,6 +91,7 @@ class DbCommandResponse(db.Model):
         self.plugin = plugin
         self.data = data
 
+
 class DbBroadcastCommandResponse(db.Model):
     __tablename__ = 'broadcastCommandResponses'
     id = db.Column(db.Integer, primary_key=True)
@@ -103,6 +106,7 @@ class DbBroadcastCommandResponse(db.Model):
         self.plugin = plugin
         self.data = data
 
+
 class DbAlertResponse(db.Model):
     __tablename__ = 'alertResponses'
     id = db.Column(db.Integer, primary_key=True)
@@ -112,6 +116,7 @@ class DbAlertResponse(db.Model):
     def __init__(self, time, data):
         self.time = time
         self.data = data
+
 
 class DbStatus(db.Model):
     __tablename__ = 'status'
@@ -127,15 +132,11 @@ class DbStatus(db.Model):
         self.plugin = plugin
         self.data = data
 
+
 def convert_Time_to_String(time):
     timeInt = int(time)
     return datetime.datetime.fromtimestamp(timeInt).strftime('%d.%m.%Y %H:%M:%S')
 
-def decode_multiline_list(data):
-    return utils.convert_from_unicode(json.loads(data))
-
-def decode_unicode(data):
-    return utils.convert_from_unicode(data)
 
 def check_auth(username, password):
     """This function is called to check if a username /
@@ -143,12 +144,14 @@ def check_auth(username, password):
     """
     return username == config['webuser'] and password == config['webpasswd']
 
+
 def authenticate():
     """Sends a 401 response that enables basic auth"""
     return flask.Response(
     'Could not verify your access level for that URL.\n'
     'You have to login with proper credentials', 401,
     {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
 
 def requires_auth(f):
     @wraps(f)
@@ -159,73 +162,75 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+
 def get_broadcast_responses():
     broadcastCommandResponses = []
     for response in DbBroadcastCommandResponse.query.all():
         broadcastCommandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
     return broadcastCommandResponses
+
 
 def get_command_responses():
     commandResponses = []
     for response in DbCommandResponse.query.all():
         commandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
     return commandResponses
+
 
 def get_alerts():
     alertMessages = []
     for alert in DbAlertResponse.query.all():
         alertMessages.append((convert_Time_to_String(alert.time),
-                              decode_multiline_list(alert.data)))
+                              alert.data))
     return alertMessages
+
 
 @app.route('/status')
 @requires_auth
 def show_status():
     hostnames = {}
     for hostname in DbHostname.query.all():
-        hostnames[decode_unicode(hostname.uuid)] = decode_unicode(hostname.hostname)
+        hostnames[hostname.uuid] = hostname.hostname
 
     systemStatus = {}
     systemStatusAge = {}
     tTime = int(time.time() - 120)
     for status in DbStatus.query.filter(DbStatus.time > tTime):
-        uuid = decode_unicode(status.uuid)
-        pluginName = decode_unicode(status.plugin)
-        data = decode_multiline_list(status.data)
         myTime = utils.get_short_age(status.time)
 
         try:
-            systemStatus[uuid]
+            systemStatus[status.uuid]
         except KeyError:
-            systemStatus[uuid] = {}
+            systemStatus[status.uuid] = {}
 
         try:
-            systemStatus[uuid][pluginName]
+            systemStatus[status.uuid][status.plugin]
         except KeyError:
-            systemStatus[uuid][pluginName] = {}
+            systemStatus[status.uuid][status.plugin] = {}
 
         try:
-            systemStatusAge[uuid]
+            systemStatusAge[status.uuid]
         except KeyError:
-            systemStatusAge[uuid] = {}
+            systemStatusAge[status.uuid] = {}
 
         try:
-            systemStatusAge[uuid][pluginName]
+            systemStatusAge[status.uuid][status.plugin]
         except KeyError:
-            systemStatusAge[uuid][pluginName] = {}
+            systemStatusAge[status.uuid][status.plugin] = {}
 
-        systemStatus[uuid][pluginName] = data
-        systemStatusAge[uuid][pluginName] = myTime
+        systemStatus[status.uuid][status.plugin] = status.data
+        systemStatusAge[status.uuid][status.plugin] = myTime
 
-    return flask.render_template('status.html', status = systemStatus,
-                                                statusAge = systemStatusAge,
-                                                hostnames = hostnames )
+    return flask.render_template('status.html', status=systemStatus,
+                                                statusAge=systemStatusAge,
+                                                hostnames=hostnames)
+
 
 @app.route('/')
 @app.route('/messages')
@@ -237,7 +242,7 @@ def show_messages():
     for response in reversed(DbCommandResponse.query.all()):
         count += 1
         commandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
         if count >= 5:
@@ -248,7 +253,7 @@ def show_messages():
     for response in reversed(DbBroadcastCommandResponse.query.all()):
         count += 1
         broadcastCommandResponses.append((convert_Time_to_String(response.time),
-                                 decode_multiline_list(response.data),
+                                 response.data,
                                  utils.convert_from_unicode(response.host),
                                  utils.convert_from_unicode(response.plugin)))
         if count >= 5:
@@ -259,7 +264,7 @@ def show_messages():
     for alert in reversed(DbAlertResponse.query.all()):
         count += 1
         alertMessages.append((convert_Time_to_String(alert.time),
-                              decode_multiline_list(alert.data)))
+                              alert.data))
         if count >= 5:
             break
 
@@ -267,20 +272,24 @@ def show_messages():
                                                   broadcastCommandResponses = broadcastCommandResponses,
                                                   alertMessages = alertMessages )
 
+
 @app.route('/alerts')
 @requires_auth
 def show_alerts():
     return flask.render_template('alerts.html', alertMessages = get_alerts() )
+
 
 @app.route('/commands')
 @requires_auth
 def show_commands():
     return flask.render_template('commands.html', commandResponses = get_command_responses() )
 
+
 @app.route('/broadcasts')
 @requires_auth
 def show_broadcasts():
     return flask.render_template('broadcasts.html', broadcastCommandResponses = get_broadcast_responses() )
+
 
 @app.route('/sendCommand', methods=['GET', 'POST'])
 @requires_auth
@@ -294,24 +303,28 @@ def send_command():
     else:
         return show_messages()
 
+
 @app.route('/api/get/commands', methods = ['GET'])
 @requires_auth
 def get_command_responses_json():
-    print get_command_responses()
+    print(get_command_responses())
     return flask.jsonify( { 'aaData' : get_command_responses() } )
+
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods = ['GET'])
 @requires_auth
 def get_task(task_id):
-    task = filter(lambda t: t['id'] == task_id, tasks)
+    task = [t for t in tasks if t['id'] == task_id]
     if len(task) == 0:
         abort(404)
     return flask.jsonify( { 'task': task[0] } )
+
 
 @app.errorhandler(404)
 @requires_auth
 def not_found(error):
     return flask.make_response(flask.jsonify( { 'error': 'Not found' } ), 404)
+
 
 @app.route('/static/<string:folderName>/<string:fileName>', methods = ['GET'])
 @requires_auth
@@ -320,6 +333,7 @@ def get_static(fileName, folderName):
         return flask.send_from_directory('httpserver/static/' + folderName, fileName)
     else:
         flask.abort(404)
+
 
 # main loop
 if __name__ == '__main__':

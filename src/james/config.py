@@ -1,11 +1,10 @@
 
-import os
-import io
 import json
 import yaml
 
+
 class YamlConfig (object):
-    def __init__(self, filename = None):
+    def __init__(self, filename=None):
         self.filename = filename
         self.values = {}
         if filename:
@@ -15,11 +14,6 @@ class YamlConfig (object):
         f = open(self.filename)
         self.values = yaml.safe_load(f)
         f.close()
-
-    # def save(self):
-    #     f = open(filename, "w")
-    #     yaml.dump(self.values, f)
-    #     f.close()
 
     def get_values(self):
         return self.values
@@ -36,12 +30,6 @@ class JsonConfig (object):
 
     def load(self):
         self.values = json.loads(open(self.filename).read())
-
-    # def save(self):
-    #     pass
-    #     with io.open(self.filename, 'w', encoding='utf-8') as outfile:
-    #         json.dumps(self.values, outfile)
-    #     pass
 
     def get_values(self):
         return self.values

@@ -1,4 +1,5 @@
-import smbus
+
+from smbus2 import SMBus
 
 from james.plugin import *
 
@@ -17,7 +18,7 @@ class RGBLEDPlugin(Plugin):
 
         self.load_state('sunrises', 0)
 
-        self.bus = smbus.SMBus(1)
+        self.bus = SMBus(1)
         self.address = 0x04
 
     def send_over_i2c(self, what, arguments=[0]):

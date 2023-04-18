@@ -20,5 +20,11 @@ git pull
 echo -e ""
 
 echo -e "..:: Starting james.py ($(date)) ::..\n"
-sudo "./james.py"
+if [ -f "../venv/bin/python" ];
+then
+	pwd
+	sudo ../venv/bin/python ./james.py
+else
+	sudo ./james.py
+fi	
 rm /var/lock/JamesII.pid

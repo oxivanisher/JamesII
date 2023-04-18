@@ -1,3 +1,4 @@
+
 import xmpp
 import sys
 import time
@@ -38,7 +39,7 @@ class JabberThread(PluginThread):
         self.logger.debug("XMPP connect called")
         # setup connection
         jid = xmpp.protocol.JID(self.cfg_jid)
-        self.conn = xmpp.Client(jid.getDomain(), debug=[])
+        self.conn = xmpp.Client(jid.getDomain(), debug=[]) # debug can be 'always'
         conres = self.conn.connect()
 
         if not conres:
@@ -50,16 +51,16 @@ class JabberThread(PluginThread):
 
         if self.active:
             if conres != 'tls':
-                self.logger.warning("Unable to estabilish secure connection - TLS failed!")
+                self.logger.warning("Unable to establish secure connection - TLS failed!")
 
-            authres = self.conn.auth(jid.getNode(), self.password)
+            authres = self.conn.auth(jid.getNode(), self.password, resource=jid.getResource())
 
             if not authres:
                 self.logger.error("Unable to authorize on %s - check login/password." % jid.getDomain())
                 self.active = False
             if authres != 'sasl':
                 self.logger.warning(
-                    "Warning: unable to perform SASL auth on %s. Old authentication method used!" % server)
+                    "Warning: unable to perform SASL auth on %s. Old authentication method used!" % jid.getDomain())
 
             # lets go online
             self.conn.sendInitPresence(requestRoster=1)
@@ -173,7 +174,7 @@ class JabberThread(PluginThread):
         if self.muc_room:
             mucUserJids = []
             amountUsers = len(self.users)
-            for muc_user in self.muc_users.keys():
+            for muc_user in list(self.muc_users.keys()):
                 try:
                     mucUserJids.append(self.muc_users[muc_user].split('/')[0])
                 except AttributeError:
@@ -215,7 +216,7 @@ class JabberThread(PluginThread):
                     # muc_send = False
                     for (jid, name) in self.users:
                         # see if user is in muc online an then send it there only
-                        for mucJid in self.muc_users.keys():
+                        for mucJid in list(self.muc_users.keys()):
                             try:
                                 onlineJid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
                             except AttributeError:
@@ -251,9 +252,9 @@ class JabberThread(PluginThread):
     def create_message(self, to, header=[], body=[]):
         if len(header) == 0:
             return False
-        message_list = filter(lambda s: s != '', header)
+        message_list = [s for s in header if s != '']
         if len(body) > 0:
-            message_list = message_list + filter(lambda s: s != '', body)
+            message_list = message_list + [s for s in body if s != '']
         message_text = '\n'.join(message_list)
         message = xmpp.protocol.Message(to, message_text)
         message.setAttr('type', 'chat')
@@ -422,7 +423,7 @@ class JabberPlugin(Plugin):
 
     # plugin methods
     def start(self):
-        for person in self.core.config['persons'].keys():
+        for person in list(self.core.config['persons'].keys()):
             try:
                 self.users.append((self.core.config['persons'][person]['jid'], person))
             except Exception:
@@ -638,7 +639,7 @@ class JabberPlugin(Plugin):
             c = command_obj.subcommands[command]
             if not c.hide:
                 ret.append("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
-                if len(c.subcommands.keys()) > 0:
+                if len(list(c.subcommands.keys())) > 0:
                     for line in self.return_command_help_lines(c, depth + 1):
                         ret.append(line)
         return ret

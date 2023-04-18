@@ -64,7 +64,7 @@ class GoogleCalendarPlugin(Plugin):
         except Exception as e:
             self.logger.warning("Google calendar was unable to update due to error: %s" % e)
 
-        self.core.add_timeout(10, self.update_after_midnight)
+        # self.core.add_timeout(10, self.update_after_midnight)
 
     # internal commands
     def update_after_midnight(self):
@@ -73,7 +73,7 @@ class GoogleCalendarPlugin(Plugin):
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight = int(86400 - seconds_since_midnight + 30) # adding 30 seconds just to be sure its the next day
         self.logger.debug("Google calendar was just fetched. Will fetch again in %s seconds" % seconds_until_midnight)
-        # self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
+        self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
     def fetchEvents(self, calendar_id, page_token=None):
         events = {}

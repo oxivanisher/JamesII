@@ -572,10 +572,13 @@ class Core(object):
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
                     self.terminate()
                 else:
-                    self.logger.warning("Received config from master. Reloading config on all plugins.")
-                    self.config = new_config
-                    for p in self.plugins:
-                        p.reload_config()
+                    if self.config != new_config:
+                        self.logger.warning("Received config from master. Reloading config on all plugins.")
+                        self.config = new_config
+                        for p in self.plugins:
+                            p.reload_config()
+                    else:
+                        self.logger.debug("Received the same config I already have again.")
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node but not the config has changed.")
                 self.master_node = sender_uuid

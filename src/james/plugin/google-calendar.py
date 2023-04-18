@@ -148,7 +148,7 @@ class GoogleCalendarPlugin(Plugin):
                     self.logger.debug(event)
 
         self.event_cache = []
-        return_string = []
+        return_list = []
         for (person, event) in all_events:
             self.eventsFetched += 1
             return_string = False
@@ -193,15 +193,16 @@ class GoogleCalendarPlugin(Plugin):
                     # evil is:
                 return_string += event['summary']
                 self.event_cache.append(return_string)
+                return_list.append(return_string)
 
         self.event_cache_timestamp = time.time()
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
 
-        if len(return_string):
-            self.logger.debug("Returning %s events" % len(return_string))
-            return return_string
+        if len(return_list):
+            self.logger.debug("Returning %s events" % len(return_list))
+            return return_list
 
     # commands
     def cmd_calendar_show(self, args):

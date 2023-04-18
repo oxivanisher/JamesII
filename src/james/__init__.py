@@ -578,7 +578,7 @@ class Core(object):
                         for p in self.plugins:
                             p.reload_config()
                     else:
-                        self.logger.debug("Received the same config I already have again.")
+                        self.logger.warning("Received the same config I already have again.")
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node but not the config has changed.")
                 self.master_node = sender_uuid

@@ -197,9 +197,10 @@ class GoogleCalendarPlugin(Plugin):
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
-        if show:
-            self.logger.debug("Returning %s events" % len(self.event_cache))
-            return [self.event_cache]
+
+        if len(return_string):
+            self.logger.debug("Returning %s events" % len(return_string))
+            return return_string
 
     # commands
     def cmd_calendar_show(self, args):

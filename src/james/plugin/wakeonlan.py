@@ -37,12 +37,12 @@ class WakeOnLanPlugin(Plugin):
                     host = mac
 
         except Exception as e:
-            return "no valid hostname given"
+            return ["no valid hostname given"]
 
         if host:
             self.wakeups += 1
             self.utils.wake_on_lan(host)
-            return (["waking %s (%s)" % (args[0], host)])
+            return ["waking %s (%s)" % (args[0], host)]
 
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:

@@ -948,12 +948,12 @@ class Core(object):
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = exc_tb.tb_frame.f_code.co_filename
-            self.logger.critical('DEBUG Processing timeout dir %s' % dir(current_timeout))
-            self.logger.critical('DEBUG Processing timeout.seconds %s' % current_timeout.seconds)
-            self.logger.critical('DEBUG Processing timeout.handler %s' % current_timeout.handler)
             self.logger.critical(
                 "Exception 2 in process_timeouts: %s in %s:%s %s > %s" %
                 (e, fname, exc_tb.tb_lineno, exc_type, current_timeout))
+            self.logger.critical('timeout.seconds: %s' % current_timeout.seconds)
+            self.logger.critical('timeout.handler: %s' % current_timeout.handler)
+
             # if some event let the client crash, remove it from the list so that the node does not loop forever
             #
             self.timeouts.remove(current_timeout)

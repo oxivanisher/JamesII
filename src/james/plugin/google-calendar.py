@@ -27,9 +27,9 @@ class GoogleCalendarPlugin(Plugin):
         self.load_state('eventFetches', 0)
         self.load_state('eventsFetched', 0)
 
-        FLAGS = gflags.FLAGS
-        FLAGS.auth_local_webserver = False
-        FLOW = OAuth2WebServerFlow(
+        flags = gflags.FLAGS
+        flags.auth_local_webserver = False
+        flow = OAuth2WebServerFlow(
             client_id=self.config['client_id'],
             client_secret=self.config['client_secret'],
             scope='https://www.googleapis.com/auth/calendar',
@@ -38,8 +38,7 @@ class GoogleCalendarPlugin(Plugin):
         storage = Storage(os.path.join(os.path.expanduser("~"), ".james_gcal_dat"))
         credentials = storage.get()
         if credentials is None or credentials.invalid is True:
-            flags = tools.argparser.parse_args(args=[])
-            credentials = tools.run_flow(FLOW, storage, flags)
+            credentials = tools.run_flow(flow, storage, flags)
 
         http = httplib2.Http()
         http = credentials.authorize(http)

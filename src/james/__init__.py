@@ -942,7 +942,7 @@ class Core(object):
             for timeout in self.timeouts:
                 current_timeout = timeout
                 self.logger.info('DEBUG Processing timeout %s' % timeout)
-                self.logger.info('DEBUG Processing timeout.sec %s' % timeout.sec)
+                self.logger.info('DEBUG Processing timeout dir %s' % dir(timeout.sec))
                 self.logger.info('DEBUG Processing timeout.handler %s' % timeout.handler)
                 if timeout.deadline <= now:
                     self.logger.debug('Processing timeout %s' % timeout.handler)

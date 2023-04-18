@@ -9,7 +9,7 @@ import pytz
 from apiclient.discovery import build
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2WebServerFlow
-from oauth2client import tools
+from oauth2client import argparser, run_flow
 
 from james.plugin import *
 
@@ -27,8 +27,8 @@ class GoogleCalendarPlugin(Plugin):
         self.load_state('eventFetches', 0)
         self.load_state('eventsFetched', 0)
 
-        flags = gflags.FLAGS
-        flags.auth_local_webserver = False
+        args = argparser.parse_args()
+        args.noauth_local_webserver = True
         flow = OAuth2WebServerFlow(
             client_id=self.config['client_id'],
             client_secret=self.config['client_secret'],
@@ -38,7 +38,7 @@ class GoogleCalendarPlugin(Plugin):
         storage = Storage(os.path.join(os.path.expanduser("~"), ".james_gcal_dat"))
         credentials = storage.get()
         if credentials is None or credentials.invalid is True:
-            credentials = tools.run_flow(flow, storage, flags)
+            credentials = run_flow(flow, storage, args)
 
         http = httplib2.Http()
         http = credentials.authorize(http)

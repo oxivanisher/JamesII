@@ -64,11 +64,11 @@ class GoogleCalendarPlugin(Plugin):
         except Exception as e:
             self.logger.warning("Google calendar was unable to update due to error: %s" % e)
 
-        # self.core.add_timeout(10, self.update_after_midnight)
+        # self.core.add_timeout(10, self.update_after_midnight) TODO: enable me again
 
     # internal commands
     def update_after_midnight(self):
-        self.requestEvents()
+        self.core.add_timeout(0, self.requestEvents)
         now = datetime.datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight = int(86400 - seconds_since_midnight + 30) # adding 30 seconds just to be sure its the next day
@@ -112,7 +112,7 @@ class GoogleCalendarPlugin(Plugin):
         self.logger.debug("getCalendarIds: %s" % personClientIds)
         return personClientIds
 
-    def requestEvents(self):
+    def requestEvents(self, show=False):
         self.logger.debug("requestEvents from google calendar")
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("cache is still valid, answering with the cache data")
@@ -198,13 +198,21 @@ class GoogleCalendarPlugin(Plugin):
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
-        if len(self.event_cache):
-            self.logger.debug("Returning %s events" % len(self.event_cache))
-            return self.event_cache
+        if show:
+            self.core.add_timeout(0, self.requestEvents)
 
     # commands
     def cmd_calendar_show(self, args):
-        return self.requestEvents
+        self.core.add_timeout(0, self.requestEvents, True)
+
+    def cmd_calendar_show_callback(self):
+        if len(self.event_cache):
+            self.logger.debug("Returning %s events" % len(self.event_cache))
+            return [self.event_cache]
+        else:
+            pass
+            # self.core.send_message
+
 
     def cmd_calendar_speak(self, args):
         try:

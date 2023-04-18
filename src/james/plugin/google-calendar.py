@@ -111,7 +111,6 @@ class GoogleCalendarPlugin(Plugin):
 
     def requestEvents(self, show=True):
         self.logger.debug("requestEvents from google calendar")
-        self.logger.debug("a %s b %s c %s" % (time.time(), self.event_cache_timestamp, self.event_cache_timeout))
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("Cache is still valid, answering with the cache data")
 
@@ -119,8 +118,6 @@ class GoogleCalendarPlugin(Plugin):
             self.logger.debug("Cache is invalid, fetching new data")
             self.event_cache = []
             person_client_ids = self.getCalendarIds()
-
-            no_alarm_clock_active = False
 
             for person in list(person_client_ids.keys()):
                 self.logger.debug("Fetching calendars for person: %s" % person)
@@ -152,10 +149,12 @@ class GoogleCalendarPlugin(Plugin):
                 self.event_cache_timestamp = time.time()
 
         return_list = []
+        no_alarm_clock_active = False
         for (person, event) in self.event_cache:
             self.logger.debug("Analyzing event for %s: %s" % (person, event['summary']))
             self.eventsFetched += 1
             return_string = False
+            happening_today = False
             now = datetime.datetime.now()
 
             # whole day event:
@@ -164,18 +163,16 @@ class GoogleCalendarPlugin(Plugin):
                     happening_today = True
                     return_string = "Today "
                 else:
-                    happening_today = False
                     return_string = "Tomorrow "
 
             # check there is a "don't wake up" event present in google calendar
-            if event['summary'].lower() in self.config['no_alarm_clock'].lower():
+            if event['summary'].lower() in self.config['no_alarm_clock'].lower() and happening_today:
                 self.logger.info("Found a event which activates no_alarm_clock: %s" % event['summary'])
                 no_alarm_clock_active = True
 
             # ignore ignored_events from config
             if event['summary'].lower() in self.config['ignored_events'].lower():
                 self.logger.debug("Ignoring event because of ignored_events: %s" % event)
-                return_string = False
                 continue
 
             # normal event:
@@ -199,15 +196,13 @@ class GoogleCalendarPlugin(Plugin):
                 return_list.append(return_string)
 
 
-        self.logger.debug("2 a %s b %s c %s" % (time.time(), self.event_cache_timestamp, self.event_cache_timeout))
-
-        self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
-
         self.logging.debug("There are %s events in the cache." % len(return_list))
+        self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))
-            return return_list
+            if show:
+                return return_list
 
     # commands
     def cmd_calendar_show(self, args):

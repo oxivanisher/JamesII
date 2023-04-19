@@ -1,5 +1,5 @@
 # James II: Your Butler brought to the next level.
-The Idea behind JamesII Butler is to implement smarthome features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
+The Idea behind JamesII Butler is to implement smart home features in combination with multimedia, networking and interactive applications to your existing infrastructure. It consists of distributed python nodes which connect via a RabbitMQ server to talk to each other. There is one core node which hosts the configuration and some basic features.
 The system is also very handy in combination with RaspberryPi's ([www.raspberrypi.org/](http://www.raspberrypi.org/)).
 
 ## Things / Services you can use or interact with:
@@ -9,7 +9,7 @@ The system is also very handy in combination with RaspberryPi's ([www.raspberryp
 * Espeak (managed) as a messaging front-end and some commands
 * Jabber (managed) as a messaging front-end and interface (has also MUC support)
 * Monitor (managed) to show what is going on in the console
-* Motion (managed) to watch over your home and also to automatically start webradio when you get up on weekends
+* Motion (managed) to watch over your home and also to automatically start web-radio when you get up on weekends
 * Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out for gn8, wakeup or
 noise)
 * Proximity (managed) to scan the area for known bluetooth mac addresses
@@ -43,7 +43,7 @@ The most errors had to do with UTF-8, encoding and decoding things. The followin
 * Integrated help. Just type help in interfaces
 * Command aliases like "in 10m nom" which in fact will do "mcp in 10m espeak say nom nom nom nom nom"
 * Logger facility with network functionality who also can log to mysql (netlogger.py)
-* @hostname1,hostname2 for running commands only on choosen host(s)
+* @hostname1,hostname2 for running commands only on chosen host(s)
 * && to split commands (will not wait for the first command to exit, will send them right after each other)
 
 ### Not yet done:
@@ -67,7 +67,7 @@ The most errors had to do with UTF-8, encoding and decoding things. The followin
 
 #### Notes on some plugins
 #### mpd noise
-The noise command plays a file from the mpd library in a endless loop (or until i.e. a wakeup command is sent).
+The noise command plays a file from the mpd library in an endless loop (or until i.e. a wakeup command is sent).
 This file needs to be added to the library manually! I downloaded mine from
 [www.audiocheck.net/testtones_pinknoise.php](https://www.audiocheck.net/testtones_pinknoise.php)
 ##### mpd and espeak
@@ -84,7 +84,7 @@ audio_output {
 ```
 
 ##### evdev
-If you use a DIY IR reciever or sender, you have to configure `/boot/config.txt` on Raspberry Pis
+If you use a DIY IR receiver or sender, you have to configure `/boot/config.txt` on Raspberry Pis
 something like this:
 ```
 [all]
@@ -154,11 +154,10 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 * eSpeak http://espeak.sourceforge.net/
 * MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
 * Transmission http://www.transmissionbt.com/
-* Kodi Mediacenter https://kodi.wiki/
+* Kodi Media center https://kodi.wiki/
 * Raspberry Pi http://www.raspberrypi.org/
 
 ## Thanks go to:
 * http://github.com/westlicht for a lot of OO and Python knowledge
 * http://aron.ws/projects/lirc_rpi/ for the IR solution used with RaspberryPi
 * Kurt Fierz and Anaxagoras for support with the electronics part of JamesII (RaspberryPi plugin)
-* https://github.com/tervor for alpha testing :)

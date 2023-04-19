@@ -815,11 +815,11 @@ class Core(object):
                 fname = exc_tb.tb_frame.f_code.co_filename
                 self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
                 if self.core_lock.acquire(False):
-                    self.logger.warning("Core lock acquired, releaseing it for forced shutdown.")
+                    self.logger.warning("Core lock acquired, releasing it for forced shutdown.")
                     self.core_lock.release()
                 self.terminate(1)
 
-        self.logger.debug("Exiting with returncode (%s)" % self.returncode)
+        self.logger.debug("Exiting with return code (%s)" % self.returncode)
         sys.exit(self.returncode)
 
     def lock_core(self):
@@ -882,10 +882,6 @@ class Core(object):
                 # no proximity state found for this location
                 pass
 
-            self.logger.info("Closing all RabbitMQ channels")
-            for channel in self.rabbitmq_channels:
-                channel.close()
-
             if threading.active_count() > 1:
                 self.logger.info("Shutdown not yet complete. %s thread(s) remaining" % threading.active_count())
 
@@ -906,6 +902,11 @@ class Core(object):
             else:
                 self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
                                  threading.active_count())
+
+            self.logger.info("Closing all RabbitMQ channels")
+            for channel in self.rabbitmq_channels:
+                channel.close()
+
             self.terminated = True
 
     # threading methods

@@ -215,7 +215,7 @@ class RaspberryThread(PluginThread):
 
     # called when the worker ends
     def on_exit(self, result):
-        self.plugin.on_worker_exit()
+        self.logger.info("Raspberry worker exited")
 
 
 class RaspberryPlugin(Plugin):
@@ -361,9 +361,6 @@ class RaspberryPlugin(Plugin):
             self.send_command(self.switch_commands[(pin, new_state)])
         except Exception as e:
             self.logger.debug("Switch change error (%s)" % e)
-
-    def on_worker_exit(self):
-        self.logger.info('Raspberry worker exited')
 
     # worker control methods
     def start_worker(self):

@@ -239,7 +239,7 @@ class RaspberryPlugin(Plugin):
                 self.button_commands[(command['pin'], command['seconds'])] = command['command'].split()
                 self.button_pins.append(command['pin'])
         except Exception as e:
-            self.logger.debug("Rasp Button load Exception (%s)" % e)
+            self.logger.debug("Raspberry Button load Exception (%s)" % e)
 
         self.switch_pins = []
         self.switch_commands = {}
@@ -250,7 +250,7 @@ class RaspberryPlugin(Plugin):
                     self.switch_commands[(command['pin'], False)] = command['cmd_off'].split()
                     self.switch_pins.append(command['pin'])
             except Exception as e:
-                self.logger.debug("Rasp Switch load Exception (%s)" % e)
+                self.logger.debug("Raspberry Switch load Exception (%s)" % e)
 
         if core.os_username == 'root':
             self.commands.create_subcommand('quit', 'Quits the raspberry worker', self.cmd_rasp_quit)
@@ -362,15 +362,18 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.release()
         self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull_up)
         self.rasp_thread.start()
-        self.logger.info('Rasp worker starting')
-        return ['Rasp worker starting']
+        msg = "Raspberry worker starting"
+        self.logger.info(msg)
+        return [msg]
 
     def worker_must_exit(self):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
-        self.logger.debug('Rasp worker exiting')
-        return ['Rasp worker exiting']
+        self.rasp_thread.join()
+        msg = "Waiting for raspberry worker to exit"
+        self.logger.debug(msg)
+        return [msg]
 
     # james system event handler
     def process_proximity_event(self, newstatus):

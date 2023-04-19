@@ -209,6 +209,12 @@ class RaspberryThread(PluginThread):
 
     # called when the worker ends
     def on_exit(self, result):
+        for thread in self.led_blink_list:
+            if thread.is_alive():
+                self.logger.info("Waiting 10 seconds for blink thread to exit")
+                thread.join(10.0)
+
+        self.logger.info("All sub threads of raspberry worker ended")
         self.plugin.on_worker_exit()
 
 
@@ -279,11 +285,6 @@ class RaspberryPlugin(Plugin):
 
     def terminate(self):
         self.worker_must_exit()
-        self.logger.info("Waiting for the raspberry worker to exit")
-
-        while self.rasp_thread.is_alive():
-            time.sleep(0.1)
-
         self.wait_for_threads(self.worker_threads)
 
     # james command methods

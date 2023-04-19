@@ -479,13 +479,13 @@ class Core(object):
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
                 # Send actual proximity state
                 # self.publish_proximity_status(self.proximity_status.get_all_status_copy(), 'core')
+
+                # send current no_alarm_clock value
+                self.no_alarm_clock_update(self.no_alarm_clock, 'core')
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
                     self.discovery_channel.send(['commands', p.commands])
-
-            # send current no_alarm_clock value
-            self.no_alarm_clock_update(self.no_alarm_clock, 'core')
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""

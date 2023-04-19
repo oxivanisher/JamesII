@@ -305,6 +305,28 @@ class JamesUtils(object):
 
             return log
 
+    def dict_deep_compare(self, dict1, dict2):
+        """
+        Performs a deep comparison of two dictionaries.
+
+        Args:
+            dict1 (dict): The first dictionary to compare.
+            dict2 (dict): The second dictionary to compare.
+
+        Returns:
+            bool: True if the dictionaries are equal, False otherwise.
+        """
+        if isinstance(dict1, dict) and isinstance(dict2, dict):
+            if len(dict1) != len(dict2):
+                return False
+            for key in dict1:
+                if key not in dict2:
+                    return False
+                if not self.dict_deep_compare(dict1[key], dict2[key]):
+                    return False
+            return True
+        else:
+            return dict1 == dict2
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C
 # https://stackoverflow.com/questions/39146039/pickle-typeerror-a-bytes-like-object-is-required-not-str

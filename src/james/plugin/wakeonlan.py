@@ -37,12 +37,12 @@ class WakeOnLanPlugin(Plugin):
                     host = mac
 
         except Exception as e:
-            return "no valid hostname given"
+            return ["no valid hostname given"]
 
         if host:
             self.wakeups += 1
             self.utils.wake_on_lan(host)
-            return (["waking %s (%s)" % (args[0], host)])
+            return ["waking %s (%s)" % (args[0], host)]
 
     def process_proximity_event(self, newstatus):
         if (time.time() - self.core.startup_timestamp) > 10:
@@ -61,7 +61,7 @@ class WakeOnLanPlugin(Plugin):
 
                 ret = []
                 for (name, mac, person) in self.wol_devices:
-                    self.core.add_timeout(0, self.utils.wake_on_lan, mac)
+                    self.core.add_timeout(0, self.utils.wake_on_lan, str(mac))
                     ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
                 self.logger.info(ret)
 

@@ -51,7 +51,7 @@ transmissionrpc
 # plugin lirc-plugin
 # pylirc2
 # replaced with evdev
-evdev
+evdev; platform_system != "Windows"
 
 # plugin cli
 #readline
@@ -68,7 +68,7 @@ google-auth-oauthlib
 storm
 
 # plugin raspberry
-wiringpi
+wiringpi; platform_system != "Windows"
 
 # pip freeze for python2 to python3 migration
 # asn1crypto==0.24.0

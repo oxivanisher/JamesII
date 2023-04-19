@@ -30,6 +30,10 @@ class RGBLEDPlugin(Plugin):
 
     def cmd_sunrise(self, args):
         if self.core.proximity_status.get_status_here():
+            if self.core.no_alarm_clock:
+                msg = "Sunrise not activated. no_alarm_clock is set (check gcal)."
+                self.logger.info(msg)
+                return [msg]
             self.sunrise()
             return ["Sunrise enabled"]
         else:

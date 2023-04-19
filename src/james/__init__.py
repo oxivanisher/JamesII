@@ -704,11 +704,10 @@ class Core(object):
 
     def no_alarm_clock_update(self, changed_status, no_alarm_clock_source):
         """
-        If the local no_alarm_clock state has changed, call the publish method
+        Always call the publish method
         """
-        if self.no_alarm_clock != changed_status:
-            self.logger.debug("publish_no_alarm_clock_status: %s" % changed_status)
-            self.publish_no_alarm_clock_status(changed_status, no_alarm_clock_source)
+        self.logger.debug("publish_no_alarm_clock_status: %s" % changed_status)
+        self.publish_no_alarm_clock_status(changed_status, no_alarm_clock_source)
 
     def publish_no_alarm_clock_status(self, new_status, no_alarm_clock_source):
         """

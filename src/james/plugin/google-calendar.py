@@ -158,32 +158,26 @@ class GoogleCalendarPlugin(Plugin):
             now = datetime.datetime.now()
 
             # whole day event:
-            self.logger.debug("z")
             if 'date' in list(event['start'].keys()):
                 if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d'):
-                    self.logger.debug("za")
                     happening_today = True
                     return_string = "Today "
                 else:
-                    self.logger.debug("zb")
                     return_string = "Tomorrow "
-            self.logger.debug("a")
+
             # check there is a "don't wake up" event present in google calendar
             if event['summary'].lower() in [x.lower() for x in self.config['no_alarm_clock']]:
                 if happening_today:
                     self.logger.info("Found a event which activates no_alarm_clock: %s" % event['summary'])
                     no_alarm_clock_active = True
 
-            self.logger.debug("b")
             # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
-                self.logger.debug("ba")
                 self.logger.debug("Ignoring event because of ignored_events: %s" % event)
                 continue
 
             # normal event:
             elif 'dateTime' in list(event['start'].keys()):
-                self.logger.debug("bb")
                 eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTimeStart.day > datetime.datetime.now().day:
@@ -195,7 +189,6 @@ class GoogleCalendarPlugin(Plugin):
                     elif now < eventTimeStart:
                         return_string = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
 
-            self.logger.debug("c")
             if return_string:
                 if event['status'] == "tentative":
                     return_string += " possibly "
@@ -205,7 +198,7 @@ class GoogleCalendarPlugin(Plugin):
 
         self.logger.debug("There are %s events in the cache." % len(return_list))
 
-        self.core.add_timeout(0, self.core.no_alarm_clock_update, no_alarm_clock_active, 'gcal')
+        self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))

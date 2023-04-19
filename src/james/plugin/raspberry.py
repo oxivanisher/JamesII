@@ -279,6 +279,11 @@ class RaspberryPlugin(Plugin):
 
     def terminate(self):
         self.worker_must_exit()
+        self.logger.info("Waiting for the raspberry worker to exit")
+
+        while self.rasp_thread.is_alive():
+            time.sleep(0.1)
+
         self.wait_for_threads(self.worker_threads)
 
     # james command methods

@@ -848,10 +848,6 @@ class Core(object):
                 except Exception:
                     pass
 
-            self.logger.info("Closing all RabbitMQ channels")
-            for channel in self.rabbitmq_channels:
-                channel.close()
-
             saveStats = {}
             for p in self.plugins:
                 self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
@@ -885,6 +881,10 @@ class Core(object):
             except KeyError:
                 # no proximity state found for this location
                 pass
+
+            self.logger.info("Closing all RabbitMQ channels")
+            for channel in self.rabbitmq_channels:
+                channel.close()
 
             if threading.active_count() > 1:
                 self.logger.info("Shutdown not yet complete. %s thread(s) remaining" % threading.active_count())

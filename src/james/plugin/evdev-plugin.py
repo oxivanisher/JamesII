@@ -60,6 +60,7 @@ class EvdevPlugin(Plugin):
                 self.logger.info("Spawning worker for evdev %s" % name)
                 self.evdev_worker_thread = EvdevThread(self, path)
                 self.evdev_worker_thread.start()
+                self.worker_threads.append(self.evdev_worker_thread)
                 break
 
         self.load_state('commandsReceived', 0)
@@ -104,7 +105,7 @@ class EvdevPlugin(Plugin):
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()
-        self.wait_for_threads([self.evdev_worker_thread])
+        self.wait_for_threads(self.worker_threads)
 
     def return_status(self, verbose = False):
         ret = {'commandsReceived': self.commandsReceived}

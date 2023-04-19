@@ -16,17 +16,17 @@ class BlinkLed(object):
         self.cycles = cycles
         self.counter = 0
         self.led_state = True
-        self.thread.set_led(self.pin, True)
+        self.thread.set_pin(self.pin, True)
 
     def check(self):
         self.counter += 1
         if self.amount > 0:
             if self.counter >= self.cycles:
                 if self.led_state:
-                    self.thread.set_led(self.pin, False)
+                    self.thread.set_pin(self.pin, False)
                     self.led_state = False
                 else:
-                    self.thread.set_led(self.pin, True)
+                    self.thread.set_pin(self.pin, True)
                     self.led_state = True
 
                 self.counter = 0
@@ -128,10 +128,10 @@ class RaspberryThread(PluginThread):
                 continue
             # see if we must switch some leds on
             for pin in self.plugin.waiting_leds_on:
-                self.set_led(pin, True)
+                self.set_pin(pin, True)
             # see if we must switch some leds off
             for pin in self.plugin.waiting_leds_off:
-                self.set_led(pin, False)
+                self.set_pin(pin, False)
             # see if we must create new blink objects from main thread
             for (pin, amount, duration) in self.plugin.waiting_leds_blink:
                 self.led_blink(pin, amount, duration)
@@ -183,29 +183,32 @@ class RaspberryThread(PluginThread):
                     self.pin_state_cache['switch'][pin]['count'] = 0
 
             sleep_time = self.loop_sleep - (time.time() * 1000 - loop_start)
-            if sleep_time > 0:
+            # don't sleep if we should shut down
+            if sleep_time > 0 and active:
                 time.sleep(sleep_time / 1000)
 
+        # enable all leds on exit
         for pin in self.led_pins:
-            self.set_led(pin, True)
+            self.set_pin(pin, True)
+        # and disable all buttons and switches
+        for pin in self.button_pins + self.switch_pins:
+            self.set_pin(pin, False)
 
     # rasp gpio methods
     def led_blink(self, pin, amount=1, cycles=5):
         self.led_blink_list.append(BlinkLed(self, pin, amount, cycles))
 
-    def set_led(self, led_pin, mode):
+    def set_pin(self, pin, mode):
         if mode:
-            wiringpi.digitalWrite(led_pin, 1)
+            wiringpi.digitalWrite(pin, 1)
         else:
-            wiringpi.digitalWrite(led_pin, 0)
+            wiringpi.digitalWrite(pin, 0)
 
     def read_pin(self, pin):
         return wiringpi.digitalRead(pin)
 
     # called when the worker ends
     def on_exit(self, result):
-        for led_pin in self.button_pins + self.switch_pins + self.led_pins:
-            wiringpi.digitalWrite(led_pin, 0)
         self.plugin.on_worker_exit()
 
 

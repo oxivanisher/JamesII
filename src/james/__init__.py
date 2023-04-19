@@ -553,7 +553,7 @@ class Core(object):
             except Exception as e:
                 self.location = 'home'
         else:
-            if self.config == new_config:
+            if not self.utils.dict_deep_compare(self.config, new_config):
                 if self.uuid == sender_uuid == self.master_node:
                     cfg_diff = []
                     for key in list(self.config.keys()):

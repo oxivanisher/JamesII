@@ -276,6 +276,7 @@ class RaspberryPlugin(Plugin):
 
     def terminate(self):
         self.worker_must_exit()
+        self.wait_for_threads(self.worker_threads)
 
     # james command methods
     def cmd_show_buttons(self, args):
@@ -362,6 +363,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.release()
         self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull_up)
         self.rasp_thread.start()
+        self.worker_threads.append(self.rasp_thread)
         msg = "Raspberry worker starting"
         self.logger.info(msg)
         return [msg]
@@ -370,8 +372,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.acquire()
         self.worker_exit = True
         self.worker_lock.release()
-        self.rasp_thread.join()
-        msg = "Waiting for raspberry worker to exit"
+        msg = "Raspberry worker is ordered to exit"
         self.logger.debug(msg)
         return [msg]
 

@@ -696,9 +696,7 @@ class Core(object):
         update the local storage.
         """
         self.logger.debug("core.no_alarm_clock_listener: %s" % msg)
-        old_status = self.no_alarm_clock
-        new_status = msg['status']
-        if old_status != new_status:
+        if self.no_alarm_clock != msg['status']:
             self.logger.info("Received no_alarm_clock update (listener). New value is %s" % msg['status'])
             self.no_alarm_clock = msg['status']
 

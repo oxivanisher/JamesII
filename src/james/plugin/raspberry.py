@@ -193,6 +193,12 @@ class RaspberryThread(PluginThread):
         # and disable all buttons and switches
         for pin in self.button_pins + self.switch_pins:
             self.set_pin(pin, False)
+        # wait for and end all blink threads
+        for thread in self.led_blink_list:
+            if thread.is_alive():
+                self.logger.info("Waiting 10 seconds for blink thread to exit")
+                thread.join(10.0)
+        self.logger.info("All sub threads of raspberry worker ended")
 
     # rasp gpio methods
     def led_blink(self, pin, amount=1, cycles=5):
@@ -209,12 +215,6 @@ class RaspberryThread(PluginThread):
 
     # called when the worker ends
     def on_exit(self, result):
-        for thread in self.led_blink_list:
-            if thread.is_alive():
-                self.logger.info("Waiting 10 seconds for blink thread to exit")
-                thread.join(10.0)
-
-        self.logger.info("All sub threads of raspberry worker ended")
         self.plugin.on_worker_exit()
 
 

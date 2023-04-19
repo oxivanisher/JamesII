@@ -231,7 +231,8 @@ class GoogleCalendarPlugin(Plugin):
     def process_proximity_event(self, newstatus):
         self.logger.debug("Google Calendar Processing proximity event")
         if newstatus['status'][self.core.location]:
-            self.core.add_timeout(0, self.requestEvents, False)
+            self.event_cache_timestamp = 0
+            self.core.add_timeout(1, self.requestEvents, False)
             self.core.add_timeout(2, self.cmd_calendar_speak, None)
 
     # status

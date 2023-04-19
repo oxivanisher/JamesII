@@ -125,6 +125,7 @@ class Core(object):
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.stats_file = os.path.join(os.path.expanduser("~"), ".james_stats")
         self.core_lock = threading.RLock()
+        self.rabbitmq_channels = []
 
         # Load broker configuration here, in case the hostname has to be specified
         try:
@@ -829,7 +830,7 @@ class Core(object):
 
     def terminate(self, returncode=0):
         """
-        Terminate the core. This method will first call the terminate() on each plugin.
+        Terminate the core. This method will first call the terminate() method on each plugin.
         """
 
         # setting log level to debug, if not shutting down clean
@@ -847,10 +848,14 @@ class Core(object):
                 except Exception:
                     pass
 
+            self.logger.info("Closing all RabbitMQ channels")
+            for channel in self.rabbitmq_channels:
+                channel.close()
+
             saveStats = {}
             for p in self.plugins:
-                self.logger.info("Collecting stats for plugin %s (with 5 seconds timeout)" % p.name)
-                with Timeout(5):
+                self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
+                with Timeout(10):
                     saveStats[p.name] = p.safe_state(True)
             try:
                 file = open(self.stats_file, 'w')
@@ -864,8 +869,8 @@ class Core(object):
                     self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
-                self.logger.info("Calling terminate() on plugin %s (with 5 seconds timeout)" % p.name)
-                with Timeout(5):
+                self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
+                with Timeout(30):
                     p.terminate()
             try:
                 file = open(self.proximity_state_file, 'w')

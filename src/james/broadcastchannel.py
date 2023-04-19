@@ -9,6 +9,7 @@ class BroadcastChannel(object):
     def __init__(self, core, name):
         self.core = core
         self.name = name
+        self.core.rabbitmq_channels.append(self)
         self.listeners = []
 
         self.channel = self.core.connection.channel()
@@ -47,5 +48,8 @@ class BroadcastChannel(object):
 
     def add_listener(self, handler):
         self.listeners.append(handler)
+
+    def close(self):
+        self.channel.close()
 
 #FIXME add class for send and recv handlers

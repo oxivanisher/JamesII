@@ -215,7 +215,7 @@ class Core(object):
             mode_output = "passive"
 
         # Show welcome header
-        self.logger.debug("JamesII starting up (%s mode)" % mode_output)
+        self.logger.debug("JamesII %s node %s starting up" % (mode_output, self.hostname))
 
         # Create global connection
         connected = False

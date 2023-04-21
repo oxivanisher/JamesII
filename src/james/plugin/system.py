@@ -1,4 +1,5 @@
 
+import os
 import sys
 import socket
 import time
@@ -28,13 +29,13 @@ class SystemPlugin(Plugin):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
+        self.commands.create_subcommand('quit-node', 'Quits nodes. Ensure to @nodename to only quit one node.', self.cmd_quit_node)
 
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-            self.commands.create_subcommand('quit', 'Quits the system JamesII. Yes, every node will shut down!', self.cmd_quit)
-            self.commands.create_subcommand('reload', 'Quits the JamesII core wich reloads the config.', self.cmd_quit_core)
+            self.commands.create_subcommand('quit-core', 'Quits the JamesII core which reloads the config on startup.', self.cmd_quit_core)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
@@ -106,7 +107,7 @@ class SystemPlugin(Plugin):
         except Exception as e:
             return (["Message could not be sent (%s)" % (e)])
 
-    def cmd_quit(self, args):
+    def cmd_quit_node(self, args):
         message = self.core.new_message(self.name)
         message.header = ("Bye bye, james is shutting down.")
         message.level = 2

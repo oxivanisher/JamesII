@@ -443,7 +443,7 @@ class MpdClientPlugin(Plugin):
     def terminate(self):
         self.logger.debug("Terminating MPD client worker")
         self.client_worker.terminate()
-        self.logger.debug("Calling  wait_for_threads for MPD")
+        self.logger.debug("Calling wait_for_threads for MPD")
         self.wait_for_threads(self.worker_threads)
 
     def activate_talkover(self, args):

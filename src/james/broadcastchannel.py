@@ -9,6 +9,7 @@ class BroadcastChannel(object):
     def __init__(self, core, name):
         self.core = core
         self.name = name
+        self.core.rabbitmq_channels.append(self)
         self.listeners = []
 
         self.channel = self.core.connection.channel()

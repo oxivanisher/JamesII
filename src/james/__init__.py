@@ -125,6 +125,7 @@ class Core(object):
         self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
         self.stats_file = os.path.join(os.path.expanduser("~"), ".james_stats")
         self.core_lock = threading.RLock()
+        self.rabbitmq_channels = []
 
         # Load broker configuration here, in case the hostname has to be specified
         try:
@@ -214,7 +215,7 @@ class Core(object):
             mode_output = "passive"
 
         # Show welcome header
-        self.logger.debug("JamesII starting up (%s mode)" % mode_output)
+        self.logger.debug("JamesII %s node %s starting up" % (mode_output, self.hostname))
 
         # Create global connection
         connected = False
@@ -814,11 +815,11 @@ class Core(object):
                 fname = exc_tb.tb_frame.f_code.co_filename
                 self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
                 if self.core_lock.acquire(False):
-                    self.logger.warning("Core lock acquired, releaseing it for forced shutdown.")
+                    self.logger.warning("Core lock acquired, releasing it for forced shutdown.")
                     self.core_lock.release()
                 self.terminate(1)
 
-        self.logger.debug("Exiting with returncode (%s)" % self.returncode)
+        self.logger.debug("Exiting with return code (%s)" % self.returncode)
         sys.exit(self.returncode)
 
     def lock_core(self):
@@ -829,7 +830,7 @@ class Core(object):
 
     def terminate(self, returncode=0):
         """
-        Terminate the core. This method will first call the terminate() on each plugin.
+        Terminate the core. This method will first call the terminate() method on each plugin.
         """
 
         # setting log level to debug, if not shutting down clean
@@ -849,8 +850,8 @@ class Core(object):
 
             saveStats = {}
             for p in self.plugins:
-                self.logger.info("Collecting stats for plugin %s (with 5 seconds timeout)" % p.name)
-                with Timeout(5):
+                self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
+                with Timeout(10):
                     saveStats[p.name] = p.safe_state(True)
             try:
                 file = open(self.stats_file, 'w')
@@ -864,8 +865,8 @@ class Core(object):
                     self.logger.warning("Could not safe stats to file")
 
             for p in self.plugins:
-                self.logger.info("Calling terminate() on plugin %s (with 5 seconds timeout)" % p.name)
-                with Timeout(5):
+                self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
+                with Timeout(30):
                     p.terminate()
             try:
                 file = open(self.proximity_state_file, 'w')
@@ -901,6 +902,7 @@ class Core(object):
             else:
                 self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
                                  threading.active_count())
+
             self.terminated = True
 
     # threading methods

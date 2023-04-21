@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import socket
@@ -32,7 +33,7 @@ class SystemPlugin(Plugin):
         self.commands.create_subcommand('quit-node', 'Supply node name to quit this node', self.cmd_quit_node)
 
         if self.core.master:
-            self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
+            self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
             self.commands.create_subcommand('quit-core', 'Quits the JamesII master node which reloads the config on '
@@ -235,7 +236,7 @@ class SystemPlugin(Plugin):
 
 descriptor = {
     'name': 'system',
-    'help': 'JamesII system commands',
+    'help_text': 'JamesII system commands',
     'command': 'sys',
     'mode': PluginMode.AUTOLOAD,
     'class': SystemPlugin,

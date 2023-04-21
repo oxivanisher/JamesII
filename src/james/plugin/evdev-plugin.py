@@ -1,4 +1,3 @@
-
 import evdev
 import time
 
@@ -114,7 +113,7 @@ class EvdevPlugin(Plugin):
 
 descriptor = {
     'name' : 'evdev-client',
-    'help' : 'Interface to EVDEV',
+    'help_text' : 'Interface to EVDEV',
     'command' : 'evdev',
     'mode' : PluginMode.MANAGED,
     'class' : EvdevPlugin,

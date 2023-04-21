@@ -1,4 +1,4 @@
-
+import os
 import time
 import json
 from storm.locals import *
@@ -66,9 +66,9 @@ class HttpServerPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(HttpServerPlugin, self).__init__(core, descriptor)
 
-        self.updatetimeout = 60
+        self.update_timeout = 60
         try:
-            self.updatetimeout = int(self.config['updatetimeout'])
+            self.update_timeout = int(self.config['update_timeout'])
         except Exception:
             pass
 
@@ -78,6 +78,7 @@ class HttpServerPlugin(Plugin):
 
         self.node_update_loop()
         self.send_waiting_commands_loop()
+        self.store = False
 
     def init_db(self):
         try:
@@ -88,7 +89,8 @@ class HttpServerPlugin(Plugin):
 
         if not config['port']:
             config['port'] = 3306
-        dbConnectionString = "%s://%s:%s@%s:%s/%s" % (config['schema'], config['user'], config['password'], config['host'], config['port'], config['database'])
+        dbConnectionString = "%s://%s:%s@%s:%s/%s" % (config['schema'], config['user'], config['password'],
+                                                      config['host'], config['port'], config['database'])
         
         database = create_database(dbConnectionString)
         try:
@@ -149,7 +151,7 @@ class HttpServerPlugin(Plugin):
 
     def node_update_loop(self):
         self.request_all_nodes_details()
-        self.core.add_timeout(self.updatetimeout, self.node_update_loop)
+        self.core.add_timeout(self.update_timeout, self.node_update_loop)
 
     def send_waiting_commands(self):
         try:
@@ -188,7 +190,7 @@ class HttpServerPlugin(Plugin):
         self.store.commit()
         self.logger.debug('Saved broadcast command response from %s' % host)
 
-    def process_data_response(self, uuid, name, currentStatus, hostname, plugin):
+    def process_data_response(self, uuid, name, current_status, hostname, plugin):
         if name == 'status':
             existingUuid = self.store.get(DbHostname, str(uuid))
             if not existingUuid:
@@ -202,13 +204,13 @@ class HttpServerPlugin(Plugin):
             result = self.store.find(DbStatus, And(DbStatus.uuid == str(uuid), DbStatus.plugin == str(plugin))).one()
             if result:
                 result.time = int(time.time())
-                result.data = str(json.dumps(currentStatus))
+                result.data = str(json.dumps(current_status))
             else:
                 newEntry = DbStatus()
                 newEntry.uuid = str(uuid)
                 newEntry.plugin = str(plugin)
                 newEntry.time = int(time.time())
-                newEntry.data = str(json.dumps(currentStatus))
+                newEntry.data = str(json.dumps(current_status))
                 self.store.add(newEntry)
             self.store.commit()
             self.logger.debug('Processed data status update from %s@%s (%s)' % (plugin, hostname, uuid))
@@ -226,7 +228,7 @@ class HttpServerPlugin(Plugin):
 
 descriptor = {
     'name' : 'httpserver-plugin',
-    'help' : 'Webfrontend for JamesII',
+    'help_text' : 'Webfrontend for JamesII',
     'command' : 'http',
     'mode' : PluginMode.MANAGED,
     'class' : HttpServerPlugin,

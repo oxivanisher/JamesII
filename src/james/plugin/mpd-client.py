@@ -1,4 +1,3 @@
-
 import urllib.request, urllib.error, urllib.parse
 import time
 import mpd
@@ -62,7 +61,7 @@ class PersistentMPDClient(mpd.MPDClient):
             except mpd.ConnectionError as e:
                 pass
             # if it's a socket connection, we'll get a BrokenPipeError
-            # if we try to disconnect when the connection is lost
+            # if we try to disconnect when the connection is lost,
             # but we have to retry the disconnect, because we'll get
             # an "Already connected" error if we don't.
             # the second one should succeed.
@@ -82,18 +81,18 @@ class PersistentMPDClient(mpd.MPDClient):
 
 
 class MpdClientWorker(object):
-    def __init__(self, plugin, myhost, myport):
+    def __init__(self, plugin, my_host, my_port):
         self.plugin = plugin
-        self.myhost = myhost
-        self.myport = myport
-        self.pretalk_volume = None
+        self.my_host = my_host
+        self.my_port = my_port
+        self.pre_talk_volume = None
         self.worker_lock = threading.Lock()
 
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
         # self.client = PersistentMPDClient() # not working test. if it still crashes, needs to be tested
-        self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger = self.plugin.utils.get_logger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
         self.hidden_errors = ["Not connected"]
 
@@ -109,7 +108,7 @@ class MpdClientWorker(object):
         self.lock()
         try:
             signal.alarm(5)
-            self.client.connect(self.myhost, self.myport)
+            self.client.connect(self.my_host, self.my_port)
             self.unlock()
             signal.alarm(0)
             self.client.timeout = 5
@@ -128,9 +127,9 @@ class MpdClientWorker(object):
                 elif e.errno == 111:
                     self.logger.warning("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.warning('connect unhandled exception: %s' % (e))
+                    self.logger.warning('connect unhandled exception: %s' % e)
             else:
-                self.logger.warning('connect unhandled exception, no errno available: %s' % (e))
+                self.logger.warning('connect unhandled exception, no errno available: %s' % e)
 
         self.unlock()
         signal.alarm(0)
@@ -164,9 +163,9 @@ class MpdClientWorker(object):
                 elif e.errno == 111:
                     self.logger.debug("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.error('connect unhandled exception: %s' % (e))
+                    self.logger.error('connect unhandled exception: %s' % e)
             else:
-                self.logger.error('connect unhandled exception, no errno available: %s' % (e))
+                self.logger.error('connect unhandled exception, no errno available: %s' % e)
 
         self.unlock()
         signal.alarm(0)
@@ -256,7 +255,7 @@ class MpdClientWorker(object):
             self.plugin.fade_in_progress = False
             self.client.stop()
             self.unlock()
-            self.logger.debug("Stoped")
+            self.logger.debug("Stopped")
             return True
         else:
             self.logger.debug("Unable to stop")
@@ -282,7 +281,7 @@ class MpdClientWorker(object):
             self.unlock()
             return tmp_status
 
-    def currentsong(self):
+    def current_song(self):
         self.logger.debug('Fetching current song')
         if self.check_connection():
             self.lock()
@@ -646,10 +645,10 @@ class MpdClientPlugin(Plugin):
         self.logger.debug("Fade ended")
 
     # react on proximity events
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("MPD Processing proximity event")
-            if newstatus['status'][self.core.location]:
+            if new_status['status'][self.core.location]:
                 self.logger.debug("Somebody is home. Check to see if a coming_home radio station is configured.")
                 if self.config['nodes'][self.core.hostname]['coming_home']:
                     self.logger.debug("coming_home radio station is %s, starting to play." %
@@ -669,7 +668,7 @@ class MpdClientPlugin(Plugin):
         status = self.client_worker.status()
         if verbose:
             self.logger.warning("Requesting status of mpd client worker")
-        currentsong = self.client_worker.currentsong()
+        current_song = self.client_worker.current_song()
         if verbose:
             self.logger.warning("Requesting current song of mpd client worker")
 
@@ -685,10 +684,10 @@ class MpdClientPlugin(Plugin):
             else:
                 volume = "-1"
 
-            if 'name' in list(currentsong.keys()):
-                name = currentsong['name']
-            if 'title' in list(currentsong.keys()):
-                title = currentsong['title']
+            if 'name' in list(current_song.keys()):
+                name = current_song['name']
+            if 'title' in list(current_song.keys()):
+                title = current_song['title']
 
             if 'state' in list(status.keys()):
                 if status['state'] == "play":
@@ -707,7 +706,7 @@ class MpdClientPlugin(Plugin):
 
 descriptor = {
     'name' : 'mpd-client',
-    'help' : 'Interface to mpd via python-mpc2 lib',
+    'help_text' : 'Interface to mpd via python-mpc2 lib',
     'command' : 'mpd',
     'mode' : PluginMode.MANAGED,
     'class' : MpdClientPlugin,

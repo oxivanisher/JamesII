@@ -1,4 +1,3 @@
-
 import wiringpi
 import time
 import threading
@@ -8,7 +7,7 @@ from james.plugin import *
 
 
 class BlinkLed(object):
-    # led blink class, returns true when finished
+    # LED blink class, returns true when finished
     def __init__(self, thread, pin, amount, cycles=5):
         self.thread = thread
         self.pin = pin
@@ -378,10 +377,10 @@ class RaspberryPlugin(Plugin):
         return [msg]
 
     # james system event handler
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         self.logger.debug("Processing proximity event")
 
-        if newstatus['status'][self.core.location]:
+        if new_status['status'][self.core.location]:
             if len(self.led_pins) > 3:
                 self.logger.debug("Processing proximity event and enabling LED")
                 self.core.add_timeout(0, self.turn_off_led, 3)
@@ -392,7 +391,7 @@ class RaspberryPlugin(Plugin):
                 self.core.add_timeout(0, self.turn_on_led, 3)
 
     def process_message(self, message):
-        self.logger.debug("Processing message event")
+        self.logger.debug("Processing msg event")
 
         # at home
         if self.core.proximity_status.status[self.core.location]:
@@ -419,7 +418,7 @@ class RaspberryPlugin(Plugin):
 
 descriptor = {
     'name' : 'raspberry',
-    'help' : 'Interface to RaspberryPi',
+    'help_text' : 'Interface to RaspberryPi',
     'command' : 'rasp',
     'mode' : PluginMode.MANAGED,
     'class' : RaspberryPlugin,

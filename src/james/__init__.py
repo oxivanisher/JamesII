@@ -1,25 +1,26 @@
-
-import os
+import atexit
+import getpass
 import json
-import pika
+import logging
+import logging.handlers
+import os
+import queue
+import signal
 import socket
 import sys
-import uuid
-import getpass
 import threading
-import queue
 import time
-import atexit
-import logging, logging.handlers
-import signal
+import uuid
 
-from . import plugin
-from . import config
-from . import command
+import pika
+
 from . import broadcastchannel
-from . import proximitystatus
-from . import jamesutils
+from . import command
+from . import config
 from . import jamesmessage
+from . import jamesutils
+from . import plugin
+from . import proximitystatus
 
 # also pika hack
 # import logging
@@ -50,7 +51,7 @@ class AddTimeoutHandlerMissing(Exception):
     pass
 
 
-class Timeout():
+class Timeout:
     """Timeout class using ALARM signal."""
 
     class Timeout(Exception):
@@ -79,11 +80,11 @@ class ThreadedCore(threading.Thread):
         super(ThreadedCore, self).__init__()
         self.core = Core(passive, False)
         self.utils = jamesutils.JamesUtils(self.core)
-        self.internalLogger = self.utils.getLogger('ThreadedCore', self.core.logger)
+        self.internalLogger = self.utils.get_logger('ThreadedCore', self.core.logger)
         self.internalLogger.info('Initialized')
 
     def get_logger(self, name):
-        return self.utils.getLogger('ext_' + name, self.core.logger)
+        return self.utils.get_logger('ext_' + name, self.core.logger)
 
     def work(self):
         self.internalLogger.info('Starting to run loop')
@@ -107,7 +108,7 @@ class Core(object):
         self.timeouts = []
         self.timeout_queue = queue.Queue()
         self.terminated = False
-        self.returncode = 0
+        self.return_code = 0
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
         self.master = False
@@ -129,17 +130,17 @@ class Core(object):
 
         # Load broker configuration here, in case the hostname has to be specified
         try:
-            self.brokerconfig = config.YamlConfig("../config/broker.yaml").get_values()
+            self.broker_config = config.YamlConfig("../config/broker.yaml").get_values()
         except Exception as e:
             raise BrokerConfigNotLoaded()
 
-        if 'myhostname' in list(self.brokerconfig.keys()):
-            self.hostname = self.brokerconfig['myhostname']
+        if 'myhostname' in list(self.broker_config.keys()):
+            self.hostname = self.broker_config['myhostname']
         else:
             # self.hostname = socket.getfqdn().split('.')[0].lower()
             self.hostname = socket.gethostname().lower()
 
-        self.logger = self.utils.getLogger('%s.%s' % (self.hostname, int(time.time() * 100)))
+        self.logger = self.utils.get_logger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
 
         self.loadedState = {}
@@ -148,7 +149,7 @@ class Core(object):
             self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
             if self.config['core']['debug']:
-                self.logger.debug("Loading states from %s" % (self.stats_file))
+                self.logger.debug("Loading states from %s" % self.stats_file)
         except Exception:
             pass
 
@@ -166,7 +167,7 @@ class Core(object):
             self.os_username = None
             pass
 
-        # this block can be removed once all the needed signals are registred
+        # this block can be removed once all the needed signals are registered
         # ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
         # for i in [x for x in dir(signal) if x.startswith("SIG")]:
         #     try:
@@ -220,11 +221,11 @@ class Core(object):
         # Create global connection
         connected = False
         try:
-            cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
+            cred = pika.PlainCredentials(self.broker_config['user'], self.broker_config['password'])
             with Timeout(300):
-                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host'],
-                                                                                    port=self.brokerconfig['port'],
-                                                                                    virtual_host=self.brokerconfig[
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.broker_config['host'],
+                                                                                    port=self.broker_config['port'],
+                                                                                    virtual_host=self.broker_config[
                                                                                         'vhost'],
                                                                                     credentials=cred))
             connected = True
@@ -234,12 +235,12 @@ class Core(object):
         # Create global connection on fallback port
         if not connected:
             try:
-                cred = pika.PlainCredentials(self.brokerconfig['user'], self.brokerconfig['password'])
+                cred = pika.PlainCredentials(self.broker_config['user'], self.broker_config['password'])
                 with Timeout(300):
-                    self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.brokerconfig['host'],
-                                                                                        port=self.brokerconfig[
+                    self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.broker_config['host'],
+                                                                                        port=self.broker_config[
                                                                                             'fallbackport'],
-                                                                                        virtual_host=self.brokerconfig[
+                                                                                        virtual_host=self.broker_config[
                                                                                             'vhost'],
                                                                                         credentials=cred))
             except Exception as e:
@@ -288,7 +289,7 @@ class Core(object):
             except Exception as e:
                 pass
 
-        # registring network logger handlers
+        # registering network logger handlers
         if self.config['netlogger']['nodes']:
             for target_host in self.config['netlogger']['nodes']:
                 self.logger.debug(
@@ -302,7 +303,7 @@ class Core(object):
                                                         self.uuid,
                                                         self.os_username,
                                                         self.master,
-                                                        self.brokerconfig['host'], self.brokerconfig['port']))
+                                                        self.broker_config['host'], self.broker_config['port']))
 
         self.logger.debug("RabbitMQ: Create request & response channels")
         self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')
@@ -311,7 +312,7 @@ class Core(object):
         self.response_channel.add_listener(self.response_listener)
 
         self.logger.debug("RabbitMQ: Create messaging channel")
-        self.message_channel = broadcastchannel.BroadcastChannel(self, 'message')
+        self.message_channel = broadcastchannel.BroadcastChannel(self, 'msg')
         self.message_channel.add_listener(self.message_listener)
 
         self.logger.debug("RabbitMQ: Create proximity channel")
@@ -338,7 +339,7 @@ class Core(object):
             self.proximity_status.status[self.location] = self.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
             if self.config['core']['debug']:
-                self.logger.debug("Loading proximity status from %s" % (self.proximity_state_file))
+                self.logger.debug("Loading proximity status from %s" % self.proximity_state_file)
         except IOError:
             pass
         except ValueError:
@@ -362,7 +363,7 @@ class Core(object):
     # plugin methods
     def load_plugin(self, name):
         try:
-            self.logger.debug("Loading plugin '%s'" % (name))
+            self.logger.debug("Loading plugin '%s'" % name)
             c = plugin.Factory.get_plugin_class(name)
             self.instantiate_plugin(c)
         except plugin.PluginNotAvailable as e:
@@ -375,14 +376,14 @@ class Core(object):
             manual_plugins.append(c.name)
         self.logger.debug("Ignoring manual plugins: %s" % ', '.join(manual_plugins))
 
-        autoloaded_plugins = []
+        autoload_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
-            autoloaded_plugins.append(c.name)
+            autoload_plugins.append(c.name)
             self.instantiate_plugin(c)
-        self.logger.debug("Autoloading plugins: %s" % ', '.join(autoloaded_plugins))
+        self.logger.debug("Autoloading plugins: %s" % ', '.join(autoload_plugins))
 
         # output = "Loading managed plugins:"
-        loaded_managed_plugins = []
+        managed_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANAGED):
             load_plugin = False
 
@@ -396,10 +397,10 @@ class Core(object):
                 pass
 
             if load_plugin:
-                loaded_managed_plugins.append(c.name)
+                managed_plugins.append(c.name)
                 self.instantiate_plugin(c)
 
-        self.logger.debug("Loading managed plugins: %s" % ', '.join(loaded_managed_plugins))
+        self.logger.debug("Loading managed plugins: %s" % ', '.join(managed_plugins))
 
     def instantiate_plugin(self, cls):
         p = cls(self, cls.descriptor)
@@ -449,12 +450,12 @@ class Core(object):
             p.process_data_response_event(msg)
             p.handle_data_response(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
 
-    def data_listener(self, dataStream):
+    def data_listener(self, data_stream):
         """
         Listener for data streams. Calls process_data_response() on each started plugin.
         """
         for p in self.plugins:
-            p.process_data_response(dataStream)
+            p.process_data_response(data_stream)
 
     # configuration & config channel methods
     def discovery_listener(self, msg):
@@ -530,12 +531,12 @@ class Core(object):
             """Call process_discovery_event() on each started plugin."""
             p.process_discovery_event(msg)
 
-    def config_listener(self, xxx_todo_changeme):
+    def config_listener(self, msg):
         """
         Listens for configurations on the configuration channel. If we get a
         changed version of the config (= new config on master node) we will exit.
         """
-        (new_config, sender_uuid) = xxx_todo_changeme
+        (new_config, sender_uuid) = msg
         if not self.config:
             try:
                 if not new_config['core']['debug']:
@@ -564,7 +565,7 @@ class Core(object):
                         self.logger.warning("Somehow, we sent a new config event if we already are the master! "
                                             "There is probably a problem in our config: %s" % (", ".join(cfg_diff)))
                     else:
-                        self.logger.debug("Recieved my own config probably after I sent it because of a node startup.")
+                        self.logger.debug("Received my own config probably after I sent it because of a node startup.")
 
                 elif self.master:
                     self.logger.warning("I thought I am the master, but things seemed to have changed. Exiting!")
@@ -581,10 +582,10 @@ class Core(object):
                 self.logger.info("The master node but not the config has changed.")
                 self.master_node = sender_uuid
 
-    # message channel methods
+    # msg channel methods
     def send_message(self, msg):
         """
-        Sends a message over the message channel.
+        Sends a msg over the msg channel.
         """
         self.message_channel.send(msg)
 
@@ -598,7 +599,7 @@ class Core(object):
         """
         Listener for messages. Calls process_message() on each started plugin.
         """
-        message = jamesmessage.JamesMessage(self, "received message")
+        message = jamesmessage.JamesMessage(self, "received msg")
         message.set(msg)
 
         for p in self.plugins:
@@ -614,24 +615,24 @@ class Core(object):
             self.logger.debug("Received persons_status update: %s. Saving it to core." % msg['persons_status'])
             self.persons_status = self.utils.convert_from_unicode(msg['persons_status'])
 
-    def send_persons_status(self, persons_status, pluginname):
+    def send_persons_status(self, persons_status, plugin_name):
         """
-        Call the distribution methon for persons states
+        Call the distribution method for persons states
         """
-        self.add_timeout(0, self.publish_persons_status_callback, persons_status, pluginname)
+        self.add_timeout(0, self.publish_persons_status_callback, persons_status, plugin_name)
 
-    def publish_persons_status_callback(self, persons_status, pluginname):
+    def publish_persons_status_callback(self, persons_status, plugin_name):
         """
         send the persons states over the persons_status channel.
         """
-        self.logger.debug('Publishing persons status update %s from plugin %s' % (persons_status, pluginname))
+        self.logger.debug('Publishing persons status update %s from plugin %s' % (persons_status, plugin_name))
         try:
             self.persons_status_channel.send({'persons_status': persons_status,
                                               'host': self.hostname,
-                                              'plugin': pluginname,
+                                              'plugin': plugin_name,
                                               'location': self.location})
         except Exception as e:
-            self.logger.warning("Could not send persons status (%s)" % (e))
+            self.logger.warning("Could not send persons status (%s)" % e)
 
     # proximity channel methods
     def proximity_listener(self, msg):
@@ -718,7 +719,8 @@ class Core(object):
         """
         send the new_status no_alarm_clock status over the no_alarm_clock channel.
         """
-        self.logger.debug("Publishing no_alarm_clock status update %s from plugin %s" % (new_status, no_alarm_clock_source))
+        self.logger.debug("Publishing no_alarm_clock status update %s from plugin %s" %
+                          (new_status, no_alarm_clock_source))
         try:
             self.no_alarm_clock_channel.send({'status': new_status,
                                               'host': self.hostname,
@@ -812,15 +814,15 @@ class Core(object):
             # if i hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = exc_tb.tb_frame.f_code.co_filename
-                self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+                file_name = exc_tb.tb_frame.f_code.co_filename
+                self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, file_name, exc_tb.tb_lineno, exc_type))
                 if self.core_lock.acquire(False):
                     self.logger.warning("Core lock acquired, releasing it for forced shutdown.")
                     self.core_lock.release()
                 self.terminate(1)
 
-        self.logger.debug("Exiting with return code (%s)" % self.returncode)
-        sys.exit(self.returncode)
+        self.logger.debug("Exiting with return code (%s)" % self.return_code)
+        sys.exit(self.return_code)
 
     def lock_core(self):
         self.core_lock.acquire()
@@ -828,17 +830,17 @@ class Core(object):
     def unlock_core(self):
         self.core_lock.release()
 
-    def terminate(self, returncode=0):
+    def terminate(self, return_code=0):
         """
         Terminate the core. This method will first call the terminate() method on each plugin.
         """
 
         # setting log level to debug, if not shutting down clean
-        if returncode:
+        if return_code:
             self.logger.setLevel(logging.DEBUG)
 
         if not self.terminated:
-            self.returncode = returncode
+            self.return_code = return_code
             self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             with Timeout(10):
@@ -857,7 +859,7 @@ class Core(object):
                 file = open(self.stats_file, 'w')
                 file.write(json.dumps(saveStats))
                 file.close()
-                self.logger.info("Saved stats to %s" % (self.stats_file))
+                self.logger.info("Saved stats to %s" % self.stats_file)
             except IOError:
                 if self.passive:
                     self.logger.info("Could not safe stats to file")
@@ -872,7 +874,7 @@ class Core(object):
                 file = open(self.proximity_state_file, 'w')
                 file.write(json.dumps(self.proximity_status.status[self.location]))
                 file.close()
-                self.logger.info("Saving proximity status to %s" % (self.proximity_state_file))
+                self.logger.info("Saving proximity status to %s" % self.proximity_state_file)
             except IOError:
                 if self.passive:
                     self.logger.info("Could not safe proximity status to file")
@@ -930,9 +932,9 @@ class Core(object):
                 break
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = exc_tb.tb_frame.f_code.co_filename
+                file_name = exc_tb.tb_frame.f_code.co_filename
                 self.logger.critical(
-                    "Exception 1 in process_timeouts: %s in %s:%s %s" % (e, fname, exc_tb.tb_lineno, exc_type))
+                    "Exception 1 in process_timeouts: %s in %s:%s %s" % (e, file_name, exc_tb.tb_lineno, exc_type))
 
         # Process events
         current_timeout = None
@@ -946,10 +948,10 @@ class Core(object):
             self.timeouts = [t for t in self.timeouts if t.deadline > now]
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = exc_tb.tb_frame.f_code.co_filename
+            file_name = exc_tb.tb_frame.f_code.co_filename
             self.logger.critical(
                 "Exception 2 in process_timeouts: %s in %s:%s %s > %s" %
-                (e, fname, exc_tb.tb_lineno, exc_type, current_timeout))
+                (e, file_name, exc_tb.tb_lineno, exc_type, current_timeout))
             self.logger.critical('timeout.seconds: %s' % current_timeout.seconds)
             self.logger.critical('timeout.handler: %s' % current_timeout.handler)
 
@@ -957,24 +959,24 @@ class Core(object):
             #
             self.timeouts.remove(current_timeout)
 
-    def spawnSubprocess(self, target, onExit, target_args=None, logger=None):
+    def spawn_subprocess(self, target, on_exit, target_args=None, logger=None):
         """
-        Spawns a subprocess with call target and calls onExit with the return
+        Spawns a subprocess with call target and calls on_exit with the return
         when finished
         """
         if not logger:
             logger = self.logger
         logger.debug('Spawning subprocess (%s)' % target)
 
-        def runInThread(target, onExit, target_args):
-            if target_args != None:
+        def run_in_thread(target, on_exit, target_args):
+            if target_args is not None:
                 self.logger.debug('Ending subprocess (%s)' % target)
-                self.add_timeout(0, onExit, target(target_args))
+                self.add_timeout(0, on_exit, target(target_args))
             else:
                 self.logger.debug('Ending subprocess (%s)' % target)
-                self.add_timeout(0, onExit, target())
+                self.add_timeout(0, on_exit, target())
 
-        thread = threading.Thread(target=runInThread, args=(target, onExit, target_args))
+        thread = threading.Thread(target=run_in_thread, args=(target, on_exit, target_args))
         thread.start()
         return thread
 
@@ -991,7 +993,7 @@ class Core(object):
     # def sighandler(self, signal, frame):
     #     self.logger.warning("Uncatched signal %s (%s)" % (self.signal_names[signal], signal))
 
-    #     message = self.new_message('sighandler')
-    #     message.level = 2
-    #     message.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
-    #     message.send()
+    #     msg = self.new_message('sighandler')
+    #     msg.level = 2
+    #     msg.header = "Uncaught SIGNAL detected on %s: %s (%s)" % (self.hostname, self.signal_names[signal], signal)
+    #     msg.send()

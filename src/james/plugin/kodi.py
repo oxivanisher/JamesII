@@ -1,4 +1,3 @@
-
 import json
 import uuid
 import http.client
@@ -32,17 +31,18 @@ class KodiPlugin(Plugin):
         self.connection_headers = {'Content-Type': 'application/json'}
         if auth_string:
             self.connection_headers["Authorization"] = "Basic {}".format(base64.b64encode(bytes(f"{auth_string}",
-                                                                                                "utf-8")).decode("ascii"))
+                                                                                                "utf-8")).decode(
+                "ascii"))
         self.updateNode = False
         if self.core.hostname in self.config['updatenodes']:
             self.updateNode = True
         self.load_state('updates', 0)
 
-        self.commands.create_subcommand('test', 'test message', self.get_active_player_details)
+        self.commands.create_subcommand('test', 'test msg', self.get_active_player_details)
 
     def send_rpc(self, method, params={}):
         id = str(uuid.uuid1())
-        rawData = [{"jsonrpc":"2.0", 'id':id, 'method':method, 'params':params}]
+        rawData = [{"jsonrpc": "2.0", 'id': id, 'method': method, 'params': params}]
 
         data = json.dumps(rawData)
         try:
@@ -62,7 +62,7 @@ class KodiPlugin(Plugin):
             return False
 
     def send_rpc_message(self, title, message):
-        return self.send_rpc("GUI.ShowNotification", {"title":title, "message":message})
+        return self.send_rpc("GUI.ShowNotification", {"title": title, "msg": message})
 
     def cmd_pause(self, args):
         playerId = self.get_active_player()
@@ -71,7 +71,7 @@ class KodiPlugin(Plugin):
             if self.get_active_player_details(playerId)['speed'] == 1:
                 pause = True
         if pause:
-            self.send_rpc("Player.PlayPause", {"playerid" : playerId})
+            self.send_rpc("Player.PlayPause", {"playerid": playerId})
             return ["Paused"]
         return ["Not paused"]
 
@@ -79,14 +79,14 @@ class KodiPlugin(Plugin):
         playerId = self.get_active_player()
         pause = False
         if playerId:
-            self.send_rpc("Player.PlayPause", {"playtogglederid" : playerId})
+            self.send_rpc("Player.PlayPause", {"playtogglederid": playerId})
             return ["Toggled"]
         return ["Not toggled"]
 
     def cmd_stop(self, args):
         playerId = self.get_active_player()
         if playerId:
-            self.send_rpc("Player.STOP", {"playerid" : playerId})
+            self.send_rpc("Player.STOP", {"playerid": playerId})
             return ["Stopped"]
         return ["Not stopped"]
 
@@ -139,7 +139,7 @@ class KodiPlugin(Plugin):
             body = ' '.join(body_list)
 
             if self.send_rpc_message(header, body):
-                self.logger.debug("Showing message: header (%s) body (%s)" % (header, body))
+                self.logger.debug("Showing msg: header (%s) body (%s)" % (header, body))
             else:
                 return ["Could not send notification."]
 
@@ -148,7 +148,7 @@ class KodiPlugin(Plugin):
             header = "%s@%s" % (plugin, host)
             body = ' '.join(self.utils.convert_from_unicode(args))
             if self.send_rpc_message(header, body):
-                self.logger.debug("Showing broadcast message: header (%s) body (%s)" % (header, body))
+                self.logger.debug("Showing broadcast msg: header (%s) body (%s)" % (header, body))
             else:
                 return ["Could not send notification."]
 
@@ -170,7 +170,7 @@ class KodiPlugin(Plugin):
 
         # get active item
         if player:
-            playItemRaw = self.send_rpc("Player.GetItem", {"playerid" : player})
+            playItemRaw = self.send_rpc("Player.GetItem", {"playerid": player})
 
             try:
                 fLabel = playItemRaw['result']['item']['label']
@@ -180,9 +180,9 @@ class KodiPlugin(Plugin):
                 if playItemRaw['result']['item']['type'] != 'unknown':
                     fId = playItemRaw['result']['item']['id']
 
-                return { 'label' : fLabel,
-                         'type'  : fType,
-                         'id'    : fId }
+                return {'label': fLabel,
+                        'type': fType,
+                        'id': fId}
             except TypeError:
                 pass
 
@@ -193,33 +193,38 @@ class KodiPlugin(Plugin):
             player = self.get_active_player()
 
         if player:
-            playItemRaw = self.send_rpc("Player.GetProperties", {"playerid" : player, "properties" : [ "speed", "percentage", "time", "totaltime" ] })
+            playItemRaw = self.send_rpc("Player.GetProperties", {"playerid": player,
+                                                                 "properties": ["speed", "percentage", "time",
+                                                                                "totaltime"]})
             try:
-                return { 'speed' : playItemRaw['result']['speed'],
-                         'percentage' : playItemRaw['result']['percentage'],
-                         'time' : playItemRaw['result']['time'],
-                         'totaltime' : playItemRaw['result']['totaltime'] }
+                return {'speed': playItemRaw['result']['speed'],
+                        'percentage': playItemRaw['result']['percentage'],
+                        'time': playItemRaw['result']['time'],
+                        'totaltime': playItemRaw['result']['totaltime']}
             except TypeError:
                 pass
 
         return False
 
-    def get_episode_details(self, epId):
-        episodeDBRaw = self.send_rpc("VideoLibrary.GetEpisodeDetails", {"episodeid" : epId, "properties" : ["episode", "showtitle", "season", "firstaired"]})
-        return { 'label' : episodeDBRaw['result']['episodedetails']['label'],
-                 'episode' : episodeDBRaw['result']['episodedetails']['episode'],
-                 'showtitle' : episodeDBRaw['result']['episodedetails']['showtitle'],
-                 'firstaired' : episodeDBRaw['result']['episodedetails']['firstaired'],
-                 'season' : episodeDBRaw['result']['episodedetails']['season'] }
+    def get_episode_details(self, ep_id):
+        episodeDBRaw = self.send_rpc("VideoLibrary.GetEpisodeDetails", {"episodeid": ep_id,
+                                                                        "properties": ["episode", "showtitle", "season",
+                                                                                       "firstaired"]})
+        return {'label': episodeDBRaw['result']['episodedetails']['label'],
+                'episode': episodeDBRaw['result']['episodedetails']['episode'],
+                'showtitle': episodeDBRaw['result']['episodedetails']['showtitle'],
+                'firstaired': episodeDBRaw['result']['episodedetails']['firstaired'],
+                'season': episodeDBRaw['result']['episodedetails']['season']}
 
-    def get_movie_details(self, movieId):
-        movieDBRaw = self.send_rpc("VideoLibrary.GetMovieDetails", {"movieid" : movieId, "properties" : ["year", "originaltitle"]})
-        return { 'year' : movieDBRaw['result']['moviedetails']['year'],
-                 'originaltitle' : movieDBRaw['result']['moviedetails']['originaltitle'] }
+    def get_movie_details(self, movie_id):
+        movieDBRaw = self.send_rpc("VideoLibrary.GetMovieDetails",
+                                   {"movieid": movie_id, "properties": ["year", "originaltitle"]})
+        return {'year': movieDBRaw['result']['moviedetails']['year'],
+                'originaltitle': movieDBRaw['result']['moviedetails']['originaltitle']}
 
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         self.logger.debug("Kodi Processing proximity event")
-        if not newstatus['status'][self.core.location]:
+        if not new_status['status'][self.core.location]:
             self.core.add_timeout(0, self.cmd_stop, None)
 
     def return_status(self, verbose=False):
@@ -268,7 +273,9 @@ class KodiPlugin(Plugin):
 
             elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
-                niceName = "%s S%02dE%02d %s (%s)" % (actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'], actDetails['firstaired'])
+                niceName = "%s S%02dE%02d %s (%s)" % (
+                actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'],
+                actDetails['firstaired'])
                 niceType = "Series"
 
             elif actType == 'movie':
@@ -280,12 +287,12 @@ class KodiPlugin(Plugin):
                     niceName = actDetails['originaltitle']
 
             niceTime = "%s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(actPercentage, 0),
-                                                           actTime['hours'],
-                                                           actTime['minutes'],
-                                                           actTime['seconds'],
-                                                           actTotaltime['hours'],
-                                                           actTotaltime['minutes'],
-                                                           actTotaltime['seconds'] )
+                                                             actTime['hours'],
+                                                             actTime['minutes'],
+                                                             actTime['seconds'],
+                                                             actTotaltime['hours'],
+                                                             actTotaltime['minutes'],
+                                                             actTotaltime['seconds'])
             if actSpeed == 0:
                 niceStatus = "Paused (%s)" % niceType
             if actSpeed == 1:
@@ -293,40 +300,30 @@ class KodiPlugin(Plugin):
             else:
                 niceStatus = "Playing at %sx (%s)" % (actSpeed, niceType)
 
-        ret = {}
-        ret['updates'] = self.updates
-        ret['niceName'] = niceName
-        ret['updateNode'] = self.updateNode
-        ret['actFile'] = actFile
-        ret['actId'] = actFileId
-        ret['actType'] = actType
-        ret['actDetails'] = actDetails
-        ret['actSpeed'] = actSpeed
-        ret['actPercentage'] = actPercentage
-        ret['actTime'] = actTime
-        ret['actTotaltime'] = actTotaltime
-        ret['niceStatus'] = niceStatus
-        ret['niceTime'] = niceTime
+        ret = {'updates': self.updates, 'niceName': niceName, 'updateNode': self.updateNode, 'actFile': actFile,
+               'actId': actFileId, 'actType': actType, 'actDetails': actDetails, 'actSpeed': actSpeed,
+               'actPercentage': actPercentage, 'actTime': actTime, 'actTotaltime': actTotaltime,
+               'niceStatus': niceStatus, 'niceTime': niceTime}
         return ret
 
 
 descriptor = {
-    'name' : 'kodi',
-    'help' : 'Kodi module',
-    'command' : 'kodi',
-    'mode' : PluginMode.MANAGED,
-    'class' : KodiPlugin,
-    'detailsNames' : { 'updates' : "Database updates initated",
-                       'niceName' : "Active nice name",
-                       'niceTime' : "Active nice time",
-                       'niceStatus' : "Active nice status",
-                       'updateNode' : "DB update node",
-                       'actSpeed' : "Active speed",
-                       'actPercentage' : "Active percentage",
-                       'actTime' : "Active time",
-                       'actTotaltime' : "Active totaltime",
-                       'actFile' : "Active file",
-                       'actId' : "Active id",
-                       'actType' : "Active type",
-                       'actDetails' : "Active details" }
+    'name': 'kodi',
+    'help_text': 'Kodi module',
+    'command': 'kodi',
+    'mode': PluginMode.MANAGED,
+    'class': KodiPlugin,
+    'detailsNames': {'updates': "Database updates initated",
+                     'niceName': "Active nice name",
+                     'niceTime': "Active nice time",
+                     'niceStatus': "Active nice status",
+                     'updateNode': "DB update node",
+                     'actSpeed': "Active speed",
+                     'actPercentage': "Active percentage",
+                     'actTime': "Active time",
+                     'actTotaltime': "Active totaltime",
+                     'actFile': "Active file",
+                     'actId': "Active id",
+                     'actType': "Active type",
+                     'actDetails': "Active details"}
 }

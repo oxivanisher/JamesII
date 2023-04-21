@@ -1,4 +1,3 @@
-
 from time import localtime, strftime
 
 from james.plugin import *
@@ -15,15 +14,17 @@ class MonitorPlugin(Plugin):
         self.max_file_cache = 20
         self.file_cache_name = os.path.join(os.path.expanduser("~"), ".james_monitor_log")
 
-        self.commands.create_subcommand('show', ('Shows the last %s messages' % self.max_message_cache), self.cmd_showlog)
-        self.commands.create_subcommand('save', ('Saves all cached messages to the log file.'), self.cmd_save_to_logfile)
+        self.commands.create_subcommand('show', ('Shows the last %s messages' % self.max_message_cache),
+                                        self.cmd_showlog)
+        self.commands.create_subcommand('save', 'Saves all cached messages to the log file.', self.cmd_save_to_logfile)
 
     def terminate(self):
         self.file_cache.append("%s JamesII is shuttind down." % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         self.save_log_to_disk()
 
     def start(self):
-        self.file_cache.append("%s JamesII started with (UUID %s)" % (strftime("%H:%M:%S %d.%m.%Y", localtime()), self.core.uuid))
+        self.file_cache.append("%s JamesII started with (UUID %s)" % (strftime("%H:%M:%S %d.%m.%Y", localtime()),
+                                                                      self.core.uuid))
         self.save_log_to_disk()
 
     def cmd_showlog(self, args):
@@ -57,7 +58,7 @@ class MonitorPlugin(Plugin):
             file = open(self.file_cache_name, 'a')
             file.write('\n'.join(self.utils.list_unicode_cleanup(self.file_cache)) + '\n')
             file.close()
-            self.logger.debug("Saving monitor log to %s" % (self.file_cache_name))
+            self.logger.debug("Saving monitor log to %s" % self.file_cache_name)
             self.file_cache = []
             return ["Monitor logfile saved"]
         except IOError:
@@ -65,57 +66,54 @@ class MonitorPlugin(Plugin):
 
     def process_message(self, message):
         self.process_event(("%s@%s" % (message.sender_name, message.sender_host)),
-                            "New Message",
-                            ("L%s %s; %s" % (message.level, message.header, message.body)))
+                           "New Message",
+                           ("L%s %s; %s" % (message.level, message.header, message.body)))
 
-    def process_proximity_event(self, newstatus):
-        self.process_event(("%s@%s" % (newstatus['plugin'], newstatus['host'])),
-                            "Proximity Event",
-                            ("%s: %s" % (newstatus['location'], newstatus['status'][newstatus['location']])))
+    def process_proximity_event(self, new_status):
+        self.process_event(("%s@%s" % (new_status['plugin'], new_status['host'])),
+                           "Proximity Event",
+                           ("%s: %s" % (new_status['location'], new_status['status'][new_status['location']])))
 
     def process_command_request_event(self, command):
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
-                            "Command Request",
-                            ("%s (%s)" % (' '.join(command['body']), command['uuid'])))
+                           "Command Request",
+                           ("%s (%s)" % (' '.join(command['body']), command['uuid'])))
 
     def process_command_response_event(self, command):
-        bytes = 0
+        bytes_count = 0
+        lines = 0
         try:
             for line in command['body']:
-                bytes += len(line)
+                bytes_count += len(line)
                 lines = len(command['body'])
         except TypeError:
-            bytes = 1
+            bytes_count = 1
             lines = 1
             pass
 
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
-                            "Command Response",
-                            ("Lines: %s; Bytes: %s (%s)" % (lines, bytes, command['uuid'])))
+                           "Command Response",
+                           ("Lines: %s; Bytes: %s (%s)" % (lines, bytes_count, command['uuid'])))
 
     def process_discovery_event(self, msg):
-        events = ['hello', 'byebye', 'shutdown'] #'ping', 'pong'
+        events = ['hello', 'byebye', 'shutdown']  # 'ping', 'pong'
         if msg[0] in events:
-           self.process_event(("core@%s" % (msg[1])),
+            self.process_event(("core@%s" % (msg[1])),
                                "Discovery Event",
                                ("%s (%s)" % (msg[0], msg[2])))
 
     def process_event(self, who, what, payload):
-        message = {}
-        message['who'] = who
-        message['what'] = what
-        message['payload'] = payload
-        message['timestamp'] = localtime()
+        message = {'who': who, 'what': what, 'payload': payload, 'timestamp': localtime()}
 
-        formated_output = self.format_output(message)
-        print(self.process_log_message(formated_output))
+        formatted_output = self.format_output(message)
+        print(self.process_log_message(formatted_output))
 
 
 descriptor = {
-    'name' : 'monitor',
-    'help' : 'Console monitor plugin',
-    'command' : 'mon',
-    'mode' : PluginMode.MANAGED,
-    'class' : MonitorPlugin,
-    'detailsNames' : {}
+    'name': 'monitor',
+    'help_text': 'Console monitor plugin',
+    'command': 'mon',
+    'mode': PluginMode.MANAGED,
+    'class': MonitorPlugin,
+    'detailsNames': {}
 }

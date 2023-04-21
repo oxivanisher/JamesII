@@ -1,4 +1,3 @@
-
 from . import jamesutils
 
 
@@ -8,10 +7,10 @@ class CommandNotFound(Exception):
 
 class Command(object):
 
-    def __init__(self, name, help='', handler=None, hide=False):
+    def __init__(self, name, help_text='', handler=None, hide=False):
         self.parent = None
         self.name = name
-        self.help = help
+        self.help = help_text
         self.handler = handler
         self.hide = hide
         self.subcommands = {}
@@ -21,8 +20,8 @@ class Command(object):
         del result['handler']
         return result
 
-    def __setstate__(self, dict):
-        self.__dict__ = dict
+    def __setstate__(self, my_dict):
+        self.__dict__ = my_dict
         self.handler = None
 
         # repair parent links
@@ -45,8 +44,8 @@ class Command(object):
             self.subcommands[subcommand.name] = subcommand
 
     # creates a new subcommand and returns reference to it
-    def create_subcommand(self, name, help, handler, hide=False):
-        cmd = Command(name, help, handler, hide)
+    def create_subcommand(self, name, help_text, handler, hide=False):
+        cmd = Command(name, help_text, handler, hide)
         return self.add_subcommand(cmd)
 
     # remove a subcommand so plugins can unregister their default commands
@@ -110,7 +109,7 @@ class Command(object):
         for subcommand in list(self.subcommands.keys()):
             return_list.append({
                 'name': self.subcommands[subcommand].name,
-                'help': self.subcommands[subcommand].help,
+                'help_text': self.subcommands[subcommand].help,
                 'hide': self.subcommands[subcommand].hide
                 })
         return return_list

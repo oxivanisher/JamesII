@@ -1,4 +1,3 @@
-
 import transmissionrpc
 
 from james.plugin import *
@@ -24,7 +23,7 @@ class TransmissionPlugin(Plugin):
         self.commands.create_subcommand('add', 'Adds a URL to download', self.cmd_add)
         self.commands.create_subcommand('start', 'Restart a torrent', self.cmd_start)
         self.commands.create_subcommand('force', 'Force download a torrent', self.cmd_force)
-        self.commands.create_subcommand('stop', 'Stopps a torrent', self.cmd_stop)
+        self.commands.create_subcommand('stop', 'Stops a torrent', self.cmd_stop)
         self.commands.create_subcommand('remove', 'Removes a torrent', self.cmd_remove)
         self.commands.create_subcommand('test', 'Checks if the connection to the transmission host is working',
                                         self.cmd_test_connection)
@@ -191,11 +190,11 @@ class TransmissionPlugin(Plugin):
                         self.tr_conn.remove(torrent_id)
                         self.finishedTorrents += 1
             except ValueError:
-                self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
+                self.logger.warning("FIXME: Strange ValueError occurred. FIX ME MASTER!")
             except transmissionrpc.error.TransmissionError as e:
-                self.logger.warning("TransmissionError occured: %s" % e)
+                self.logger.warning("TransmissionError occurred: %s" % e)
             except Exception as e:
-                self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER!")
+                self.logger.warning("FIXME: Strange Exception occurred. FIX ME MASTER!")
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):
@@ -218,8 +217,7 @@ class TransmissionPlugin(Plugin):
         return ' '.join(new_words)
 
     def return_status(self, verbose = False):
-        ret = {}
-        ret['connected'] = False
+        ret = {'connected': False}
         if self.connection_ok():
             ret['connected'] = True
         ret['addedTorrents'] = self.addedTorrents
@@ -228,7 +226,7 @@ class TransmissionPlugin(Plugin):
 
 descriptor = {
     'name' : 'transmission',
-    'help' : 'Transmission control plugin',
+    'help_text' : 'Transmission control plugin',
     'command' : 'tr',
     'mode' : PluginMode.MANAGED,
     'class' : TransmissionPlugin,

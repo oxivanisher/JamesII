@@ -1,4 +1,3 @@
-
 import threading
 import sys
 import readline
@@ -15,7 +14,7 @@ class ConsoleThread(threading.Thread):
         super(ConsoleThread, self).__init__()
         self.plugin = plugin
         self.terminated = False
-        self.logger = self.plugin.utils.getLogger('thread', self.plugin.logger)
+        self.logger = self.plugin.utils.get_logger('thread', self.plugin.logger)
     
         self.keywords = []
 
@@ -37,8 +36,8 @@ class ConsoleThread(threading.Thread):
     def run(self):
 
         self.logger.info("Interactive cli interface to JamesII (%s:%s) online." % (
-                         self.plugin.core.brokerconfig['host'],
-                         self.plugin.core.brokerconfig['port']))
+                         self.plugin.core.broker_config['host'],
+                         self.plugin.core.broker_config['port']))
 
         while (not self.terminated):
             self.plugin.worker_lock.acquire()
@@ -75,14 +74,14 @@ class ConsoleThread(threading.Thread):
                     else:
                         best_match = self.plugin.core.ghost_commands.get_best_match(args)
                         if best_match == self.plugin.core.ghost_commands:
-                            self.plugin.commands.process_args(['help'] + args)
+                            self.plugin.commands.process_args(['help_text'] + args)
                         else:
                             if len(best_match.subcommands) > 0:
-                                self.plugin.commands.process_args(['help'] + args)
+                                self.plugin.commands.process_args(['help_text'] + args)
                             else:
                                 self.plugin.send_command(args)
             else:
-                print("Enter 'help' for a list of available commands.")
+                print("Enter 'help_text' for a list of available commands.")
 
     def terminate(self):
        self.terminated = True
@@ -138,11 +137,11 @@ class CliPlugin(Plugin):
 
         self.commands.hide = True
         self.commands.create_subcommand('exit', 'Quits the console', self.cmd_exit)
-        self.commands.create_subcommand('help', 'List this help', self.cmd_help)
-        self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
+        self.commands.create_subcommand('help_text', 'List this help_text', self.cmd_help)
+        self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
         self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
         self.commands.create_subcommand('allstatus', 'Request all node states', self.cmd_request_nodes_details)
-        self.commands.create_subcommand('broadcast', 'Send test broadcast message', self.cmd_send_broadcast)
+        self.commands.create_subcommand('broadcast', 'Send test broadcast msg', self.cmd_send_broadcast)
 
     def start(self):
         if self.cmd_line_mode:
@@ -250,7 +249,7 @@ class CliPlugin(Plugin):
 
 descriptor = {
     'name' : 'cli',
-    'help' : 'Command line interface plugin',
+    'help_text' : 'Command line interface plugin',
     'command' : 'cli',
     'mode' : PluginMode.MANUAL,
     'class' : CliPlugin,

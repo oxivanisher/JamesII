@@ -1,4 +1,3 @@
-
 import time
 
 from james.plugin import *
@@ -44,16 +43,16 @@ class WakeOnLanPlugin(Plugin):
             self.utils.wake_on_lan(host)
             return ["waking %s (%s)" % (args[0], host)]
 
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         if (time.time() - self.core.startup_timestamp) > 10:
-            if newstatus['status'][self.core.location]:
+            if new_status['status'][self.core.location]:
                 self.logger.debug("Processing proximity event")
 
                 # finding out, which persons are home - sadly, this is currently NOT possible since only the proximity
                 # node knows this
                 # isHere = []
                 # for person in self.core.persons_status.keys():
-                #     self.logger.debug(newstatus['status'][self.core.location])
+                #     self.logger.debug(new_status['status'][self.core.location])
                 #     if self.core.persons_status[person]:
                 #         isHere.append(person)
                 # self.logger.debug("Persons detected here: %s" % (", ".join(isHere)))
@@ -65,17 +64,16 @@ class WakeOnLanPlugin(Plugin):
                     ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
                 self.logger.info(ret)
 
-    def return_status(self, verbose = False):
-        ret = {}
-        ret['wakeups'] = self.wakeups
+    def return_status(self, verbose=False):
+        ret = {'wakeups': self.wakeups}
         return ret
 
 
 descriptor = {
-    'name' : 'wakeonlan',
-    'help' : 'Wake on lan plugin',
-    'command' : 'wol',
-    'mode' : PluginMode.MANAGED,
-    'class' : WakeOnLanPlugin,
-    'detailsNames' : { 'wakeups' : "Sent wakeups" }
+    'name': 'wakeonlan',
+    'help_text': 'Wake on lan plugin',
+    'command': 'wol',
+    'mode': PluginMode.MANAGED,
+    'class': WakeOnLanPlugin,
+    'detailsNames': {'wakeups': "Sent wakeups"}
 }

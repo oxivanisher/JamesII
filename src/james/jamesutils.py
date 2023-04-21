@@ -1,13 +1,9 @@
-
 import time
 import datetime
 import pytz
 import socket
 import struct
-try:
-    from collections.abc import Mapping, Iterable
-except ImportError: # Python 2.7 compatibility
-    from collections import Mapping, Iterable
+from collections.abc import Mapping, Iterable
 import subprocess
 import logging
 import re
@@ -17,7 +13,7 @@ class JamesUtils(object):
 
     def __init__(self, core):
         self.core = core
-        self.listUnicodeCleanuptmp = []
+        self.list_unicode_cleanup_tmp = []
 
     def get_short_age(self, timestamp):
         age = int(time.time() - timestamp)
@@ -28,21 +24,21 @@ class JamesUtils(object):
         if age == 0:
             return ''
         elif age < 60:
-            return '%ss' % (age)
-        elif age > 59 and age < 3600:
+            return '%ss' % age
+        elif 59 < age < 3600:
             return '%sm' % (int(age / 60))
-        elif age >= 3600 and age < 86400:
+        elif 3600 <= age < 86400:
             return '%sh' % (int(age / 3600))
-        elif age >= 86400 and age < 604800:
+        elif 86400 <= age < 604800:
             return '%sd' % (int(age / 86400))
-        elif age >= 604800 and age < 31449600:
+        elif 604800 <= age < 31449600:
             return '%sw' % (int(age / 604800))
         else:
             return '%sy' % (int(age / 31449600))
 
     def get_nice_age(self, timestamp):
         age = int(time.time() - timestamp)
-        intime = int(timestamp - time.time())
+        in_time = int(timestamp - time.time())
 
         fmt = '%Y-%m-%d %H:%M:%S %Z%z'
         timezone = pytz.timezone(self.core.config['core']['timezone'])
@@ -64,53 +60,53 @@ class JamesUtils(object):
             return 'just now'
 
         # FIXME 2 if bloecke fuer zukunft und vergangenheit
-        elif age < 60 and age >= 0:
+        elif 60 > age >= 0:
             if age == 1:
-                return '%s second ago' % (age)
+                return '%s second ago' % age
             else:
-                return '%s seconds ago' % (age)
-        elif age < 3600 and age >= 0:
+                return '%s seconds ago' % age
+        elif 3600 > age >= 0:
             if (int(age / 60)) == 1:
                 return '%s minute ago' % (int(age / 60))
             else:
                 return '%s minutes ago' % (int(age / 60))
-        elif intime < 60 and intime >= 0:
-            if intime == 1:
-                return 'in %s second' % (intime)
+        elif 60 > in_time >= 0:
+            if in_time == 1:
+                return 'in %s second' % in_time
             else:
-                return 'in %s seconds' % (intime)
-        elif intime < 3600 and intime >= 0:
-            if int(intime / 60) == 1:
+                return 'in %s seconds' % in_time
+        elif 3600 > in_time >= 0:
+            if int(in_time / 60) == 1:
                 minute_str = 'minute'
             else:
                 minute_str = 'minutes'
 
-            if int(intime % 60) == 1:
+            if int(in_time % 60) == 1:
                 second_str = 'second'
             else:
                 second_str = 'seconds'
 
-            return 'in %s %s and %s %s' % (int(intime / 60), minute_str, int(intime % 60), second_str)
+            return 'in %s %s and %s %s' % (int(in_time / 60), minute_str, int(in_time % 60), second_str)
 
-        elif event_timestamp > last_midnight_timestamp and event_timestamp < (last_midnight_timestamp + 86400):
+        elif last_midnight_timestamp < event_timestamp < (last_midnight_timestamp + 86400):
             return 'today at %s:%s:%s' % (event.strftime('%H'),
                                           event.strftime('%M'),
                                           event.strftime('%S'))
-        elif event_timestamp > (last_midnight_timestamp - 86400) and event_timestamp < now_timestamp:
+        elif (last_midnight_timestamp - 86400) < event_timestamp < now_timestamp:
             return 'yesterday at %s:%s:%s' % (event.strftime('%H'),
                                               event.strftime('%M'),
                                               event.strftime('%S'))
-        elif age <= 604800 and age >= 0:
+        elif 604800 >= age >= 0:
             return event.strftime('last %A')
-        elif event_timestamp > past_newyear_timestamp and event_timestamp < now_timestamp:
+        elif past_newyear_timestamp < event_timestamp < now_timestamp:
             return event.strftime('this year at %A the %d of %B at %H:%M:%S')
-        elif event_timestamp >= next_midnight_timestamp and event_timestamp < (next_midnight_timestamp + 86400):
+        elif next_midnight_timestamp <= event_timestamp < (next_midnight_timestamp + 86400):
             return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
                                              event.strftime('%M'),
                                              event.strftime('%S'))
-        elif intime <= 604800 and intime >= 0:
+        elif 604800 >= in_time >= 0:
             return event.strftime('next %A at %H:%M:%S')
-        elif event_timestamp > future_newyear_timestamp and event_timestamp < (
+        elif future_newyear_timestamp < event_timestamp < (
                 future_newyear_timestamp + 31556952):  # NOT leap year save!
             return event.strftime('next year on %A the %d of %B at %H:%M:%S')
 
@@ -120,13 +116,9 @@ class JamesUtils(object):
     def duration_string2seconds(self, args):
         wait_seconds = 0
 
-        timeToStrings = []
-        timeToStrings.append((1, ['second', 'seconds']))
-        timeToStrings.append((60, ['minute', 'minutes']))
-        timeToStrings.append((3600, ['hour', 'hours']))
-        timeToStrings.append((86400, ['day', 'days']))
-        timeToStrings.append((604800, ['week', 'weeks']))
-        for (multiplier, strings) in timeToStrings:
+        time_to_strings = [(1, ['second', 'seconds']), (60, ['minute', 'minutes']), (3600, ['hour', 'hours']),
+                           (86400, ['day', 'days']), (604800, ['week', 'weeks'])]
+        for (multiplier, strings) in time_to_strings:
             for string in strings:
                 if string in args:
                     index = args.index(string)
@@ -146,7 +138,7 @@ class JamesUtils(object):
         except IndexError:
             return False
         except ValueError:
-            wait_secondsStart = wait_seconds
+            wait_seconds_start = wait_seconds
             matched = re.findall(r'(\d+)([smhdw])', args[0])
             for (digit, multiplier_id) in matched:
                 if multiplier_id == 's':
@@ -162,10 +154,10 @@ class JamesUtils(object):
                 else:
                     found = False
 
-            if wait_secondsStart != wait_seconds:
+            if wait_seconds_start != wait_seconds:
                 args.pop(0)
 
-        return (wait_seconds, args)
+        return wait_seconds, args
 
     def time_string2seconds(self, arg):
         # converts 12:22 and 12:22:33 into seconds
@@ -184,15 +176,15 @@ class JamesUtils(object):
                 hours = int(data[0])
         except Exception as e:
             pass
-        return (hours * 3600 + minutes * 60 + int(seconds))
+        return hours * 3600 + minutes * 60 + int(seconds)
 
     def date_string2values(self, arg):
         # converts yyyy-mm-dd into [yyyy, mm, dd]
         try:
             data = arg.split('-')
             if int(data[0]) > 2020:
-                if int(data[1]) > 0 and int(data[1]) < 13:
-                    if int(data[2]) > 0 and int(data[2]) < 32:
+                if 0 < int(data[1]) < 13:
+                    if 0 < int(data[2]) < 32:
                         return [int(data[0]), int(data[1]), int(data[2])]
         except Exception as e:
             return False
@@ -215,7 +207,7 @@ class JamesUtils(object):
         return "%sB" % n
 
     def wake_on_lan(self, macaddress):
-        logger = self.getLogger('jamesutils', self.core.logger)
+        logger = self.get_logger('jamesutils', self.core.logger)
         logger.debug('Wake on lan called for (%s)' % macaddress)
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """
@@ -257,41 +249,41 @@ class JamesUtils(object):
         try:
             args = [s.strip() for s in data]
         except UnicodeDecodeError as e:
-            if self.listUnicodeCleanuptmp != data:
-                logger = self.getLogger('jamesutils')
+            if self.list_unicode_cleanup_tmp != data:
+                logger = self.get_logger('jamesutils')
                 logger.warning("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
-                self.listUnicodeCleanuptmp = data
+                self.list_unicode_cleanup_tmp = data
             args = data
 
         args = [s for s in args if s != '']
         return args
 
-    def popenAndWait(self, command):
+    def popen_and_wait(self, command):
         """
         Runs the given command in a subprocess but will not spawn a subprocess.
         """
-        logger = self.getLogger('jamesutils', self.core.logger)
+        logger = self.get_logger('jamesutils', self.core.logger)
         logger.debug('popenAndWait: %s' % command)
         ret = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE).communicate()[0]
         return ret.decode('UTF-8').split("\n")
 
-    def getLogger(self, name, parent=None):
+    def get_logger(self, name, parent=None):
 
         if parent:
             return parent.getChild(name)
         else:
             # %(module)s
-            file_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(message)s')
-            screen_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
+            file_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(msg)s')
+            screen_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(msg)s')
 
             log = logging.getLogger(name)
             log.setLevel(logging.INFO)
 
             # screen handler
-            streamhandler = logging.StreamHandler()
-            streamhandler.setLevel(logging.DEBUG)
-            streamhandler.setFormatter(screen_formatter)
-            log.addHandler(streamhandler)
+            stream_handler = logging.StreamHandler()
+            stream_handler.setLevel(logging.DEBUG)
+            stream_handler.setFormatter(screen_formatter)
+            log.addHandler(stream_handler)
 
             # file handler
             try:
@@ -331,16 +323,16 @@ class JamesUtils(object):
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C
 # https://stackoverflow.com/questions/39146039/pickle-typeerror-a-bytes-like-object-is-required-not-str
 class StrToBytes:
-    def __init__(self, fileobj):
-        self.fileobj = fileobj
+    def __init__(self, file_object):
+        self.file_object = file_object
 
     def read(self, size):
-        # return self.fileobj.read(size).encode()
-        return self.fileobj.read(size)
+        # return self.file_object.read(size).encode()
+        return self.file_object.read(size)
 
     def readline(self, size=-1):
-        # return self.fileobj.readline(size).encode()
-        return self.fileobj.readline(size)
+        # return self.file_object.readline(size).encode()
+        return self.file_object.readline(size)
 
 
 def cmp(a, b):

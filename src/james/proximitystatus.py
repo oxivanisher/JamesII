@@ -1,4 +1,3 @@
-
 import copy
 
 
@@ -12,10 +11,10 @@ class ProximityStatus(object):
     #     if self.status[self.core.location] != value:
     #         self.core.proximity_event(value, plugin)
 
-    def update_and_return_status_here(self, newstatus, proximity_type):
-        if not len(newstatus):
+    def update_and_return_status_here(self, new_status, proximity_type):
+        if not len(new_status):
             self.core.logger.error("ProximityStatus.update_and_check_status empty: %s from %s" %
-                                   (newstatus, proximity_type))
+                                   (new_status, proximity_type))
 
         # calculate state before applying the new information
         state_before = False
@@ -24,7 +23,7 @@ class ProximityStatus(object):
                 state_before = True
 
         # apply the new state internally
-        self.internal_states[proximity_type] = newstatus[self.core.location]
+        self.internal_states[proximity_type] = new_status[self.core.location]
 
         # calculate state after applying the new information
         state_after = False
@@ -33,8 +32,8 @@ class ProximityStatus(object):
                 state_after = True
 
         # apply new "global" state after the proximity_type state is saved internally
-        newstatus[self.core.location] = state_after
-        self.status = newstatus
+        new_status[self.core.location] = state_after
+        self.status = new_status
 
         # if required, fire new event and return the new state
         if state_before != state_after:
@@ -47,7 +46,7 @@ class ProximityStatus(object):
         return self.status
 
     def check_for_change(self, proximity_type):
-        newstatus = copy.deepcopy(self.status)
+        new_status = copy.deepcopy(self.status)
 
         # If the proximity_type is not known, ensure it exists
         if proximity_type not in list(self.internal_states.keys()):
@@ -59,8 +58,8 @@ class ProximityStatus(object):
             if self.internal_states[plugin]:
                 ret = True
 
-        newstatus[self.core.location] = ret
-        return newstatus
+        new_status[self.core.location] = ret
+        return new_status
 
     def get_status_here(self):
         if self.core.location in list(self.status.keys()):

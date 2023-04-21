@@ -50,6 +50,7 @@ class BroadcastChannel(object):
         self.listeners.append(handler)
 
     def close(self):
+        self.listeners = []
         self.channel.close()
 
 #FIXME add class for send and recv handlers

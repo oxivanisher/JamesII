@@ -820,6 +820,9 @@ class Core(object):
                 self.terminate(1)
 
         self.logger.debug("Exiting with return code (%s)" % self.returncode)
+        self.logger.debug("Closing all RabbitMQ channels")
+        for channel in self.rabbitmq_channels:
+            channel.close()
         sys.exit(self.returncode)
 
     def lock_core(self):
@@ -902,10 +905,6 @@ class Core(object):
             else:
                 self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
                                  threading.active_count())
-
-            self.logger.info("Closing all RabbitMQ channels")
-            for channel in self.rabbitmq_channels:
-                channel.close()
 
             self.terminated = True
 

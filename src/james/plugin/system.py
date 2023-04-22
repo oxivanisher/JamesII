@@ -119,7 +119,7 @@ class SystemPlugin(Plugin):
             message.level = 2
             message.send()
 
-            self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
+            self.core.terminate()
 
     def cmd_quit_all_nodes(self, args):
         if self.core.master:

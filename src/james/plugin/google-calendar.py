@@ -75,15 +75,14 @@ class GoogleCalendarPlugin(Plugin):
     def fetch_events(self, calendar_id, page_token=None):
         events = {}
 
-        tStart = datetime.datetime.now(self.timeZone)
-        tEnd = datetime.datetime.now(self.timeZone)
+        datetime_now = datetime.datetime.now(self.timeZone)
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,
                                                 singleEvents=True,
-                                                timeMin=tStart.strftime('%Y-%m-%dT00:00:00') + "+00:00",
-                                                timeMax=tEnd.strftime('%Y-%m-%dT23:59:59') + "+00:00",
+                                                timeMin=datetime_now.strftime('%Y-%m-%dT00:00:00') + "+00:00",
+                                                timeMax=datetime_now.strftime('%Y-%m-%dT23:59:59') + "+00:00",
                                                 orderBy='startTime').execute()
             self.eventFetches += 1
         except Exception as e:
@@ -92,22 +91,24 @@ class GoogleCalendarPlugin(Plugin):
                 return False
             else:
                 self.logger.error("Event fetching error: %s" % e)
+
+        self.logger.debug("fetch_events returns: %s" % events)
         return events
 
     def get_calendar_ids(self):
-        personClientIds = {}
+        person_client_ids = {}
         for person in self.core.persons_status:
             self.logger.debug("Found person: %s" % person)
-            personClientIds[person] = []
+            person_client_ids[person] = []
             try:
                 if self.core.persons_status[person]:
                     for calendarId in self.core.config['persons'][person]['gcals']:
-                        personClientIds[person].append(calendarId)
+                        person_client_ids[person].append(calendarId)
                         self.logger.debug("Found calendar: %s" % calendarId)
             except KeyError:
                 pass
-        self.logger.debug("getCalendarIds: %s" % personClientIds)
-        return personClientIds
+        self.logger.debug("get_calendar_ids returns: %s" % person_client_ids)
+        return person_client_ids
 
     def request_events(self, show=True):
         self.logger.debug("requestEvents from google calendar")
@@ -119,7 +120,7 @@ class GoogleCalendarPlugin(Plugin):
             self.event_cache = []
             person_client_ids = self.get_calendar_ids()
 
-            for person in list(person_client_ids.keys()):
+            for person in person_client_ids.keys():
                 self.logger.debug("Fetching calendars for person: %s" % person)
                 for calendar in person_client_ids[person]:
                     self.logger.debug("Fetching calendar: %s" % calendar)

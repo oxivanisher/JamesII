@@ -45,7 +45,7 @@ try:
     config = james.config.YamlConfig(cfgFile).get_values()
 except IOError:
     print("Unable to load config")
-    sys.quit(1)
+    sys.exit(1)
 
 if not config['port']:
     config['port'] = 3306

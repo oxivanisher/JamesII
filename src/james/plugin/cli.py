@@ -54,11 +54,11 @@ class ConsoleThread(threading.Thread):
                 # http://bytes.com/topic/python/answers/43936-canceling-interrupting-raw_input
                 self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
-                break
+                continue
             except EOFError:
                 self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
-                break
+                continue
 
             line = line.strip()
 

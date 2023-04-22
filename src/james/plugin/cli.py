@@ -191,8 +191,6 @@ class CliPlugin(Plugin):
 
     def cmd_exit(self, args):
         self.terminate()
-        self.core.terminate()
-        return True
 
     def cmd_message(self, args):
         message_string = ' '.join(args)

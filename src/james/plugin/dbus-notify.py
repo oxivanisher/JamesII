@@ -4,6 +4,8 @@ import dbus
 
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 # this plugin is based on http://code.google.com/p/spotify-notify/
 

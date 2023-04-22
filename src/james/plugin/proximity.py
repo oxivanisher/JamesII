@@ -8,6 +8,8 @@ from bluetooth import *
 
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 # FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
 # where do we keep the store of mac addresses? objects, objects, objects
@@ -51,6 +53,9 @@ class ProximityPlugin(Plugin):
         self.proxy_send_lock = False
         self.load_saved_state()
 
+        self.proximityChecks = 0
+        self.proximityUpdates = 0
+        self.alwaysAtHome = False
         self.load_state('proximityChecks', 0)
         self.load_state('proximityUpdates', 0)
         self.load_state('alwaysAtHome', False)

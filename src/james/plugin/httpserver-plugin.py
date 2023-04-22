@@ -7,6 +7,8 @@ from storm.expr import *
 import james
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 # http://stackoverflow.com/questions/713847/recommendations-of-python-rest-web-services-framework
 # http://docs.python.org/2/library/socketserver.html
@@ -107,7 +109,7 @@ class HttpServerPlugin(Plugin):
         except Exception as e:
             pass
         try:
-            self.store.execute("CREATE TABLE hostnames (uuid VARCHAR(255) UNIQUE, \
+            self.store.execute("CREATE TABLE hostnames (my_uuid VARCHAR(255) UNIQUE, \
                                                          hostname TEXT)", noresult=True)
         except Exception as e:
             pass
@@ -136,7 +138,7 @@ class HttpServerPlugin(Plugin):
         try:
             self.store.execute("CREATE TABLE status (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
                                                       time INTEGER, \
-                                                      uuid TEXT, \
+                                                      my_uuid TEXT, \
                                                       plugin TEXT, \
                                                       data TEXT)", noresult=True)
         except Exception as e:
@@ -229,7 +231,7 @@ class HttpServerPlugin(Plugin):
 
 descriptor = {
     'name': 'httpserver-plugin',
-    'help_text': 'Webfrontend for JamesII',
+    'help_text': 'Web-frontend for JamesII',
     'command': 'http',
     'mode': PluginMode.MANAGED,
     'class': HttpServerPlugin,

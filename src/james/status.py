@@ -1,3 +1,6 @@
+from src.james.proximitystatus import ProximityStatus
+
+
 class Status(object):
 
     def __init__(self, name):
@@ -11,11 +14,11 @@ class Status(object):
         self.listeners.remove(handler)
 
 
-class AvatarStatus(Status):
-
-    def __init__(self, name):
-        super(ProximityStatus, self).__init__("proximity")
-        self.status = {'home': False}
+# class AvatarStatus(Status):
+#
+#     def __init__(self, name):
+#         super(ProximityStatus, self).__init__("proximity")
+#         self.status = {'home': False}
 
 
 class Person(object):

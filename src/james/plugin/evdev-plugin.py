@@ -1,7 +1,11 @@
+import threading
+
 import evdev
 import time
 
 from james.plugin import *
+
+from src.james.plugin import PluginMode, PluginThread, Plugin
 
 
 class EvdevThread(PluginThread):
@@ -14,7 +18,7 @@ class EvdevThread(PluginThread):
         self.name = "%s > Device: %s" % (self.name, evdev_device)
 
     def work(self):
-        blocking = 0
+        # blocking = 0
         run = 1
         try:
             while run:
@@ -52,6 +56,7 @@ class EvdevPlugin(Plugin):
         list_command.create_subcommand('rcv', 'Will return all watched IR signals', self.cmd_list_rcv)
 
         self.workerLock = threading.Lock()
+        self.commandsReceived = 0
         self.workerRunning = True
 
         for path, name, phys in self.get_all_devices():

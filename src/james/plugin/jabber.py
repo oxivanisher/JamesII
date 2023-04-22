@@ -1,8 +1,12 @@
+import threading
+
 import xmpp
 import sys
 import time
 
 from james.plugin import *
+
+from src.james.plugin import PluginThread, Plugin, PluginMode
 
 
 # http://xmpppy.sourceforge.net/
@@ -149,7 +153,7 @@ class JabberThread(PluginThread):
 
             res = self.conn.Process(1)
             if res == '0':
-                # Nothing happend, everything is ok
+                # Nothing happened, everything is ok
                 pass
             elif res == 0:
                 self.logger.debug("Underlying connection is closed on processing incoming stanzas")
@@ -163,11 +167,12 @@ class JabberThread(PluginThread):
             self.logger.info("Error %s on processing incoming stanzas. Disconnecting" % e)
             self.xmpp_disconnect()
 
-        if not self.conn.isConnected(): self.xmpp_disconnect()
+        if not self.conn.isConnected():
+            self.xmpp_disconnect()
 
         self.plugin.worker_lock.acquire()
 
-        # see if i must shut myself down
+        # see if I must shut myself down
         if self.plugin.worker_exit:
             self.active = False
         # see if we must send muc messages
@@ -215,7 +220,7 @@ class JabberThread(PluginThread):
                     # broadcast msg to every user
                     # muc_send = False
                     for (jid, name) in self.users:
-                        # see if user is in muc online an then send it there only
+                        # see if user is in muc online and then send it there only
                         for mucJid in list(self.muc_users.keys()):
                             try:
                                 online_jid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
@@ -261,7 +266,8 @@ class JabberThread(PluginThread):
         return message
 
     def go_on(self):
-        while self.step_on(): pass
+        while self.step_on():
+            pass
 
     # callback handlers
     def message_callback(self, conn, message):
@@ -293,7 +299,7 @@ class JabberThread(PluginThread):
                     self.logger.warning(
                         "The bug hunt is on: Got a msg from %s in groupchat" % (self.muc_users[message.getFrom()]))
                 except Exception as e:
-                    self.logger.debug("RealJID's DB: %s" % (self.muc_users))
+                    self.logger.debug("RealJID's DB: %s" % self.muc_users)
                     self.logger.info("Received MUC msg from non online user: %s (%s)" % (who, e))
             elif message_type == 'chat':
                 try:
@@ -357,14 +363,14 @@ class JabberThread(PluginThread):
         if prs_type == 'subscribe':
             self.conn.send(xmpp.Presence(to=who, typ='subscribed'))
             self.conn.send(xmpp.Presence(to=who, typ='subscribe'))
-        elif prs_type == 'presence':
-            self.logger.debug("::: %s" % msg.__getitem__('jid'))
+        # elif prs_type == 'presence':
+        #     self.logger.debug("::: %s" % msg.__getitem__('jid'))
         elif prs_type == 'unavailable':
             self.logger.debug("Remove online user: %s" % who)
             try:
                 del self.muc_users[who]
             except Exception as e:
-                self.logger.debug("Remove online user error: %s" % (e))
+                self.logger.debug("Remove online user error: %s" % e)
         else:
             if presence.getJid():
                 if who != "%s/%s" % (self.muc_room, self.muc_nick):
@@ -552,7 +558,7 @@ class JabberPlugin(Plugin):
                     pass
                 except AttributeError:
                     self.logger.warning("The bug hunt is on: Got a muc_nic msg (%s) from %s" % (message.getBody(),
-                                                                                                    jid_from))
+                                                                                                jid_from))
 
     def on_error_msg(self, message):
         self.logger.error("Received error msg: %s" % message)

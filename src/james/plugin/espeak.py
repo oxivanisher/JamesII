@@ -7,6 +7,8 @@ import os
 
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 class EspeakPlugin(Plugin):
 
@@ -22,6 +24,7 @@ class EspeakPlugin(Plugin):
 
         self.archived_messages = []
         self.message_cache = []
+        self.messagesSpoke = 0
         self.talkover = False
         self.load_state('messagesSpoke', 0)
 
@@ -236,7 +239,7 @@ class EspeakPlugin(Plugin):
                 except Exception:
                     pass
 
-        nicetime = time.strftime("%H:%M", time.localtime())
+        # nicetime = time.strftime("%H:%M", time.localtime())
 
         if (time.time() - self.core.startup_timestamp) > 10:
             if len(isHere):

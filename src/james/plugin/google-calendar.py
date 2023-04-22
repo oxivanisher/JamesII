@@ -11,6 +11,8 @@ from googleapiclient.discovery import build
 
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 class GoogleCalendarPlugin(Plugin):
 
@@ -23,6 +25,8 @@ class GoogleCalendarPlugin(Plugin):
 
         self.timeZone = pytz.timezone(self.core.config['core']['timezone'])
 
+        self.eventFetches = 0
+        self.eventsFetched = 0
         self.load_state('eventFetches', 0)
         self.load_state('eventsFetched', 0)
 
@@ -66,7 +70,7 @@ class GoogleCalendarPlugin(Plugin):
         now = datetime.datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight = int(
-            86400 - seconds_since_midnight + 30)  # adding 30 seconds just to be sure its the next day
+            86400 - seconds_since_midnight + 30)  # adding 30 seconds just to be sure it's the next day
         self.logger.debug("Google calendar was just fetched. Will fetch again in %s seconds" % seconds_until_midnight)
         self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
@@ -134,7 +138,7 @@ class GoogleCalendarPlugin(Plugin):
                             self.event_cache.append((person, event))
                         page_token = events.get('nextPageToken')
                         if page_token:
-                            events = getEvents(calendar, page_token)
+                            events = self.fetch_events(calendar, page_token)
                         else:
                             break
 

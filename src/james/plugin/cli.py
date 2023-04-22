@@ -6,6 +6,8 @@ import atexit
 
 from james.plugin import *
 
+from src.james.plugin import PluginMode, Plugin
+
 
 class ConsoleThread(threading.Thread):
 
@@ -44,8 +46,7 @@ class ConsoleThread(threading.Thread):
             if self.plugin.worker_exit:
                 self.plugin.worker_lock.release()
                 self.terminated = True
-                sys.quit()
-                break
+                sys.exit()
             self.plugin.worker_lock.release()
 
             # check for keyboard interrupt

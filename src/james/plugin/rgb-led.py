@@ -1,6 +1,10 @@
+import time
+
 from smbus2 import SMBus
 
 from james.plugin import *
+
+from src.james.plugin import Plugin, PluginMode
 
 
 class RGBLEDPlugin(Plugin):
@@ -15,6 +19,7 @@ class RGBLEDPlugin(Plugin):
         self.commands.create_subcommand('fire', 'Show fire', self.cmd_fire)
         self.commands.create_subcommand('off', 'Switch LEDs off', self.cmd_off)
 
+        self.sunrises = 0
         self.load_state('sunrises', 0)
 
         self.bus = SMBus(1)
@@ -36,7 +41,7 @@ class RGBLEDPlugin(Plugin):
             self.sunrise()
             return ["Sunrise enabled"]
         else:
-            msg="Sunrise not activated. You are not here."
+            msg = "Sunrise not activated. You are not here."
             self.logger.info(msg)
             return [msg]
 
@@ -45,7 +50,7 @@ class RGBLEDPlugin(Plugin):
             self.color(args)
             return ["Fixed color set to %s" % ', '.join(args)]
         else:
-            msg="Fixed color not activated. You are not here."
+            msg = "Fixed color not activated. You are not here."
             self.logger.info(msg)
             return [msg]
 
@@ -54,7 +59,7 @@ class RGBLEDPlugin(Plugin):
             self.fade(args)
             return ["Fade to color %s" % ', '.join(args)]
         else:
-            msg="Fade to color not activated. You are not here."
+            msg = "Fade to color not activated. You are not here."
             self.logger.info(msg)
             return [msg]
 
@@ -63,7 +68,7 @@ class RGBLEDPlugin(Plugin):
             self.rainbow(args)
             return ["Show rainbow colors"]
         else:
-            msg="Rainbow not activated. You are not here."
+            msg = "Rainbow not activated. You are not here."
             self.logger.info(msg)
             return [msg]
 
@@ -72,7 +77,7 @@ class RGBLEDPlugin(Plugin):
             self.fire(args)
             return ["Show fire"]
         else:
-            msg="Fire not activated. You are not here."
+            msg = "Fire not activated. You are not here."
             self.logger.info(msg)
             return [msg]
 

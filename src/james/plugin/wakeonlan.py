@@ -2,6 +2,8 @@ import time
 
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 class WakeOnLanPlugin(Plugin):
 
@@ -20,6 +22,7 @@ class WakeOnLanPlugin(Plugin):
         self.commands.create_subcommand('list', 'Lists available wol target hosts', self.wol_list)
         self.commands.create_subcommand('wake', 'Wakes up a given host (hostname)', self.wol_wake)
 
+        self.wakeups = 0
         self.load_state('wakeups', 0)
 
     def wol_list(self, args):

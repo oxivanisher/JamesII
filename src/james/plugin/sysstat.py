@@ -3,6 +3,8 @@ import psutil
 
 from james.plugin import *
 
+from src.james.plugin import Plugin, PluginMode
+
 
 class SysstatPlugin(Plugin):
 

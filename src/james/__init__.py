@@ -408,16 +408,16 @@ class Core(object):
         self.plugins.append(p)
 
     # command channel methods
-    def send_request(self, uuid, name, body, host, plugin):
+    def send_request(self, my_uuid, name, body, host, my_plugin):
         """Sends a request."""
         self.add_timeout(0, self.request_channel.send,
-                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
-        # self.request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+                         {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+        # self.request_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
-    def send_response(self, uuid, name, body, host, plugin):
+    def send_response(self, my_uuid, name, body, host, my_plugin):
         self.add_timeout(0, self.response_channel.send,
-                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
-        # self.response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+                         {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+        # self.response_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def request_listener(self, msg):
         for p in self.plugins:
@@ -430,16 +430,16 @@ class Core(object):
             p.handle_response(msg['uuid'], msg['name'], msg['body'], msg['host'], msg['plugin'])
 
     # data channel methods
-    def send_data_request(self, uuid, name, body, host, plugin):
+    def send_data_request(self, my_uuid, name, body, host, my_plugin):
         """Sends a data request."""
         self.add_timeout(0, self.data_request_channel.send,
-                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
-        # self.data_request_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+                         {'my_uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+        # self.data_request_channel.send({'my_uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
-    def send_data_response(self, uuid, name, body, host, plugin):
+    def send_data_response(self, my_uuid, name, body, host, my_plugin):
         self.add_timeout(0, self.data_response_channel.send,
-                         {'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
-        # self.data_response_channel.send({'uuid': uuid, 'name': name, 'body': body, 'host': host, 'plugin': plugin})
+                         {'my_uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+        # self.data_response_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def data_request_listener(self, msg):
         for p in self.plugins:
@@ -463,12 +463,12 @@ class Core(object):
         """Manages the discovery channel messages."""
         if msg[0] == 'hello':
             """This host just joined us."""
-            show_message = True
-            try:
-                if not self.config['core']['debug']:
-                    show_message = False
-            except TypeError as e:
-                pass
+            # show_message = True
+            # try:
+            #     if not self.config['core']['debug']:
+            #         show_message = False
+            # except TypeError as e:
+            #     pass
 
             # register node in nodes_online
             args = self.utils.list_unicode_cleanup(msg)
@@ -812,7 +812,7 @@ class Core(object):
                 self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
 
-            # if i hang with threads or subthreads or stuff, comment the following block!
+            # if I hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 file_name = exc_tb.tb_frame.f_code.co_filename

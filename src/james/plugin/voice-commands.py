@@ -22,6 +22,8 @@ import atexit
 
 from james.plugin import *
 
+from src.james.plugin import PluginMode, PluginThread, Plugin
+
 
 class VoiceThread(PluginThread):
 
@@ -241,9 +243,11 @@ class VoiceCommandsPlugin(Plugin):
         self.workerLock = threading.Lock()
         self.workerRunning = True
         self.workerWorking = False
+        self.bytesSubmitted = 0
         self.load_state('bytesSubmitted', 0)
         self.playSounds = []
         self.playBeeps = []
+        self.unknownWords = []
         self.load_state('unknownWords', [])
 
         self.voiceThread = VoiceThread(self,
@@ -305,11 +309,11 @@ class VoiceCommandsPlugin(Plugin):
         niceData = self.utils.convert_from_unicode(text_data)
 
         for decodedTextData in niceData['hypotheses']:
-            confidence = decodedTextData['confidence']
+            # confidence = decodedTextData['confidence']
             rawText = decodedTextData['utterance']
             rawTextList = rawText.lower().split()
-            filteredList = []
-            keywordFound = False
+            # filteredList = []
+            # keywordFound = False
 
             self.logger.debug("Detected text: %s" % ' '.join(rawTextList))
             replacedWords = []

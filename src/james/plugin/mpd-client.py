@@ -1,18 +1,23 @@
-import urllib.request, urllib.error, urllib.parse
-import time
-import mpd
 import signal
 import socket
+import threading
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
+import mpd
 from james.plugin import *
+
+from src.james.plugin import PluginThread, Plugin, PluginMode
 
 
 class PersistentMPDClient(mpd.MPDClient):
     # this class is from here: https://github.com/bdutro/PersistentMPDClient/blob/master/PersistentMPDClient.py
 
-    def __init__(self, socket=None, host=None, port=None):
+    def __init__(self, my_socket=None, host=None, port=None):
         super(PersistentMPDClient, self).__init__()
-        self.socket = socket
+        self.socket = my_socket
         self.host = host
         self.port = port
 
@@ -298,7 +303,7 @@ class MpdClientWorker(object):
             except Exception:
                 return False
 
-            if volume >= 0 and volume <= 100:
+            if 0 <= volume <= 100:
                 self.client.setvol(volume)
                 self.unlock()
                 self.logger.debug("Set volume to %s" % volume)
@@ -345,7 +350,7 @@ class FadeThread(PluginThread):
         self.logger.debug("Fading started working")
 
         run = True
-        loopcount = 0
+        loop_count = 0
         vol_steps = self.start_volume - int(self.target_vol)
         if vol_steps == 0:
             return
@@ -363,7 +368,7 @@ class FadeThread(PluginThread):
 
         while run:
             step_count += 1
-            loopcount += 1
+            loop_count += 1
 
             self.mpd_client.lock()
             fade_state = self.plugin.fade_in_progress
@@ -427,9 +432,14 @@ class MpdClientPlugin(Plugin):
 
         talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
         talkover_command.create_subcommand('on', 'Activate talkover', self.activate_talkover)
-        talkover_command.create_subcommand('off', 'Deavtivate talkover', self.deactivate_talkover)
+        talkover_command.create_subcommand('off', 'Deactivate talkover', self.deactivate_talkover)
         talkover_command.create_subcommand('toggle', 'Toggles talkover', self.toggle_talkover)
 
+        self.radioStarted = 0
+        self.wakeups = 0
+        self.noises = 0
+        self.sleeps = 0
+        self.fades = 0
         self.load_state('radioStarted', 0)
         self.load_state('wakeups', 0)
         self.load_state('noises', 0)

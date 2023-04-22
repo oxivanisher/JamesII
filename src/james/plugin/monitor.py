@@ -1,6 +1,9 @@
+import os
 from time import localtime, strftime
 
 from james.plugin import *
+
+from src.james.plugin import Plugin, PluginMode
 
 
 class MonitorPlugin(Plugin):
@@ -19,7 +22,7 @@ class MonitorPlugin(Plugin):
         self.commands.create_subcommand('save', 'Saves all cached messages to the log file.', self.cmd_save_to_logfile)
 
     def terminate(self):
-        self.file_cache.append("%s JamesII is shuttind down." % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
+        self.file_cache.append("%s JamesII is shutting down." % (strftime("%Y-%m-%d %H:%M:%S", localtime())))
         self.save_log_to_disk()
 
     def start(self):
@@ -77,7 +80,7 @@ class MonitorPlugin(Plugin):
     def process_command_request_event(self, command):
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                            "Command Request",
-                           ("%s (%s)" % (' '.join(command['body']), command['uuid'])))
+                           ("%s (%s)" % (' '.join(command['body']), command['my_uuid'])))
 
     def process_command_response_event(self, command):
         bytes_count = 0
@@ -93,7 +96,7 @@ class MonitorPlugin(Plugin):
 
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                            "Command Response",
-                           ("Lines: %s; Bytes: %s (%s)" % (lines, bytes_count, command['uuid'])))
+                           ("Lines: %s; Bytes: %s (%s)" % (lines, bytes_count, command['my_uuid'])))
 
     def process_discovery_event(self, msg):
         events = ['hello', 'byebye', 'shutdown']  # 'ping', 'pong'

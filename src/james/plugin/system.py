@@ -8,6 +8,8 @@ from datetime import timedelta
 
 from james.plugin import *
 
+from src.james.plugin import PluginMode, Plugin
+
 
 class SystemPlugin(Plugin):
 
@@ -67,7 +69,7 @@ class SystemPlugin(Plugin):
             message = self.core.new_message(self.name)
             message.level = 2
             message.header = (
-                        "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
+                    "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
             message.send()
 
         except IOError:
@@ -138,7 +140,7 @@ class SystemPlugin(Plugin):
             hostname = self.core.nodes_online[uuid]
             try:
                 nodes_online_dict[hostname]
-            except:
+            except Exception:
                 nodes_online_dict[hostname] = 0
             nodes_online_dict[hostname] += 1
 
@@ -216,7 +218,7 @@ class SystemPlugin(Plugin):
                     args = request[1:]
 
             try:
-                srcUuid = command['uuid']
+                srcUuid = command['my_uuid']
                 runCommand = self.command_aliases[request[0]].split() + args
                 self.send_command(runCommand, srcUuid)
                 self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(runCommand)))
@@ -226,7 +228,7 @@ class SystemPlugin(Plugin):
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
 
     def return_status(self, verbose=False):
-        core_data = {'master': self.core.master, 'uuid': self.core.uuid, 'ip': self.get_ip([]),
+        core_data = {'master': self.core.master, 'my_uuid': self.core.uuid, 'ip': self.get_ip([]),
                      'startupTimestamp': self.core.startup_timestamp, 'fqdn': socket.getfqdn(),
                      'location': self.core.location, 'platform': sys.platform, 'osUsername': self.core.os_username,
                      'now': time.time(), 'proximityStatus': self.core.proximity_status.get_status_here(),
@@ -241,7 +243,7 @@ descriptor = {
     'mode': PluginMode.AUTOLOAD,
     'class': SystemPlugin,
     'detailsNames': {'master': "Master mode",
-                     'uuid': "UUID",
+                     'my_uuid': "UUID",
                      'ip': "IPs",
                      'startupTimestamp': "JamesII Startup",
                      'fqdn': "Fully qualified domain name",

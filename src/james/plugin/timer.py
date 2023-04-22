@@ -7,6 +7,8 @@ import datetime
 
 from james.plugin import *
 
+from src.james.plugin import PluginMode, Plugin
+
 
 class TimerPlugin(Plugin):
 
@@ -15,7 +17,7 @@ class TimerPlugin(Plugin):
 
         self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [yyyy-mm-dd])',
                                         self.cmd_timer_at)
-        self.commands.create_subcommand('remove', 'Delets a command (id)', self.cmd_timer_remove)
+        self.commands.create_subcommand('remove', 'Deletes a command (id)', self.cmd_timer_remove)
         self.commands.create_subcommand('in', 'Runs a command in given time (sec|1s2m3h4d5w)', self.cmd_timer_in)
         self.commands.create_subcommand('show', 'Returns a list of commands', self.cmd_timer_show)
 
@@ -25,6 +27,7 @@ class TimerPlugin(Plugin):
         self.saved_commands = []
         self.load_saved_commands()
 
+        self.commandsRun = 0
         self.load_state('commandsRun', 0)
 
     def start(self):
@@ -63,9 +66,9 @@ class TimerPlugin(Plugin):
     def cmd_timer_at(self, args):
         timezone = pytz.timezone(self.core.config['core']['timezone'])
         target_time = datetime.datetime.now(timezone)
-        day = 0
-        month = 0
-        year = 0
+        # day = 0
+        # month = 0
+        # year = 0
         target_timestamp = None
         try:
             target_timestamp = int(args[0])
@@ -135,7 +138,7 @@ class TimerPlugin(Plugin):
     def timer_at(self, timestamp, command):
         # self.saved_commands.append(( timestamp, self.utils.list_unicode_cleanup(command) ))
         self.logger.info('Saved command (%s) %s with timestamp (%s)' % (
-        ' '.join(command), self.utils.get_nice_age(timestamp), timestamp))
+            ' '.join(command), self.utils.get_nice_age(timestamp), timestamp))
         self.saved_commands.append((timestamp, command))
         return ("Saved Command (%s) %s" % (' '.join(command),
                                            self.utils.get_nice_age(timestamp)))

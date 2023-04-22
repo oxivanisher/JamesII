@@ -5,8 +5,6 @@ import time
 
 from james.plugin import *
 
-from src.james.plugin import PluginMode, PluginThread, Plugin
-
 
 class EvdevThread(PluginThread):
 

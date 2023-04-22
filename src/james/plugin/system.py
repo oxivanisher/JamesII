@@ -8,8 +8,6 @@ from datetime import timedelta
 
 from james.plugin import *
 
-from src.james.plugin import PluginMode, Plugin
-
 
 class SystemPlugin(Plugin):
 

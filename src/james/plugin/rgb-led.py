@@ -4,8 +4,6 @@ from smbus2 import SMBus
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class RGBLEDPlugin(Plugin):
 

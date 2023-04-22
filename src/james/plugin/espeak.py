@@ -7,8 +7,6 @@ import os
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class EspeakPlugin(Plugin):
 

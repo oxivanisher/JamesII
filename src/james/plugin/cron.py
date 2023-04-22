@@ -6,8 +6,6 @@ from datetime import datetime
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 # from: http://stackoverflow.com/questions/373335/suggestions-for-a-cron-like-scheduler-in-python
 # Some utility classes / functions first

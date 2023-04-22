@@ -6,8 +6,6 @@ import time
 
 from james.plugin import *
 
-from src.james.plugin import PluginThread, Plugin, PluginMode
-
 
 # http://xmpppy.sourceforge.net/
 # http://stackoverflow.com/questions/3528373/how-to-create-muc-and-send-messages-to-existing-muc-using-python-and-xmpp

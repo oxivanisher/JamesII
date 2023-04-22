@@ -11,8 +11,6 @@ from googleapiclient.discovery import build
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class GoogleCalendarPlugin(Plugin):
 

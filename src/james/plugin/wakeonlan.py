@@ -2,8 +2,6 @@ import time
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class WakeOnLanPlugin(Plugin):
 

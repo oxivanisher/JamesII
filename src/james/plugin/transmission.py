@@ -2,8 +2,6 @@ import transmissionrpc
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 # https://bitbucket.org/blueluna/transmissionrpc/wiki/Home
 

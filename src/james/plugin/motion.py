@@ -7,8 +7,6 @@ import ntpath
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class MotionPlugin(Plugin):
 

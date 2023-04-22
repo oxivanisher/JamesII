@@ -3,8 +3,6 @@ from time import localtime, strftime
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class MonitorPlugin(Plugin):
 

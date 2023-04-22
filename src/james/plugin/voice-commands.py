@@ -22,8 +22,6 @@ import atexit
 
 from james.plugin import *
 
-from src.james.plugin import PluginMode, PluginThread, Plugin
-
 
 class VoiceThread(PluginThread):
 

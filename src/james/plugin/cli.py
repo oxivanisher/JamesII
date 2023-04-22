@@ -6,8 +6,6 @@ import atexit
 
 from james.plugin import *
 
-from src.james.plugin import PluginMode, Plugin
-
 
 class ConsoleThread(threading.Thread):
 

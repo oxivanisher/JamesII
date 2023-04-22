@@ -7,8 +7,6 @@ import datetime
 
 from james.plugin import *
 
-from src.james.plugin import PluginMode, Plugin
-
 
 class TimerPlugin(Plugin):
 

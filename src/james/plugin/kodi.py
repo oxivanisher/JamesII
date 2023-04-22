@@ -5,8 +5,6 @@ import base64
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 class KodiPlugin(Plugin):
 

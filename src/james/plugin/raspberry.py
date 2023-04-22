@@ -5,8 +5,6 @@ import math
 
 from james.plugin import *
 
-from src.james.plugin import PluginMode, Plugin, PluginThread
-
 
 class BlinkLed(object):
     # LED blink class, returns true when finished

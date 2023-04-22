@@ -7,8 +7,6 @@ from storm.expr import *
 import james
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 # http://stackoverflow.com/questions/713847/recommendations-of-python-rest-web-services-framework
 # http://docs.python.org/2/library/socketserver.html

@@ -8,8 +8,6 @@ from bluetooth import *
 
 from james.plugin import *
 
-from src.james.plugin import Plugin, PluginMode
-
 
 # FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
 # where do we keep the store of mac addresses? objects, objects, objects

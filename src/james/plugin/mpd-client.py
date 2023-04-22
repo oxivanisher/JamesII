@@ -9,8 +9,6 @@ import urllib.request
 import mpd
 from james.plugin import *
 
-from src.james.plugin import PluginThread, Plugin, PluginMode
-
 
 class PersistentMPDClient(mpd.MPDClient):
     # this class is from here: https://github.com/bdutro/PersistentMPDClient/blob/master/PersistentMPDClient.py

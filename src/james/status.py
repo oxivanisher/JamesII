@@ -1,6 +1,3 @@
-from src.james.proximitystatus import ProximityStatus
-
-
 class Status(object):
 
     def __init__(self, name):

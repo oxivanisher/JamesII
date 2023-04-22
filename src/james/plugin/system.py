@@ -30,7 +30,8 @@ class SystemPlugin(Plugin):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
-        self.commands.create_subcommand('quit-node', 'Supply node name to quit this node', self.cmd_quit_node)
+        self.commands.create_subcommand('quit-node', 'Quit supplied node name(s)', self.cmd_quit_node)
+        self.commands.create_subcommand('quit-all-nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
@@ -112,10 +113,20 @@ class SystemPlugin(Plugin):
             return ["Message could not be sent (%s)" % e]
 
     def cmd_quit_node(self, args):
-        message = self.core.new_message(self.name)
-        message.header = "Bye bye, james is shutting down."
-        message.level = 2
-        message.send()
+        if self.core.hostname in args:
+            message = self.core.new_message(self.name)
+            message.header = "Bye bye, james node %s is shutting down." % self.core.hostname
+            message.level = 2
+            message.send()
+
+            self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
+
+    def cmd_quit_all_nodes(self, args):
+        if self.core.master:
+            message = self.core.new_message(self.name)
+            message.header = "Bye bye, all james nodes are shutting down."
+            message.level = 2
+            message.send()
 
         self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
 

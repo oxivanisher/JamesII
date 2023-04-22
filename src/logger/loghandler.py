@@ -60,7 +60,7 @@ class RecordSaverWorkerThread(threading.Thread):
                                                             exc_info TEXT, \
                                                             levelname TEXT, \
                                                             hostname TEXT, \
-                                                            my_uuid TEXT, \
+                                                            uuid TEXT, \
                                                             plugin TEXT, \
                                                             p_child TEXT)", noresult=True))
             # print "Table created"

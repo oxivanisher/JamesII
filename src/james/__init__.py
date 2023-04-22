@@ -433,12 +433,12 @@ class Core(object):
     def send_data_request(self, my_uuid, name, body, host, my_plugin):
         """Sends a data request."""
         self.add_timeout(0, self.data_request_channel.send,
-                         {'my_uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
-        # self.data_request_channel.send({'my_uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+                         {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+        # self.data_request_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def send_data_response(self, my_uuid, name, body, host, my_plugin):
         self.add_timeout(0, self.data_response_channel.send,
-                         {'my_uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
+                         {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
         # self.data_response_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def data_request_listener(self, msg):

@@ -51,6 +51,7 @@ class ConsoleThread(threading.Thread):
 
             # check for keyboard interrupt
             try:
+                # this is the reason the cli does not exit on ctrl+c without pressing enter
                 line = input()
             except KeyboardInterrupt:
                 # http://bytes.com/topic/python/answers/43936-canceling-interrupting-raw_input
@@ -160,6 +161,8 @@ class CliPlugin(Plugin):
         if self.console_thread:
             self.console_thread.terminate()
 
+        self.core.add_timeout(0, self.core.terminate)
+
     def cmd_request_nodes_details(self, args):
         self.send_command(['sys', 'allstatus'])
 
@@ -190,9 +193,8 @@ class CliPlugin(Plugin):
         return True
 
     def cmd_exit(self, args):
+        self.logger.info("Cli exiting")
         self.terminate()
-        self.core.terminate()
-        sys.exit()
 
     def cmd_message(self, args):
         message_string = ' '.join(args)

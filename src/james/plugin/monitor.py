@@ -78,7 +78,7 @@ class MonitorPlugin(Plugin):
     def process_command_request_event(self, command):
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                            "Command Request",
-                           ("%s (%s)" % (' '.join(command['body']), command['my_uuid'])))
+                           ("%s (%s)" % (' '.join(command['body']), command['uuid'])))
 
     def process_command_response_event(self, command):
         bytes_count = 0
@@ -94,7 +94,7 @@ class MonitorPlugin(Plugin):
 
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),
                            "Command Response",
-                           ("Lines: %s; Bytes: %s (%s)" % (lines, bytes_count, command['my_uuid'])))
+                           ("Lines: %s; Bytes: %s (%s)" % (lines, bytes_count, command['uuid'])))
 
     def process_discovery_event(self, msg):
         events = ['hello', 'byebye', 'shutdown']  # 'ping', 'pong'

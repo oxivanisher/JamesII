@@ -45,6 +45,7 @@ class ConsoleThread(threading.Thread):
                 self.plugin.worker_lock.release()
                 self.terminated = True
                 self.plugin.worker_lock.release()
+                quit()
                 continue
             else:
                 self.plugin.worker_lock.release()

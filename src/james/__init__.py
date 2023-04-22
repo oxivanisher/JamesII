@@ -572,7 +572,7 @@ class Core(object):
                     self.terminate()
                 else:
                     if self.config != new_config:
-                        self.logger.warning("Received config from master. Reloading config on all plugins.")
+                        self.logger.warning("Received new config from master. Reloading config on all plugins.")
                         self.config = new_config
                         for p in self.plugins:
                             p.reload_config()

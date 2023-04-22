@@ -44,7 +44,7 @@ class ConsoleThread(threading.Thread):
             if self.plugin.worker_exit:
                 self.plugin.worker_lock.release()
                 self.terminated = True
-                sys.exit()
+                continue
             self.plugin.worker_lock.release()
 
             # check for keyboard interrupt

@@ -20,6 +20,7 @@ class RecordSaverWorkerThread(threading.Thread):
         self.recordsaver = recordsaver
         self.terminated = False
         self.connecting = True
+        self.name = "RecordSaver: %s" % self.__class__.__name__
 
     def connect_db(self):
         if not self.config['port']:

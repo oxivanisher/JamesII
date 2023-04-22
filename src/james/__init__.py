@@ -82,6 +82,7 @@ class ThreadedCore(threading.Thread):
         self.utils = jamesutils.JamesUtils(self.core)
         self.internalLogger = self.utils.get_logger('ThreadedCore', self.core.logger)
         self.internalLogger.info('Initialized')
+        self.name = "ThreadedCore: %s" % self.__class__.__name__
 
     def get_logger(self, name):
         return self.utils.get_logger('ext_' + name, self.core.logger)
@@ -976,7 +977,8 @@ class Core(object):
                 self.logger.debug('Ending subprocess (%s)' % target)
                 self.add_timeout(0, on_exit, target())
 
-        thread = threading.Thread(target=run_in_thread, args=(target, on_exit, target_args))
+        thread = threading.Thread(name="%s %s" % (target, target_args), target=run_in_thread,
+                                  args=(target, on_exit, target_args))
         thread.start()
         return thread
 

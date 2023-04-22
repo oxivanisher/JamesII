@@ -43,8 +43,9 @@ class ConsoleThread(threading.Thread):
             self.plugin.worker_lock.acquire()
             if self.plugin.worker_exit:
                 self.plugin.worker_lock.release()
+                self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
-                break
+                continue
             else:
                 self.plugin.worker_lock.release()
 
@@ -189,6 +190,7 @@ class CliPlugin(Plugin):
         return True
 
     def cmd_exit(self, args):
+        self.terminate()
         self.core.terminate()
         return True
 

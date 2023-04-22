@@ -13,8 +13,8 @@ class PersistentMPDClient(mpd.MPDClient):
     def __init__(self, socket=None, host=None, port=None):
         super(PersistentMPDClient, self).__init__()
         self.socket = socket
-        self.host   = host
-        self.port   = port
+        self.host = host
+        self.port = port
 
         self.do_connect()
         # get list of available commands from client
@@ -49,6 +49,7 @@ class PersistentMPDClient(mpd.MPDClient):
             except (mpd.ConnectionError, OSError) as e:
                 self.do_connect()
             return cmd_fun(*pargs, **kwargs)
+
         return fun
 
     # needs a name that does not collide with parent connect() function
@@ -153,7 +154,7 @@ class MpdClientWorker(object):
                 self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
-#                self.client.close()
+        #                self.client.close()
 
         except Exception as e:
             self.client.close()
@@ -329,7 +330,7 @@ class FadeThread(PluginThread):
         self.target_vol = target_vol
         self.name = "%s > Created: %s" % (self.name, self.utils.get_time_string())
 
-        #calc fade_time
+        # calc fade_time
         self.mpd_client.lock()
         self.plugin.fade_in_progress = True
         self.mpd_client.unlock()
@@ -412,12 +413,16 @@ class MpdClientPlugin(Plugin):
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
         self.commands.create_subcommand('noise', 'Start mpd noise mode', self.mpd_noise)
 
-        radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
-        radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
+        radio_command = self.commands.create_subcommand('radio', 'Control the web radio', None)
+        radio_on_command = radio_command.create_subcommand('on',
+                                                           'Turn the radio on [station] default %s ' % self.config[
+                                                               'default_st'], self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
-        radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'], self.mpd_sleep)
-        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'], self.mpd_wakeup)
+        radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'],
+                                        self.mpd_sleep)
+        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'],
+                                        self.mpd_wakeup)
         radio_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
 
         talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
@@ -547,7 +552,7 @@ class MpdClientPlugin(Plugin):
             else:
                 self.radio_off(None)
                 self.client_worker.play_url(self.stations[self.config['sleep_st']],
-                                        int(self.config['norm_volume']) - self.config['sleep_volume_reduction'])
+                                            int(self.config['norm_volume']) - self.config['sleep_volume_reduction'])
 
                 self.thread = FadeThread(self,
                                          self.client_worker,
@@ -705,18 +710,18 @@ class MpdClientPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'mpd-client',
-    'help_text' : 'Interface to mpd via python-mpc2 lib',
-    'command' : 'mpd',
-    'mode' : PluginMode.MANAGED,
-    'class' : MpdClientPlugin,
-    'detailsNames' : { 'state' : "Player status",
-                       'title'  : "Title",
-                       'name'  : "Name",
-                       'volume' : "Volume",
-                       'radioStarted' : "Radio started",
-                       'wakeups' : "Wakeups",
-                       'noises' : "Noises",
-                       'sleeps' : "Sleeps",
-                       'fades' : "Fades" }
+    'name': 'mpd-client',
+    'help_text': 'Interface to mpd via python-mpc2 lib',
+    'command': 'mpd',
+    'mode': PluginMode.MANAGED,
+    'class': MpdClientPlugin,
+    'detailsNames': {'state': "Player status",
+                     'title': "Title",
+                     'name': "Name",
+                     'volume': "Volume",
+                     'radioStarted': "Radio started",
+                     'wakeups': "Wakeups",
+                     'noises': "Noises",
+                     'sleeps': "Sleeps",
+                     'fades': "Fades"}
 }

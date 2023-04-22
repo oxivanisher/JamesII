@@ -152,16 +152,19 @@ class RaspberryThread(PluginThread):
                     button_state_changed = False
 
                 # button is newly pressed
-                if button_state_changed and self.pin_state_cache['buttons'][pin]['count'] == 0 and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
+                if button_state_changed and self.pin_state_cache['buttons'][pin]['count'] == 0 and \
+                        self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
                     self.logger.debug("Button press registered for pin %s" % pin)
                     self.pin_state_cache['buttons'][pin]['pressed'] = time.time()
 
                 # button is still pressed this loop
-                if not button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != self.pin_state_cache['buttons'][pin]['start']:
+                if not button_state_changed and self.pin_state_cache['buttons'][pin]['state'] != \
+                        self.pin_state_cache['buttons'][pin]['start']:
                     self.pin_state_cache['buttons'][pin]['count'] += 1
 
                 # button is released
-                if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == self.pin_state_cache['buttons'][pin]['start']:
+                if button_state_changed and self.pin_state_cache['buttons'][pin]['state'] == \
+                        self.pin_state_cache['buttons'][pin]['start']:
                     duration = int(math.floor(time.time() - self.pin_state_cache['buttons'][pin]['pressed']))
                     self.logger.debug("Button on pin %s release registered after %s seconds" % (pin, duration))
                     self.plugin.core.add_timeout(0, self.plugin.on_button_press, pin, duration)
@@ -335,7 +338,7 @@ class RaspberryPlugin(Plugin):
         self.waiting_leds_off.append(pin)
         self.worker_lock.release()
 
-    def blink_led(self, pin, amount = 1, sleep = 5):
+    def blink_led(self, pin, amount=1, sleep=5):
         self.logger.debug("Blinking led")
         self.worker_lock.acquire()
         self.waiting_leds_blink.append((pin, amount, sleep))
@@ -417,10 +420,10 @@ class RaspberryPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'raspberry',
-    'help_text' : 'Interface to RaspberryPi',
-    'command' : 'rasp',
-    'mode' : PluginMode.MANAGED,
-    'class' : RaspberryPlugin,
-    'detailsNames' : {}
+    'name': 'raspberry',
+    'help_text': 'Interface to RaspberryPi',
+    'command': 'rasp',
+    'mode': PluginMode.MANAGED,
+    'class': RaspberryPlugin,
+    'detailsNames': {}
 }

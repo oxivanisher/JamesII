@@ -561,7 +561,7 @@ class JabberPlugin(Plugin):
     # worker callback helper methods
     def run_command(self, command, jid_from):
         self.commandsRunChat += 1
-        if command[0] == 'help_text':
+        if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
             self.send_xmpp_message(['Commands are:'], help_text, jid_from)
         elif command[0] in self.core.config['core']['command_aliases']:
@@ -569,11 +569,11 @@ class JabberPlugin(Plugin):
         else:
             best_match = self.core.ghost_commands.get_best_match(command)
             if best_match == self.core.ghost_commands:
-                command = ['help_text'] + command
+                command = ['help'] + command
             else:
                 if len(best_match.subcommands) > 0:
-                    command = ['help_text'] + command
-            if command[0] == 'help_text':
+                    command = ['help'] + command
+            if command[0] == 'help':
                 help_text = self.jabber_cmd_help(command[1:])
                 header_text = ['Subcommands for (%s) are:' % best_match.name]
                 if best_match == self.core.ghost_commands:
@@ -585,7 +585,7 @@ class JabberPlugin(Plugin):
 
     def run_muc_command(self, command):
         self.commandsRunMuc += 1
-        if command[0] == 'help_text':
+        if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
             help_text.append("%-20s %s" % ('+', 'Command Aliases'))
             for command in sorted(self.core.config['core']['command_aliases'].keys()):
@@ -596,11 +596,11 @@ class JabberPlugin(Plugin):
         else:
             best_match = self.core.ghost_commands.get_best_match(command)
             if best_match == self.core.ghost_commands:
-                command = ['help_text'] + command
+                command = ['help'] + command
             else:
                 if len(best_match.subcommands) > 0:
-                    command = ['help_text'] + command
-            if command[0] == 'help_text':
+                    command = ['help'] + command
+            if command[0] == 'help':
                 help_text = self.jabber_cmd_help(command[1:])
                 header_text = ['Subcommands for (%s) are:' % best_match.name]
                 if best_match == self.core.ghost_commands:
@@ -621,7 +621,7 @@ class JabberPlugin(Plugin):
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:
-                    ret.append("%s:" % (command.help))
+                    ret.append("%s:" % command.help)
                 ret.append("%-20s %s" % ('Command:', 'Description:'))
                 for line in self.return_command_help_lines(command):
                     ret.append(line)

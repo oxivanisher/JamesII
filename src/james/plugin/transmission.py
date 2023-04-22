@@ -2,6 +2,7 @@ import transmissionrpc
 
 from james.plugin import *
 
+
 # https://bitbucket.org/blueluna/transmissionrpc/wiki/Home
 
 
@@ -84,7 +85,7 @@ class TransmissionPlugin(Plugin):
                 # for key, value in torrent.fields.iteritems():
                 #     self.logger.debug(key, value)
                 ret.append(candy_output(torrent_id, torrent.queue_position, torrent.status,
-                           dl_rate, torrent.peersConnected, my_eta, torrent.uploadRatio, torrent.name))
+                                        dl_rate, torrent.peersConnected, my_eta, torrent.uploadRatio, torrent.name))
         else:
             self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
@@ -176,13 +177,13 @@ class TransmissionPlugin(Plugin):
         else:
             self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
-    
+
     def worker_loop(self):
         if self.connection_ok():
             try:
                 for torrent_id in self.tr_conn.get_files():
-                    torrent =  self.tr_conn.info(torrent_id)[torrent_id]
-                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1\
+                    torrent = self.tr_conn.info(torrent_id)[torrent_id]
+                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 \
                             and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
@@ -216,7 +217,7 @@ class TransmissionPlugin(Plugin):
                 new_words.append(word)
         return ' '.join(new_words)
 
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         ret = {'connected': False}
         if self.connection_ok():
             ret['connected'] = True
@@ -225,12 +226,12 @@ class TransmissionPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'transmission',
-    'help_text' : 'Transmission control plugin',
-    'command' : 'tr',
-    'mode' : PluginMode.MANAGED,
-    'class' : TransmissionPlugin,
-    'detailsNames' : { 'connected' : "Connected",
-                       'addedTorrents' : "Amount of added torrents",
-                       'finishedTorrents' : "Amount of finished torrents" }
+    'name': 'transmission',
+    'help_text': 'Transmission control plugin',
+    'command': 'tr',
+    'mode': PluginMode.MANAGED,
+    'class': TransmissionPlugin,
+    'detailsNames': {'connected': "Connected",
+                     'addedTorrents': "Amount of added torrents",
+                     'finishedTorrents': "Amount of finished torrents"}
 }

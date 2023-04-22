@@ -7,6 +7,7 @@ from storm.expr import *
 import james
 from james.plugin import *
 
+
 # http://stackoverflow.com/questions/713847/recommendations-of-python-rest-web-services-framework
 # http://docs.python.org/2/library/socketserver.html
 # http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python
@@ -91,7 +92,7 @@ class HttpServerPlugin(Plugin):
             config['port'] = 3306
         dbConnectionString = "%s://%s:%s@%s:%s/%s" % (config['schema'], config['user'], config['password'],
                                                       config['host'], config['port'], config['database'])
-        
+
         database = create_database(dbConnectionString)
         try:
             database.connect()
@@ -227,10 +228,10 @@ class HttpServerPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'httpserver-plugin',
-    'help_text' : 'Webfrontend for JamesII',
-    'command' : 'http',
-    'mode' : PluginMode.MANAGED,
-    'class' : HttpServerPlugin,
-    'detailsNames' : {}
+    'name': 'httpserver-plugin',
+    'help_text': 'Webfrontend for JamesII',
+    'command': 'http',
+    'mode': PluginMode.MANAGED,
+    'class': HttpServerPlugin,
+    'detailsNames': {}
 }

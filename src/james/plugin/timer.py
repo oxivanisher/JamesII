@@ -1,4 +1,3 @@
-
 import os
 import time
 import atexit
@@ -14,7 +13,8 @@ class TimerPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(TimerPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [yyyy-mm-dd])', self.cmd_timer_at)
+        self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [yyyy-mm-dd])',
+                                        self.cmd_timer_at)
         self.commands.create_subcommand('remove', 'Delets a command (id)', self.cmd_timer_remove)
         self.commands.create_subcommand('in', 'Runs a command in given time (sec|1s2m3h4d5w)', self.cmd_timer_in)
         self.commands.create_subcommand('show', 'Returns a list of commands', self.cmd_timer_show)
@@ -28,7 +28,7 @@ class TimerPlugin(Plugin):
         self.load_state('commandsRun', 0)
 
     def start(self):
-        # wait 3 seconds befor working
+        # wait 3 seconds before working
         self.core.add_timeout(3, self.command_daemon_loop)
 
     def load_saved_commands(self):
@@ -37,7 +37,7 @@ class TimerPlugin(Plugin):
             # self.saved_commands = self.utils.convert_from_unicode(json.loads(file.read()))
             self.saved_commands = json.loads(file.read())
             file.close()
-            self.logger.debug("Loading timed commands from %s" % (self.command_cache_file))
+            self.logger.debug("Loading timed commands from %s" % self.command_cache_file)
         except IOError:
             pass
         pass
@@ -47,7 +47,7 @@ class TimerPlugin(Plugin):
             file = open(self.command_cache_file, 'w')
             file.write(json.dumps(self.saved_commands))
             file.close()
-            self.logger.debug("Saving timed commands to %s" % (self.command_cache_file))
+            self.logger.debug("Saving timed commands to %s" % self.command_cache_file)
         except IOError:
             self.logger.warning("Could not save cached commands to file!")
 
@@ -79,18 +79,18 @@ class TimerPlugin(Plugin):
                 hour = int(time_sec / 3600)
                 minute = int((time_sec - hour * 3600) / 60)
                 second = int(time_sec % 60)
-                target_time = target_time.replace(hour   = hour)
-                target_time = target_time.replace(minute = minute)
-                target_time = target_time.replace(second = second)
+                target_time = target_time.replace(hour=hour)
+                target_time = target_time.replace(minute=minute)
+                target_time = target_time.replace(second=second)
                 args = args[1:]
             except Exception as e:
                 pass
 
             try:
                 time_date = self.utils.date_string2values(args[0])
-                target_time = target_time.replace(year  = time_date[0])
-                target_time = target_time.replace(month = time_date[1])
-                target_time = target_time.replace(day   = time_date[2])
+                target_time = target_time.replace(year=time_date[0])
+                target_time = target_time.replace(month=time_date[1])
+                target_time = target_time.replace(day=time_date[2])
                 args = args[1:]
             except Exception as e:
                 pass
@@ -134,10 +134,11 @@ class TimerPlugin(Plugin):
     # internal timer methods
     def timer_at(self, timestamp, command):
         # self.saved_commands.append(( timestamp, self.utils.list_unicode_cleanup(command) ))
-        self.logger.info('Saved command (%s) %s with timestamp (%s)' % (' '.join(command), self.utils.get_nice_age(timestamp), timestamp))
-        self.saved_commands.append(( timestamp, command ))
-        return("Saved Command (%s) %s" % (' '.join(command),
-                                          self.utils.get_nice_age(timestamp)))
+        self.logger.info('Saved command (%s) %s with timestamp (%s)' % (
+        ' '.join(command), self.utils.get_nice_age(timestamp), timestamp))
+        self.saved_commands.append((timestamp, command))
+        return ("Saved Command (%s) %s" % (' '.join(command),
+                                           self.utils.get_nice_age(timestamp)))
 
     def command_daemon_loop(self):
         now = int(time.time())
@@ -153,19 +154,17 @@ class TimerPlugin(Plugin):
         self.saved_commands = saved_commands_new
         self.core.add_timeout(1, self.command_daemon_loop)
 
-    def return_status(self, verbose = False):
-        ret = {}
-        ret['waitingCommands'] = len(self.saved_commands)
-        ret['commandsRun'] = self.commandsRun
+    def return_status(self, verbose=False):
+        ret = {'waitingCommands': len(self.saved_commands), 'commandsRun': self.commandsRun}
         return ret
 
 
 descriptor = {
-    'name' : 'timer',
-    'help' : 'MASTER CONTROL PROGRAM for timed functions',
-    'command' : 'mcp',
-    'mode' : PluginMode.MANAGED,
-    'class' : TimerPlugin,
-    'detailsNames' : { 'waitingCommands' : "Waiting commands",
-                       'commandsRun' : "Commands run" }
+    'name': 'timer',
+    'help_text': 'MASTER CONTROL PROGRAM for timed functions',
+    'command': 'mcp',
+    'mode': PluginMode.MANAGED,
+    'class': TimerPlugin,
+    'detailsNames': {'waitingCommands': "Waiting commands",
+                     'commandsRun': "Commands run"}
 }

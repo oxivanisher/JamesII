@@ -20,6 +20,7 @@ class RecordSaverWorkerThread(threading.Thread):
         self.recordsaver = recordsaver
         self.terminated = False
         self.connecting = True
+        self.name = "RecordSaver: %s" % self.__class__.__name__
 
     def connect_db(self):
         if not self.config['port']:
@@ -41,7 +42,7 @@ class RecordSaverWorkerThread(threading.Thread):
                                                             process INTEGER, \
                                                             module TEXT, \
                                                             funcName TEXT, \
-                                                            message TEXT, \
+                                                            msg TEXT, \
                                                             filename TEXT, \
                                                             levelno TEXT, \
                                                             processName TEXT, \
@@ -206,7 +207,7 @@ class RecordSaver(logserver.LogServerHandler):
 class RecordShower(logserver.LogServerHandler):
     def __init__(self):
         self.logger = logging.getLogger()
-        logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
+        logging.basicConfig(format="%(asctime)s %(levelname)-7s %(name)s: %(msg)s")
 
     def handle_log_record(self, record):
         if record:

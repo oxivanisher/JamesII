@@ -1,11 +1,8 @@
-
-
 class Status(object):
 
     def __init__(self, name):
         self.name = name
         self.listeners = []
-
 
     def add_listener(self, handler):
         self.listeners.append(handler)
@@ -18,7 +15,7 @@ class AvatarStatus(Status):
 
     def __init__(self, name):
         super(ProximityStatus, self).__init__("proximity")
-        self.status = { 'home': False }
+        self.status = {'home': False}
 
 
 class Person(object):

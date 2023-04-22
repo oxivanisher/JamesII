@@ -1,4 +1,3 @@
-
 import pickle
 import pika
 import time
@@ -34,10 +33,10 @@ class BroadcastChannel(object):
             except pika.exceptions.ConnectionClosed:
                 try_count += 1
                 if try_count >= 20:
-                    logger.warning("Stopping to send message!")
+                    logger.warning("Stopping to send msg!")
                     msg_sent = True
                 else:
-                    logger.info("Unable to send message <%s>. Will retry in 3 sec")
+                    logger.info("Unable to send msg <%s>. Will retry in 3 sec")
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):

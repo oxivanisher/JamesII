@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# pip install google-api-python-client
-
 import os
 import time
 
@@ -65,14 +62,15 @@ class GoogleCalendarPlugin(Plugin):
 
     # internal commands
     def update_after_midnight(self):
-        self.core.add_timeout(0, self.requestEvents, False)
+        self.core.add_timeout(0, self.request_events, False)
         now = datetime.datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
-        seconds_until_midnight = int(86400 - seconds_since_midnight + 30) # adding 30 seconds just to be sure its the next day
+        seconds_until_midnight = int(
+            86400 - seconds_since_midnight + 30)  # adding 30 seconds just to be sure its the next day
         self.logger.debug("Google calendar was just fetched. Will fetch again in %s seconds" % seconds_until_midnight)
         self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
-    def fetchEvents(self, calendar_id, page_token=None):
+    def fetch_events(self, calendar_id, page_token=None):
         events = {}
 
         tStart = datetime.datetime.now(self.timeZone)
@@ -94,7 +92,7 @@ class GoogleCalendarPlugin(Plugin):
                 self.logger.error("Event fetching error: %s" % e)
         return events
 
-    def getCalendarIds(self):
+    def get_calendar_ids(self):
         personClientIds = {}
         for person in self.core.persons_status:
             self.logger.debug("Found person: %s" % person)
@@ -109,7 +107,7 @@ class GoogleCalendarPlugin(Plugin):
         self.logger.debug("getCalendarIds: %s" % personClientIds)
         return personClientIds
 
-    def requestEvents(self, show=True):
+    def request_events(self, show=True):
         self.logger.debug("requestEvents from google calendar")
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("Cache is still valid, answering with the cache data")
@@ -117,7 +115,7 @@ class GoogleCalendarPlugin(Plugin):
         else:
             self.logger.debug("Cache is invalid, fetching new data")
             self.event_cache = []
-            person_client_ids = self.getCalendarIds()
+            person_client_ids = self.get_calendar_ids()
 
             for person in list(person_client_ids.keys()):
                 self.logger.debug("Fetching calendars for person: %s" % person)
@@ -126,7 +124,7 @@ class GoogleCalendarPlugin(Plugin):
                     calendar_events = []
                     events = False
                     while not events:
-                        events = self.fetchEvents(calendar)
+                        events = self.fetch_events(calendar)
                         if not events:
                             time.sleep(1)
 
@@ -208,11 +206,11 @@ class GoogleCalendarPlugin(Plugin):
     # commands
     def cmd_calendar_show(self, args):
         # self.core.add_timeout(0, self.requestEvents, True)
-        return self.requestEvents()
+        return self.request_events()
 
     def cmd_calendar_speak(self, args):
         # try:
-        self.send_command(['espeak', 'say', '. '.join(self.requestEvents())])
+        self.send_command(['espeak', 'say', '. '.join(self.request_events())])
         # except Exception:
         #     return []
 
@@ -228,11 +226,11 @@ class GoogleCalendarPlugin(Plugin):
             print(e)
 
     # internal
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         self.logger.debug("Google Calendar Processing proximity event")
-        if newstatus['status'][self.core.location]:
+        if new_status['status'][self.core.location]:
             self.event_cache_timestamp = 0
-            self.core.add_timeout(1, self.requestEvents, False)
+            self.core.add_timeout(1, self.request_events, False)
             self.core.add_timeout(2, self.cmd_calendar_speak, None)
 
     # status
@@ -243,7 +241,7 @@ class GoogleCalendarPlugin(Plugin):
 
 descriptor = {
     'name': 'gcal',
-    'help': 'Google Calendar integration',
+    'help_text': 'Google Calendar integration',
     'command': 'gcal',
     'mode': PluginMode.MANAGED,
     'class': GoogleCalendarPlugin,

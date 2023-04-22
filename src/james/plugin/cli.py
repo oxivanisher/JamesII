@@ -1,10 +1,8 @@
-
 import threading
 import sys
 import readline
 import os
 import atexit
-
 
 from james.plugin import *
 
@@ -15,32 +13,33 @@ class ConsoleThread(threading.Thread):
         super(ConsoleThread, self).__init__()
         self.plugin = plugin
         self.terminated = False
-        self.logger = self.plugin.utils.getLogger('thread', self.plugin.logger)
-    
+        self.logger = self.plugin.utils.get_logger('thread', self.plugin.logger)
+        self.name = "ConsoleThread: %s" % self.__class__.__name__
+
         self.keywords = []
 
         if sys.platform == 'darwin':
-            readline.parse_and_bind ("bind ^I rl_complete")
+            readline.parse_and_bind("bind ^I rl_complete")
         else:
             readline.parse_and_bind("tab: complete")
-            
+
         readline.set_completer(self.complete)
 
-        histfile = os.path.join(os.path.expanduser("~"), ".james_cli_history")
+        history_file = os.path.join(os.path.expanduser("~"), ".james_cli_history")
         try:
-            readline.read_history_file(histfile)
+            readline.read_history_file(history_file)
         except IOError:
             pass
 
-        atexit.register(readline.write_history_file, histfile)
+        atexit.register(readline.write_history_file, history_file)
 
     def run(self):
 
         self.logger.info("Interactive cli interface to JamesII (%s:%s) online." % (
-                         self.plugin.core.brokerconfig['host'],
-                         self.plugin.core.brokerconfig['port']))
+            self.plugin.core.broker_config['host'],
+            self.plugin.core.broker_config['port']))
 
-        while (not self.terminated):
+        while not self.terminated:
             self.plugin.worker_lock.acquire()
             if self.plugin.worker_exit:
                 self.plugin.worker_lock.release()
@@ -75,17 +74,17 @@ class ConsoleThread(threading.Thread):
                     else:
                         best_match = self.plugin.core.ghost_commands.get_best_match(args)
                         if best_match == self.plugin.core.ghost_commands:
-                            self.plugin.commands.process_args(['help'] + args)
+                            self.plugin.commands.process_args(['help_text'] + args)
                         else:
                             if len(best_match.subcommands) > 0:
-                                self.plugin.commands.process_args(['help'] + args)
+                                self.plugin.commands.process_args(['help_text'] + args)
                             else:
                                 self.plugin.send_command(args)
             else:
                 print("Enter 'help' for a list of available commands.")
 
     def terminate(self):
-       self.terminated = True
+        self.terminated = True
 
     def complete(self, text, state):
         # catch exceptions
@@ -135,14 +134,13 @@ class CliPlugin(Plugin):
         self.worker_exit = False
         self.worker_lock = threading.Lock()
 
-
         self.commands.hide = True
         self.commands.create_subcommand('exit', 'Quits the console', self.cmd_exit)
         self.commands.create_subcommand('help', 'List this help', self.cmd_help)
-        self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
+        self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
         self.commands.create_subcommand('nodes', 'Show the local known nodes', self.cmd_nodes_online)
         self.commands.create_subcommand('allstatus', 'Request all node states', self.cmd_request_nodes_details)
-        self.commands.create_subcommand('broadcast', 'Send test broadcast message', self.cmd_send_broadcast)
+        self.commands.create_subcommand('broadcast', 'Send test broadcast msg', self.cmd_send_broadcast)
 
     def start(self):
         if self.cmd_line_mode:
@@ -208,20 +206,20 @@ class CliPlugin(Plugin):
         try:
             message.header = message_list[0].strip()
             message.send()
-            return ("Message header: %s; body: %s" % (message.header, message.body))
+            return "Message header: %s; body: %s" % (message.header, message.body)
         except Exception as e:
-            return ("Message could not me sent (%s)" % (e))
+            return "Message could not me sent (%s)" % e
 
     def cmd_help(self, args):
 
-        if len(args) > 0:    
+        if len(args) > 0:
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:
-                    print(("%s:" % (command.help)))
+                    print(("%s:" % command.help))
                 self.print_command_help_lines(command)
             else:
-                print ("Command not found")
+                print("Command not found")
 
         else:
             print(("%-20s %s" % ('Command:', 'Description:')))
@@ -238,7 +236,7 @@ class CliPlugin(Plugin):
 
         return True
 
-    def print_command_help_lines(self, command_obj, depth = 0):
+    def print_command_help_lines(self, command_obj, depth=0):
         for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
@@ -249,10 +247,10 @@ class CliPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'cli',
-    'help' : 'Command line interface plugin',
-    'command' : 'cli',
-    'mode' : PluginMode.MANUAL,
-    'class' : CliPlugin,
-    'detailsNames' : {}
+    'name': 'cli',
+    'help_text': 'Command line interface plugin',
+    'command': 'cli',
+    'mode': PluginMode.MANUAL,
+    'class': CliPlugin,
+    'detailsNames': {}
 }

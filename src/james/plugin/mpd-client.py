@@ -1,4 +1,3 @@
-
 import urllib.request, urllib.error, urllib.parse
 import time
 import mpd
@@ -14,8 +13,8 @@ class PersistentMPDClient(mpd.MPDClient):
     def __init__(self, socket=None, host=None, port=None):
         super(PersistentMPDClient, self).__init__()
         self.socket = socket
-        self.host   = host
-        self.port   = port
+        self.host = host
+        self.port = port
 
         self.do_connect()
         # get list of available commands from client
@@ -50,6 +49,7 @@ class PersistentMPDClient(mpd.MPDClient):
             except (mpd.ConnectionError, OSError) as e:
                 self.do_connect()
             return cmd_fun(*pargs, **kwargs)
+
         return fun
 
     # needs a name that does not collide with parent connect() function
@@ -62,7 +62,7 @@ class PersistentMPDClient(mpd.MPDClient):
             except mpd.ConnectionError as e:
                 pass
             # if it's a socket connection, we'll get a BrokenPipeError
-            # if we try to disconnect when the connection is lost
+            # if we try to disconnect when the connection is lost,
             # but we have to retry the disconnect, because we'll get
             # an "Already connected" error if we don't.
             # the second one should succeed.
@@ -82,18 +82,18 @@ class PersistentMPDClient(mpd.MPDClient):
 
 
 class MpdClientWorker(object):
-    def __init__(self, plugin, myhost, myport):
+    def __init__(self, plugin, my_host, my_port):
         self.plugin = plugin
-        self.myhost = myhost
-        self.myport = myport
-        self.pretalk_volume = None
+        self.my_host = my_host
+        self.my_port = my_port
+        self.pre_talk_volume = None
         self.worker_lock = threading.Lock()
 
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
         self.client = mpd.MPDClient(use_unicode=False)
         # self.client = PersistentMPDClient() # not working test. if it still crashes, needs to be tested
-        self.logger = self.plugin.utils.getLogger('worker.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger = self.plugin.utils.get_logger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
         self.hidden_errors = ["Not connected"]
 
@@ -109,7 +109,7 @@ class MpdClientWorker(object):
         self.lock()
         try:
             signal.alarm(5)
-            self.client.connect(self.myhost, self.myport)
+            self.client.connect(self.my_host, self.my_port)
             self.unlock()
             signal.alarm(0)
             self.client.timeout = 5
@@ -128,9 +128,9 @@ class MpdClientWorker(object):
                 elif e.errno == 111:
                     self.logger.warning("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.warning('connect unhandled exception: %s' % (e))
+                    self.logger.warning('connect unhandled exception: %s' % e)
             else:
-                self.logger.warning('connect unhandled exception, no errno available: %s' % (e))
+                self.logger.warning('connect unhandled exception, no errno available: %s' % e)
 
         self.unlock()
         signal.alarm(0)
@@ -154,7 +154,7 @@ class MpdClientWorker(object):
                 self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
             else:
                 self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
-#                self.client.close()
+        #                self.client.close()
 
         except Exception as e:
             self.client.close()
@@ -164,9 +164,9 @@ class MpdClientWorker(object):
                 elif e.errno == 111:
                     self.logger.debug("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.error('connect unhandled exception: %s' % (e))
+                    self.logger.error('connect unhandled exception: %s' % e)
             else:
-                self.logger.error('connect unhandled exception, no errno available: %s' % (e))
+                self.logger.error('connect unhandled exception, no errno available: %s' % e)
 
         self.unlock()
         signal.alarm(0)
@@ -256,7 +256,7 @@ class MpdClientWorker(object):
             self.plugin.fade_in_progress = False
             self.client.stop()
             self.unlock()
-            self.logger.debug("Stoped")
+            self.logger.debug("Stopped")
             return True
         else:
             self.logger.debug("Unable to stop")
@@ -282,7 +282,7 @@ class MpdClientWorker(object):
             self.unlock()
             return tmp_status
 
-    def currentsong(self):
+    def current_song(self):
         self.logger.debug('Fetching current song')
         if self.check_connection():
             self.lock()
@@ -330,7 +330,7 @@ class FadeThread(PluginThread):
         self.target_vol = target_vol
         self.name = "%s > Created: %s" % (self.name, self.utils.get_time_string())
 
-        #calc fade_time
+        # calc fade_time
         self.mpd_client.lock()
         self.plugin.fade_in_progress = True
         self.mpd_client.unlock()
@@ -413,12 +413,16 @@ class MpdClientPlugin(Plugin):
         self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
         self.commands.create_subcommand('noise', 'Start mpd noise mode', self.mpd_noise)
 
-        radio_command =  self.commands.create_subcommand('radio', 'Control the web radio', None)
-        radio_on_command = radio_command.create_subcommand('on', 'Turn the radio on [station] default %s ' % self.config['default_st'], self.radio_on)
+        radio_command = self.commands.create_subcommand('radio', 'Control the web radio', None)
+        radio_on_command = radio_command.create_subcommand('on',
+                                                           'Turn the radio on [station] default %s ' % self.config[
+                                                               'default_st'], self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
-        radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'], self.mpd_sleep)
-        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'], self.mpd_wakeup)
+        radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'],
+                                        self.mpd_sleep)
+        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'],
+                                        self.mpd_wakeup)
         radio_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
 
         talkover_command = self.commands.create_subcommand('talkover', 'Lowers the volume output', None)
@@ -548,7 +552,7 @@ class MpdClientPlugin(Plugin):
             else:
                 self.radio_off(None)
                 self.client_worker.play_url(self.stations[self.config['sleep_st']],
-                                        int(self.config['norm_volume']) - self.config['sleep_volume_reduction'])
+                                            int(self.config['norm_volume']) - self.config['sleep_volume_reduction'])
 
                 self.thread = FadeThread(self,
                                          self.client_worker,
@@ -646,10 +650,10 @@ class MpdClientPlugin(Plugin):
         self.logger.debug("Fade ended")
 
     # react on proximity events
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("MPD Processing proximity event")
-            if newstatus['status'][self.core.location]:
+            if new_status['status'][self.core.location]:
                 self.logger.debug("Somebody is home. Check to see if a coming_home radio station is configured.")
                 if self.config['nodes'][self.core.hostname]['coming_home']:
                     self.logger.debug("coming_home radio station is %s, starting to play." %
@@ -669,7 +673,7 @@ class MpdClientPlugin(Plugin):
         status = self.client_worker.status()
         if verbose:
             self.logger.warning("Requesting status of mpd client worker")
-        currentsong = self.client_worker.currentsong()
+        current_song = self.client_worker.current_song()
         if verbose:
             self.logger.warning("Requesting current song of mpd client worker")
 
@@ -685,10 +689,10 @@ class MpdClientPlugin(Plugin):
             else:
                 volume = "-1"
 
-            if 'name' in list(currentsong.keys()):
-                name = currentsong['name']
-            if 'title' in list(currentsong.keys()):
-                title = currentsong['title']
+            if 'name' in list(current_song.keys()):
+                name = current_song['name']
+            if 'title' in list(current_song.keys()):
+                title = current_song['title']
 
             if 'state' in list(status.keys()):
                 if status['state'] == "play":
@@ -706,18 +710,18 @@ class MpdClientPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'mpd-client',
-    'help' : 'Interface to mpd via python-mpc2 lib',
-    'command' : 'mpd',
-    'mode' : PluginMode.MANAGED,
-    'class' : MpdClientPlugin,
-    'detailsNames' : { 'state' : "Player status",
-                       'title'  : "Title",
-                       'name'  : "Name",
-                       'volume' : "Volume",
-                       'radioStarted' : "Radio started",
-                       'wakeups' : "Wakeups",
-                       'noises' : "Noises",
-                       'sleeps' : "Sleeps",
-                       'fades' : "Fades" }
+    'name': 'mpd-client',
+    'help_text': 'Interface to mpd via python-mpc2 lib',
+    'command': 'mpd',
+    'mode': PluginMode.MANAGED,
+    'class': MpdClientPlugin,
+    'detailsNames': {'state': "Player status",
+                     'title': "Title",
+                     'name': "Name",
+                     'volume': "Volume",
+                     'radioStarted': "Radio started",
+                     'wakeups': "Wakeups",
+                     'noises': "Noises",
+                     'sleeps': "Sleeps",
+                     'fades': "Fades"}
 }

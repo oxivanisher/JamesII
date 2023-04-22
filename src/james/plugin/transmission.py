@@ -1,7 +1,7 @@
-
 import transmissionrpc
 
 from james.plugin import *
+
 
 # https://bitbucket.org/blueluna/transmissionrpc/wiki/Home
 
@@ -24,7 +24,7 @@ class TransmissionPlugin(Plugin):
         self.commands.create_subcommand('add', 'Adds a URL to download', self.cmd_add)
         self.commands.create_subcommand('start', 'Restart a torrent', self.cmd_start)
         self.commands.create_subcommand('force', 'Force download a torrent', self.cmd_force)
-        self.commands.create_subcommand('stop', 'Stopps a torrent', self.cmd_stop)
+        self.commands.create_subcommand('stop', 'Stops a torrent', self.cmd_stop)
         self.commands.create_subcommand('remove', 'Removes a torrent', self.cmd_remove)
         self.commands.create_subcommand('test', 'Checks if the connection to the transmission host is working',
                                         self.cmd_test_connection)
@@ -85,7 +85,7 @@ class TransmissionPlugin(Plugin):
                 # for key, value in torrent.fields.iteritems():
                 #     self.logger.debug(key, value)
                 ret.append(candy_output(torrent_id, torrent.queue_position, torrent.status,
-                           dl_rate, torrent.peersConnected, my_eta, torrent.uploadRatio, torrent.name))
+                                        dl_rate, torrent.peersConnected, my_eta, torrent.uploadRatio, torrent.name))
         else:
             self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
@@ -177,13 +177,13 @@ class TransmissionPlugin(Plugin):
         else:
             self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
             ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
-    
+
     def worker_loop(self):
         if self.connection_ok():
             try:
                 for torrent_id in self.tr_conn.get_files():
-                    torrent =  self.tr_conn.info(torrent_id)[torrent_id]
-                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1\
+                    torrent = self.tr_conn.info(torrent_id)[torrent_id]
+                    if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 \
                             and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
                         self.logger.info("Download of %s finished" % newname)
@@ -191,11 +191,11 @@ class TransmissionPlugin(Plugin):
                         self.tr_conn.remove(torrent_id)
                         self.finishedTorrents += 1
             except ValueError:
-                self.logger.warning("FIXME: Strange ValueError occured. FIX ME MASTER!")
+                self.logger.warning("FIXME: Strange ValueError occurred. FIX ME MASTER!")
             except transmissionrpc.error.TransmissionError as e:
-                self.logger.warning("TransmissionError occured: %s" % e)
+                self.logger.warning("TransmissionError occurred: %s" % e)
             except Exception as e:
-                self.logger.warning("FIXME: Strange Exception occured. FIX ME MASTER!")
+                self.logger.warning("FIXME: Strange Exception occurred. FIX ME MASTER!")
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):
@@ -217,9 +217,8 @@ class TransmissionPlugin(Plugin):
                 new_words.append(word)
         return ' '.join(new_words)
 
-    def return_status(self, verbose = False):
-        ret = {}
-        ret['connected'] = False
+    def return_status(self, verbose=False):
+        ret = {'connected': False}
         if self.connection_ok():
             ret['connected'] = True
         ret['addedTorrents'] = self.addedTorrents
@@ -227,12 +226,12 @@ class TransmissionPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'transmission',
-    'help' : 'Transmission control plugin',
-    'command' : 'tr',
-    'mode' : PluginMode.MANAGED,
-    'class' : TransmissionPlugin,
-    'detailsNames' : { 'connected' : "Connected",
-                       'addedTorrents' : "Amount of added torrents",
-                       'finishedTorrents' : "Amount of finished torrents" }
+    'name': 'transmission',
+    'help_text': 'Transmission control plugin',
+    'command': 'tr',
+    'mode': PluginMode.MANAGED,
+    'class': TransmissionPlugin,
+    'detailsNames': {'connected': "Connected",
+                     'addedTorrents': "Amount of added torrents",
+                     'finishedTorrents': "Amount of finished torrents"}
 }

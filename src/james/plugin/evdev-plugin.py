@@ -1,4 +1,3 @@
-
 import evdev
 import time
 
@@ -107,16 +106,16 @@ class EvdevPlugin(Plugin):
         self.workerLock.release()
         self.wait_for_threads(self.worker_threads)
 
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         ret = {'commandsReceived': self.commandsReceived}
         return ret
 
 
 descriptor = {
-    'name' : 'evdev-client',
-    'help' : 'Interface to EVDEV',
-    'command' : 'evdev',
-    'mode' : PluginMode.MANAGED,
-    'class' : EvdevPlugin,
-    'detailsNames' : { 'commandsReceived' : "IR Commands received"}
+    'name': 'evdev-client',
+    'help_text': 'Interface to EVDEV',
+    'command': 'evdev',
+    'mode': PluginMode.MANAGED,
+    'class': EvdevPlugin,
+    'detailsNames': {'commandsReceived': "IR Commands received"}
 }

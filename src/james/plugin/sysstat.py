@@ -1,4 +1,3 @@
-
 import time
 import psutil
 
@@ -36,10 +35,10 @@ class SysstatPlugin(Plugin):
         return_str = []
         for interface in interfaces:
             if interface != "lo":
-                netif = interfaces[interface]
+                net_interface = interfaces[interface]
                 return_str.append("%-5s Sent: %-8s Recv: %-8s" %
-                                  (interface, self.utils.bytes2human(netif.bytes_sent),
-                                   self.utils.bytes2human(netif.bytes_recv)))
+                                  (interface, self.utils.bytes2human(net_interface.bytes_sent),
+                                   self.utils.bytes2human(net_interface.bytes_recv)))
         return return_str
 
     def sysstat_who(self, args):
@@ -89,9 +88,8 @@ class SysstatPlugin(Plugin):
         return return_str
 
     def get_sysstat_mem(self):
-        ret = {}
+        ret = {'mem_avail': True}
 
-        ret['mem_avail'] = True
         try:
             ret['mem'] = psutil.virtual_memory()
         except AttributeError as e:
@@ -157,7 +155,7 @@ class SysstatPlugin(Plugin):
 
 descriptor = {
     'name': 'sysstat',
-    'help': 'Psutil system information',
+    'help_text': 'Psutil system information',
     'command': 'stat',
     'mode': PluginMode.AUTOLOAD,
     'class': SysstatPlugin,

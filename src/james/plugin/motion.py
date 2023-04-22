@@ -1,4 +1,3 @@
-
 import atexit
 import os
 import time
@@ -21,21 +20,27 @@ class MotionPlugin(Plugin):
         self.log_max_entries = 100
         self.log = []
         self.watch_mode = False
+        self.last_event = False
 
         self.load_state('watches', 0)
         self.load_state('camLosts', 0)
         self.load_state('movementsDetected', 0)
-        self.load_state('lastEvent', 0)
+        self.load_state('last_event', 0)
 
-        self.commands.create_subcommand('img', ('Will be called when motion has a new image file (file)'), self.cmd_img, True)
-        self.commands.create_subcommand('mov', ('Will be called when motion has a new video file (file)'), self.cmd_mov, True)
-        self.commands.create_subcommand('cam_lost', ('Will be called when motion loses the camera'), self.cmd_cam_lost, True)
+        self.commands.create_subcommand('img', 'Will be called when motion has a new image file (file)', self.cmd_img,
+                                        True)
+        self.commands.create_subcommand('mov', 'Will be called when motion has a new video file (file)', self.cmd_mov,
+                                        True)
+        self.commands.create_subcommand('cam_lost', 'Will be called when motion loses the camera', self.cmd_cam_lost,
+                                        True)
         self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
-        self.commands.create_subcommand('watch', ('Motion watches over you and starts the radio when movement is detected'), self.cmd_watch_on)
+        self.commands.create_subcommand('watch',
+                                        'Motion watches over you and starts the radio when movement is detected',
+                                        self.cmd_watch_on)
         if self.core.os_username == 'root' and os.path.isfile(self.motion_daemon):
-            self.commands.create_subcommand('on', ('Activates the motion daemon'), self.cmd_on)
-            self.commands.create_subcommand('off', ('Deactivates the motion daemon'), self.cmd_off)
-        
+            self.commands.create_subcommand('on', 'Activates the motion daemon', self.cmd_on)
+            self.commands.create_subcommand('off', 'Deactivates the motion daemon', self.cmd_off)
+
         atexit.register(self.save_log)
 
         if self.core.proximity_status.get_status_here():
@@ -49,7 +54,7 @@ class MotionPlugin(Plugin):
             # self.log = self.utils.convert_from_unicode(json.loads(file.read()))
             self.log = json.loads(file.read())
             file.close()
-            self.logger.debug("Loading motion events from %s" % (self.log_file))
+            self.logger.debug("Loading motion events from %s" % self.log_file)
         except IOError:
             pass
         pass
@@ -59,10 +64,9 @@ class MotionPlugin(Plugin):
             file = open(self.log_file, 'w')
             file.write(json.dumps(self.log))
             file.close()
-            self.logger.debug("Saving motion events to %s" % (self.log_file))
+            self.logger.debug("Saving motion events to %s" % self.log_file)
         except IOError:
             self.logger.warning("Could not save motion events to file!")
-
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
@@ -80,11 +84,9 @@ class MotionPlugin(Plugin):
             self.cam_control(True)
         else:
             self.logger.debug('MPD Wakeup not activated. You are not here.')
-            return (["MPD Wakeup not activated. You are not here."])
+            return ["MPD Wakeup not activated. You are not here."]
 
     def cmd_show_log(self, args):
-        var = 0
-        return var / var
         ret = []
         for (timestamp, message, file_name) in self.log:
             ret.append("%-20s %s" % (self.utils.get_short_age(timestamp), message))
@@ -94,7 +96,7 @@ class MotionPlugin(Plugin):
         self.camLosts += 1
         message = self.core.new_message(self.name)
         message.level = 3
-        message.header = ("Cam disconnected!")
+        message.header = "Cam disconnected!"
         message.send()
         # deactivate motion
         self.cam_control(False)
@@ -118,7 +120,7 @@ class MotionPlugin(Plugin):
             try:
                 file_path = args[0]
             except Exception as e:
-                return (["Please add the path to the file (%s)" % (e)])
+                return ["Please add the path to the file (%s)" % e]
 
             file_name = ntpath.basename(file_path)
             if self.move_file(file_path, self.config['target-dir']):
@@ -137,15 +139,15 @@ class MotionPlugin(Plugin):
             try:
                 file_path = args[0]
             except Exception as e:
-                return (["Please add the path to the file (%s)" % (e)])
+                return ["Please add the path to the file (%s)" % e]
 
             file_name = ntpath.basename(file_path)
             self.logger.info('Motion: New image file %s' % file_name)
 
-            self.lastEvent = time.time()
+            self.last_event = time.time()
             self.movementsDetected += 1
 
-            alertMessage = "Movement detected at %s" % (self.core.location)
+            alertMessage = "Movement detected at %s" % self.core.location
 
             message = self.core.new_message(self.name)
             message.level = 2
@@ -181,35 +183,35 @@ class MotionPlugin(Plugin):
         if switch_on:
             self.logger.info('Motion is starting')
 
-            self.worker_threads.append(self.core.spawnSubprocess(self.cam_on,
-                                      self.on_cam_controll_callback,
-                                      None,
-                                      self.logger))
+            self.worker_threads.append(self.core.spawn_subprocess(self.cam_on,
+                                                                  self.on_cam_control_callback,
+                                                                  None,
+                                                                  self.logger))
 
         else:
             self.logger.info('Motion is stopping')
             self.watch_mode = False
 
-            self.worker_threads.append(self.core.spawnSubprocess(self.cam_off,
-                                      self.on_cam_controll_callback,
-                                      None,
-                                      self.logger))
+            self.worker_threads.append(self.core.spawn_subprocess(self.cam_off,
+                                                                  self.on_cam_control_callback,
+                                                                  None,
+                                                                  self.logger))
 
     def cam_on(self):
-        self.utils.popenAndWait(['/etc/init.d/motion', 'start'])
+        self.utils.popen_and_wait(['/etc/init.d/motion', 'start'])
         return "Motion started"
 
     def cam_off(self):
-        self.utils.popenAndWait(['/etc/init.d/motion', 'stop'])
+        self.utils.popen_and_wait(['/etc/init.d/motion', 'stop'])
         return "Motion stopped"
 
-    def on_cam_controll_callback(self, state):
+    def on_cam_control_callback(self, state):
         self.logger.info(state)
 
     # react on proximity events
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         self.logger.debug("Motion processing proximity event")
-        if newstatus['status'][self.core.location]:
+        if new_status['status'][self.core.location]:
             self.watch_mode = False
             self.core.add_timeout(0, self.cmd_off, None)
         else:
@@ -217,25 +219,21 @@ class MotionPlugin(Plugin):
             self.core.add_timeout(0, self.cmd_on, None)
         return True
 
-    def return_status(self, verbose = False):
-        ret = {}
-        ret['watches'] = self.watches
-        ret['movementsDetected'] = self.movementsDetected
-        ret['lastEvent'] = self.lastEvent
-        ret['camLosts'] = self.camLosts
-        ret['watchMode'] = self.watch_mode
+    def return_status(self, verbose=False):
+        ret = {'watches': self.watches, 'movementsDetected': self.movementsDetected, 'last_event': self.last_event,
+               'camLosts': self.camLosts, 'watchMode': self.watch_mode}
         return ret
 
 
 descriptor = {
-    'name' : 'motion',
-    'help' : 'Interface to motion',
-    'command' : 'motion',
-    'mode' : PluginMode.MANAGED,
-    'class' : MotionPlugin,
-    'detailsNames' : { 'watches' : "Watch mode counter",
-                       'movementsDetected' : "Movements detected",
-                       'camLosts' : "Cam losts",
-                       'watchMode' : "Watch mode active",
-                       'lastEvent' : "Last movenet event" }
+    'name': 'motion',
+    'help_text': 'Interface to motion',
+    'command': 'motion',
+    'mode': PluginMode.MANAGED,
+    'class': MotionPlugin,
+    'detailsNames': {'watches': "Watch mode counter",
+                     'movementsDetected': "Movements detected",
+                     'camLosts': "Cam losts",
+                     'watchMode': "Watch mode active",
+                     'last_event': "Last movenet event"}
 }

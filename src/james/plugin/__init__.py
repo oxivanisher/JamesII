@@ -1,4 +1,3 @@
-
 import uuid
 import os
 import imp
@@ -25,8 +24,8 @@ class Plugin(object):
         self.core = core
         self.utils = self.core.utils
         self.command = descriptor['command']
-        self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help'], None)
-        self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help'], None)
+        self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help_text'], None)
+        self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help_text'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
         self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
         self.commands.create_subcommand('alert', "Alert some text (head) (body)", self.alert, True)
@@ -35,12 +34,12 @@ class Plugin(object):
         debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_debug)
         debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_debug)
 
-        self.data_commands.create_subcommand('status', 'Returns status informations', self.return_status)
+        self.data_commands.create_subcommand('status', 'Returns status infos', self.return_status)
 
         self.config = None
         self.reload_config()
 
-        self.logger = self.utils.getLogger(self.name, self.core.logger)
+        self.logger = self.utils.get_logger(self.name, self.core.logger)
         try:
             if self.config['debug']:
                 self.cmd_activate_debug([])
@@ -66,16 +65,16 @@ class Plugin(object):
     def terminate(self):
         pass
 
-    def safe_state(self, verbose = False):
+    def safe_state(self, verbose=False):
         return self.return_status(verbose)
 
-    def load_state(self, name, defaultValue):
+    def load_state(self, name, default_value):
         try:
             # return self.core.loadedState[self.name][name]
             setattr(self, name, self.core.loadedState[self.name][name])
         except Exception:
-            # return defaultValue
-            setattr(self, name, defaultValue)
+            # return default_value
+            setattr(self, name, default_value)
 
     def process_command_response(self, args, host, plugin):
         pass
@@ -86,14 +85,14 @@ class Plugin(object):
     def process_broadcast_command_response(self, args, host, plugin):
         pass
 
-    def send_command(self, args, srcUuid = None):
+    def send_command(self, args, src_uuid=None):
         """ Sends a command to the queue. Splits it into multiple commands with && as splitter. """
-        if not srcUuid:
-            srcUuid = self.uuid
+        if not src_uuid:
+            src_uuid = self.uuid
 
         tmpArgsStr = ' '.join(args)
         for tmpCommandStr in tmpArgsStr.split('&&'):
-            self.send_request(srcUuid, 'cmd', tmpCommandStr.split())
+            self.send_request(src_uuid, 'cmd', tmpCommandStr.split())
 
     def send_request(self, uuid, name, body):
         self.core.send_request(uuid, name, body, self.core.hostname, self.name)
@@ -134,7 +133,7 @@ class Plugin(object):
                 args = [args]
             self.process_broadcast_command_response(args, host, plugin)
 
-    def send_data_request(self, name, args = []):
+    def send_data_request(self, name, args=[]):
         """ Sends a data command to the queue. """
         self.core.send_data_request(self.core.uuid, name, args, self.core.hostname, self.name)
 
@@ -200,12 +199,12 @@ class Plugin(object):
 
         self.logger.info("All threads of %s ended" % self.name)
 
-    # message methods
+    # msg methods
     def process_message(self, message):
         pass
 
     # proximity event method
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         pass
 
     # discovery event method
@@ -226,12 +225,12 @@ class Plugin(object):
     def process_data_response_event(self, msg):
         pass
 
-    # send broadcast message
+    # send broadcast msg
     def send_broadcast(self, message):
         self.core.add_timeout(0, self.send_response, self.uuid, 'broadcast', message)
 
     # return plugin data
-    def return_status(self, verbose = False):
+    def return_status(self, verbose=False):
         return {}
 
     def cmd_show_plugin_status(self, args):
@@ -256,7 +255,7 @@ class PluginThread(threading.Thread):
         self.name = "Plugin: %s > Class: %s" % (self.plugin.name, self.__class__.__name__)
         self.config = self.plugin.config
         self.utils = self.plugin.utils
-        self.logger = self.utils.getLogger('thread.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger = self.utils.get_logger('thread.%s' % int(time.time() * 100), self.plugin.logger)
         try:
             if self.config['debug']:
                 self.logger.setLevel(logging.DEBUG)
@@ -280,30 +279,31 @@ class PluginThread(threading.Thread):
     def on_exit(self, result):
         self.logger.debug('Thread exited')
         """
-        Called when thread finished working (synchroized to core)
+        Called when thread finished working (synchronized to core)
         """
         pass
+
 
 class PluginNotAvailable(Exception):
     pass
 
-class Factory(object):
 
+class Factory(object):
     descriptors = {}
 
     @classmethod
     def register_plugin(cls, descriptor):
-        if not 'name' in list(descriptor.keys()):
+        if 'name' not in list(descriptor.keys()):
             raise Exception("Plugin descriptor has no name field")
-        if not 'help' in list(descriptor.keys()):
-            raise Exception("Plugin descriptor of %s has no help field" % descriptor['name'])
-        if not 'command' in list(descriptor.keys()):
+        if 'help_text' not in list(descriptor.keys()):
+            raise Exception("Plugin descriptor of %s has no help_text field" % descriptor['name'])
+        if 'command' not in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no command field" % descriptor['name'])
-        if not 'mode' in list(descriptor.keys()):
+        if 'mode' not in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no mode field" % descriptor['name'])
-        if not 'class' in list(descriptor.keys()):
+        if 'class' not in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no class field" % descriptor['name'])
-        if not 'detailsNames' in list(descriptor.keys()):
+        if 'detailsNames' not in list(descriptor.keys()):
             raise Exception("Plugin descriptor of %s has no detailsNames field" % descriptor['name'])
 
         cls.descriptors[descriptor['name']] = descriptor
@@ -354,4 +354,4 @@ class Factory(object):
                 plugin_descr_error.append(name)
                 continue
 
-        return (available_plugins, plugin_warning, plugin_descr_error)
+        return available_plugins, plugin_warning, plugin_descr_error

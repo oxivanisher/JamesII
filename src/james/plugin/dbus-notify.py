@@ -1,7 +1,9 @@
+import os
 
 import dbus
 
 from james.plugin import *
+
 
 # this plugin is based on http://code.google.com/p/spotify-notify/
 
@@ -12,7 +14,7 @@ class DbusNotifyPlugin(Plugin):
         super(DbusNotifyPlugin, self).__init__(core, descriptor)
 
         self.bus = dbus.Bus(dbus.Bus.TYPE_SESSION)
-        self.notifyid = 0
+        self.notify_id = 0
         self.commands = False
 
     def process_message(self, message):
@@ -20,12 +22,12 @@ class DbusNotifyPlugin(Plugin):
         # http://www.galago-project.org/specs/notification/0.9/x408.html#command-notify
         # icon from http://www.iconfinder.com/search/?q=alert
         try:
-            self.notifyservice = self.bus.get_object(
+            self.notify_service = self.bus.get_object(
                 'org.freedesktop.Notifications',
                 '/org/freedesktop/Notifications'
             )
-            self.notifyservice = dbus.Interface(
-                self.notifyservice,
+            self.notify_service = dbus.Interface(
+                self.notify_service,
                 "org.freedesktop.Notifications"
             )
 
@@ -34,7 +36,7 @@ class DbusNotifyPlugin(Plugin):
             else:
                 message.body += "\n\n"
 
-            self.logger.debug('Processing message with level %s: %s' % (int(message.level), message.header))
+            self.logger.debug('Processing msg with level %s: %s' % (int(message.level), message.header))
 
             icon_name = ""
             if int(message.level) == 0:
@@ -53,14 +55,14 @@ class DbusNotifyPlugin(Plugin):
             brief_msg = ("%s: %s" % (message.sender_host,
                                      message.header))
             long_msg = ("%sPlugin: %s Host: %s" % (message.body,
-                                           message.sender_name,
-                                           message.sender_host))
+                                                   message.sender_name,
+                                                   message.sender_host))
 
-            # The second param is the replace id, so get the notify id back,
+            # The second param is the replacement id, so get the notify id back,
             # store it, and send it as the replacement on the next call.
-            self.notifyid = self.notifyservice.Notify(
+            self.notify_id = self.notify_service.Notify(
                 "JamesII Message",
-                self.notifyid,
+                self.notify_id,
                 icon_path,
                 brief_msg,
                 long_msg,
@@ -73,17 +75,17 @@ class DbusNotifyPlugin(Plugin):
 
     def alert(self, args):
         message = ' '.join(args)
-        self.logger.debug('Processing alert message: %s' % message)
+        self.logger.debug('Processing alert msg: %s' % message)
         # Connect to notification interface on DBUS.
         # http://www.galago-project.org/specs/notification/0.9/x408.html#command-notify
         # icon from http://www.iconfinder.com/search/?q=alert
         try:
-            self.notifyservice = self.bus.get_object(
+            self.notify_service = self.bus.get_object(
                 'org.freedesktop.Notifications',
                 '/org/freedesktop/Notifications'
             )
-            self.notifyservice = dbus.Interface(
-                self.notifyservice,
+            self.notify_service = dbus.Interface(
+                self.notify_service,
                 "org.freedesktop.Notifications"
             )
 
@@ -93,14 +95,14 @@ class DbusNotifyPlugin(Plugin):
             except Exception:
                 icon_path = ''
 
-            brief_msg = ("%s" % (message))
-            long_msg = ("JamesII Alert: %s" % (message))
+            brief_msg = ("%s" % message)
+            long_msg = ("JamesII Alert: %s" % message)
 
-            # The second param is the replace id, so get the notify id back,
+            # The second param is the replacement id, so get the notify id back,
             # store it, and send it as the replacement on the next call.
-            self.notifyid = self.notifyservice.Notify(
+            self.notify_id = self.notify_service.Notify(
                 "JamesII Message",
-                self.notifyid,
+                self.notify_id,
                 icon_path,
                 brief_msg,
                 long_msg,
@@ -113,10 +115,10 @@ class DbusNotifyPlugin(Plugin):
 
 
 descriptor = {
-    'name' : 'dbus-notify',
-    'help' : 'Dbus notification plugin (desktop only)',
-    'command' : 'dbus-notify',
-    'mode' : PluginMode.MANUAL,
-    'class' : DbusNotifyPlugin,
-    'detailsNames' : {}
+    'name': 'dbus-notify',
+    'help_text': 'Dbus notification plugin (desktop only)',
+    'command': 'dbus-notify',
+    'mode': PluginMode.MANUAL,
+    'class': DbusNotifyPlugin,
+    'detailsNames': {}
 }

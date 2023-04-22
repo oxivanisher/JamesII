@@ -1,4 +1,4 @@
-
+import logging
 import os
 import sys
 import socket
@@ -17,7 +17,8 @@ class SystemPlugin(Plugin):
         self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
         self.command_aliases = self.core.config['core']['command_aliases']
 
-        core_debug_command = self.commands.create_subcommand('core_debug', 'Activates or deactivates debug output on core', None)
+        core_debug_command = self.commands.create_subcommand('core_debug', 'Activates or deactivates debug output on '
+                                                                           'core', None)
         core_debug_command.create_subcommand('on', 'Activate debug', self.cmd_activate_core_debug)
         core_debug_command.create_subcommand('off', 'Deactivate debug', self.cmd_deactivate_core_debug)
 
@@ -29,13 +30,14 @@ class SystemPlugin(Plugin):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
-        self.commands.create_subcommand('quit-node', 'Quits nodes. Ensure to @nodename to only quit one node.', self.cmd_quit_node)
+        self.commands.create_subcommand('quit-node', 'Supply node name to quit this node', self.cmd_quit_node)
 
         if self.core.master:
-            self.commands.create_subcommand('msg', 'Sends a message (head[;body])', self.cmd_message)
+            self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-            self.commands.create_subcommand('quit-core', 'Quits the JamesII core which reloads the config on startup.', self.cmd_quit_core)
+            self.commands.create_subcommand('quit-core', 'Quits the JamesII master node which reloads the config on '
+                                                         'startup.', self.cmd_quit_core)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
@@ -44,26 +46,28 @@ class SystemPlugin(Plugin):
 
     def get_ip(self, args):
         return [subprocess.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
-                         "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
+                                     "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
 
     def get_uptime(self, args):
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
-            uptime_string = str(timedelta(seconds = uptime_seconds))
-        return ["JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
+            uptime_string = str(timedelta(seconds=uptime_seconds))
+        return [
+            "JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
 
     def start(self):
         try:
             file = open(self.crash_detection_file, 'r')
             timestamp = int(file.read())
             file.close()
-            self.logger.debug("Checking for crash restart in %s" % (self.crash_detection_file))
+            self.logger.debug("Checking for crash restart in %s" % self.crash_detection_file)
             os.remove(self.crash_detection_file)
             self.logger.info('JamesII started after crash %s' % (self.utils.get_nice_age(timestamp)))
 
             message = self.core.new_message(self.name)
             message.level = 2
-            message.header = ("James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
+            message.header = (
+                        "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
             message.send()
 
         except IOError:
@@ -72,8 +76,8 @@ class SystemPlugin(Plugin):
 
     def cmd_show_proximity(self, args):
         return (["%-10s %-10s %s" % (self.core.hostname,
-                                  self.core.proximity_status.get_status_here(),
-                                  self.core.location)])
+                                     self.core.proximity_status.get_status_here(),
+                                     self.core.location)])
 
     def cmd_activate_core_debug(self, args):
         self.core.logger.info('Activating core debug')
@@ -103,13 +107,13 @@ class SystemPlugin(Plugin):
         try:
             message.header = message_list[0].strip()
             message.send()
-            return (["Message header: %s; body: %s" % (message.header, message.body)])
+            return ["Message header: %s; body: %s" % (message.header, message.body)]
         except Exception as e:
-            return (["Message could not be sent (%s)" % (e)])
+            return ["Message could not be sent (%s)" % e]
 
     def cmd_quit_node(self, args):
         message = self.core.new_message(self.name)
-        message.header = ("Bye bye, james is shutting down.")
+        message.header = "Bye bye, james is shutting down."
         message.level = 2
         message.send()
 
@@ -118,7 +122,7 @@ class SystemPlugin(Plugin):
     def cmd_quit_core(self, args):
         if self.core.master:
             message = self.core.new_message(self.name)
-            message.header = ("Bye bye, james core is shutting down.")
+            message.header = "Bye bye, james core is shutting down."
             message.level = 2
             message.send()
 
@@ -182,7 +186,7 @@ class SystemPlugin(Plugin):
         for p in self.core.plugins:
             plugin_names.append(p.name)
         plugin_names.sort()
-        return([', '.join(plugin_names)])
+        return [', '.join(plugin_names)]
 
     def cmd_show_aliases(self, args):
         ret = []
@@ -221,37 +225,30 @@ class SystemPlugin(Plugin):
                     self.logger.info('Unknown command (%s)' % e)
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
 
-    def return_status(self, verbose = False):
-        coreData = {}
-        coreData['master'] = self.core.master
-        coreData['uuid'] = self.core.uuid
-        coreData['ip'] = self.get_ip([])
-        coreData['startupTimestamp'] = self.core.startup_timestamp
-        coreData['fqdn'] = socket.getfqdn()
-        coreData['location'] = self.core.location
-        coreData['platform'] = sys.platform
-        coreData['osUsername'] = self.core.os_username
-        coreData['now'] = time.time()
-        coreData['proximityStatus'] = self.core.proximity_status.get_status_here()
-        coreData['personsStatus'] = self.core.persons_status
-        return coreData
+    def return_status(self, verbose=False):
+        core_data = {'master': self.core.master, 'uuid': self.core.uuid, 'ip': self.get_ip([]),
+                     'startupTimestamp': self.core.startup_timestamp, 'fqdn': socket.getfqdn(),
+                     'location': self.core.location, 'platform': sys.platform, 'osUsername': self.core.os_username,
+                     'now': time.time(), 'proximityStatus': self.core.proximity_status.get_status_here(),
+                     'personsStatus': self.core.persons_status}
+        return core_data
 
 
 descriptor = {
-    'name' : 'system',
-    'help' : 'JamesII system commands',
-    'command' : 'sys',
-    'mode' : PluginMode.AUTOLOAD,
-    'class' : SystemPlugin,
-    'detailsNames' : { 'master' : "Master mode",
-                       'uuid' : "UUID",
-                       'ip' : "IPs",
-                       'startupTimestamp' : "JamesII Startup",
-                       'fqdn' : "Fully qualified domainname",
-                       'location' : "Proximity location",
-                       'platform' : "Platform",
-                       'osUsername' : "OS Username",
-                       'now' : "Now Timestamp",
-                       'proximityStatus' : "Proximity status on location",
-                       'personsStatus': "Persons location status" }
+    'name': 'system',
+    'help_text': 'JamesII system commands',
+    'command': 'sys',
+    'mode': PluginMode.AUTOLOAD,
+    'class': SystemPlugin,
+    'detailsNames': {'master': "Master mode",
+                     'uuid': "UUID",
+                     'ip': "IPs",
+                     'startupTimestamp': "JamesII Startup",
+                     'fqdn': "Fully qualified domain name",
+                     'location': "Proximity location",
+                     'platform': "Platform",
+                     'osUsername': "OS Username",
+                     'now': "Now Timestamp",
+                     'proximityStatus': "Proximity status on location",
+                     'personsStatus': "Persons location status"}
 }

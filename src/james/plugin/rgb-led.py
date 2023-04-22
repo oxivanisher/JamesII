@@ -1,4 +1,3 @@
-
 from smbus2 import SMBus
 
 from james.plugin import *
@@ -101,10 +100,10 @@ class RGBLEDPlugin(Plugin):
         self.send_over_i2c(0)
 
     # react on proximity events
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         if (time.time() - self.core.startup_timestamp) > 10:
             self.logger.debug("RGB-LED Processing proximity event")
-            if newstatus['status'][self.core.location]:
+            if new_status['status'][self.core.location]:
                 # If automatic RGB LED on coming home should be implemented, this is the place for it
                 # See the MPD Client for details.
                 pass
@@ -118,7 +117,7 @@ class RGBLEDPlugin(Plugin):
 
 descriptor = {
     'name': 'rgb-led',
-    'help': 'Interface to RGB LEDs over a arduino attached to I2C',
+    'help_text': 'Interface to RGB LEDs over a arduino attached to I2C',
     'command': 'rgb',
     'mode': PluginMode.MANAGED,
     'class': RGBLEDPlugin,

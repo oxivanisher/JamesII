@@ -1,4 +1,3 @@
-
 import atexit
 import json
 import time
@@ -26,15 +25,15 @@ class EspeakPlugin(Plugin):
         self.talkover = False
         self.load_state('messagesSpoke', 0)
 
-        self.commands.create_subcommand('say', 'Speak some text via espeak (message)', self.espeak_say)
+        self.commands.create_subcommand('say', 'Speak some text via espeak (msg)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
         self.commands.create_subcommand('waiting', 'Show the messages in the cache', self.cmd_waiting)
-        self.commands.create_subcommand('clear', 'Clears the message in the cache', self.cmd_clear)
-        muteCmd = self.commands.create_subcommand('muteswitch', 'Toggles muting of all output', self.cmd_mute)
-        muteCmd = self.commands.create_subcommand('mute', 'Toggles muting of all output', False)
-        muteCmd.create_subcommand('on', 'Force activating mute', self.cmd_mute_on)
-        muteCmd.create_subcommand('off', 'Force deactivating mute', self.cmd_mute_off)
-        self.commands.create_subcommand('mutestate', 'Shows the current muted state', self.cmd_mutestate)
+        self.commands.create_subcommand('clear', 'Clears the msg in the cache', self.cmd_clear)
+        mute_cmd = self.commands.create_subcommand('muteswitch', 'Toggles muting of all output', self.cmd_mute)
+        mute_cmd = self.commands.create_subcommand('mute', 'Toggles muting of all output', False)
+        mute_cmd.create_subcommand('on', 'Force activating mute', self.cmd_mute_on)
+        mute_cmd.create_subcommand('off', 'Force deactivating mute', self.cmd_mute_off)
+        self.commands.create_subcommand('mutestate', 'Shows the current muted state', self.cmd_mute_state)
 
         atexit.register(self.save_archived_messages)
         self.load_archived_messages()
@@ -45,7 +44,7 @@ class EspeakPlugin(Plugin):
         self.speak_lock = threading.Lock()
 
     def start(self):
-        # wait 1 seconds befor working
+        # wait 1 second before working
         self.core.add_timeout(1, self.speak_hook)
 
     def load_archived_messages(self):
@@ -64,7 +63,7 @@ class EspeakPlugin(Plugin):
             file = open(self.message_archive_file, 'w')
             file.write(json.dumps(self.archived_messages))
             file.close()
-            self.logger.debug("Saving archived messages to %s" % (self.message_archive_file))
+            self.logger.debug("Saving archived messages to %s" % self.message_archive_file)
         except IOError:
             self.logger.warning("Could not safe archived messages to file!")
 
@@ -83,7 +82,7 @@ class EspeakPlugin(Plugin):
             file = open(self.mute_file, 'w')
             file.write(json.dumps(self.forced_mute))
             file.close()
-            self.logger.debug("Saving muted state to %s" % (self.mute_file))
+            self.logger.debug("Saving muted state to %s" % self.mute_file)
         except IOError:
             self.logger.warning("Could not safe muted state to file!")
 
@@ -91,27 +90,27 @@ class EspeakPlugin(Plugin):
         text = ' '.join(args)
         if text != '':
             self.speak(text + '.')
-            return ["Espeak will speak: '%s'" % (text)]
+            return ["Espeak will speak: '%s'" % text]
         return "No text entered for espeak"
 
     def alert(self, args):
         self.logger.debug('Alerting (%s)' % ' '.join(args))
 
-        adminIsHere = False
+        admin_is_here = False
         for person in self.core.persons_status:
             if self.core.persons_status[person]:
                 try:
                     if self.core.config['persons'][person]['admin']:
-                        adminIsHere = True
+                        admin_is_here = True
                 except Exception:
                     pass
 
-        if self.unmuted and adminIsHere and self.core.proximity_status.get_status_here():
+        if self.unmuted and admin_is_here and self.core.proximity_status.get_status_here():
             self.espeak_say(args)
             if len(self.archived_messages):
                 self.greet_homecomer()
         else:
-            self.logger.debug("Added message: %s to archive" % ' '.join(args))
+            self.logger.debug("Added msg: %s to archive" % ' '.join(args))
             self.archived_messages.append((time.time(), ' '.join(args)))
 
     def espeak_time(self, args):
@@ -139,7 +138,7 @@ class EspeakPlugin(Plugin):
             ret.append("No messages waiting")
         else:
             self.archived_messages = []
-            ret.append("Clearing the following messages:")       
+            ret.append("Clearing the following messages:")
 
         return ret
 
@@ -154,14 +153,14 @@ class EspeakPlugin(Plugin):
     def cmd_mute(self, args):
         if self.forced_mute:
             self.forced_mute = False
-            muteMessage = "Forced mute disabled"
+            mute_message = "Forced mute disabled"
         else:
             self.forced_mute = True
-            muteMessage = "Forced mute enabled"
-        self.logger.info(muteMessage)
-        return [muteMessage]
+            mute_message = "Forced mute enabled"
+        self.logger.info(mute_message)
+        return [mute_message]
 
-    def cmd_mutestate(self, args):
+    def cmd_mute_state(self, args):
         if self.forced_mute:
             return ["Forced mute enabled"]
         else:
@@ -175,14 +174,14 @@ class EspeakPlugin(Plugin):
     def speak_worker(self, msg):
         if not self.forced_mute:
             tempFile = tempfile.NamedTemporaryFile(suffix="-JamesII-Espeak", delete=False)
-            self.utils.popenAndWait(self.espeak_command + ['-w', tempFile.name] + [msg])
-            self.utils.popenAndWait(self.play_command + [tempFile.name])
+            self.utils.popen_and_wait(self.espeak_command + ['-w', tempFile.name] + [msg])
+            self.utils.popen_and_wait(self.play_command + [tempFile.name])
             os.remove(tempFile.name)
             self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
         else:
             self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))
 
-    def speak_hook(self, args = None):
+    def speak_hook(self, args=None):
         if len(self.message_cache) > 0:
             self.messagesSpoke += len(self.message_cache)
             self.speak_lock.acquire()
@@ -203,7 +202,7 @@ class EspeakPlugin(Plugin):
                 pass
             self.speak_lock.release()
             self.logger.info('Espeak will say: %s' % msg.rstrip())
-            self.worker_threads.append(self.core.spawnSubprocess(self.speak_worker, self.speak_hook, msg, self.logger))
+            self.worker_threads.append(self.core.spawn_subprocess(self.speak_worker, self.speak_hook, msg, self.logger))
         else:
             if self.talkover:
                 self.talkover = False
@@ -217,7 +216,7 @@ class EspeakPlugin(Plugin):
 
     def process_message(self, message):
         self.unmuted = self.core.proximity_status.get_status_here()
-        if message.level > 0: # we really do not want espeak to speak all debug messages
+        if message.level > 0:  # we really do not want espeak to speak all debug messages
             if self.unmuted:
                 self.speak(message.header)
             else:
@@ -241,53 +240,52 @@ class EspeakPlugin(Plugin):
 
         if (time.time() - self.core.startup_timestamp) > 10:
             if len(isHere):
-                self.message_cache.append('Hey ' + ' and '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
+                self.message_cache.append(
+                    'Hey ' + ' and '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
 
         if adminIsHere:
             if len(self.archived_messages) > 0:
-            # reading the log to the admin
+                # reading the log to the admin
                 if len(self.archived_messages) == 1:
-                    self.message_cache.append('While we where apart, the following thing happend:')
+                    self.message_cache.append('While we where apart, the following thing happened:')
                 else:
-                    self.message_cache.append('While we where apart, the following %s things happend:' % len(self.archived_messages))
+                    self.message_cache.append(
+                        'While we where apart, the following %s things happened:' % len(self.archived_messages))
                 work_archived_messages = self.archived_messages
                 self.archived_messages = []
                 for (timestamp, message) in work_archived_messages:
                     self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
 
                 self.message_cache.append("End of Log")
-                
+
             else:
-                self.message_cache.append('Nothing happend while we where apart.')
+                self.message_cache.append('Nothing happened while we where apart.')
 
         self.speak_lock.release()
 
-    def process_proximity_event(self, newstatus):
+    def process_proximity_event(self, new_status):
         self.logger.debug("Espeak Processing proximity event")
-        self.unmuted = newstatus['status'][self.core.location]
-        if newstatus['status'][self.core.location]:
+        self.unmuted = new_status['status'][self.core.location]
+        if new_status['status'][self.core.location]:
             self.core.add_timeout(0, self.greet_homecomer)
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
 
-    def return_status(self, verbose = False):
-        ret = {}
-        ret['archivedMessage'] = len(self.archived_messages)
-        ret['messagesCache'] = len(self.message_cache)
-        ret['talkoverActive'] = self.talkover
-        ret['messagesSpoke'] = self.messagesSpoke
+    def return_status(self, verbose=False):
+        ret = {'archivedMessage': len(self.archived_messages), 'messagesCache': len(self.message_cache),
+               'talkoverActive': self.talkover, 'messagesSpoke': self.messagesSpoke}
         return ret
 
 
 descriptor = {
-    'name' : 'espeak',
-    'help' : 'Interface to espeak',
-    'command' : 'espeak',
-    'mode' : PluginMode.MANAGED,
-    'class' : EspeakPlugin,
-    'detailsNames' : { 'archivedMessage' : "Archived messages",
-                       'messagesCache' : "Currently cached messages",
-                       'messagesSpoke' : "Messages spoken",
-                       'talkoverActive' : "Talkover currently active"}
+    'name': 'espeak',
+    'help_text': 'Interface to espeak',
+    'command': 'espeak',
+    'mode': PluginMode.MANAGED,
+    'class': EspeakPlugin,
+    'detailsNames': {'archivedMessage': "Archived messages",
+                     'messagesCache': "Currently cached messages",
+                     'messagesSpoke': "Messages spoken",
+                     'talkoverActive': "Talkover currently active"}
 }

@@ -893,7 +893,7 @@ class Core(object):
                         continue
                     if t.name == "MainThread":
                         continue
-                    self.logger.info('Joining thread %s', t.name)
+                    self.logger.info('Joining thread %s' % t.name)
 
                     try:
                         t.join(3.0)

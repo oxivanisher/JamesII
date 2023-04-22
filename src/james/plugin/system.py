@@ -216,7 +216,7 @@ class SystemPlugin(Plugin):
                     args = request[1:]
 
             try:
-                srcUuid = command['my_uuid']
+                srcUuid = command['uuid']
                 runCommand = self.command_aliases[request[0]].split() + args
                 self.send_command(runCommand, srcUuid)
                 self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(runCommand)))
@@ -226,7 +226,7 @@ class SystemPlugin(Plugin):
                     self.send_broadcast(['Currently unknown command on core (%s)' % e])
 
     def return_status(self, verbose=False):
-        core_data = {'master': self.core.master, 'my_uuid': self.core.uuid, 'ip': self.get_ip([]),
+        core_data = {'master': self.core.master, 'uuid': self.core.uuid, 'ip': self.get_ip([]),
                      'startupTimestamp': self.core.startup_timestamp, 'fqdn': socket.getfqdn(),
                      'location': self.core.location, 'platform': sys.platform, 'osUsername': self.core.os_username,
                      'now': time.time(), 'proximityStatus': self.core.proximity_status.get_status_here(),
@@ -241,7 +241,7 @@ descriptor = {
     'mode': PluginMode.AUTOLOAD,
     'class': SystemPlugin,
     'detailsNames': {'master': "Master mode",
-                     'my_uuid': "UUID",
+                     'uuid': "UUID",
                      'ip': "IPs",
                      'startupTimestamp': "JamesII Startup",
                      'fqdn': "Fully qualified domain name",

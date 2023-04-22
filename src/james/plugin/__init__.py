@@ -149,7 +149,7 @@ class Plugin(object):
                 res = self.return_status()
                 if res != {}:
                     self.send_data_response(self.core.uuid, name, res)
-                    # self.send_data_response(self.my_uuid, name, res)
+                    # self.send_data_response(self.uuid, name, res)
             except KeyError:
                 pass
 

@@ -11,11 +11,11 @@ class Status(object):
         self.listeners.remove(handler)
 
 
-class AvatarStatus(Status):
-
-    def __init__(self, name):
-        super(ProximityStatus, self).__init__("proximity")
-        self.status = {'home': False}
+# class AvatarStatus(Status):
+#
+#     def __init__(self, name):
+#         super(ProximityStatus, self).__init__("proximity")
+#         self.status = {'home': False}
 
 
 class Person(object):

@@ -101,44 +101,32 @@ class HttpServerPlugin(Plugin):
             return False
 
         try:
-            self.store.execute("CREATE TABLE commands (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-                                                        command TEXT, \
-                                                        source TEXT)", noresult=True)
+            self.store.execute("CREATE TABLE commands (id INTEGER PRIMARY KEY AUTO_INCREMENT, command TEXT, "
+                               "source TEXT)", noresult=True)
         except Exception as e:
             pass
         try:
-            self.store.execute("CREATE TABLE hostnames (uuid VARCHAR(255) UNIQUE, \
-                                                         hostname TEXT)", noresult=True)
+            self.store.execute("CREATE TABLE hostnames (uuid VARCHAR(255) UNIQUE, hostname TEXT)", noresult=True)
         except Exception as e:
             pass
         try:
-            self.store.execute("CREATE TABLE commandResponses (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-                                                                time INTEGER, \
-                                                                host TEXT, \
-                                                                plugin TEXT, \
-                                                                data TEXT)", noresult=True)
+            self.store.execute("CREATE TABLE commandResponses (id INTEGER PRIMARY KEY AUTO_INCREMENT, time INTEGER, "
+                               "host TEXT, plugin TEXT, data TEXT)", noresult=True)
         except Exception as e:
             pass
         try:
-            self.store.execute("CREATE TABLE broadcastCommandResponses (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-                                                                         time INTEGER, \
-                                                                         host TEXT, \
-                                                                         plugin TEXT, \
-                                                                         data TEXT)", noresult=True)
+            self.store.execute("CREATE TABLE broadcastCommandResponses (id INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                               "time INTEGER, host TEXT, plugin TEXT, data TEXT)", noresult=True)
         except Exception as e:
             pass
         try:
-            self.store.execute("CREATE TABLE alertResponses (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-                                                              time INTEGER, \
-                                                              data TEXT)", noresult=True)
+            self.store.execute("CREATE TABLE alertResponses (id INTEGER PRIMARY KEY AUTO_INCREMENT, time INTEGER, "
+                               "data TEXT)", noresult=True)
         except Exception as e:
             pass
         try:
-            self.store.execute("CREATE TABLE status (id INTEGER PRIMARY KEY AUTO_INCREMENT, \
-                                                      time INTEGER, \
-                                                      uuid TEXT, \
-                                                      plugin TEXT, \
-                                                      data TEXT)", noresult=True)
+            self.store.execute("CREATE TABLE status (id INTEGER PRIMARY KEY AUTO_INCREMENT, time INTEGER, "
+                               "uuid TEXT, plugin TEXT, data TEXT)", noresult=True)
         except Exception as e:
             pass
 
@@ -229,7 +217,7 @@ class HttpServerPlugin(Plugin):
 
 descriptor = {
     'name': 'httpserver-plugin',
-    'help_text': 'Webfrontend for JamesII',
+    'help_text': 'Web-frontend for JamesII',
     'command': 'http',
     'mode': PluginMode.MANAGED,
     'class': HttpServerPlugin,

@@ -36,7 +36,7 @@ class Plugin(object):
 
         self.data_commands.create_subcommand('status', 'Returns status infos', self.return_status)
 
-        self.config = None
+        self.config = {}
         self.reload_config()
 
         self.logger = self.utils.get_logger(self.name, self.core.logger)
@@ -56,7 +56,7 @@ class Plugin(object):
         try:
             self.config = self.core.config[self.name]
         except KeyError:
-            self.config = None
+            self.config = {}
             pass
 
     def start(self):
@@ -79,7 +79,7 @@ class Plugin(object):
     def process_command_response(self, args, host, plugin):
         pass
 
-    def process_data_response(self, uuid, name, body, host, plugin):
+    def process_data_response(self, my_uuid, name, body, host, plugin):
         pass
 
     def process_broadcast_command_response(self, args, host, plugin):
@@ -94,13 +94,13 @@ class Plugin(object):
         for tmpCommandStr in tmpArgsStr.split('&&'):
             self.send_request(src_uuid, 'cmd', tmpCommandStr.split())
 
-    def send_request(self, uuid, name, body):
-        self.core.send_request(uuid, name, body, self.core.hostname, self.name)
+    def send_request(self, my_uuid, name, body):
+        self.core.send_request(my_uuid, name, body, self.core.hostname, self.name)
 
-    def send_response(self, uuid, name, body):
-        self.core.send_response(uuid, name, body, self.core.hostname, self.name)
+    def send_response(self, my_uuid, name, body):
+        self.core.send_response(my_uuid, name, body, self.core.hostname, self.name)
 
-    def handle_request(self, uuid, name, body, host, plugin):
+    def handle_request(self, my_uuid, name, body, host, plugin):
         run_command = True
         if body[0][0] == '@':
             run_command = False
@@ -118,13 +118,13 @@ class Plugin(object):
                         self.logger.info('Processing command request (%s)' % ' '.join(args))
                         res = self.core.commands.process_args(args)
                         if res:
-                            self.send_response(uuid, name, res)
+                            self.send_response(my_uuid, name, res)
                 except KeyError:
                     pass
 
-    def handle_response(self, uuid, name, body, host, plugin):
+    def handle_response(self, my_uuid, name, body, host, plugin):
         args = body
-        if name == 'cmd' and uuid == self.uuid:
+        if name == 'cmd' and my_uuid == self.uuid:
             if not isinstance(args, list):
                 args = [args]
             self.process_command_response(args, host, plugin)
@@ -137,11 +137,11 @@ class Plugin(object):
         """ Sends a data command to the queue. """
         self.core.send_data_request(self.core.uuid, name, args, self.core.hostname, self.name)
 
-    def send_data_response(self, uuid, name, body):
+    def send_data_response(self, my_uuid, name, body):
         """ Sends a data command to the queue. """
-        self.core.send_data_response(uuid, name, body, self.core.hostname, self.name)
+        self.core.send_data_response(my_uuid, name, body, self.core.hostname, self.name)
 
-    def handle_data_request(self, uuid, name, body, host, plugin):
+    def handle_data_request(self, my_uuid, name, body, host, plugin):
         if name == 'status':
             args = self.utils.list_unicode_cleanup(body)
             try:
@@ -170,15 +170,15 @@ class Plugin(object):
                         self.logger.info('Processing data command request (%s)' % ' '.join(args))
                         res = self.core.data_commands.process_args(args)
                         if res:
-                            self.send_data_response(uuid, name, res)
+                            self.send_data_response(my_uuid, name, res)
                 except KeyError:
                     pass
 
         pass
 
-    def handle_data_response(self, uuid, name, body, host, plugin):
+    def handle_data_response(self, my_uuid, name, body, host, plugin):
         if name == 'status':
-            self.process_data_response(uuid, name, body, host, plugin)
+            self.process_data_response(my_uuid, name, body, host, plugin)
 
     def cmd_avail(self, args):
         return self.core.hostname + ' ' + self.name
@@ -316,7 +316,7 @@ class Factory(object):
         try:
             return cls.descriptors[name]['class']
         except KeyError as e:
-            raise PluginNotAvailable("Plugin '%s' not available" % (name))
+            raise PluginNotAvailable("Plugin '%s' not available" % name)
 
     @classmethod
     def enum_plugin_classes_with_mode(cls, mode):

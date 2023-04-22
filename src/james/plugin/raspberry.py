@@ -86,8 +86,8 @@ class RaspberryThread(PluginThread):
 
         active = True
         # loop_count = 0
-        millis = int(round(time.time() * 1000)) - 10
-        last_diff = 10
+        # millis = int(round(time.time() * 1000)) - 10
+        # last_diff = 10
 
         # sleeping for 1/100 sec seems to be a good value for raspberry
         # nope, pi zero w does not like that. the logic was changed to use self.loop_sleep in millis and not use
@@ -120,7 +120,7 @@ class RaspberryThread(PluginThread):
                     self.led_blink_list.remove(blink)
 
             self.plugin.worker_lock.acquire()
-            # see if i must shut myself down
+            # see if I must shut myself down
             if self.plugin.worker_exit:
                 active = False
                 self.plugin.worker_lock.release()
@@ -308,7 +308,7 @@ class RaspberryPlugin(Plugin):
             self.turn_on_led(pin)
             return ["Led %s will be switched on" % pin]
         except Exception as e:
-            return ["Syntax error (%s)" % (e)]
+            return ["Syntax error (%s)" % e]
 
     def cmd_led_off(self, args):
         args = self.utils.list_unicode_cleanup(args)
@@ -317,7 +317,7 @@ class RaspberryPlugin(Plugin):
             self.turn_off_led(pin)
             return ["Led %s will be switched off" % pin]
         except Exception as e:
-            return ["Syntax error (%s)" % (e)]
+            return ["Syntax error (%s)" % e]
 
     def cmd_rasp_quit(self, args):
         return self.worker_must_exit()

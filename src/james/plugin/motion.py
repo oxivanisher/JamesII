@@ -21,6 +21,9 @@ class MotionPlugin(Plugin):
         self.log = []
         self.watch_mode = False
         self.last_event = False
+        self.watches = 0
+        self.camLosts = 0
+        self.movementsDetected = 0
 
         self.load_state('watches', 0)
         self.load_state('camLosts', 0)
@@ -235,5 +238,5 @@ descriptor = {
                      'movementsDetected': "Movements detected",
                      'camLosts': "Cam losts",
                      'watchMode': "Watch mode active",
-                     'last_event': "Last movenet event"}
+                     'last_event': "Last movement event"}
 }

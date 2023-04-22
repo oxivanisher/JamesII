@@ -59,7 +59,7 @@ class JamesUtils(object):
         if age == 0:
             return 'just now'
 
-        # FIXME 2 if bloecke fuer zukunft und vergangenheit
+        # FIXME 2 if blocks for the future and the past
         elif 60 > age >= 0:
             if age == 1:
                 return '%s second ago' % age
@@ -319,6 +319,7 @@ class JamesUtils(object):
             return True
         else:
             return dict1 == dict2
+
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C
 # https://stackoverflow.com/questions/39146039/pickle-typeerror-a-bytes-like-object-is-required-not-str

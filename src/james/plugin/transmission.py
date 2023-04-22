@@ -17,6 +17,8 @@ class TransmissionPlugin(Plugin):
                                            self.config['nodes'][self.core.hostname]['port'])
 
         self.tr_conn = None
+        self.addedTorrents = 0
+        self.finishedTorrents = 0
         self.load_state('addedTorrents', 0)
         self.load_state('finishedTorrents', 0)
 

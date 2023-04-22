@@ -35,4 +35,3 @@ class JsonConfig (object):
 
     def set_values(self, values):
         self.values = values
-

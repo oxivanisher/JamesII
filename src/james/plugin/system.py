@@ -67,7 +67,7 @@ class SystemPlugin(Plugin):
             message = self.core.new_message(self.name)
             message.level = 2
             message.header = (
-                        "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
+                    "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
             message.send()
 
         except IOError:
@@ -138,7 +138,7 @@ class SystemPlugin(Plugin):
             hostname = self.core.nodes_online[uuid]
             try:
                 nodes_online_dict[hostname]
-            except:
+            except Exception:
                 nodes_online_dict[hostname] = 0
             nodes_online_dict[hostname] += 1
 

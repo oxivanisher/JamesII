@@ -51,6 +51,9 @@ class ProximityPlugin(Plugin):
         self.proxy_send_lock = False
         self.load_saved_state()
 
+        self.proximityChecks = 0
+        self.proximityUpdates = 0
+        self.alwaysAtHome = False
         self.load_state('proximityChecks', 0)
         self.load_state('proximityUpdates', 0)
         self.load_state('alwaysAtHome', False)

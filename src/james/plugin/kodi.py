@@ -36,13 +36,14 @@ class KodiPlugin(Plugin):
         self.updateNode = False
         if self.core.hostname in self.config['updatenodes']:
             self.updateNode = True
+        self.updates = 0
         self.load_state('updates', 0)
 
         self.commands.create_subcommand('test', 'test msg', self.get_active_player_details)
 
     def send_rpc(self, method, params={}):
-        id = str(uuid.uuid1())
-        rawData = [{"jsonrpc": "2.0", 'id': id, 'method': method, 'params': params}]
+        my_id = str(uuid.uuid1())
+        rawData = [{"jsonrpc": "2.0", 'id': my_id, 'method': method, 'params': params}]
 
         data = json.dumps(rawData)
         try:
@@ -274,8 +275,8 @@ class KodiPlugin(Plugin):
             elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
                 niceName = "%s S%02dE%02d %s (%s)" % (
-                actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'],
-                actDetails['firstaired'])
+                    actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'],
+                    actDetails['firstaired'])
                 niceType = "Series"
 
             elif actType == 'movie':

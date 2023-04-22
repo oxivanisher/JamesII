@@ -28,10 +28,10 @@ def conv_to_set(obj):  # Allow single integer to be provided
 
 # The actual CronEvent class
 class CronEvent(object):
-    def __init__(self, action, min=allMatch, hour=allMatch,
+    def __init__(self, action, my_min=allMatch, hour=allMatch,
                  day=allMatch, month=allMatch, dow=allMatch,
                  args=(), kwargs={}):
-        self.minutes = conv_to_set(min)
+        self.minutes = conv_to_set(my_min)
         self.hours = conv_to_set(hour)
         self.days = conv_to_set(day)
         self.months = conv_to_set(month)
@@ -74,16 +74,16 @@ class CronTab(object):
     def add_event(self, event):
         self.events.append(event)
 
-    def activate_event(self, id):
+    def activate_event(self, my_id):
         try:
-            self.events[id].active = True
+            self.events[my_id].active = True
             return True
         except Exception as e:
             pass
 
-    def deactivate_event(self, id):
+    def deactivate_event(self, my_id):
         try:
-            self.events[id].active = False
+            self.events[my_id].active = False
             return True
         except Exception as e:
             pass
@@ -242,7 +242,7 @@ class CronPlugin(Plugin):
     def cmd_cron_remove(self, args):
         try:
             del_id = int(args[0])
-            num_of_jobs = len(self.cron_list)
+            # num_of_jobs = len(self.cron_list)
             del_data = self.cron_list[del_id]
             self.cron_list.remove(del_data)
             self.load_commands_from_cron_list()

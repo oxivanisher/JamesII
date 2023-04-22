@@ -30,15 +30,15 @@ class SystemPlugin(Plugin):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
         self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
-        self.commands.create_subcommand('quit-node', 'Quit supplied node name(s)', self.cmd_quit_node)
-        self.commands.create_subcommand('quit-all-nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
+        self.commands.create_subcommand('node-quit', 'Quit supplied node name(s)', self.cmd_node_quit)
+        self.commands.create_subcommand('all-nodes-quit', 'Quit all nodes', self.cmd_all_nodes_quit)
 
         if self.core.master:
             self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-            self.commands.create_subcommand('quit-core', 'Quits the JamesII master node which reloads the config on '
-                                                         'startup.', self.cmd_quit_core)
+            self.commands.create_subcommand('core-quit', 'Quits the JamesII master node which reloads the config on '
+                                                         'startup.', self.cmd_core_quit)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
@@ -112,7 +112,7 @@ class SystemPlugin(Plugin):
         except Exception as e:
             return ["Message could not be sent (%s)" % e]
 
-    def cmd_quit_node(self, args):
+    def cmd_node_quit(self, args):
         if self.core.hostname in args:
             message = self.core.new_message(self.name)
             message.header = "Bye bye, james node %s is shutting down." % self.core.hostname
@@ -121,7 +121,7 @@ class SystemPlugin(Plugin):
 
             self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
 
-    def cmd_quit_all_nodes(self, args):
+    def cmd_all_nodes_quit(self, args):
         if self.core.master:
             message = self.core.new_message(self.name)
             message.header = "Bye bye, all james nodes are shutting down."
@@ -130,7 +130,7 @@ class SystemPlugin(Plugin):
 
         self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
 
-    def cmd_quit_core(self, args):
+    def cmd_core_quit(self, args):
         if self.core.master:
             message = self.core.new_message(self.name)
             message.header = "Bye bye, james core is shutting down."

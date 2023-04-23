@@ -85,6 +85,8 @@ class GoogleCalendarPlugin(Plugin):
         midnight_today_str = midnight_today.strftime(rfc3339_format)
         last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format)
 
+        self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_str, last_second_tomorrow_str))
+
         try:
             events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,

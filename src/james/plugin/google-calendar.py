@@ -1,8 +1,8 @@
 import os
 import time
 
-import datetime
-import pytz
+from datetime import datetime, timedelta
+from pytz import timezone
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -21,7 +21,7 @@ class GoogleCalendarPlugin(Plugin):
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
         self.commands.create_subcommand('list', 'List all google calendars', self.cmd_calendars_list)
 
-        self.timeZone = pytz.timezone(self.core.config['core']['timezone'])
+        self.timezone = timezone(self.core.config['core']['timezone'])
 
         self.eventFetches = 0
         self.eventsFetched = 0
@@ -65,7 +65,7 @@ class GoogleCalendarPlugin(Plugin):
     # internal commands
     def update_after_midnight(self):
         self.core.add_timeout(0, self.request_events, False)
-        now = datetime.datetime.now()
+        now = datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight = int(
             86400 - seconds_since_midnight + 30)  # adding 30 seconds just to be sure it's the next day
@@ -75,14 +75,25 @@ class GoogleCalendarPlugin(Plugin):
     def fetch_events(self, calendar_id, page_token=None):
         events = {}
 
-        datetime_now = datetime.datetime.now(self.timeZone)
+        rfc3339_format = '%Y-%m-%dT%H:%M:%S.%f%z'
+        here_now = datetime.now(self.timezone)
+
+        midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)
+
+        # there was once this logic here, but its probably not required/wanted
+        # if int(datetime.now(self.timezone).strftime('%H')) > 12:
+        midnight_tomorrow = midnight_today + timedelta(days=1)
+
+
+        midnight_today_str = midnight_today.strftime(rfc3339_format)
+        midnight_tomorrow_str = midnight_tomorrow.strftime(rfc3339_format)
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,
                                                 singleEvents=True,
-                                                timeMin=datetime_now.strftime('%Y-%m-%dT00:00:00') + "+00:00",
-                                                timeMax=datetime_now.strftime('%Y-%m-%dT23:59:59') + "+00:00",
+                                                timeMin=midnight_today_str,
+                                                timeMax=midnight_tomorrow_str,
                                                 orderBy='startTime',
                                                 pageToken=page_token).execute()
             self.eventFetches += 1
@@ -157,11 +168,11 @@ class GoogleCalendarPlugin(Plugin):
             self.eventsFetched += 1
             return_string = False
             happening_today = False
-            now = datetime.datetime.now()
+            now = datetime.now()
 
             # whole day event:
             if 'date' in list(event['start'].keys()):
-                if event['start']['date'] == datetime.datetime.now(self.timeZone).strftime('%Y-%m-%d'):
+                if event['start']['date'] == datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
                     return_string = "Today "
                 else:
@@ -180,9 +191,9 @@ class GoogleCalendarPlugin(Plugin):
 
             # normal event:
             elif 'dateTime' in list(event['start'].keys()):
-                eventTimeStart = datetime.datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                eventTimeEnd = datetime.datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                if eventTimeStart.day > datetime.datetime.now().day:
+                eventTimeStart = datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
+                eventTimeEnd = datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
+                if eventTimeStart.day > datetime.now().day:
                     return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 

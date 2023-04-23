@@ -2,7 +2,7 @@ import os
 import time
 
 from datetime import datetime, timedelta
-from pytz import timezone
+from pytz import timezone, utc
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -73,15 +73,18 @@ class GoogleCalendarPlugin(Plugin):
         self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
     def fetch_events(self, calendar_id, page_token=None):
-        rfc3339_format = '%Y-%m-%dT%H:%M:%S+00:00'
-        here_now = datetime.now(self.timezone).astimezone()
+        rfc3339_format = '%Y-%m-%dT%H:%M:%S.%f'
+        here_now = datetime.now(self.timezone)
 
-        midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)
-        last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
+        midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone).astimezone(utc)
+        last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone).astimezone(utc)
         last_second_tomorrow = last_second_today + timedelta(days=1)
 
-        midnight_today_str = midnight_today.strftime(rfc3339_format)
-        last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format)
+        utc_offset = last_second_today.utcoffset().total_seconds() / 3600
+        utc_offset_str = '{:+03d}:00'.format(int(utc_offset))
+
+        midnight_today_str = midnight_today.strftime(rfc3339_format) + utc_offset_str
+        last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format) + utc_offset_str
 
         self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_str, last_second_tomorrow_str))
 

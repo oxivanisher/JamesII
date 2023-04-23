@@ -73,7 +73,7 @@ class GoogleCalendarPlugin(Plugin):
         self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
     def fetch_events(self, calendar_id, page_token=None):
-        rfc3339_format = '%Y-%m-%dT%H:%M:%S.%f'
+        rfc3339_format = '%Y-%m-%dT%H:%M:%S+00:00'
         here_now = datetime.now(self.timezone)
 
         midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)

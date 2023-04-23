@@ -74,7 +74,7 @@ class GoogleCalendarPlugin(Plugin):
 
     def fetch_events(self, calendar_id, page_token=None):
         rfc3339_format = '%Y-%m-%dT%H:%M:%S+00:00'
-        here_now = datetime.now(self.timezone)
+        here_now = datetime.now(self.timezone).astimezone()
 
         midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)
         last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)

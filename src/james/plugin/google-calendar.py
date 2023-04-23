@@ -82,18 +82,17 @@ class GoogleCalendarPlugin(Plugin):
 
         # there was once this logic here, but its probably not required/wanted
         # if int(datetime.now(self.timezone).strftime('%H')) > 12:
-        midnight_tomorrow = midnight_today + timedelta(days=2)
-
+        last_second_tomorrow = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
 
         midnight_today_str = midnight_today.strftime(rfc3339_format)
-        midnight_tomorrow_str = midnight_tomorrow.strftime(rfc3339_format)
+        last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format)
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,
                                                 singleEvents=True,
                                                 timeMin=midnight_today_str,
-                                                timeMax=midnight_tomorrow_str,
+                                                timeMax=last_second_tomorrow_str,
                                                 orderBy='startTime',
                                                 pageToken=page_token).execute()
             self.eventFetches += 1

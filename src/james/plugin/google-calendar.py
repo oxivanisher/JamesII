@@ -80,20 +80,23 @@ class GoogleCalendarPlugin(Plugin):
         last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
         last_second_tomorrow = last_second_today + timedelta(days=1)
 
+        midnight_today_utc = midnight_today.astimezone(utc)
+        last_second_tomorrow_utc = last_second_today.astimezone(utc)
+
         utc_offset = last_second_today.utcoffset().total_seconds() / 3600
         utc_offset_str = '{:+03d}:00'.format(int(utc_offset))
 
-        midnight_today_str = midnight_today.strftime(rfc3339_format) + utc_offset_str
-        last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format) + utc_offset_str
+        midnight_today_utc_str = midnight_today_utc.strftime(rfc3339_format) + utc_offset_str
+        last_second_tomorrow_utc_str = last_second_tomorrow_utc.strftime(rfc3339_format) + utc_offset_str
 
-        self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_str, last_second_tomorrow_str))
+        self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_utc_str, last_second_tomorrow_utc_str))
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,
                                                 singleEvents=True,
-                                                timeMin=midnight_today_str,
-                                                timeMax=last_second_tomorrow_str,
+                                                timeMin=midnight_today_utc_str,
+                                                timeMax=last_second_tomorrow_utc_str,
                                                 orderBy='startTime',
                                                 pageToken=page_token).execute()
             self.eventFetches += 1

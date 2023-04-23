@@ -83,8 +83,9 @@ class GoogleCalendarPlugin(Plugin):
         midnight_today_utc = midnight_today.astimezone(utc)
         last_second_tomorrow_utc = last_second_tomorrow.astimezone(utc)
 
-        utc_offset = last_second_today.utcoffset().total_seconds() / 3600
-        utc_offset_str = '{:+03d}:00'.format(int(utc_offset))
+        utc_offset = midnight_today_utc.utcoffset()
+        utc_offset_str = "{:+03d}:{:02d}".format(utc_offset.days * 24 + utc_offset.seconds // 3600,
+                                                 (utc_offset.seconds // 60) % 60)
 
         midnight_today_utc_str = midnight_today_utc.strftime(rfc3339_format) + utc_offset_str
         last_second_tomorrow_utc_str = last_second_tomorrow_utc.strftime(rfc3339_format) + utc_offset_str

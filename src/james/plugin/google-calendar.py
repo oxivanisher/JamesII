@@ -74,21 +74,12 @@ class GoogleCalendarPlugin(Plugin):
 
     def fetch_events(self, calendar_id, page_token=None):
         timezone = pytz.timezone("Europe/Zurich")
-
-        # Get the current date in your timezone
         today = datetime.now(timezone).date()
-
-        # Calculate midnight today in your timezone
         midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
-
-        # Calculate the last second of tomorrow in your timezone
         last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
-
-        # Convert to UTC
         midnight_today_utc = midnight_today.astimezone(pytz.utc)
         last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
 
-        # Format in RFC3339 format
         midnight_today_utc_rfc3339 = midnight_today_utc.isoformat()
         last_second_tomorrow_utc_rfc3339 = last_second_tomorrow_utc.isoformat()
 

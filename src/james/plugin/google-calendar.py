@@ -79,11 +79,11 @@ class GoogleCalendarPlugin(Plugin):
         here_now = datetime.now(self.timezone)
 
         midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)
-        last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
-        last_second_tomorrow = last_second_today + timedelta(days=1)
+        last_minute_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 0, tzinfo=self.timezone)
+        last_minute_tomorrow = last_minute_today + timedelta(days=1)
 
         midnight_today_str = midnight_today.strftime(rfc3339_format)
-        last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format)
+        last_second_tomorrow_str = last_minute_tomorrow.strftime(rfc3339_format)
 
         self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_str, last_second_tomorrow_str))
 

@@ -79,10 +79,8 @@ class GoogleCalendarPlugin(Plugin):
         here_now = datetime.now(self.timezone)
 
         midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)
-
-        # there was once this logic here, but its probably not required/wanted
-        # if int(datetime.now(self.timezone).strftime('%H')) > 12:
-        last_second_tomorrow = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
+        last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
+        last_second_tomorrow = last_second_today + timedelta(days=1)
 
         midnight_today_str = midnight_today.strftime(rfc3339_format)
         last_second_tomorrow_str = last_second_tomorrow.strftime(rfc3339_format)

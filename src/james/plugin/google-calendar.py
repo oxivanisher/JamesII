@@ -134,11 +134,9 @@ class GoogleCalendarPlugin(Plugin):
                 for calendar in person_client_ids[person]:
                     self.logger.debug("Fetching calendar: %s" % calendar)
                     calendar_events = []
-                    events = False
-                    while not events:
-                        events = self.fetch_events(calendar)
-                        if not events:
-                            break
+                    events = self.fetch_events(calendar)
+                    if not events:
+                        continue
 
                     while True:
                         for event in events['items']:

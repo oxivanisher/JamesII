@@ -83,7 +83,8 @@ class GoogleCalendarPlugin(Plugin):
                                                 singleEvents=True,
                                                 timeMin=datetime_now.strftime('%Y-%m-%dT00:00:00') + "+00:00",
                                                 timeMax=datetime_now.strftime('%Y-%m-%dT23:59:59') + "+00:00",
-                                                orderBy='startTime').execute()
+                                                orderBy='startTime',
+                                                pageToken=page_token).execute()
             self.eventFetches += 1
         except Exception as e:
             if e == '':

@@ -2,7 +2,7 @@ import os
 import time
 
 from datetime import datetime, timedelta
-from pytz import timezone, utc
+import pytz
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -21,7 +21,7 @@ class GoogleCalendarPlugin(Plugin):
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
         self.commands.create_subcommand('list', 'List all google calendars', self.cmd_calendars_list)
 
-        self.timezone = timezone(self.core.config['core']['timezone'])
+        self.timezone = pytz.timezone(self.core.config['core']['timezone'])
 
         self.eventFetches = 0
         self.eventsFetched = 0
@@ -73,31 +73,34 @@ class GoogleCalendarPlugin(Plugin):
         self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
     def fetch_events(self, calendar_id, page_token=None):
-        rfc3339_format = '%Y-%m-%dT%H:%M:%S.%f'
-        here_now = datetime.now(self.timezone)
+        timezone = pytz.timezone("Europe/Zurich")
 
-        midnight_today = datetime(here_now.year, here_now.month, here_now.day, tzinfo=self.timezone)
-        last_second_today = datetime(here_now.year, here_now.month, here_now.day, 23, 59, 59, tzinfo=self.timezone)
-        last_second_tomorrow = last_second_today + timedelta(days=1)
+        # Get the current date in your timezone
+        today = datetime.now(timezone).date()
 
-        midnight_today_utc = midnight_today.astimezone(utc)
-        last_second_tomorrow_utc = last_second_tomorrow.astimezone(utc)
+        # Calculate midnight today in your timezone
+        midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
 
-        utc_offset = midnight_today_utc.utcoffset()
-        utc_offset_str = "{:+03d}:{:02d}".format(utc_offset.days * 24 + utc_offset.seconds // 3600,
-                                                 (utc_offset.seconds // 60) % 60)
+        # Calculate the last second of tomorrow in your timezone
+        last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
 
-        midnight_today_utc_str = midnight_today_utc.strftime(rfc3339_format) + utc_offset_str
-        last_second_tomorrow_utc_str = last_second_tomorrow_utc.strftime(rfc3339_format) + utc_offset_str
+        # Convert to UTC
+        midnight_today_utc = midnight_today.astimezone(pytz.utc)
+        last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
 
-        self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_utc_str, last_second_tomorrow_utc_str))
+        # Format in RFC3339 format
+        midnight_today_utc_rfc3339 = midnight_today_utc.isoformat()
+        last_second_tomorrow_utc_rfc3339 = last_second_tomorrow_utc.isoformat()
+
+        self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_utc_rfc3339,
+                                                                 last_second_tomorrow_utc_rfc3339))
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
                                                 maxResults=100,
                                                 singleEvents=True,
-                                                timeMin=midnight_today_utc_str,
-                                                timeMax=last_second_tomorrow_utc_str,
+                                                timeMin=midnight_today_utc_rfc3339,
+                                                timeMax=last_second_tomorrow_utc_rfc3339,
                                                 orderBy='startTime',
                                                 pageToken=page_token).execute()
             self.eventFetches += 1

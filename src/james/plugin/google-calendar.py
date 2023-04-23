@@ -73,8 +73,6 @@ class GoogleCalendarPlugin(Plugin):
         self.core.add_timeout(seconds_until_midnight, self.update_after_midnight)
 
     def fetch_events(self, calendar_id, page_token=None):
-        events = {}
-
         rfc3339_format = '%Y-%m-%dT%H:%M:%S.%f'
         here_now = datetime.now(self.timezone)
 
@@ -102,6 +100,7 @@ class GoogleCalendarPlugin(Plugin):
                 return False
             else:
                 self.logger.error("Event fetching error: %s" % e)
+                return {}
 
         self.logger.debug("fetch_events returns: %s" % events)
         return events

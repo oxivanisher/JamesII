@@ -82,7 +82,7 @@ class GoogleCalendarPlugin(Plugin):
 
         # there was once this logic here, but its probably not required/wanted
         # if int(datetime.now(self.timezone).strftime('%H')) > 12:
-        midnight_tomorrow = midnight_today + timedelta(days=1)
+        midnight_tomorrow = midnight_today + timedelta(days=2)
 
 
         midnight_today_str = midnight_today.strftime(rfc3339_format)

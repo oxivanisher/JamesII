@@ -97,10 +97,9 @@ class GoogleCalendarPlugin(Plugin):
         except Exception as e:
             if e == '':
                 self.logger.error("Event fetching error, probably oauth2 session refresh")
-                return False
             else:
                 self.logger.error("Event fetching error: %s" % e)
-                return {}
+            return False
 
         self.logger.debug("fetch_events returns: %s" % events)
         return events
@@ -139,7 +138,7 @@ class GoogleCalendarPlugin(Plugin):
                     while not events:
                         events = self.fetch_events(calendar)
                         if not events:
-                            time.sleep(1)
+                            break
 
                     while True:
                         for event in events['items']:

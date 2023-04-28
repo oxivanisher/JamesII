@@ -188,28 +188,22 @@ class BTPresencePlugin(Plugin):
         return mac_addresses
 
     def presence_check_worker_callback(self, mac_addresses):
-        self.logger.debug('Presence scan finished, found %s' % ', '.join(mac_addresses))
+        self.logger.debug('Presence scan finished, found <%s>' % ', '.join(mac_addresses))
         self.presence_checks += 1
         self.last_presence_check_end = time.time()
         self.last_presence_check_duration = self.last_presence_check_end - self.last_presence_check_start
         persons_detected = []
 
-        self.logger.debug("aa")
         # registering the person for which devices as detected
         for mac_address in mac_addresses:
             for person in list(self.core.config['persons'].keys()):
-                self.logger.debug("aaa")
                 if 'bt_devices' in self.core.config['persons'][person].keys():
                     for device in self.core.config['persons'][person]['bt_devices'].values():
-                        self.logger.debug("aaaa")
                         if device.lower() == mac_address.lower():
-                            self.logger.debug("aaaaa")
                             persons_detected.append(person)
 
-        self.logger.debug("bb")
         persons_detected = sorted(list(set(persons_detected)))
 
-        self.logger.debug("cc")
         # if something changed, increment the presence_updates counter
         if self.tmp_users_here != persons_detected:
             self.presence_updates += 1

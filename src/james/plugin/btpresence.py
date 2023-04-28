@@ -189,7 +189,7 @@ class BTPresencePlugin(Plugin):
         return hosts
 
     def presence_check_callback(self, values):
-        self.logger.debug('Presence scan finished')
+        self.logger.debug('Presence scan finished, received %s' % values)
         self.presence_checks += 1
         self.last_presence_check_end = time.time()
         self.lastProximityCheckDuration = self.last_presence_check_end - self.last_presence_check_start

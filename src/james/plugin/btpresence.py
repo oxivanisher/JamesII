@@ -200,9 +200,10 @@ class BTPresencePlugin(Plugin):
             for person in list(self.core.config['persons'].keys()):
                 self.logger.debug("aaa")
                 if 'bt_devices' in self.core.config['persons'][person].keys():
-                    for device in self.core.config['persons'][person]['bt_devices']:
+                    for device in self.core.config['persons'][person]['bt_devices'].values():
                         self.logger.debug("aaaa")
-                        if device['mac'].lower() == mac_address.lower():
+                        if device.lower() == mac_address.lower():
+                            self.logger.debug("aaaaa")
                             persons_detected.append(person)
 
         self.logger.debug("bb")

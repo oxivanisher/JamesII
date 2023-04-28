@@ -46,7 +46,7 @@ class MotionPlugin(Plugin):
 
         atexit.register(self.save_log)
 
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             self.core.add_timeout(0, self.cam_control, False)
         else:
             self.core.add_timeout(0, self.cam_control, True)
@@ -81,7 +81,7 @@ class MotionPlugin(Plugin):
         return True
 
     def cmd_watch_on(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             self.watches += 1
             self.watch_mode = True
             self.cam_control(True)
@@ -105,7 +105,7 @@ class MotionPlugin(Plugin):
         self.cam_control(False)
 
     def cmd_mov(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             # somebody is at home. delete the file and deactivate motion
             try:
                 if self.watch_mode:
@@ -130,7 +130,7 @@ class MotionPlugin(Plugin):
                 self.logger.info('Motion: New Video file %s' % file_name)
 
     def cmd_img(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             # somebody is at home. delete the file and do nothing else
             try:
                 os.remove(args[0])
@@ -211,10 +211,10 @@ class MotionPlugin(Plugin):
     def on_cam_control_callback(self, state):
         self.logger.info(state)
 
-    # react on proximity events
-    def process_proximity_event(self, new_status):
-        self.logger.debug("Motion processing proximity event")
-        if new_status['status'][self.core.location]:
+    # react on presence events
+    def process_presence_event(self, presence_before, presence_now):
+        self.logger.debug("Motion processing presence event")
+        if len(presence_now):
             self.watch_mode = False
             self.core.add_timeout(0, self.cmd_off, None)
         else:

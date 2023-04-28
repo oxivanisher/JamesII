@@ -614,6 +614,12 @@ class Core(object):
     def get_present_users_here(self):
         return self.presences.get_present_users_here()
 
+    def is_admin_user_here(self):
+        for person in self.get_present_users_here():
+            if person in self.config['persons'][person]['admin']:
+                return True
+        return False
+
     def presence_event(self, plugin_name, users):
         """
         A presence plugin found a change in persons and wants to send this to all nodes

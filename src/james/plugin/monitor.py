@@ -70,10 +70,9 @@ class MonitorPlugin(Plugin):
                            "New Message",
                            ("L%s %s; %s" % (message.level, message.header, message.body)))
 
-    def process_proximity_event(self, new_status):
-        self.process_event(("%s@%s" % (new_status['plugin'], new_status['host'])),
-                           "Proximity Event",
-                           ("%s: %s" % (new_status['location'], new_status['status'][new_status['location']])))
+    def process_presence_event(self, presence_before, presence_now):
+        self.process_event(("%s@%s" % (presence_now['plugin'], presence_now['host'])), "Presence Event",
+                           ("%s: %s" % (presence_now['location'], ', '.join(presence_now['users']))))
 
     def process_command_request_event(self, command):
         self.process_event(("%s@%s" % (command['plugin'], command['host'])),

@@ -404,7 +404,7 @@ class JabberPlugin(Plugin):
         self.waiting_muc_messages = []
         self.users = []
         self.jabber_status_string = ''
-        self.proximity_status_string = ''
+        self.presence_status_string = ''
         self.nodes_online_num = 0
         self.show_broadcast = False
         self.start_time = int(time.time())
@@ -434,10 +434,10 @@ class JabberPlugin(Plugin):
                 pass
 
         # generate initial staus
-        if self.core.proximity_status.status[self.core.location]:
-            self.proximity_status_string = "You are at home"
+        if len(self.core.get_present_users_here()):
+            self.presence_status_string = "You are at home"
         else:
-            self.proximity_status_string = "You are away"
+            self.presence_status_string = "You are away"
         self.process_discovery_event(None)
         self.set_jabber_status()
 
@@ -683,7 +683,7 @@ class JabberPlugin(Plugin):
         for line in args:
             message.append("%10s@%-10s: %s" % (plugin, host, line))
         self.send_xmpp_muc_message(message)
-        # if not self.core.proximity_status.status[self.core.location]:
+        # if not len(self.core.get_present_users_here()):
         #     self.send_xmpp_message(msg)
 
     def process_broadcast_command_response(self, args, host, plugin):
@@ -695,7 +695,7 @@ class JabberPlugin(Plugin):
         send_msg = False
         if self.show_broadcast:
             send_msg = True
-        if not self.core.proximity_status.status[self.core.location]:
+        if not len(self.core.get_present_users_here()):
             send_msg = True
         if send_msg:
             self.send_xmpp_message(message)
@@ -714,13 +714,13 @@ class JabberPlugin(Plugin):
                 pass
             self.send_xmpp_message(message_text)
 
-    def process_proximity_event(self, new_status):
-        self.logger.debug("Processing proximity event")
-        if new_status['status'][self.core.location]:
-            self.proximity_status_string = "You are at home"
+    def process_presence_event(self, presence_before, presence_now):
+        self.logger.debug("Processing presence event")
+        if len(presence_now):
+            self.presence_status_string = "You are at home"
             self.set_jabber_status()
         else:
-            self.proximity_status_string = "You are away"
+            self.presence_status_string = "You are away"
             self.set_jabber_status()
 
     def process_discovery_event(self, msg):
@@ -730,7 +730,7 @@ class JabberPlugin(Plugin):
                 self.core.add_timeout(0, self.set_jabber_status)
 
     def set_jabber_status(self):
-        message = "%s. %s nodes online." % (self.proximity_status_string,
+        message = "%s. %s nodes online." % (self.presence_status_string,
                                             self.nodes_online_num)
         if self.last_xmpp_status_message != message:
             self.logger.debug('Setting status msg to (%s)' % message)
@@ -738,7 +738,7 @@ class JabberPlugin(Plugin):
             self.last_xmpp_status_message = message
 
     def alert(self, args):
-        if not self.core.proximity_status.get_status_here():
+        if not len(self.core.get_present_users_here()):
             self.logger.debug('Alerting (%s)' % ' '.join(args))
             self.send_xmpp_muc_message(['Alert: ' + ' '.join(args)])
 

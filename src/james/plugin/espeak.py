@@ -15,7 +15,7 @@ class EspeakPlugin(Plugin):
 
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_espeak_message_archive")
         self.mute_file = os.path.join(os.path.expanduser("~"), ".james_muted")
-        self.unmuted = self.core.proximity_status.get_status_here()
+        self.unmuted = True
         self.forced_mute = False
         self.espeak_command = self.config['espeak_command'].split()
         self.play_command = self.config['play_command'].split()
@@ -54,10 +54,8 @@ class EspeakPlugin(Plugin):
             # self.archived_messages = self.utils.convert_from_unicode(json.loads(file.read()))
             self.archived_messages = json.loads(file.read())
             file.close()
-
         except IOError:
             pass
-        pass
 
     def save_archived_messages(self):
         try:
@@ -73,10 +71,8 @@ class EspeakPlugin(Plugin):
             file = open(self.mute_file, 'r')
             self.forced_mute = json.loads(file.read())
             file.close()
-
         except IOError:
             pass
-        pass
 
     def save_muted_state(self):
         try:
@@ -96,17 +92,7 @@ class EspeakPlugin(Plugin):
 
     def alert(self, args):
         self.logger.debug('Alerting (%s)' % ' '.join(args))
-
-        admin_is_here = False
-        for person in self.core.persons_status:
-            if self.core.persons_status[person]:
-                try:
-                    if self.core.config['persons'][person]['admin']:
-                        admin_is_here = True
-                except Exception:
-                    pass
-
-        if self.unmuted and admin_is_here and self.core.proximity_status.get_status_here():
+        if self.check_unmuted() and self.core.is_admin_user_here() and len(self.core.get_present_users_here()):
             self.espeak_say(args)
             if len(self.archived_messages):
                 self.greet_homecomer()
@@ -216,9 +202,8 @@ class EspeakPlugin(Plugin):
         return
 
     def process_message(self, message):
-        self.unmuted = self.core.proximity_status.get_status_here()
         if message.level > 0:  # we really do not want espeak to speak all debug messages
-            if self.unmuted:
+            if self.check_unmuted():
                 self.speak(message.header)
             else:
                 self.archived_messages.append((time.time(), message.header))
@@ -264,11 +249,18 @@ class EspeakPlugin(Plugin):
 
         self.speak_lock.release()
 
-    def process_proximity_event(self, new_status):
-        self.logger.debug("Espeak Processing proximity event")
-        self.unmuted = new_status['status'][self.core.location]
-        if new_status['status'][self.core.location]:
+    def process_presence_event(self, presence_before, presence_now):
+        self.logger.debug("Espeak Processing presence event")
+        self.check_unmuted()
+        if len(presence_now):
             self.core.add_timeout(0, self.greet_homecomer)
+
+    def check_unmuted(self):
+        if len(self.core.get_present_users_here()):
+            self.unmuted = True
+        else:
+            self.unmuted = False
+        return self.unmuted
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)

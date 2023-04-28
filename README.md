@@ -12,7 +12,7 @@ The system is also very handy in combination with RaspberryPi's ([www.raspberryp
 * Motion (managed) to watch over your home and also to automatically start web-radio when you get up on weekends
 * Mpd-Client (managed) to start/stop internet radios on different occasions (can also fade in and out for gn8, wakeup or
 noise)
-* Proximity (managed) to scan the area for known bluetooth mac addresses
+* BTPresence (managed) to scan the area for known bluetooth mac addresses
 * Raspberry (managed) interactive interface with buttons/switches and LEDs to interact with the real world
 * Sysstat (autoload) to request information's about the host like mounts, net info, memory info, ...
 * System (autoload) james system calls mostly used internally
@@ -21,7 +21,7 @@ noise)
 * Wakeonlan (managed) to wake up devices when you come home for example
 * Kodi (managed) to trigger database updates and display onscreen messages
 * Evdev (managed) to be controlled by IR devices (you have to configure your evdev things yourself!)
-* Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )
+* Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )... Yes, this is wy older than Alexa, Siri or Google Assistant
 
 ### Python 3
 JamesII was partially ported to python 3. The core things are working, but there might be errors found in the future.
@@ -48,7 +48,7 @@ The most errors had to do with UTF-8, encoding and decoding things. The followin
 
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
-* Google Calendar integration > is working but needs documentations. In short, save your [`client_secret.json`](https://developers.google.com/calendar/api/quickstart/python) to `~/.james2_google_client_secret.json`
+* Google Calendar integration > is working but needs more documentation. In short, save your [`client_secret.json`](https://developers.google.com/calendar/api/quickstart/python) to `~/.james2_google_client_secret.json`
 * YAML Schema to detect wrong config files
 * Doorbell extension for RaspberryPi Plugin
 * plugin requirement checks before load for external files

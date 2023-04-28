@@ -12,16 +12,14 @@ from james.plugin import *
 # FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
 # where do we keep the store of mac addresses? objects, objects, objects
 
-# FIXME rename proximity to presence!!
-
 class BTPresencePlugin(Plugin):
 
     def __init__(self, core, descriptor):
         super(BTPresencePlugin, self).__init__(core, descriptor)
 
-        self.status = False
+        self.users_here = []  # current value of users here which gets sent all the time
+        self.tmp_users_here = []  # self.users_here cached to handle missing-counter
         self.hosts_online = []
-        self.persons_status = {}
 
         # check required tools
         self.tools = {'hcitool': '/usr/bin/hcitool',
@@ -39,68 +37,61 @@ class BTPresencePlugin(Plugin):
             self.commands.create_subcommand('test', 'Test for local bluetooth devices', self.test)
             if self.core.os_username == 'root':
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
-                self.commands.create_subcommand('proximity', 'Run a manual proximity check', self.proximity_check)
+                self.commands.create_subcommand('presence', 'Run a manual presence check', self.presence_check)
                 self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.prepare_pair)
                 self.commands.create_subcommand('always_at_home', 'Override to be always at home (true/false)',
                                                 self.always_at_home)
-                self.commands.create_subcommand('show', 'Show detailed information on states', self.show_details)
-
-        for person in list(self.core.config['persons'].keys()):
-            self.persons_status[person] = False
 
         atexit.register(self.save_state)
-        self.persons_status_file = os.path.join(os.path.expanduser("~"), ".james_persons_status")
+        self.persons_btpresence_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_status")
         self.proxy_send_lock = False
         self.load_saved_state()
 
-        self.proximityChecks = 0
-        self.proximityUpdates = 0
+        self.presence_checks = 0
+        self.presence_updates = 0
         self.alwaysAtHome = False
-        self.load_state('proximityChecks', 0)
-        self.load_state('proximityUpdates', 0)
+        self.load_state('presence_checks', 0)
+        self.load_state('presence_updates', 0)
         self.load_state('alwaysAtHome', False)
-        self.lastProximityCheckStart = 0
-        self.lastProximityCheckEnd = 0
+        self.last_presence_check_start = 0
+        self.last_presence_check_end = 0
         self.lastProximityCheckDuration = 0
-        self.currentProximitySleep = 0
+        self.current_presence_sleep = 0
         self.missing_count = -1
         self.messageCache = []
         self.always_at_home = False
 
+    def presence_event(self, users):
+        if self.always_at_home:
+            users += ['always_at_home']
+        self.core.presence_event(self.name, users)
+
     def start(self):
         if self.core.os_username == 'root':
             # wait 3 seconds before working
-            self.core.add_timeout(3, self.proximity_check_daemon)
+            self.core.add_timeout(3, self.presence_check_daemon)
 
-        # publish the initial override state
-        self.core.proximity_event(self.always_at_home, 'override')
-
-        # publish the btproximity state (core only publishes something, if it has changed.
+        # publish the btpresence state (core only publishes something, if it has changed.
         # so loading the state from file should be safe.)
-        self.core.proximity_event(self.status, 'btproximity', True)
+        self.core.add_timeout(1, self.presence_keepalive_daemon)
 
     def load_saved_state(self):
         try:
-            # load saved proximity persons
-            self.logger.debug("Loading persons status from %s" % self.persons_status_file)
-            proximity_file = open(self.persons_status_file, 'r')
-            self.persons_status = json.loads(proximity_file.read())
-            proximity_file.close()
-
-            # read saved location proximity from core (which comes from the saved file)
-            self.logger.debug("Reading and using local proximity state from core")
-            self.status = self.core.proximity_status.status[self.core.location]
-
+            # load saved presence persons
+            self.logger.debug("Loading btpresence status from %s" % self.persons_btpresence_file)
+            presence_file = open(self.persons_btpresence_file, 'r')
+            self.users_here = json.loads(presence_file.read())
+            presence_file.close()
         except IOError:
             pass
         pass
 
     def save_state(self):
         try:
-            file_handler = open(self.persons_status_file, 'w')
-            file_handler.write(json.dumps(self.persons_status))
+            file_handler = open(self.persons_btpresence_file, 'w')
+            file_handler.write(json.dumps(self.users_here))
             file_handler.close()
-            self.logger.debug("Saving persons status to %s" % self.persons_status_file)
+            self.logger.debug("Saving persons status to %s" % self.persons_btpresence_file)
         except IOError:
             self.logger.warning("Could not save persons status to file!")
 
@@ -134,49 +125,49 @@ class BTPresencePlugin(Plugin):
 
     def show_persons(self, args):
         ret = []
-        for person in list(self.persons_status.keys()):
-            if self.persons_status[person]:
-                ret.append("%10s is here" % person)
-            else:
-                ret.append("%10s is not here" % person)
+        for person in self.users_here:
+            ret.append("%10s is here" % person)
         return ret
-
-    def show_details(self, args):
-        return self.core.proximity_status.details()
 
     def always_at_home(self, args):
         if args[0] == "true":
             self.always_at_home = True
-            self.logger.info("Proximity always_at_home override ENABLED, sending proximity status: "
+            self.logger.info("Presence always_at_home override ENABLED, sending presence status: "
                              "%s@%s" % (self.always_at_home, self.core.location))
-            self.core.proximity_event(True, 'override')
+            self.presence_event(self.users_here)
             return ["Always at home override ENABLED"]
         else:
             self.always_at_home = False
-            self.logger.info("Proximity always_at_home override DISABLED, sending proximity status: "
+            self.logger.info("Presence always_at_home override DISABLED, sending presence status: "
                              "%s@%s" % (self.always_at_home, self.core.location))
-            self.core.proximity_event(False, 'override')
+            self.presence_event(self.users_here)
             return ["Always at home override DISABLED"]
 
-    # proximity daemon methods
-    def proximity_check_daemon(self):
-        self.proximity_check(None)
+    # ensure to send our presence info at least every self.core.config['presence_timeout']
+    def presence_keepalive_daemon(self):
+        self.presence_event(self.users_here)
+        sleep = self.core.config['presence_timeout'] + random.randint(-15, -5)
+        self.core.add_timeout(sleep, self.presence_keepalive_daemon)
+
+    # presence daemon methods
+    def presence_check_daemon(self):
+        self.presence_check(None)
         sleep = self.config['sleep_short'] + random.randint(-2, 2)
         if self.status:
             sleep = self.config['sleep_long'] + random.randint(-2, 2)
-        self.logger.debug('Bluetooth proximity scan sleeping for %s seconds' % sleep)
-        self.currentProximitySleep = sleep
-        self.core.add_timeout(sleep, self.proximity_check_daemon)
+        self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
+        self.current_presence_sleep = sleep
+        self.core.add_timeout(sleep, self.presence_check_daemon)
 
-    def proximity_check(self, args):
-        self.lastProximityCheckStart = time.time()
-        self.worker_threads.append(self.core.spawn_subprocess(self.proximity_check_worker,
-                                                              self.proximity_check_callback,
+    def presence_check(self, args):
+        self.last_presence_check_start = time.time()
+        self.worker_threads.append(self.core.spawn_subprocess(self.presence_check_worker,
+                                                              self.presence_check_callback,
                                                               None,
                                                               self.logger))
 
-    def proximity_check_worker(self):
-        self.logger.debug('Starting bluetooth proximity scan for <%s>' % self.core.location)
+    def presence_check_worker(self):
+        self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)
         hosts = []
         for person in list(self.core.config['persons'].keys()):
             try:
@@ -197,25 +188,14 @@ class BTPresencePlugin(Plugin):
                 pass
         return hosts
 
-    def proximity_check_callback(self, values):
-        self.logger.debug('Proximity scan finished')
-        self.proximityChecks += 1
-        self.lastProximityCheckEnd = time.time()
-        self.lastProximityCheckDuration = self.lastProximityCheckEnd - self.lastProximityCheckStart
-        old_status = self.status
-        self.status = False  # True means that someone is around
+    def presence_check_callback(self, values):
+        self.logger.debug('Presence scan finished')
+        self.presence_checks += 1
+        self.last_presence_check_end = time.time()
+        self.lastProximityCheckDuration = self.last_presence_check_end - self.last_presence_check_start
         old_hosts_online = self.hosts_online
         new_hosts_online = []
         persons_detected = []
-        new_persons_status = {}
-
-        # resetting persons detected
-        for person in list(self.core.config['persons'].keys()):
-            new_persons_status[person] = False
-
-        if len(values) > 0:
-            self.logger.debug("Setting self.status to True because devices where detected")
-            self.status = True
 
         for (mac, name) in values:
             notfound = True
@@ -224,7 +204,7 @@ class BTPresencePlugin(Plugin):
                 if test_mac.lower() == mac.lower():
                     notfound = False
             if notfound:
-                self.logger.info('Bluetooth proximity found %s at <%s>' % (name, self.core.location))
+                self.logger.info('Bluetooth presence found %s at <%s>' % (name, self.core.location))
 
         for (mac, name) in old_hosts_online:
             notfound = True
@@ -232,54 +212,31 @@ class BTPresencePlugin(Plugin):
                 if test_mac.lower() == mac.lower():
                     notfound = False
             if notfound:
-                self.logger.info('Bluetooth proximity lost %s at <%s>' % (name, self.core.location))
+                self.logger.info('Bluetooth presence lost %s at <%s>' % (name, self.core.location))
 
-        # registering the person for these devices as detected
+        # registering the person for which devices as detected
         for (mac, name) in values:
             for person in list(self.core.config['persons'].keys()):
-                try:
-                    if self.core.config['persons'][person]['bt_devices']:
-                        for device in list(self.core.config['persons'][person]['bt_devices'].values()):
-                            if device.lower() == mac.lower():
-                                persons_detected.append(person)
-                                new_persons_status[person] = True
-                except KeyError:
-                    pass
+                if 'bt_devices' in self.core.config['persons'][person].keys():
+                    for device in list(self.core.config['persons'][person]['bt_devices'].values()):
+                        if device.lower() == mac.lower():
+                            persons_detected.append(person)
+
+        persons_detected = sorted(list(set(persons_detected)))
 
         # save the actual online hosts to var
         self.hosts_online = new_hosts_online
 
-        # if something changed, increment the proximityUpdates counter
-        if self.status != self.core.proximity_status.get_status_here():
-            self.proximityUpdates += 1
-
-        # checking for newly detected persons
-        persons_changed = False
-        persons_left = []
-        persons_came = []
-        for person in list(new_persons_status.keys()):
-            try:
-                self.persons_status[person]
-            except KeyError:
-                # compensating for config changes
-                self.persons_status[person] = False
-            if new_persons_status[person] != self.persons_status[person]:
-                persons_changed = True
-                if new_persons_status[person]:
-                    persons_came.append(person)
-                else:
-                    persons_left.append(person)
-
-        self.core.send_persons_status(new_persons_status, 'btproximity')
-        if persons_changed:
-            if self.status:
-                is_here = []
-                for person in new_persons_status:
-                    if new_persons_status[person]:
-                        is_here.append(person)
-                self.logger.info('Bluetooth proximity: Now at <%s>: ' % self.core.location + ', '.join(is_here))
+        # if something changed, increment the presence_updates counter
+        if self.tmp_users_here != persons_detected:
+            self.presence_updates += 1
+            if len(persons_detected):
+                self.logger.info('Bluetooth presence: Now at <%s>: ' % self.core.location + ', '.join(persons_detected))
             else:
-                self.logger.info('Bluetooth proximity: Nobody is at <%s>' % self.core.location)
+                self.logger.info('Bluetooth presence: Nobody is at <%s>' % self.core.location)
+
+        persons_left = set(self.tmp_users_here).difference(persons_detected)
+        persons_came = set(persons_detected).difference(self.tmp_users_here)
 
         message = []
         if persons_came:
@@ -288,10 +245,10 @@ class BTPresencePlugin(Plugin):
             message.append(' and '.join(persons_left) + ' left')
 
         # saving the actual persons detected
-        self.persons_status = new_persons_status
+        self.tmp_users_here = persons_detected
 
-        # use the missingcounter to be able to work around BT devices which not always answer ping
-        if not self.status:
+        # use the missing-counter to be able to work around BT devices which not always answer ping
+        if len(self.tmp_users_here) == 0:
             self.missing_count += 1
             if self.missing_count == 0:
                 # this only happens on the very first run after startup to suppress the msg
@@ -299,13 +256,14 @@ class BTPresencePlugin(Plugin):
             elif self.missing_count == int(self.config['miss_count']):
                 message = list(set(self.messageCache))
                 self.messageCache = []
-                message.append('Bluetooth proximity is starting to watch on %s for <%s>!' %
+                message.append('Bluetooth presence is starting to watch on %s for <%s>!' %
                                (self.core.hostname, self.core.location))
-                self.logger.info("Bluetooth proximity missingcounter reached its max (%s), sending proximity status: "
+                self.logger.info("Bluetooth presence missing-counter reached its max (%s), sending presence status: "
                                  "%s@%s" % (self.config['miss_count'], self.status, self.core.location))
-                self.core.proximity_event(self.status, 'btproximity')
+                self.users_here = self.tmp_users_here
+                self.presence_event(self.users_here)
             elif self.missing_count < int(self.config['miss_count']):
-                self.logger.info('Bluetooth proximity missingcounter increased to %s of %s' %
+                self.logger.info('Bluetooth presence missing-counter increased to %s of %s' %
                                  (self.missing_count, self.config['miss_count']))
                 self.messageCache = self.messageCache + message
                 message = []
@@ -313,11 +271,11 @@ class BTPresencePlugin(Plugin):
                 # since the count keeps counting, just ignore it
                 pass
 
-        if old_status != self.status and self.status:
+        if self.tmp_users_here != self.users_here and self.status:
             if self.missing_count >= int(self.config['miss_count']):
-                message.append('Bluetooth proximity is stopping to watch on %s for <%s>!' %
+                message.append('Bluetooth presence is stopping to watch on %s for <%s>!' %
                                (self.core.hostname, self.core.location))
-                self.core.proximity_event(self.status, 'btproximity')
+                self.presence_event(self.users_here)
             else:
                 message = []
             # making sure, the missing counter is reset every time someone is around
@@ -333,21 +291,20 @@ class BTPresencePlugin(Plugin):
                 self.core.add_timeout(3, self.process_discovery_event_callback)
 
     def process_discovery_event_callback(self):
-        self.logger.debug('Publishing bluetooth proximity event')
+        self.logger.debug('Publishing bluetooth presence event')
         self.proxy_send_lock = False
-        self.core.publish_proximity_status({self.core.location: self.core.proximity_status.get_status_here()},
-                                           'btproximity')
+        self.presence_event(self.users_here)
 
     def terminate(self):
         self.wait_for_threads(self.worker_threads)
 
     def return_status(self, verbose=False):
-        ret = {'proximityChecks': self.proximityChecks, 'proximityUpdates': self.proximityUpdates,
-               'alwaysAtHome': self.always_at_home, 'lastProximityCheckStart': self.lastProximityCheckStart,
-               'lastProximityCheckEnd': self.lastProximityCheckEnd,
+        ret = {'presence_checks': self.presence_checks, 'presence_updates': self.presence_updates,
+               'alwaysAtHome': self.always_at_home, 'last_presence_check_start': self.last_presence_check_start,
+               'last_presence_check_end': self.last_presence_check_end,
                'lastProximityCheckDuration': self.lastProximityCheckDuration,
-               'currentProximitySleep': self.currentProximitySleep, 'currentProximityState': self.status,
-               'nextCheckIn': self.lastProximityCheckEnd + self.currentProximitySleep - time.time()}
+               'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.status,
+               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time()}
         return ret
 
 
@@ -357,13 +314,13 @@ descriptor = {
     'command': 'prox',
     'mode': PluginMode.MANAGED,
     'class': BTPresencePlugin,
-    'detailsNames': {'proximityChecks': "Run proximity checks",
-                     'proximityUpdates': "Proximity status changes",
+    'detailsNames': {'presence_checks': "Run presence checks",
+                     'presence_updates': "Proximity status changes",
                      'alwaysAtHome': "Always at home override active",
-                     'lastProximityCheckStart': "Last Proximity check start",
-                     'lastProximityCheckEnd': "Last Proximity check end",
-                     'currentProximitySleep': "Current sleep time",
-                     'currentProximityState': "Current proximity state",
+                     'last_presence_check_start': "Last Proximity check start",
+                     'last_presence_check_end': "Last Proximity check end",
+                     'current_presence_sleep': "Current sleep time",
+                     'current_presence_state': "Current presence state",
                      'nextCheckIn': "Next check in",
                      'lastProximityCheckDuration': "Last Proximity check duration"}
 }

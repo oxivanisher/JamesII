@@ -19,7 +19,6 @@ class BTPresencePlugin(Plugin):
 
         self.users_here = []  # current value of users here which gets sent all the time
         self.tmp_users_here = []  # self.users_here cached to handle missing-counter
-        self.hosts_online = []
 
         # check required tools
         self.tools = {'hcitool': '/usr/bin/hcitool',
@@ -162,13 +161,13 @@ class BTPresencePlugin(Plugin):
     def presence_check(self, args):
         self.last_presence_check_start = time.time()
         self.worker_threads.append(self.core.spawn_subprocess(self.presence_check_worker,
-                                                              self.presence_check_callback,
+                                                              self.presence_check_worker_callback,
                                                               None,
                                                               self.logger))
 
     def presence_check_worker(self):
         self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)
-        hosts = []
+        mac_addresses = []
         for person in list(self.core.config['persons'].keys()):
             try:
                 if self.core.config['persons'][person]['bt_devices']:
@@ -179,53 +178,31 @@ class BTPresencePlugin(Plugin):
 
                         for line in clear_list:
                             if "bytes from" in line:
-                                hosts.append((mac, name))
+                                mac_addresses.append(mac)
             except KeyError:
                 # person has no bt_devices
                 pass
             except Exception:
                 # probably parse error from command
                 pass
-        return hosts
+        return mac_addresses
 
-    def presence_check_callback(self, values):
-        self.logger.debug('Presence scan finished, received %s' % values)
+    def presence_check_worker_callback(self, mac_addresses):
+        self.logger.debug('Presence scan finished, received %s' % mac_addresses)
         self.presence_checks += 1
         self.last_presence_check_end = time.time()
         self.lastProximityCheckDuration = self.last_presence_check_end - self.last_presence_check_start
-        old_hosts_online = self.hosts_online
-        new_hosts_online = []
         persons_detected = []
 
-        for (mac, name) in values:
-            notfound = True
-            new_hosts_online.append((mac, name))
-            for (test_mac, test_name) in old_hosts_online:
-                if test_mac.lower() == mac.lower():
-                    notfound = False
-            if notfound:
-                self.logger.info('Bluetooth presence found %s at <%s>' % (name, self.core.location))
-
-        for (mac, name) in old_hosts_online:
-            notfound = True
-            for (test_mac, test_name) in new_hosts_online:
-                if test_mac.lower() == mac.lower():
-                    notfound = False
-            if notfound:
-                self.logger.info('Bluetooth presence lost %s at <%s>' % (name, self.core.location))
-
         # registering the person for which devices as detected
-        for (mac, name) in values:
+        for mac_address in mac_addresses:
             for person in list(self.core.config['persons'].keys()):
                 if 'bt_devices' in self.core.config['persons'][person].keys():
-                    for device in list(self.core.config['persons'][person]['bt_devices'].values()):
-                        if device.lower() == mac.lower():
+                    for device in self.core.config['persons'][person]['bt_devices']:
+                        if device['mac'].lower() == mac_address.lower():
                             persons_detected.append(person)
 
         persons_detected = sorted(list(set(persons_detected)))
-
-        # save the actual online hosts to var
-        self.hosts_online = new_hosts_online
 
         # if something changed, increment the presence_updates counter
         if self.tmp_users_here != persons_detected:

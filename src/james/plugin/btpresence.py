@@ -146,14 +146,14 @@ class BTPresencePlugin(Plugin):
     # ensure to send our presence info at least every self.core.config['presence_timeout']
     def presence_keepalive_daemon(self):
         self.presence_event(self.users_here)
-        sleep = self.core.config['presence_timeout'] + random.randint(-15, -5)
+        sleep = self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
         self.core.add_timeout(sleep, self.presence_keepalive_daemon)
 
     # presence daemon methods
     def presence_check_daemon(self):
         self.presence_check(None)
         sleep = self.config['sleep_short'] + random.randint(-2, 2)
-        if self.status:
+        if len(self.users_here):
             sleep = self.config['sleep_long'] + random.randint(-2, 2)
         self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
         self.current_presence_sleep = sleep
@@ -179,7 +179,7 @@ class BTPresencePlugin(Plugin):
 
                         for line in clear_list:
                             if "bytes from" in line:
-                                hosts.append((mac, mac))
+                                hosts.append((mac, name))
             except KeyError:
                 # person has no bt_devices
                 pass

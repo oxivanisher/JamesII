@@ -250,18 +250,19 @@ class BTPresencePlugin(Plugin):
                 self.messageCache = self.messageCache + message
                 message = []
             else:
-                # since the count keeps counting, just ignore it
+                # since the count keeps counting, just ignore it and don't tell anyone about this
                 pass
 
-        if self.tmp_users_here != self.users_here and len(self.users_here):
+        if len(self.users_here) and self.tmp_users_here != self.users_here:
             if self.missing_count >= int(self.config['miss_count']):
                 message.append('Bluetooth presence is stopping to watch on %s for <%s>!' %
                                (self.core.hostname, self.core.location))
-                self.presence_event(self.users_here)
             else:
                 message = []
             # making sure, the missing counter is reset every time someone is around
             self.missing_count = 0
+            self.users_here = self.tmp_users_here
+            self.presence_event(self.users_here)
 
         if len(message):
             self.send_command(['jab', 'msg', ', '.join(message)])

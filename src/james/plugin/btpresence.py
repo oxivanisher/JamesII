@@ -226,7 +226,7 @@ class BTPresencePlugin(Plugin):
         if persons_left:
             message.append(' and '.join(persons_left) + ' left')
 
-        # saving the actual persons detected
+        # saving the actual persons detected to temp var
         self.tmp_users_here = persons_detected
 
         # use the missing-counter to be able to work around BT devices which not always answer ping
@@ -253,7 +253,7 @@ class BTPresencePlugin(Plugin):
                 # since the count keeps counting, just ignore it and don't tell anyone about this
                 pass
 
-        if len(self.users_here) and self.tmp_users_here != self.users_here:
+        if len(self.tmp_users_here) and self.tmp_users_here != self.users_here:
             if self.missing_count >= int(self.config['miss_count']):
                 message.append('Bluetooth presence is stopping to watch on %s for <%s>!' %
                                (self.core.hostname, self.core.location))

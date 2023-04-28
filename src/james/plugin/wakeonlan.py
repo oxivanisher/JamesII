@@ -44,13 +44,13 @@ class WakeOnLanPlugin(Plugin):
             self.utils.wake_on_lan(host)
             return ["waking %s (%s)" % (args[0], host)]
 
-    def process_proximity_event(self, new_status):
+    def process_presence_event(self, presence_before, presence_now):
         if (time.time() - self.core.startup_timestamp) > 10:
-            if new_status['status'][self.core.location]:
-                self.logger.debug("Processing proximity event")
+            if len(presence_now):
+                self.logger.debug("Processing presence event")
 
                 # finding out, which persons are home - sadly, this is currently NOT possible since only the proximity
-                # node knows this
+                # node knows this > FIXME ... in times of presence instead of proximity, we know that. please implement!
                 # isHere = []
                 # for person in self.core.persons_status.keys():
                 #     self.logger.debug(new_status['status'][self.core.location])

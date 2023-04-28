@@ -275,7 +275,7 @@ class RaspberryPlugin(Plugin):
         for led in self.led_pins:
             self.blink_led(led, (len(self.led_pins) - count) * 3, 2)
             count += 1
-        if self.core.proximity_status.status[self.core.location]:
+        if len(self.core.get_present_users_here()):
             self.turn_off_led(3)
         else:
             self.turn_on_led(3)
@@ -380,24 +380,24 @@ class RaspberryPlugin(Plugin):
         return [msg]
 
     # james system event handler
-    def process_proximity_event(self, new_status):
-        self.logger.debug("Processing proximity event")
+    def process_presence_event(self, presence_before, presence_now):
+        self.logger.debug("Processing presence event")
 
-        if new_status['status'][self.core.location]:
+        if len(presence_now):
             if len(self.led_pins) > 3:
-                self.logger.debug("Processing proximity event and enabling LED")
+                self.logger.debug("Processing presence event and enabling LED")
                 self.core.add_timeout(0, self.turn_off_led, 3)
                 self.messages_waiting_count = 0
         else:
             if len(self.led_pins) > 3:
-                self.logger.debug("Processing proximity event and disabling LED")
+                self.logger.debug("Processing presence event and disabling LED")
                 self.core.add_timeout(0, self.turn_on_led, 3)
 
     def process_message(self, message):
         self.logger.debug("Processing msg event")
 
         # at home
-        if self.core.proximity_status.status[self.core.location]:
+        if len(self.core.get_present_users_here()):
             if message.level == 1:
                 if len(self.led_pins) > 0:
                     self.blink_led(0, 3)
@@ -414,7 +414,7 @@ class RaspberryPlugin(Plugin):
         self.logger.debug("Processing alert event")
 
         # at home
-        if self.core.proximity_status.status[self.core.location]:
+        if len(self.core.get_present_users_here()):
             if len(self.led_pins) > 1:
                 self.blink_led(1, 2)
 

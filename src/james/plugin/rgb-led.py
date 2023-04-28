@@ -31,7 +31,7 @@ class RGBLEDPlugin(Plugin):
             self.logger.info("send_over_i2c encountered a IOError: %s" % (str(e)))
 
     def cmd_sunrise(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             if self.core.no_alarm_clock:
                 msg = "Sunrise not activated. no_alarm_clock is set (check gcal)."
                 self.logger.info(msg)
@@ -44,7 +44,7 @@ class RGBLEDPlugin(Plugin):
             return [msg]
 
     def cmd_color(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             self.color(args)
             return ["Fixed color set to %s" % ', '.join(args)]
         else:
@@ -53,7 +53,7 @@ class RGBLEDPlugin(Plugin):
             return [msg]
 
     def cmd_fade(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             self.fade(args)
             return ["Fade to color %s" % ', '.join(args)]
         else:
@@ -62,7 +62,7 @@ class RGBLEDPlugin(Plugin):
             return [msg]
 
     def cmd_rainbow(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             self.rainbow(args)
             return ["Show rainbow colors"]
         else:
@@ -71,7 +71,7 @@ class RGBLEDPlugin(Plugin):
             return [msg]
 
     def cmd_fire(self, args):
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             self.fire(args)
             return ["Show fire"]
         else:
@@ -102,11 +102,11 @@ class RGBLEDPlugin(Plugin):
     def off(self, args):
         self.send_over_i2c(0)
 
-    # react on proximity events
-    def process_proximity_event(self, new_status):
+    # react on presence events
+    def process_presence_event(self, presence_before, presence_now):
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.logger.debug("RGB-LED Processing proximity event")
-            if new_status['status'][self.core.location]:
+            self.logger.debug("RGB-LED Processing presence event")
+            if len(presence_now):
                 # If automatic RGB LED on coming home should be implemented, this is the place for it
                 # See the MPD Client for details.
                 pass

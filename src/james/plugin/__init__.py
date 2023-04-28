@@ -203,8 +203,8 @@ class Plugin(object):
     def process_message(self, message):
         pass
 
-    # proximity event method
-    def process_proximity_event(self, new_status):
+    # presence event method
+    def process_presence_event(self, presence_before, presence_now):
         pass
 
     # discovery event method

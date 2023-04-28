@@ -20,7 +20,7 @@ from . import config
 from . import jamesmessage
 from . import jamesutils
 from . import plugin
-from . import proximitystatus
+from . import presence
 
 # also pika hack
 # import logging
@@ -116,15 +116,14 @@ class Core(object):
         self.passive = False
         self.uuid = str(uuid.uuid1())
         self.location = 'home'
-        self.proximity_status = proximitystatus.ProximityStatus(self)
+        self.presences = presence.Presences(self)
         self.no_alarm_clock = False
-        self.persons_status = {}
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
         self.ghost_commands = command.Command('ghost')
         self.nodes_online = {}
         self.master_node = ''
-        self.proximity_state_file = os.path.join(os.path.expanduser("~"), ".james_proximity_state")
+        self.presences_file = os.path.join(os.path.expanduser("~"), ".james_presences")
         self.stats_file = os.path.join(os.path.expanduser("~"), ".james_stats")
         self.core_lock = threading.RLock()
         self.rabbitmq_channels = []
@@ -316,17 +315,13 @@ class Core(object):
         self.message_channel = broadcastchannel.BroadcastChannel(self, 'msg')
         self.message_channel.add_listener(self.message_listener)
 
-        self.logger.debug("RabbitMQ: Create proximity channel")
-        self.proximity_channel = broadcastchannel.BroadcastChannel(self, 'proximity')
-        self.proximity_channel.add_listener(self.proximity_listener)
+        self.logger.debug("RabbitMQ: Create presence channel")
+        self.presence_channel = broadcastchannel.BroadcastChannel(self, 'presence')
+        self.presence_channel.add_listener(self.presence_listener)
 
         self.logger.debug("RabbitMQ: Create no_alarm_clock channel")
         self.no_alarm_clock_channel = broadcastchannel.BroadcastChannel(self, 'no_alarm_clock')
         self.no_alarm_clock_channel.add_listener(self.no_alarm_clock_listener)
-
-        self.logger.debug("RabbitMQ: Create persons_status channel")
-        self.persons_status_channel = broadcastchannel.BroadcastChannel(self, 'persons_status')
-        self.persons_status_channel.add_listener(self.persons_status_listener)
 
         self.logger.debug("RabbitMQ: Create dataRequest & dataResponse channels")
         self.data_request_channel = broadcastchannel.BroadcastChannel(self, 'dataRequest')
@@ -335,12 +330,11 @@ class Core(object):
         self.data_response_channel.add_listener(self.data_response_listener)
 
         try:
-            # This is not really working as expected. But somewhat -.-
-            file = open(self.proximity_state_file, 'r')
-            self.proximity_status.status[self.location] = self.utils.convert_from_unicode(json.loads(file.read()))
+            file = open(self.presences_file, 'r')
+            self.presences.load(json.loads(file.read()))
             file.close()
             if self.config['core']['debug']:
-                self.logger.debug("Loading proximity status from %s" % self.proximity_state_file)
+                self.logger.debug("Loading presences from %s" % self.presences_file)
         except IOError:
             pass
         except ValueError:
@@ -480,8 +474,6 @@ class Core(object):
             if self.master:
                 self.config_channel.send((self.config, self.uuid))
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-                # Send actual proximity state
-                # self.publish_proximity_status(self.proximity_status.get_all_status_copy(), 'core')
 
                 # send current no_alarm_clock value
                 self.no_alarm_clock_update(self.no_alarm_clock, 'core')
@@ -606,91 +598,42 @@ class Core(object):
         for p in self.plugins:
             p.process_message(message)
 
-    # persons_status channel methods
-    def persons_status_listener(self, msg):
+    # presence channel methods
+    def presence_listener(self, msg):
         """
-        Listens to persons_status changes on the persons_status channel and
-        update the local storage.
+        Listens to presence changes on the presence channel and update the local storage.
+        Calls process_presence_event() on all started plugins if something changed here.
         """
-        if msg['location'] == self.location:
-            self.logger.debug("Received persons_status update: %s. Saving it to core." % msg['persons_status'])
-            self.persons_status = self.utils.convert_from_unicode(msg['persons_status'])
+        self.logger.debug("core.presence_listener: %s" % msg)
+        (changed, presence_before, presence_now) = self.presences.process_presence_message(msg)
+        if changed:
+            self.logger.debug("Received presence update (listener). Calling process_presence_event on plugins.")
+            for p in self.plugins:
+                p.process_presence_event(presence_before, presence_now)
 
-    def send_persons_status(self, persons_status, plugin_name):
-        """
-        Call the distribution method for persons states
-        """
-        self.add_timeout(0, self.publish_persons_status_callback, persons_status, plugin_name)
+    def get_present_users_here(self):
+        return self.presences.get_present_users_here()
 
-    def publish_persons_status_callback(self, persons_status, plugin_name):
+    def presence_event(self, plugin_name, users):
         """
-        send the persons states over the persons_status channel.
+        A presence plugin found a change in persons and wants to send this to all nodes
         """
-        self.logger.debug('Publishing persons status update %s from plugin %s' % (persons_status, plugin_name))
+        new_presence = {'location': self.location, 'plugin': plugin_name, 'host': self.hostname, 'users': users}
+        self.logger.debug("publish_presence_event: %s" % new_presence)
+        self.publish_presence_status(new_presence)
+
+    def publish_presence_status(self, new_presence):
+        self.add_timeout(0, self.publish_presence_status_callback, new_presence)
+
+    def publish_presence_status_callback(self, new_presence):
+        """
+        send the new_presence presence over the presence channel.
+        """
+        self.logger.debug("Publishing presence update %s" % new_presence)
         try:
-            self.persons_status_channel.send({'persons_status': persons_status,
-                                              'host': self.hostname,
-                                              'plugin': plugin_name,
-                                              'location': self.location})
+            self.presence_channel.send(new_presence)
         except Exception as e:
-            self.logger.warning("Could not send persons status (%s)" % e)
-
-    # proximity channel methods
-    def proximity_listener(self, msg):
-        """
-        Listens to proximity status changes on the proximity channel and
-        update the local storage. Calls process_proximity_event() on all
-        started plugins.
-        """
-        try:
-            self.logger.debug("core.proximity_listener: %s" % msg)
-            old_status = self.proximity_status.get_status_here()
-            new_status = self.proximity_status.update_and_return_status_here(msg['status'], msg['plugin'])
-
-            if old_status != new_status:
-                self.logger.debug("Received proximity update (listener). Calling process_proximity_event on plugins.")
-                for p in self.plugins:
-                    p.process_proximity_event(msg)
-        except KeyError:
-            # this proximity event is not for our location. just ignore it for now
-            pass
-
-    def proximity_event(self, changed_status, proximity_type, forced=False):
-        """
-        If the local proximity state has changed, call the publish method
-        """
-        new_status = {}
-        old_status = self.proximity_status.check_for_change(proximity_type)
-
-        for location in list(old_status.keys()):
-            if location == self.location:
-                if forced:
-                    new_status[location] = changed_status
-                    continue
-                elif old_status[location] != changed_status:
-                    new_status[location] = changed_status
-                    continue
-
-            new_status[location] = old_status[location]
-
-        self.logger.debug("publish_proximity_status: %s from %s" % (new_status, proximity_type))
-        self.publish_proximity_status(new_status, proximity_type)
-
-    def publish_proximity_status(self, new_status, proximity_type):
-        self.add_timeout(0, self.publish_proximity_status_callback, new_status, proximity_type)
-
-    def publish_proximity_status_callback(self, new_status, proximity_type):
-        """
-        send the new_status proximity status over the proximity channel.
-        """
-        self.logger.debug("Publishing proximity status update %s from plugin %s" % (new_status, proximity_type))
-        try:
-            self.proximity_channel.send({'status': new_status,
-                                         'host': self.hostname,
-                                         'plugin': proximity_type,
-                                         'location': self.location})
-        except Exception as e:
-            self.logger.warning("Could not send proximity status (%s)" % e)
+            self.logger.warning("Could not send presence update (%s)" % e)
 
     # no_alarm_clock channel methods
     def no_alarm_clock_listener(self, msg):
@@ -872,17 +815,17 @@ class Core(object):
                 with Timeout(30):
                     p.terminate()
             try:
-                file = open(self.proximity_state_file, 'w')
-                file.write(json.dumps(self.proximity_status.status[self.location]))
+                file = open(self.presences_file, 'w')
+                file.write(json.dumps(self.presences.dump()))
                 file.close()
-                self.logger.info("Saving proximity status to %s" % self.proximity_state_file)
+                self.logger.info("Saving presences to %s" % self.presences_file)
             except IOError:
                 if self.passive:
-                    self.logger.info("Could not safe proximity status to file")
+                    self.logger.info("Could not safe presences to file")
                 else:
-                    self.logger.warning("Could not safe proximity status to file")
+                    self.logger.warning("Could not safe presences to file")
             except KeyError:
-                # no proximity state found for this location
+                # no presence state found for this location
                 pass
 
             if threading.active_count() > 1:

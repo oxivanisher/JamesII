@@ -554,7 +554,7 @@ class MpdClientPlugin(Plugin):
     def mpd_sleep(self, args):
         self.sleeps += 1
         self.logger.debug('Activating sleep mode')
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             if self.fade_in_progress:
                 self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
             else:
@@ -576,7 +576,7 @@ class MpdClientPlugin(Plugin):
         self.noises += 1
         self.logger.debug('Activating noise mode')
 
-        if self.core.proximity_status.get_status_here():
+        if len(self.core.get_present_users_here()):
             if self.fade_in_progress:
                 self.logger.info("MPD Noise mode NOT activated due other fade in progress")
                 return ["MPD Noise mode NOT activated due other fade in progress"]
@@ -615,7 +615,7 @@ class MpdClientPlugin(Plugin):
 
             if activate:
                 self.logger.debug('Activating wakeup mode')
-                if self.core.proximity_status.get_status_here():
+                if len(self.core.get_present_users_here()):
                     if self.core.no_alarm_clock:
                         msg = "MPD Wakeup mode NOT activated due no_alarm_clock is set (check gcal)"
                         self.logger.info(msg)
@@ -657,11 +657,11 @@ class MpdClientPlugin(Plugin):
             self.client_worker.clear()
         self.logger.debug("Fade ended")
 
-    # react on proximity events
-    def process_proximity_event(self, new_status):
+    # react on presence events
+    def process_presence_event(self, presence_before, presence_now):
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.logger.debug("MPD Processing proximity event")
-            if new_status['status'][self.core.location]:
+            self.logger.debug("MPD Processing presence event")
+            if len(presence_now):
                 self.logger.debug("Somebody is home. Check to see if a coming_home radio station is configured.")
                 if self.config['nodes'][self.core.hostname]['coming_home']:
                     self.logger.debug("coming_home radio station is %s, starting to play." %
@@ -671,7 +671,7 @@ class MpdClientPlugin(Plugin):
                 self.logger.debug("Nobody is at home. Stopping radio.")
                 self.core.add_timeout(0, self.radio_off, False)
         else:
-            self.logger.debug("MPD NOT Processing proximity event, since only 10 seconds have past since core startup")
+            self.logger.debug("MPD NOT Processing presence event, since only 10 seconds have past since core startup")
 
     def return_status(self, verbose=False):
         self.logger.debug('Showing status')

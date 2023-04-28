@@ -12,10 +12,12 @@ from james.plugin import *
 # FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
 # where do we keep the store of mac addresses? objects, objects, objects
 
-class ProximityPlugin(Plugin):
+# FIXME rename proximity to presence!!
+
+class BTPresencePlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(ProximityPlugin, self).__init__(core, descriptor)
+        super(BTPresencePlugin, self).__init__(core, descriptor)
 
         self.status = False
         self.hosts_online = []
@@ -350,11 +352,11 @@ class ProximityPlugin(Plugin):
 
 
 descriptor = {
-    'name': 'proximity',
-    'help_text': 'Proximity detection plugin',
+    'name': 'btpresence',
+    'help_text': 'Bluetooth presence detection plugin',
     'command': 'prox',
     'mode': PluginMode.MANAGED,
-    'class': ProximityPlugin,
+    'class': BTPresencePlugin,
     'detailsNames': {'proximityChecks': "Run proximity checks",
                      'proximityUpdates': "Proximity status changes",
                      'alwaysAtHome': "Always at home override active",

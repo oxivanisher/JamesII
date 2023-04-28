@@ -223,9 +223,9 @@ class KodiPlugin(Plugin):
         return {'year': movieDBRaw['result']['moviedetails']['year'],
                 'originaltitle': movieDBRaw['result']['moviedetails']['originaltitle']}
 
-    def process_proximity_event(self, new_status):
-        self.logger.debug("Kodi Processing proximity event")
-        if not new_status['status'][self.core.location]:
+    def process_presence_event(self, presence_before, presence_now):
+        self.logger.debug("Kodi Processing presence event")
+        if not len(presence_now):
             self.core.add_timeout(0, self.cmd_stop, None)
 
     def return_status(self, verbose=False):

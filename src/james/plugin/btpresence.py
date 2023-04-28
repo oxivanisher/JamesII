@@ -203,6 +203,7 @@ class BTPresencePlugin(Plugin):
                             persons_detected.append(person)
 
         persons_detected = sorted(list(set(persons_detected)))
+        self.logger.debug("Presence found the following persons: %s" % ', '.join(persons_detected))
 
         # if something changed, increment the presence_updates counter
         if self.tmp_users_here != persons_detected:
@@ -213,11 +214,14 @@ class BTPresencePlugin(Plugin):
                 self.logger.info('Bluetooth presence: Nobody is at <%s>' % self.core.location)
 
         persons_left = set(self.tmp_users_here).difference(persons_detected)
-        persons_came = set(persons_detected).difference(self.tmp_users_here)
+        persons_entered = set(persons_detected).difference(self.tmp_users_here)
+
+        self.logger.debug("Persons left: %s" % ', '.join(persons_left))
+        self.logger.debug("Persons entered: %s" % ', '.join(persons_entered))
 
         message = []
-        if persons_came:
-            message.append(' and '.join(persons_came) + ' entered')
+        if persons_entered:
+            message.append(' and '.join(persons_entered) + ' entered')
         if persons_left:
             message.append(' and '.join(persons_left) + ' left')
 

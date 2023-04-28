@@ -54,7 +54,7 @@ class BTPresencePlugin(Plugin):
         self.load_state('alwaysAtHome', False)
         self.last_presence_check_start = 0
         self.last_presence_check_end = 0
-        self.lastProximityCheckDuration = 0
+        self.last_presence_check_duration = 0
         self.current_presence_sleep = 0
         self.missing_count = -1
         self.messageCache = []
@@ -188,10 +188,10 @@ class BTPresencePlugin(Plugin):
         return mac_addresses
 
     def presence_check_worker_callback(self, mac_addresses):
-        self.logger.debug('Presence scan finished, received %s' % mac_addresses)
+        self.logger.debug('Presence scan finished, found %s' % ', '.join(mac_addresses))
         self.presence_checks += 1
         self.last_presence_check_end = time.time()
-        self.lastProximityCheckDuration = self.last_presence_check_end - self.last_presence_check_start
+        self.last_presence_check_duration = self.last_presence_check_end - self.last_presence_check_start
         persons_detected = []
 
         # registering the person for which devices as detected
@@ -236,7 +236,7 @@ class BTPresencePlugin(Plugin):
                 message.append('Bluetooth presence is starting to watch on %s for <%s>!' %
                                (self.core.hostname, self.core.location))
                 self.logger.info("Bluetooth presence missing-counter reached its max (%s), sending presence status: "
-                                 "%s@%s" % (self.config['miss_count'], self.status, self.core.location))
+                                 "%s@%s" % (self.config['miss_count'], self.users_here, self.core.location))
                 self.users_here = self.tmp_users_here
                 self.presence_event(self.users_here)
             elif self.missing_count < int(self.config['miss_count']):
@@ -248,7 +248,7 @@ class BTPresencePlugin(Plugin):
                 # since the count keeps counting, just ignore it
                 pass
 
-        if self.tmp_users_here != self.users_here and self.status:
+        if self.tmp_users_here != self.users_here and len(self.users_here):
             if self.missing_count >= int(self.config['miss_count']):
                 message.append('Bluetooth presence is stopping to watch on %s for <%s>!' %
                                (self.core.hostname, self.core.location))
@@ -279,8 +279,8 @@ class BTPresencePlugin(Plugin):
         ret = {'presence_checks': self.presence_checks, 'presence_updates': self.presence_updates,
                'alwaysAtHome': self.always_at_home, 'last_presence_check_start': self.last_presence_check_start,
                'last_presence_check_end': self.last_presence_check_end,
-               'lastProximityCheckDuration': self.lastProximityCheckDuration,
-               'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.status,
+               'last_presence_check_duration': self.last_presence_check_duration,
+               'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.users_here,
                'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time()}
         return ret
 
@@ -292,12 +292,12 @@ descriptor = {
     'mode': PluginMode.MANAGED,
     'class': BTPresencePlugin,
     'detailsNames': {'presence_checks': "Run presence checks",
-                     'presence_updates': "Proximity status changes",
+                     'presence_updates': "Presence status changes",
                      'alwaysAtHome': "Always at home override active",
                      'last_presence_check_start': "Last Proximity check start",
                      'last_presence_check_end': "Last Proximity check end",
                      'current_presence_sleep': "Current sleep time",
                      'current_presence_state': "Current presence state",
                      'nextCheckIn': "Next check in",
-                     'lastProximityCheckDuration': "Last Proximity check duration"}
+                     'last_presence_check_duration': "Last Proximity check duration"}
 }

@@ -7,6 +7,7 @@ class Presence(object):
         self.location = location
         self.plugin = plugin
         self.host = host
+        self.last_update = last_update
         if self.last_update == 0.0:
             self.last_update = time.time()
         self.users = users

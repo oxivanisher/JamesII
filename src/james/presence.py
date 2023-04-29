@@ -42,7 +42,7 @@ class Presences(object):
     def check_timeouts(self):
         for presence in self.presences:
             if not presence.is_timeout_ok():
-                self.core.logger("Presence removed due to node not sending updates (presence_timeout):" % presence)
+                self.core.logger("Presence removed due to node not sending updates (presence_timeout):" % presence.dump())
                 self.presences.remove(presence)
 
     def get_present_users_here(self):

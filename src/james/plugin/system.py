@@ -94,7 +94,7 @@ class SystemPlugin(Plugin):
             return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
 
         return_message.append(crate_message("Location", "Plugin", "Hostname", "Age", "Users"))
-        for presence in self.core.presences:
+        for presence in self.core.presences.presences:
             return_message.append(
                 crate_message(presence.location, presence.plugin, presence.host, (time.time() - presence.last_update),
                               ', '.join(presence.users)))

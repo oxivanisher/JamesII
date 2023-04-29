@@ -98,7 +98,7 @@ class SystemPlugin(Plugin):
             return_message.append(
                 crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 4),
                               ', '.join(presence.users)))
-        self.core.logger.warning("Test me: %s" % return_message)
+
         return return_message
 
     def cmd_activate_core_debug(self, args):

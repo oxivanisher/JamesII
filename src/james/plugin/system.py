@@ -93,10 +93,10 @@ class SystemPlugin(Plugin):
         def crate_message(location, plugin, host, last_update, users):
             return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
 
-        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age", "Users"))
+        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
         for presence in self.core.presences.presences:
             return_message.append(
-                crate_message(presence.location, presence.plugin, presence.host, (time.time() - presence.last_update),
+                crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 4),
                               ', '.join(presence.users)))
         self.core.logger.warning("Test me: %s" % return_message)
         return return_message

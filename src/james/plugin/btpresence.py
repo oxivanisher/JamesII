@@ -38,8 +38,11 @@ class BTPresencePlugin(Plugin):
                 self.commands.create_subcommand('persons', 'Shows the persons currently detected', self.show_persons)
                 self.commands.create_subcommand('presence', 'Run a manual presence check', self.presence_check)
                 self.commands.create_subcommand('pair', 'Pair with a device (add BT MAC)', self.prepare_pair)
-                self.commands.create_subcommand('always_at_home', 'Override to be always at home (true/false)',
-                                                self.always_at_home)
+                always_at_home_command = self.commands.create_subcommand('always_at_home',
+                                                                         'Override to be always at home',
+                                                                         None)
+                always_at_home_command.create_subcommand('on', 'Activate always at home', self.always_at_home_on)
+                always_at_home_command.create_subcommand('off', 'Deactivate always at home', self.always_at_home_off)
 
         atexit.register(self.save_state)
         self.persons_btpresence_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_status")
@@ -129,19 +132,19 @@ class BTPresencePlugin(Plugin):
             ret.append("%10s is here" % person)
         return ret
 
-    def always_at_home(self, args):
-        if args[0] == "true":
-            self.always_at_home = True
-            self.logger.info("Presence always_at_home override ENABLED, sending presence status: "
-                             "%s@%s" % (self.always_at_home, self.core.location))
-            self.presence_event(self.users_here)
-            return ["Always at home override ENABLED"]
-        else:
-            self.always_at_home = False
-            self.logger.info("Presence always_at_home override DISABLED, sending presence status: "
-                             "%s@%s" % (self.always_at_home, self.core.location))
-            self.presence_event(self.users_here)
-            return ["Always at home override DISABLED"]
+    def always_at_home_on(self, args):
+        self.always_at_home = True
+        self.logger.info("Presence always_at_home override ENABLED, sending presence status: "
+                         "%s@%s" % (self.always_at_home, self.core.location))
+        self.presence_event(self.users_here)
+        return ["Always at home override ENABLED"]
+
+    def always_at_home_off(self, args):
+        self.always_at_home = False
+        self.logger.info("Presence always_at_home override DISABLED, sending presence status: "
+                         "%s@%s" % (self.always_at_home, self.core.location))
+        self.presence_event(self.users_here)
+        return ["Always at home override DISABLED"]
 
     # ensure to send our presence info at least every self.core.config['presence_timeout']
     def presence_keepalive_daemon(self):

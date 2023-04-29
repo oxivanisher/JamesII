@@ -43,7 +43,8 @@ class Presences(object):
         for presence in self.presences:
             if not presence.is_timeout_ok():
                 self.core.logger.debug(
-                    "Presence removed due to node not sending updates (presence_timeout):" % presence.dump())
+                    "Presence from host %s and plugin %s removed, due to node not sending updates (presence_timeout):" % (
+                        presence.host, presence.plugin))
                 self.presences.remove(presence)
 
     def get_present_users_here(self):

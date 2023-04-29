@@ -76,9 +76,13 @@ class SystemPlugin(Plugin):
         pass
 
     def cmd_show_presence(self, args):
-        return (["%-10s %-10s are at %s" % (self.core.hostname,
-                                            ', '.join(self.core.get_present_users_here()),
-                                            self.core.location)])
+        if len(self.core.get_present_users_here()):
+            return (["%-10s %s are at %s" % (self.core.hostname,
+                                             ', '.join(self.core.get_present_users_here()),
+                                             self.core.location)])
+        else:
+            return (["%-10s nobody is at %s" % (self.core.hostname,
+                                                self.core.location)])
 
     def cmd_activate_core_debug(self, args):
         self.core.logger.info('Activating core debug')

@@ -211,25 +211,13 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         self.speak_lock.acquire()
 
-        isHere = []
-        adminIsHere = False
-        for person in self.core.persons_status:
-            if self.core.persons_status[person]:
-                isHere.append(person)
-                try:
-                    if self.core.config['persons'][person]['admin']:
-                        adminIsHere = True
-                except Exception:
-                    pass
-
-        # nicetime = time.strftime("%H:%M", time.localtime())
-
         if (time.time() - self.core.startup_timestamp) > 10:
-            if len(isHere):
+            if len(self.core.get_present_users_here()):
                 self.message_cache.append(
-                    'Hey ' + ' and '.join(isHere) + ' it is now %s' % self.utils.get_time_string())
+                    'Hey ' + ' and '.join(
+                        self.core.get_present_users_here()) + ' it is now %s' % self.utils.get_time_string())
 
-        if adminIsHere:
+        if self.core.is_admin_user_here():
             if len(self.archived_messages) > 0:
                 # reading the log to the admin
                 if len(self.archived_messages) == 1:

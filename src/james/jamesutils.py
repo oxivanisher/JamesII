@@ -208,6 +208,7 @@ class JamesUtils(object):
 
     def wake_on_lan(self, macaddress):
         logger = self.get_logger('jamesutils', self.core.logger)
+        logger.warning("x")
         logger.debug('Wake on lan called for (%s)' % macaddress)
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """

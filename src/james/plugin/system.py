@@ -29,7 +29,8 @@ class SystemPlugin(Plugin):
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
-        self.commands.create_subcommand('proximity', 'Show proximity location and state', self.cmd_show_proximity)
+        self.commands.create_subcommand('presence_overview', 'Show presence location and users there',
+                                        self.cmd_show_presence_overview)
         self.commands.create_subcommand('quit_node', 'Quit supplied node name(s)', self.cmd_quit_node)
         self.commands.create_subcommand('quit_all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
@@ -39,6 +40,8 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
             self.commands.create_subcommand('quit_core', 'Quits the JamesII master node which reloads the config on '
                                                          'startup.', self.cmd_quit_core)
+            self.commands.create_subcommand('presence_detail', 'Show all cached presences on core',
+                                            self.cmd_show_presence_detail)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
@@ -75,10 +78,28 @@ class SystemPlugin(Plugin):
             pass
         pass
 
-    def cmd_show_proximity(self, args):
-        return (["%-10s %-10s %s" % (self.core.hostname,
-                                     self.core.proximity_status.get_status_here(),
-                                     self.core.location)])
+    def cmd_show_presence_overview(self, args):
+        if len(self.core.get_present_users_here()):
+            return (["%-10s %s are at %s" % (self.core.hostname,
+                                             ', '.join(self.core.get_present_users_here()),
+                                             self.core.location)])
+        else:
+            return (["%-10s nobody is at %s" % (self.core.hostname,
+                                                self.core.location)])
+
+    def cmd_show_presence_detail(self, args):
+        return_message = []
+
+        def crate_message(location, plugin, host, last_update, users):
+            return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
+
+        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
+        for presence in self.core.presences.presences:
+            return_message.append(
+                crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 4),
+                              ', '.join(presence.users)))
+
+        return return_message
 
     def cmd_activate_core_debug(self, args):
         self.core.logger.info('Activating core debug')
@@ -240,8 +261,7 @@ class SystemPlugin(Plugin):
         core_data = {'master': self.core.master, 'uuid': self.core.uuid, 'ip': self.get_ip([]),
                      'startupTimestamp': self.core.startup_timestamp, 'fqdn': socket.getfqdn(),
                      'location': self.core.location, 'platform': sys.platform, 'osUsername': self.core.os_username,
-                     'now': time.time(), 'proximityStatus': self.core.proximity_status.get_status_here(),
-                     'personsStatus': self.core.persons_status}
+                     'now': time.time(), 'presenceStatus': self.core.get_present_users_here()}
         return core_data
 
 
@@ -256,10 +276,9 @@ descriptor = {
                      'ip': "IPs",
                      'startupTimestamp': "JamesII Startup",
                      'fqdn': "Fully qualified domain name",
-                     'location': "Proximity location",
+                     'location': "Presence location",
                      'platform': "Platform",
                      'osUsername': "OS Username",
                      'now': "Now Timestamp",
-                     'proximityStatus': "Proximity status on location",
-                     'personsStatus': "Persons location status"}
+                     'presenceStatus': "Presence status on location"}
 }

@@ -107,14 +107,13 @@ class GoogleCalendarPlugin(Plugin):
 
     def get_calendar_ids(self):
         person_client_ids = {}
-        for person in self.core.persons_status:
+        for person in self.core.get_present_users_here():
             self.logger.debug("Found person: %s" % person)
             person_client_ids[person] = []
             try:
-                if self.core.persons_status[person]:
-                    for calendarId in self.core.config['persons'][person]['gcals']:
-                        person_client_ids[person].append(calendarId)
-                        self.logger.debug("Found calendar: %s" % calendarId)
+                for calendarId in self.core.config['persons'][person]['gcals']:
+                    person_client_ids[person].append(calendarId)
+                    self.logger.debug("Found calendar: %s" % calendarId)
             except KeyError:
                 pass
         self.logger.debug("get_calendar_ids returns: %s" % person_client_ids)
@@ -237,9 +236,9 @@ class GoogleCalendarPlugin(Plugin):
             print(e)
 
     # internal
-    def process_proximity_event(self, new_status):
-        self.logger.debug("Google Calendar Processing proximity event")
-        if new_status['status'][self.core.location]:
+    def process_presence_event(self, presence_before, presence_now):
+        self.logger.debug("Google calendar processing presence event")
+        if len(presence_now):
             self.event_cache_timestamp = 0
             self.core.add_timeout(1, self.request_events, False)
             self.core.add_timeout(2, self.cmd_calendar_speak, None)

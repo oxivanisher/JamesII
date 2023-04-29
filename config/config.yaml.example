@@ -11,6 +11,7 @@ core:
  # answer the ping, sleeptimeout the time between cycles
  pingtimeout : 5
  sleeptimeout: 90
+ presence_timeout: 180 # after how long with no update should presence sending nodes be removed from the list
  # you have to be careful with "extending" existing commands. both would be run
  command_aliases:
   at         : mcp at
@@ -173,8 +174,8 @@ transmission:
    password   : secret
    loop_time  : 30
 
-proximity:
-# proximity deamon sleep times. long if somebody is at home, short if not
+btpresence:
+# btpresence deamon sleep times. long if somebody is at home, short if not
  sleep_long : 60
  sleep_short: 20
  miss_count: 5

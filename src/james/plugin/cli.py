@@ -177,11 +177,11 @@ class CliPlugin(Plugin):
         for line in args:
             print(("B%11s@%-10s > %s" % (plugin, host, line)))
 
-    def process_proximity_event(self, new_status):
-        if new_status['status'][self.core.location]:
-            self.logger.info("Proximity event: Somebody is now at %s." % self.core.location)
+    def process_presence_event(self, presence_before, presence_now):
+        if len(presence_now):
+            self.logger.info("Presence event: %s is now at %s." % (', '.join(presence_now), self.core.location))
         else:
-            self.logger.info("Proximity event: Nobody is now at %s." % self.core.location)
+            self.logger.info("Presence event: Nobody is now at %s." % self.core.location)
 
     def timeout_handler(self):
         self.core.terminate()

@@ -66,6 +66,7 @@ class BTPresencePlugin(Plugin):
     def presence_event(self, users):
         if self.always_at_home:
             users += ['always_at_home']
+        users = sorted(list(set(users)))
         self.logger.debug("Presence plugin sending presence trough core: %s" % ', '.join(users))
         self.core.presence_event(self.name, users)
 

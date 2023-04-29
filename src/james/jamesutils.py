@@ -236,25 +236,7 @@ class JamesUtils(object):
         else:
             raise ValueError('Incorrect MAC address format')
 
-        # Pad the synchronization stream.
-        # data = ''.join(['FFFFFFFFFFFF', macaddress * 20])
-        # send_data = ''
-
-        logger.warning("c")
-
-        # Split up the hex values and pack.
-        # for i in range(0, len(data), 2):
-        #     send_data = ''.join([send_data, struct.pack('B', int(data[i: i + 2], 16))])
-
-        logger.warning("d")
-
-        # Broadcast it to the LAN.
-        # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        # sock.sendto(send_data, ('<broadcast>', 7))
-
         send_magic_packet(macaddress)
-        logger.warning("e")
 
     def convert_from_unicode(self, data):
         if isinstance(data, str):

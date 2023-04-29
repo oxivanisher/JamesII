@@ -29,6 +29,8 @@ class SystemPlugin(Plugin):
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
+        self.commands.create_subcommand('presence_overview', 'Show presence location and users there',
+                                        self.cmd_show_presence_overview)
         self.commands.create_subcommand('quit_node', 'Quit supplied node name(s)', self.cmd_quit_node)
         self.commands.create_subcommand('quit_all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
@@ -38,9 +40,7 @@ class SystemPlugin(Plugin):
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
             self.commands.create_subcommand('quit_core', 'Quits the JamesII master node which reloads the config on '
                                                          'startup.', self.cmd_quit_core)
-            self.commands.create_subcommand('presence_overview', 'Show presence location and state',
-                                            self.cmd_show_presence_overview)
-            self.commands.create_subcommand('presence_detail', 'Show presence location and state',
+            self.commands.create_subcommand('presence_detail', 'Show all cached presences on core',
                                             self.cmd_show_presence_detail)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)

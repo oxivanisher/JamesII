@@ -211,15 +211,21 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         self.speak_lock.acquire()
 
+        self.logger.debug("a")
         if (time.time() - self.core.startup_timestamp) > 10:
+            self.logger.debug("aa")
             if len(self.core.get_present_users_here()):
+                self.logger.debug("aaa")
                 self.message_cache.append(
                     'Hey ' + ' and '.join(
                         self.core.get_present_users_here()) + ' it is now %s' % self.utils.get_time_string())
 
+        self.logger.debug("b")
         if self.core.is_admin_user_here():
+            self.logger.debug("bb")
             if len(self.archived_messages) > 0:
                 # reading the log to the admin
+                self.logger.debug("bbb")
                 if len(self.archived_messages) == 1:
                     self.message_cache.append('While we where apart, the following thing happened:')
                 else:
@@ -227,6 +233,7 @@ class EspeakPlugin(Plugin):
                         'While we where apart, the following %s things happened:' % len(self.archived_messages))
                 work_archived_messages = self.archived_messages
                 self.archived_messages = []
+                self.logger.debug("bbbb")
                 for (timestamp, message) in work_archived_messages:
                     self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
 
@@ -235,6 +242,7 @@ class EspeakPlugin(Plugin):
             else:
                 self.message_cache.append('Nothing happened while we where apart.')
 
+        self.logger.debug("c")
         self.speak_lock.release()
 
     def process_presence_event(self, presence_before, presence_now):

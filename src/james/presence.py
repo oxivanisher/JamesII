@@ -52,7 +52,7 @@ class Presences(object):
         self.check_timeouts()
         for presence in self.presences:
             persons_here += presence.get_present_users_here()
-        return list(set(persons_here))
+        return list(set(persons_here)).sort()
 
     def process_presence_message(self, p_msg):
         # process an incoming presence message. returns true if the persons at this location changed, else false

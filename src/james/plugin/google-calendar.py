@@ -212,6 +212,7 @@ class GoogleCalendarPlugin(Plugin):
             self.logger.debug("Returning %s events" % len(return_list))
             if show:
                 return return_list
+        return []
 
     # commands
     def cmd_calendar_show(self, args):

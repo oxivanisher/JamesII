@@ -29,7 +29,10 @@ class SystemPlugin(Plugin):
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
-        self.commands.create_subcommand('presence', 'Show presence location and state', self.cmd_show_presence)
+        self.commands.create_subcommand('presence_overview', 'Show presence location and state',
+                                        self.cmd_show_presence_overview)
+        self.commands.create_subcommand('presence_detail', 'Show presence location and state',
+                                        self.cmd_show_presence_detail)
         self.commands.create_subcommand('quit_node', 'Quit supplied node name(s)', self.cmd_quit_node)
         self.commands.create_subcommand('quit_all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
@@ -75,7 +78,7 @@ class SystemPlugin(Plugin):
             pass
         pass
 
-    def cmd_show_presence(self, args):
+    def cmd_show_presence_overview(self, args):
         if len(self.core.get_present_users_here()):
             return (["%-10s %s are at %s" % (self.core.hostname,
                                              ', '.join(self.core.get_present_users_here()),
@@ -83,6 +86,18 @@ class SystemPlugin(Plugin):
         else:
             return (["%-10s nobody is at %s" % (self.core.hostname,
                                                 self.core.location)])
+
+    def cmd_show_presence_detail(self, args):
+        return_message = []
+
+        def crate_message(location, plugin, host, last_update, users):
+            return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
+
+        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age", "Users"))
+        for presence in self.core.presences:
+            return_message.append(crate_message(presence.location, presence.plugin, presence.host, (time.time() - presence.last_update), ', '.join(presence.users)))
+
+        return return_message
 
     def cmd_activate_core_debug(self, args):
         self.core.logger.info('Activating core debug')

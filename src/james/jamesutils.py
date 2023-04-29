@@ -208,12 +208,9 @@ class JamesUtils(object):
 
     def wake_on_lan(self, macaddress):
         logger = self.get_logger('jamesutils', self.core.logger)
-        logger.warning("x")
         logger.debug('Wake on lan called for (%s)' % macaddress)
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """
-
-        logger.warning("a")
 
         # Check macaddress format and try to compensate.
         if len(macaddress) == 12:
@@ -224,18 +221,15 @@ class JamesUtils(object):
         else:
             raise ValueError('Incorrect MAC address format')
 
-        logger.warning("b")
-
         # Pad the synchronization stream.
-        data = ''.join(['FFFFFFFFFFFF', macaddress * 20])
-        send_data = ''
+        data = ''.join([str('FFFFFFFFFFFF'), str(macaddress) * 20])
+        send_data = str('')
 
         logger.warning("c")
 
         # Split up the hex values and pack.
         for i in range(0, len(data), 2):
-            send_data = ''.join([send_data,
-                                 struct.pack('B', int(data[i: i + 2], 16))])
+            send_data = ''.join([send_data, struct.pack('B', int(data[i: i + 2], 16))])
 
         logger.warning("d")
 

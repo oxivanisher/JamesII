@@ -616,9 +616,10 @@ class Core(object):
 
     def is_admin_user_here(self):
         for person in self.get_present_users_here():
-            if 'admin' in self.config['persons'][person].keys():
-                if self.config['persons'][person]['admin']:
-                    return True
+            if person in self.config['persons'].keys():
+                if 'admin' in self.config['persons'][person].keys():
+                    if self.config['persons'][person]['admin']:
+                        return True
         return False
 
     def presence_event(self, plugin_name, users):

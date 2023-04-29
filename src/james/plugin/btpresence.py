@@ -294,7 +294,7 @@ class BTPresencePlugin(Plugin):
 descriptor = {
     'name': 'btpresence',
     'help_text': 'Bluetooth presence detection plugin',
-    'command': 'prox',
+    'command': 'btpresence',
     'mode': PluginMode.MANAGED,
     'class': BTPresencePlugin,
     'detailsNames': {'presence_checks': "Run presence checks",

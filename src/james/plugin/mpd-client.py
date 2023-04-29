@@ -663,7 +663,7 @@ class MpdClientPlugin(Plugin):
             self.logger.debug("MPD Processing presence event")
             if len(presence_now):
                 self.logger.debug("Somebody is home. Check to see if a coming_home radio station is configured.")
-                if self.config['nodes'][self.core.hostname]['coming_home']:
+                if 'coming_home' in self.config['nodes'][self.core.hostname].keys():
                     self.logger.debug("coming_home radio station is %s, starting to play." %
                                       self.config['nodes'][self.core.hostname]['coming_home'])
                     self.core.add_timeout(0, self.radio_on, [self.config['nodes'][self.core.hostname]['coming_home']])

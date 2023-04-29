@@ -66,7 +66,7 @@ class BTPresencePlugin(Plugin):
     def presence_event(self, users):
         if self.always_at_home:
             users += ['always_at_home']
-        users = list(set(users)).sort()
+        users = sorted(list(set(users)))
         self.logger.debug("Presence plugin sending presence trough core: %s" % ', '.join(users))
         self.core.presence_event(self.name, users)
 
@@ -207,7 +207,7 @@ class BTPresencePlugin(Plugin):
                         if device.lower() == mac_address.lower():
                             persons_detected.append(person)
 
-        persons_detected = list(set(persons_detected)).sort()
+        persons_detected = sorted(list(set(persons_detected)))
         self.logger.debug("Presence found the following persons: %s" % ', '.join(persons_detected))
 
         # if something changed, increment the presence_updates counter

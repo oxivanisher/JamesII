@@ -220,10 +220,9 @@ class GoogleCalendarPlugin(Plugin):
         return self.request_events()
 
     def cmd_calendar_speak(self, args):
-        # try:
-        self.send_command(['espeak', 'say', '. '.join(self.request_events())])
-        # except Exception:
-        #     return []
+        events = self.request_events()
+        if len(events):
+            self.send_command(['espeak', 'say', '. '.join(events)])
 
     def cmd_calendars_list(self, args):
         try:

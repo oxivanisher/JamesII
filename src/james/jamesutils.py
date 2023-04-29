@@ -212,6 +212,8 @@ class JamesUtils(object):
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """
 
+        logger.warning("a")
+
         # Check macaddress format and try to compensate.
         if len(macaddress) == 12:
             pass
@@ -221,14 +223,20 @@ class JamesUtils(object):
         else:
             raise ValueError('Incorrect MAC address format')
 
+        logger.warning("b")
+
         # Pad the synchronization stream.
         data = ''.join(['FFFFFFFFFFFF', macaddress * 20])
         send_data = ''
+
+        logger.warning("c")
 
         # Split up the hex values and pack.
         for i in range(0, len(data), 2):
             send_data = ''.join([send_data,
                                  struct.pack('B', int(data[i: i + 2], 16))])
+
+        logger.warning("d")
 
         # Broadcast it to the LAN.
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

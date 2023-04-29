@@ -211,11 +211,8 @@ class EspeakPlugin(Plugin):
     def greet_homecomer(self):
         self.speak_lock.acquire()
 
-        self.logger.debug("a")
         if (time.time() - self.core.startup_timestamp) > 10:
-            self.logger.debug("aa")
             if len(self.core.get_present_users_here()):
-                self.logger.debug("aaa")
                 self.message_cache.append(
                     'Hey ' + ' and '.join(
                         self.core.get_present_users_here()) + ' it is now %s' % self.utils.get_time_string())

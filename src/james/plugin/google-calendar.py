@@ -170,6 +170,9 @@ class GoogleCalendarPlugin(Plugin):
                 if event['start']['date'] == datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
                     return_string = "Today "
+                elif event['start']['date'] < datetime.now(self.timezone).strftime('%Y-%m-%d'):
+                    happening_today = True
+                    return_string = "Still "
                 else:
                     return_string = "Tomorrow "
 

@@ -384,14 +384,14 @@ class RaspberryPlugin(Plugin):
         self.logger.debug("Processing presence event")
 
         if len(presence_now):
-            if len(self.led_pins) > 3:
-                self.logger.debug("Processing presence event and enabling LED")
-                self.core.add_timeout(0, self.turn_off_led, 3)
+            if len(self.led_pins):
+                self.logger.debug("Processing presence event and enabling last LED")
+                self.core.add_timeout(0, self.turn_off_led, self.led_pins[-1])
                 self.messages_waiting_count = 0
         else:
-            if len(self.led_pins) > 3:
-                self.logger.debug("Processing presence event and disabling LED")
-                self.core.add_timeout(0, self.turn_on_led, 3)
+            if len(self.led_pins):
+                self.logger.debug("Processing presence event and disabling last LED")
+                self.core.add_timeout(0, self.turn_on_led, self.led_pins[-1])
 
     def process_message(self, message):
         self.logger.debug("Processing msg event")
@@ -399,14 +399,14 @@ class RaspberryPlugin(Plugin):
         # at home
         if len(self.core.get_present_users_here()):
             if message.level == 1:
-                if len(self.led_pins) > 0:
+                if len(self.led_pins):
                     self.blink_led(0, 3)
             if message.level == 2:
                 if len(self.led_pins) > 1:
                     self.blink_led(1, 3)
             if message.level == 3:
                 if len(self.led_pins) > 3:
-                    self.blink_led(3, 3)
+                    self.blink_led(2, 3)
         else:
             self.messages_waiting_count += 1
 

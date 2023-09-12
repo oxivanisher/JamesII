@@ -145,6 +145,12 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 
 #### RaspberryPi Plugin:
 
+	The system uses the GPIO numbers. Please be aware, that there are three (!) pin numbering schemes.
+	To reduce confusion, here are some resources which help translate  and explaon the different schemes:
+		* [Interactive Raspberry Pi pinout](https://pinout.xyz/pinout/)
+		* [WiringPi library pin explanation](http://wiringpi.com/pins/)
+  		* [Gordons Projects - WiringPi - Pins](https://projects.drogon.net/raspberry-pi/wiringpi/pins/)
+  
 	My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
 
 ## Technologies and software used (incomplete!):

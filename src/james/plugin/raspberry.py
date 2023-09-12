@@ -274,13 +274,13 @@ class RaspberryPlugin(Plugin):
         self.start_worker()
         count = 0
         if len(self.led_pins):
-            for led_pin in self.led_pins:
-                self.blink_led(led_pin, (len(self.led_pins) - count) * 3, 2)
+            for led_num in range(len(self.led_pins)):
+                self.blink_led(led_num, (len(self.led_pins) - count) * 3, 2)
                 count += 1
             if len(self.core.get_present_users_here()):
-                self.turn_off_led(self.led_pins[-1])
+                self.turn_off_led(len(self.led_pins)-1)
             else:
-                self.turn_on_led(self.led_pins[-1])
+                self.turn_on_led(len(self.led_pins)-1)
 
     def terminate(self):
         self.worker_must_exit()
@@ -336,31 +336,31 @@ class RaspberryPlugin(Plugin):
         return self.start_worker()
 
     # utility methods for the gpio
-    def turn_on_led(self, len_num):
-        if len(self.led_pins) < len_num:
-            self.logger.warning("No LED # %s configured" % len_num)
+    def turn_on_led(self, led_num):
+        if len(self.led_pins) < led_num:
+            self.logger.warning("No LED # %s configured" % led_num)
         else:
-            self.logger.debug("Turning LED # %s on" % len_num)
+            self.logger.debug("Turning LED # %s on" % led_num)
             self.worker_lock.acquire()
-            self.waiting_leds_on.append(self.led_pins[len_num])
+            self.waiting_leds_on.append(self.led_pins[led_num])
             self.worker_lock.release()
 
-    def turn_off_led(self, len_num):
-        if len(self.led_pins) < len_num:
-            self.logger.warning("No LED # %s configured" % len_num)
+    def turn_off_led(self, led_num):
+        if len(self.led_pins) < led_num:
+            self.logger.warning("No LED # %s configured" % led_num)
         else:
-            self.logger.debug("Turning LED # %s off" % len_num)
+            self.logger.debug("Turning LED # %s off" % led_num)
             self.worker_lock.acquire()
-            self.waiting_leds_off.append(self.led_pins[len_num])
+            self.waiting_leds_off.append(self.led_pins[led_num])
             self.worker_lock.release()
 
-    def blink_led(self, len_num, amount=1, sleep=5):
-        if len(self.led_pins) < len_num:
-            self.logger.warning("No LED # %s configured" % len_num)
+    def blink_led(self, led_num, amount=1, sleep=5):
+        if len(self.led_pins) < led_num:
+            self.logger.warning("No LED # %s configured" % led_num)
         else:
-            self.logger.debug("Blinking led # %s" % len_num)
+            self.logger.debug("Blinking led # %s" % led_num)
             self.worker_lock.acquire()
-            self.waiting_leds_blink.append((self.led_pins[len_num], amount, sleep))
+            self.waiting_leds_blink.append((self.led_pins[led_num], amount, sleep))
             self.worker_lock.release()
 
     # methods for worker process
@@ -405,12 +405,12 @@ class RaspberryPlugin(Plugin):
         if len(presence_now):
             if len(self.led_pins):
                 self.logger.debug("Processing presence event and enabling last LED")
-                self.core.add_timeout(0, self.turn_off_led, self.led_pins[-1])
+                self.core.add_timeout(0, self.turn_off_led, len(self.led_pins)-1)
                 self.messages_waiting_count = 0
         else:
             if len(self.led_pins):
                 self.logger.debug("Processing presence event and disabling last LED")
-                self.core.add_timeout(0, self.turn_on_led, self.led_pins[-1])
+                self.core.add_timeout(0, self.turn_on_led, len(self.led_pins)-1)
 
     def process_message(self, message):
         self.logger.debug("Processing msg event")

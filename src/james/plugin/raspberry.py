@@ -273,13 +273,14 @@ class RaspberryPlugin(Plugin):
     def start(self):
         self.start_worker()
         count = 0
-        for led_pin in self.led_pins:
-            self.blink_led(led_pin, (len(self.led_pins) - count) * 3, 2)
-            count += 1
-        if len(self.core.get_present_users_here()):
-            self.turn_off_led(self.led_pins[-1])
-        else:
-            self.turn_on_led(self.led_pins[-1])
+        if len(self.led_pins):
+            for led_pin in self.led_pins:
+                self.blink_led(led_pin, (len(self.led_pins) - count) * 3, 2)
+                count += 1
+            if len(self.core.get_present_users_here()):
+                self.turn_off_led(self.led_pins[-1])
+            else:
+                self.turn_on_led(self.led_pins[-1])
 
     def terminate(self):
         self.worker_must_exit()

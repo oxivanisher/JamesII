@@ -131,34 +131,35 @@ kodi:
    password   :
 
 raspberry:
+# pins numbers are GPIO pins!
  nodes:
   node_name:
    led_pins:
-    - 1
-    - 2
-    - 3
-    - 4
+    - 17
+    - 5
+    - 27
+    - 22
    buttons:
-    - pin     : 4
+    - pin     : 23
       seconds : 0
       # attention: this is seconds the button is held. so 0 is also possible if the button is just tipped
       command : mpd radio toggle
-    - pin     : 4
+    - pin     : 23
       seconds : 3
       command : sys quit
-    - pin     : 4
+    - pin     : 23
       seconds : 5
       command : mpd radio sleep
-    - pin     : 5
+    - pin     : 24
       seconds : 1
       command : espeak say button 5 pressed
 #   switches:
-#    - pin     : 5
+#    - pin     : 24
 #      cmd_on  : espeak say switch 5 on
 #      cmd_off : espeak say switch 5 off
     pull_up:
-     4: True
-     5: False
+     23: True
+     24: False
 transmission:
  dont_say:
   - iso

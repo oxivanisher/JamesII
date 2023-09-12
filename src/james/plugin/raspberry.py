@@ -262,8 +262,9 @@ class RaspberryPlugin(Plugin):
             self.commands.create_subcommand('quit', 'Quits the raspberry worker', self.cmd_rasp_quit)
             self.commands.create_subcommand('start', 'Starts the raspberry worker', self.cmd_rasp_start)
             led_commands = self.commands.create_subcommand('led', 'Led control commands', None)
-            led_commands.create_subcommand('on', 'Switches on given pin', self.cmd_led_on)
-            led_commands.create_subcommand('off', 'Switches off given pin', self.cmd_led_off)
+            led_commands.create_subcommand('on', 'Switches on given LED', self.cmd_led_on)
+            led_commands.create_subcommand('off', 'Switches off given LED', self.cmd_led_off)
+            led_commands.create_subcommand('show', 'Shows configured LEDs', self.cmd_show_leds)
             show_commands = self.commands.create_subcommand('show', 'Show commands for buttons and switches', None)
             show_commands.create_subcommand('buttons', 'Shows button commands', self.cmd_show_buttons)
             show_commands.create_subcommand('switches', 'Shows switch commands', self.cmd_show_switches)
@@ -272,13 +273,13 @@ class RaspberryPlugin(Plugin):
     def start(self):
         self.start_worker()
         count = 0
-        for led in self.led_pins:
-            self.blink_led(led, (len(self.led_pins) - count) * 3, 2)
+        for led_pin in self.led_pins:
+            self.blink_led(led_pin, (len(self.led_pins) - count) * 3, 2)
             count += 1
         if len(self.core.get_present_users_here()):
-            self.turn_off_led(3)
+            self.turn_off_led(self.led_pins[-1])
         else:
-            self.turn_on_led(3)
+            self.turn_on_led(self.led_pins[-1])
 
     def terminate(self):
         self.worker_must_exit()
@@ -301,24 +302,32 @@ class RaspberryPlugin(Plugin):
                                               ' '.join(self.switch_commands[(pin, state)])))
         return ret
 
+    def cmd_show_leds(self, args):
+        ret = []
+        counter= 0
+        for pin in self.led_pins:
+            ret.append("LED #: %2s, GPIO Pin: %2s" % (counter, pin))
+            counter += 1
+        return ret
+
     def cmd_led_on(self, args):
         args = self.utils.list_unicode_cleanup(args)
         try:
-            pin = int(args[0])
-            self.turn_on_led(pin)
-            return ["Led %s will be switched on" % pin]
+            len_num = int(args[0])
+            self.turn_on_led(len_num)
+            return ["Led %s will be switched on" % len_num]
         except Exception as e:
             return ["Syntax error (%s)" % e]
 
     def cmd_led_off(self, args):
         args = self.utils.list_unicode_cleanup(args)
         try:
-            pin = int(args[0])
-            self.turn_off_led(pin)
-            return ["Led %s will be switched off" % pin]
+            len_num = int(args[0])
+            self.turn_off_led(len_num)
+            return ["Led %s will be switched off" % len_num]
         except Exception as e:
             return ["Syntax error (%s)" % e]
-
+    
     def cmd_rasp_quit(self, args):
         return self.worker_must_exit()
 
@@ -326,23 +335,32 @@ class RaspberryPlugin(Plugin):
         return self.start_worker()
 
     # utility methods for the gpio
-    def turn_on_led(self, pin):
-        self.logger.debug("Turning led on")
-        self.worker_lock.acquire()
-        self.waiting_leds_on.append(pin)
-        self.worker_lock.release()
+    def turn_on_led(self, len_num):
+        if len(self.led_pins) < len_num:
+            self.logger.warning("No LED # %s configured" % len_num)
+        else:
+            self.logger.debug("Turning LED # %s on" % len_num)
+            self.worker_lock.acquire()
+            self.waiting_leds_on.append(self.led_pins[len_num])
+            self.worker_lock.release()
 
-    def turn_off_led(self, pin):
-        self.logger.debug("Turning led off")
-        self.worker_lock.acquire()
-        self.waiting_leds_off.append(pin)
-        self.worker_lock.release()
+    def turn_off_led(self, len_num):
+        if len(self.led_pins) < len_num:
+            self.logger.warning("No LED # %s configured" % len_num)
+        else:
+            self.logger.debug("Turning LED # %s off" % len_num)
+            self.worker_lock.acquire()
+            self.waiting_leds_off.append(self.led_pins[len_num])
+            self.worker_lock.release()
 
-    def blink_led(self, pin, amount=1, sleep=5):
-        self.logger.debug("Blinking led")
-        self.worker_lock.acquire()
-        self.waiting_leds_blink.append((pin, amount, sleep))
-        self.worker_lock.release()
+    def blink_led(self, len_num, amount=1, sleep=5):
+        if len(self.led_pins) < len_num:
+            self.logger.warning("No LED # %s configured" % len_num)
+        else:
+            self.logger.debug("Blinking led # %s" % len_num)
+            self.worker_lock.acquire()
+            self.waiting_leds_blink.append((self.led_pins[len_num], amount, sleep))
+            self.worker_lock.release()
 
     # methods for worker process
     def on_button_press(self, pin, duration):

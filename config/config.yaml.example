@@ -136,7 +136,6 @@ raspberry:
   node_name:
    led_pins:
     - 17
-    - 5
     - 27
     - 22
    buttons:

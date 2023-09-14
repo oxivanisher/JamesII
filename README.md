@@ -146,13 +146,19 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 #### RaspberryPi Plugin:
 
 The system uses the GPIO numbers. Please be aware, that there are three (!) pin numbering schemes.
-To reduce confusion, here are some resources which help translate  and explaon the different schemes:
+To reduce confusion, here are some resources which help translate  and explain the different schemes:
 
 * [Interactive Raspberry Pi pinout](https://pinout.xyz/pinout/)
 * [WiringPi library pin explanation](http://wiringpi.com/pins/)
 * [Gordons Projects - WiringPi - Pins](https://projects.drogon.net/raspberry-pi/wiringpi/pins/)
 
-My prototype for the GPIO is working, but is a real prototype. A schematic will follow sometimes.
+See the `electronics/rasp_plugin_circuits` folder for circuits created with
+[www.circuit-diagram.org](https://www.circuit-diagram.org/).
+
+For the external module to control JamesII with a infrared remote and one button and well as see events
+/ states through LEDs, see the `electronics/rasp_plugin_circuits/rasp_ext_module*` folder and find the 3D
+printed case for it on [printables.com](https://www.printables.com/model/582717-jamesii-external-rasp-plugin-case).
+![external module image](electronics/rasp_plugin_circuits/rasp_ext_module_5.jpg)
 
 ## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol

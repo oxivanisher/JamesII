@@ -134,31 +134,38 @@ raspberry:
 # pins numbers are GPIO pins!
  nodes:
   node_name:
-   led_pins:
-    - 17
-    - 27
-    - 22
-   buttons:
-    - pin     : 23
-      seconds : 0
-      # attention: this is seconds the button is held. so 0 is also possible if the button is just tipped
-      command : mpd radio toggle
-    - pin     : 23
-      seconds : 3
-      command : sys quit
-    - pin     : 23
-      seconds : 5
-      command : mpd radio sleep
-    - pin     : 24
-      seconds : 1
-      command : espeak say button 5 pressed
-#   switches:
-#    - pin     : 24
-#      cmd_on  : espeak say switch 5 on
-#      cmd_off : espeak say switch 5 off
-    pull_up:
-     23: True
-     24: False
+    led_pins:
+      - 17
+      - 27
+      - 22
+    buttons:
+      - pin     : 23
+        seconds : 0
+        command : "@r2living mpd radio toggle"
+      - pin     : 23
+        seconds : 1
+        command : "@r2living mpd radio on virginrock"
+      - pin     : 23
+        seconds : 2
+        command : "gn8"
+      - pin     : 23
+        seconds : 3
+        command : "gn8"
+      - pin     : 23
+        seconds : 4
+        command : "gn8"
+    #   - pin     : 3
+    #     seconds : 5
+    #     command : 'alert sleep mode activated && mpd radio sleep'
+    #   - pin     : 24
+    #     seconds : 0
+    #     command : mpd radio off
+    # pull_up:
+    #   23: True
+    # switches:
+    #  - pin     : 24
+    #    cmd_on  : espeak say switch 5 on
+    #    cmd_off : espeak say switch 5 off
 transmission:
  dont_say:
   - iso

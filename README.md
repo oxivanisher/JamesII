@@ -146,7 +146,6 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 	on_camera_lost "/path/to/JamesII/src/cli.sh motion cam_lost"
 
 #### RaspberryPi Plugin:
-
 The system uses the GPIO numbers. Please be aware, that there are three (!) pin numbering schemes.
 To reduce confusion, here are some resources which help translate  and explain the different schemes:
 
@@ -157,9 +156,25 @@ To reduce confusion, here are some resources which help translate  and explain t
 See the `electronics/rasp_plugin_circuits` folder for circuit examples created with
 [www.circuit-diagram.org](https://www.circuit-diagram.org/).
 
+##### External module
 For the external module to control JamesII with a infrared remote and one button as well as see events
 / states through LEDs, see the `electronics/rasp_plugin_circuits/rasp_ext_module*` folder and find the 3D
 printed case for it on [printables.com](https://www.printables.com/model/582717-jamesii-external-rasp-plugin-case).
+
+I chose the pins for this module to work together with a Hifiberry audio module so I did intentionally not use th GPIOs 2, 3, 16, 18, 19, 20 and 21.
+
+This table explains the different pin naming schemas and how to connect the external module with the example JamesII config:
+
+| James CFG / GPIO | WiringPi | Header pin number | Comment        |
+|------------------|----------|-------------------|----------------|
+|                  |          | 1                 | +3V            |
+|                  |          | 2                 | +5V            |
+|                  |          | 6                 | GND            |
+| 17               | 0        | 11                | LED 1 (green)  |
+| 27               | 2        | 13                | LED 2 (yellow) |
+| 22               | 3        | 15                | LED 3 (red)    |
+| 23               | 4        | 16                | Button         |
+| 25               | 6        | 22                | Infrared rcv   |
 
 ![external module image](electronics/rasp_plugin_circuits/rasp_ext_module_5.jpg)
 

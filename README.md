@@ -14,6 +14,7 @@ The system is also very handy in combination with RaspberryPi's ([www.raspberryp
 noise)
 * BTPresence (managed) to scan the area for known bluetooth mac addresses
 * Raspberry (managed) interactive interface with buttons/switches and LEDs to interact with the real world
+* RGB-LED (managed) to control RGB LEDs trough a arduino connected with i2c to JamesII
 * Sysstat (autoload) to request information's about the host like mounts, net info, memory info, ...
 * System (autoload) james system calls mostly used internally
 * Timer (autoload on core node) the all mighty MCP to time commands with "in" and "at"
@@ -160,6 +161,10 @@ For the external module to control JamesII with a infrared remote and one button
 printed case for it on [printables.com](https://www.printables.com/model/582717-jamesii-external-rasp-plugin-case).
 
 ![external module image](electronics/rasp_plugin_circuits/rasp_ext_module_5.jpg)
+
+#### RGB-LED Plugin:
+
+This plugin uses a arduino connected via i2c to control a WS2812B RGB LED strip. This allows i.e. to use JamesII as a rainbow light alarm clock. Check the `electronics/arduino` folder for little more information.
 
 ## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol

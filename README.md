@@ -152,12 +152,13 @@ To reduce confusion, here are some resources which help translate  and explain t
 * [WiringPi library pin explanation](http://wiringpi.com/pins/)
 * [Gordons Projects - WiringPi - Pins](https://projects.drogon.net/raspberry-pi/wiringpi/pins/)
 
-See the `electronics/rasp_plugin_circuits` folder for circuits created with
+See the `electronics/rasp_plugin_circuits` folder for circuit examples created with
 [www.circuit-diagram.org](https://www.circuit-diagram.org/).
 
-For the external module to control JamesII with a infrared remote and one button and well as see events
+For the external module to control JamesII with a infrared remote and one button as well as see events
 / states through LEDs, see the `electronics/rasp_plugin_circuits/rasp_ext_module*` folder and find the 3D
 printed case for it on [printables.com](https://www.printables.com/model/582717-jamesii-external-rasp-plugin-case).
+
 ![external module image](electronics/rasp_plugin_circuits/rasp_ext_module_5.jpg)
 
 ## Technologies and software used (incomplete!):

@@ -25,9 +25,8 @@ noise)
 * Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )... Yes, this is wy older than Alexa, Siri or Google Assistant
 
 ### Python 3
-JamesII was partially ported to python 3. The core things are working, but there might be errors found in the future.
-The most errors had to do with UTF-8, encoding and decoding things. The following plugins where not tested with python
-3:
+JamesII is mostly ported to python 3. The core things are working great, but there might be errors found in the future. The most errors had to do with UTF-8, encoding and decoding things. The following plugins where not tested with python 3 since I don't use them (anymore?):
+
 * Dbus-Notify
 * HTTP Server
 * Monitor
@@ -63,6 +62,7 @@ The most errors had to do with UTF-8, encoding and decoding things. The followin
 #### Raspbian packages (`apt install XXX`)
 * espeak (espeak plugin)
 * motion (motion plugin)
+
 #### pip packages (`pip install XXX`)
 * wiringpi (raspberrypi plugin, pip install)
 
@@ -71,6 +71,7 @@ The most errors had to do with UTF-8, encoding and decoding things. The followin
 The noise command plays a file from the mpd library in an endless loop (or until i.e. a wakeup command is sent).
 This file needs to be added to the library manually! I downloaded mine from
 [www.audiocheck.net/testtones_pinknoise.php](https://www.audiocheck.net/testtones_pinknoise.php)
+
 ##### mpd and espeak
 If the mpd and espeak plugins are used together, ensure to use the "software" mixer for mpd, or the
 mpd plugin will also regulate the volume of espeak.

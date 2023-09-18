@@ -88,7 +88,7 @@ class GoogleCalendarPlugin(Plugin):
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
-                                                maxResults=100,
+                                                maxResults=200,
                                                 singleEvents=True,
                                                 timeMin=midnight_today_utc_rfc3339,
                                                 timeMax=last_second_tomorrow_utc_rfc3339,

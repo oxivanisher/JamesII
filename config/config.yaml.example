@@ -238,7 +238,8 @@ espeak:
 # set your custom espeak command:
 # -ven+f3 -m -p 70 -s 180  this one sounds somewhat like GlaDOS (play with pitch -p)
 # -v en-rp -ven+m7         british enlish english like a butler
- espeak_command: /usr/bin/espeak -ven+f3 -m -p 70 -s 180
+# you might also use espeak-ng to use the newer version of espeak
+ espeak_command: /usr/bin/espeak-ng -ven+f3 -m -p 70 -s 180
  play_command: /usr/bin/aplay
  nodes:
   - node_name

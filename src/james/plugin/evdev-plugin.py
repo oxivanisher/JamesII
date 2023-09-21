@@ -58,8 +58,8 @@ class EvdevPlugin(Plugin):
         self.workerRunning = True
 
         for path, name, phys in self.get_all_devices():
-            for device in self.config['nodes'][self.core.hostname]:
-                if name == device['device_name']:
+            for device_name in self.config['nodes'][self.core.hostname]:
+                if name == device_name:
                     self.logger.info("Spawning worker for evdev %s on path %s" % (name, path))
                     evdev_worker_thread = EvdevThread(self, path, name)
                     evdev_worker_thread.start()

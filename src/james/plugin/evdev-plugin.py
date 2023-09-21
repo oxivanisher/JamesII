@@ -78,8 +78,9 @@ class EvdevPlugin(Plugin):
     def received_button(self, device_name, event):
         data = evdev.categorize(event)
         self.logger.debug('Button press request (%s: %s)' % (device_name, data.keycode))
-        for button, command in sorted(self.config['nodes'][self.core.hostname][device_name]):
+        for button in self.config['nodes'][self.core.hostname][device_name].keys():
             if button == data.keycode:
+                command = self.config['nodes'][self.core.hostname][device_name][button]
                 self.logger.info('Button command request (%s)' % command)
                 self.commandsReceived += 1
                 self.core.add_timeout(0, self.send_command, command.split())
@@ -87,9 +88,10 @@ class EvdevPlugin(Plugin):
     def cmd_list_buttons(self, args):
         ret = []
         try:
-            for device in sorted(self.config['nodes'][self.core.hostname]):
-                for button, command in sorted(self.config['nodes'][self.core.hostname][device]):
-                    ret.append('%-15s %-15s %s' % (device, button, command))
+            for device_name in sorted(self.config['nodes'][self.core.hostname]):
+                for button in sorted(self.config['nodes'][self.core.hostname][device_name].keys()):
+                    command = self.config['nodes'][self.core.hostname][device_name][button]
+                    ret.append('%-15s %-15s %s' % (device_name, button, command))
         except TypeError:
             pass
         return ret

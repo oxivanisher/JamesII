@@ -79,12 +79,14 @@ class EvdevPlugin(Plugin):
         data = evdev.categorize(event)
         value = event.value
         self.logger.debug('Button press request (%s: %s, %s)' % (device_name, data.keycode, value))
-        for button in self.config['nodes'][self.core.hostname][device_name].keys():
-            if button == data.keycode:
-                command = self.config['nodes'][self.core.hostname][device_name][button]
-                self.logger.info('Button command request (%s)' % command)
-                self.commandsReceived += 1
-                self.core.add_timeout(0, self.send_command, command.split())
+        # value 1: key down, value 0: key up
+        if value:
+            for button in self.config['nodes'][self.core.hostname][device_name].keys():
+                if button == data.keycode:
+                    command = self.config['nodes'][self.core.hostname][device_name][button]
+                    self.logger.info('Button command request (%s)' % command)
+                    self.commandsReceived += 1
+                    self.core.add_timeout(0, self.send_command, command.split())
 
     def cmd_list_buttons(self, args):
         ret = []

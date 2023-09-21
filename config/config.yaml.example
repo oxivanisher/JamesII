@@ -92,7 +92,8 @@ evdev-client:
         KEY_DOWN: 'gn8'
         KEY_LEFT: 'some command'
         KEY_RIGHT: '@mynode rgb off'
-      some_bt_remote: []
+      some_bt_remote:
+        some_key: 'some command'
 
 http-server:
  updatetimeout: 60

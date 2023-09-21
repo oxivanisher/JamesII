@@ -57,7 +57,7 @@ class EvdevPlugin(Plugin):
         self.commandsReceived = 0
         self.workerRunning = True
 
-        for path, name, phys in self.get_all_devices():
+        for name, path, phys in self.get_all_devices():
             for device_name in self.config['nodes'][self.core.hostname]:
                 if name == device_name:
                     self.logger.info("Spawning worker for evdev %s on path %s" % (name, path))
@@ -99,7 +99,7 @@ class EvdevPlugin(Plugin):
     def cmd_list_devices(self, args):
         ret = []
         for name, path, phys in self.get_all_devices():
-            ret.append('%-15s %-15s %s' % (name, path, phys))
+            ret.append('%-25s %-15s %s' % (name, path, phys))
         return ret
 
     def terminate(self):

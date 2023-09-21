@@ -171,11 +171,11 @@ class CliPlugin(Plugin):
 
     def process_command_response(self, args, host, plugin):
         for line in args:
-            print(("D%11s@%-10s > %s" % (plugin, host, line)))
+            print(("D%13s@%-10s > %s" % (plugin, host, line)))
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:
-            print(("B%11s@%-10s > %s" % (plugin, host, line)))
+            print(("B%13s@%-10s > %s" % (plugin, host, line)))
 
     def process_presence_event(self, presence_before, presence_now):
         if len(presence_now):

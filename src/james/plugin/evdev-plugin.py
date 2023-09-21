@@ -77,7 +77,8 @@ class EvdevPlugin(Plugin):
 
     def received_button(self, device_name, event):
         data = evdev.categorize(event)
-        self.logger.debug('Button press request (%s: %s)' % (device_name, data.keycode))
+        value = event.value
+        self.logger.debug('Button press request (%s: %s, %s)' % (device_name, data.keycode, value))
         for button in self.config['nodes'][self.core.hostname][device_name].keys():
             if button == data.keycode:
                 command = self.config['nodes'][self.core.hostname][device_name][button]

@@ -85,14 +85,18 @@ evdev-client:
   debug: False
   nodes:
     node_name:
-      device_name: 'gpio_ir_recv'
-      rcvCommands:
-        - KEY_ENTER: '@mynode mpd radio off'
-        - KEY_PLAYPAUSE: '@myothernode mpd radio on'
-        - KEY_UP: ''
-        - KEY_DOWN: 'gn8'
-        - KEY_LEFT: 'some command'
-        - KEY_RIGHT: '@mynode rgb off'
+      - device_name: 'gpio_ir_recv'
+        infrared: true #defaults to true
+        rcvCommands:
+          - KEY_ENTER: '@mynode mpd radio off'
+          - KEY_PLAYPAUSE: '@myothernode mpd radio on'
+          - KEY_UP: ''
+          - KEY_DOWN: 'gn8'
+          - KEY_LEFT: 'some command'
+          - KEY_RIGHT: '@mynode rgb off'
+      - device_name: 'some_bt_remote'
+        rcvCommands:
+          -
 
 http-server:
  updatetimeout: 60

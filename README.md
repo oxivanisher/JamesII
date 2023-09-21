@@ -86,13 +86,16 @@ audio_output {
 ```
 
 ##### evdev
-If you use a DIY IR receiver or sender, you have to configure `/boot/config.txt` on Raspberry Pis
+If you use a DIY IR receiver, you have to configure `/boot/config.txt` on Raspberry Pis
 something like this:
 ```
 [all]
 dtoverlay=gpio-ir,gpio_pin=25
-dtoverlay=gpio-ir-tx,gpio_pin=4
+# dtoverlay=gpio-ir-tx,gpio_pin=4
 ```
+There was a time, when JamesII supported sending IR codes as well. Since the migration from lircd to evdev,
+this functionality has been removed. Please create a issue or wait for an undefined time for this feature to
+be reimplemented. :)
 
 #### Debian/Ubuntu:
 	apt-get install bluetooth espeak motion

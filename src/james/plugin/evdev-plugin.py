@@ -8,12 +8,13 @@ from james.plugin import *
 
 class EvdevThread(PluginThread):
 
-    def __init__(self, plugin, evdev_device):
+    def __init__(self, plugin, evdev_path, evdev_name):
         super(EvdevThread, self).__init__(plugin)
 
-        self.evdev_device = evdev.InputDevice(evdev_device)
-        self.logger.debug("EVDEV Device: %s" % evdev_device)
-        self.name = "%s > Device: %s" % (self.name, evdev_device)
+        self.device_name = evdev_name
+        self.evdev_device = evdev.InputDevice(evdev_path)
+        self.logger.debug("EVDEV Device: %s" % evdev_path)
+        self.name = "%s > Device: %s - %s" % (self.name, evdev_name, evdev_path)
 
     def work(self):
         # blocking = 0
@@ -24,7 +25,7 @@ class EvdevThread(PluginThread):
                 if event:
                     if event.type == evdev.ecodes.EV_KEY:
                         self.plugin.workerLock.acquire()
-                        self.plugin.send_ir_command(event)
+                        self.plugin.received_button(self.device_name, event)
                         self.plugin.workerLock.release()
 
                 self.plugin.workerLock.acquire()
@@ -49,21 +50,20 @@ class EvdevPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(EvdevPlugin, self).__init__(core, descriptor)
 
-        list_command = self.commands.create_subcommand('list', 'Will return all available evdev devices',
-                                                       self.cmd_list_devices)
-        list_command.create_subcommand('rcv', 'Will return all watched IR signals', self.cmd_list_rcv)
+        self.commands.create_subcommand('devices', 'Will return all available evdev devices', self.cmd_list_devices)
+        self.commands.create_subcommand('buttons', 'Will return all configured buttons', self.cmd_list_buttons)
 
         self.workerLock = threading.Lock()
         self.commandsReceived = 0
         self.workerRunning = True
 
         for path, name, phys in self.get_all_devices():
-            if name == self.config['nodes'][self.core.hostname]['device_name']:
-                self.logger.info("Spawning worker for evdev %s" % name)
-                self.evdev_worker_thread = EvdevThread(self, path)
-                self.evdev_worker_thread.start()
-                self.worker_threads.append(self.evdev_worker_thread)
-                break
+            for device in self.config['nodes'][self.core.hostname]:
+                if name == device['device_name']:
+                    self.logger.info("Spawning worker for evdev %s on path %s" % (name, path))
+                    evdev_worker_thread = EvdevThread(self, path, name)
+                    evdev_worker_thread.start()
+                    self.worker_threads.append(evdev_worker_thread)
 
         self.load_state('commandsReceived', 0)
 
@@ -71,36 +71,33 @@ class EvdevPlugin(Plugin):
         devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
         devices_return = []
         for device in devices:
-            self.logger.debug("Found evdev device: %s - %s - %s" % (device.path, device.name, device.phys))
-            devices_return.append((device.path, device.name, device.phys))
+            self.logger.debug("Found evdev device: %s - %s - %s" % (device.name, device.path, device.phys))
+            devices_return.append((device.name, device.path, device.phys))
         return devices_return
 
-    def send_ir_command(self, event):
+    def received_button(self, device_name, event):
         data = evdev.categorize(event)
-        self.logger.debug('IR Received keycode request (%s)' % data.keycode)
-        for entry in self.config['nodes'][self.core.hostname]['rcvCommands']:
-            for key in entry.keys():
-                if key == data.keycode:
-                    command = entry[key]
-                    self.logger.info('IR Received command request (%s)' % command)
-                    self.commandsReceived += 1
-                    self.core.add_timeout(0, self.send_command, command.split())
+        self.logger.debug('Button press request (%s: %s)' % (device_name, data.keycode))
+        for button, command in self.config['nodes'][self.core.hostname][device_name]['buttons']:
+            if button == data.keycode:
+                self.logger.info('Button command request (%s)' % command)
+                self.commandsReceived += 1
+                self.core.add_timeout(0, self.send_command, command.split())
 
-    def cmd_list_rcv(self, args):
+    def cmd_list_buttons(self, args):
         ret = []
         try:
-            for remote in self.config['nodes'][self.core.hostname]['rcvCommands']:
-                for command in self.config['nodes'][self.core.hostname]['rcvCommands'][remote]:
-                    for key in list(command.keys()):
-                        ret.append('%-15s %-15s %s' % (remote, key, command[key]))
+            for device in sorted(self.config['nodes'][self.core.hostname]):
+                for button, command in self.config['nodes'][self.core.hostname][device]:
+                    ret.append('%-15s %-15s %s' % (device, button, command))
         except TypeError:
             pass
         return ret
 
     def cmd_list_devices(self, args):
         ret = []
-        for path, name, phys in self.get_all_devices():
-            ret.append('%-15s %-15s %s' % (path, name, phys))
+        for name, path, phys in self.get_all_devices():
+            ret.append('%-15s %-15s %s' % (name, path, phys))
         return ret
 
     def terminate(self):
@@ -120,5 +117,5 @@ descriptor = {
     'command': 'evdev',
     'mode': PluginMode.MANAGED,
     'class': EvdevPlugin,
-    'detailsNames': {'commandsReceived': "IR Commands received"}
+    'detailsNames': {'commandsReceived': "Button presses received"}
 }

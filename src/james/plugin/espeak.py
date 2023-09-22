@@ -165,7 +165,7 @@ class EspeakPlugin(Plugin):
             # self.utils.popen_and_wait(self.play_command + [tempFile.name])
             # os.remove(tempFile.name)
 
-            self.utils.popen_and_wait(self.espeak_command + [msg] + ['|', self.play_command])
+            self.utils.popen_and_wait(self.espeak_command + [msg] + ['|'] + self.play_command)
 
             self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
         else:

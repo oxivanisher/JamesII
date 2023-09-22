@@ -4,262 +4,263 @@
 
 # core / basic settings
 core:
- timezone    : Europe/Zurich
- debug       : True      #True/False
- # this configures the periodic node detection
- # pingtimeout is the waittime for the nodes to
- # answer the ping, sleeptimeout the time between cycles
- pingtimeout : 5
- sleeptimeout: 90
- presence_timeout: 180 # after how long with no update should presence sending nodes be removed from the list
- # you have to be careful with "extending" existing commands. both would be run
- command_aliases:
-  at         : mcp at
-  in         : mcp in
-  tee        : mcp in 4m espeak say your tea is ready
-  gn8        : mpd radio sleep
-  bye        : in 1m mpd radio off
-  nom        : espeak say nom nom nom nom nom nom nom nom nom
-  get        : tr add
-  say        : espeak say
-  time       : espeak time
+  timezone: Europe/Zurich
+  debug: True #True/False
+  # this configures the periodic node detection
+  # pingtimeout is the waittime for the nodes to
+  # answer the ping, sleeptimeout the time between cycles
+  pingtimeout: 5
+  sleeptimeout: 90
+  presence_timeout: 180 # after how long with no update should presence sending nodes be removed from the list
+  # you have to be careful with "extending" existing commands. both would be run
+  command_aliases:
+    at: mcp at
+    in: mcp in
+    tee: mcp in 4m espeak say your tea is ready
+    gn8: mpd radio sleep
+    bye: in 1m mpd radio off
+    nom: espeak say nom nom nom nom nom nom nom nom nom
+    get: tr add
+    say: espeak say
+    time: espeak time
 
 persons:
-# cofigure the persons recognized by JamesII
- johndoe:
-  admin      : True
-  jid        : you@your.domain
-  email      : you@your.domain
-  bt_devices:
-   # hostname : bluetooth mac address
-   none      : 00:00:00:00:00:00
-  eth_devices:
-   # hostname : mac address
-   none      : 00:00:00:00:00:00
-  gcals:
-   - you@gmail.com
-   - '#contacts@group.v.calendar.google.com'
+  # cofigure the persons recognized by JamesII
+  johndoe:
+    admin: True
+    jid: you@your.domain
+    email: you@your.domain
+    bt_devices:
+      # hostname : bluetooth mac address
+      none: 00:00:00:00:00:00
+    eth_devices:
+      # hostname : mac address
+      none: 00:00:00:00:00:00
+    gcals:
+      - you@gmail.com
+      - "#contacts@group.v.calendar.google.com"
 
 # plugin configurations "under construction"
 voice-commands:
- debug: True
- replace:
-  computed: 'computer'
-  computers: 'computer'
-  computable: 'computer'
-  competitive: 'computer'
-  computing: 'computer'
-  youtube: 'computer'
-  pc: 'computer'
-  james: 'computer'
-  dead: 'test'
-  see: 'tea'
-  grid: 'quit'
-  visitor: 'guest'
-  they: 'say'
-  and: '&&'
-  send: 'say'
-  voltio: 'video'
- commands:
-  welcome guest: 'alert dear guest... i welcome you. have a plesant stay.'
-  be quiet: 'kodi stop && mpd radio off'
-  stop video: 'kodi stop'
-  pause video: 'kodi pause'
-  resume video: 'kodi pause'
-  test: 'alert test ok'
-  sleep: 'gn8'
-  good night: 'gn8'
-  radio on: 'mpd radio on'
-  radio off: 'mpd radio off'
-  shutdown: 'sys quit'
-  quit: 'sys quit'
-  bye: 'sys quit'
- nodes:
-  node_name:
-   threshold: 0.25
-   lang     : en
-   timeout  : 2
-   keyword  : computer
+  debug: True
+  replace:
+    computed: "computer"
+    computers: "computer"
+    computable: "computer"
+    competitive: "computer"
+    computing: "computer"
+    youtube: "computer"
+    pc: "computer"
+    james: "computer"
+    dead: "test"
+    see: "tea"
+    grid: "quit"
+    visitor: "guest"
+    they: "say"
+    and: "&&"
+    send: "say"
+    voltio: "video"
+  commands:
+    welcome guest: "alert dear guest... i welcome you. have a plesant stay."
+    be quiet: "kodi stop && mpd radio off"
+    stop video: "kodi stop"
+    pause video: "kodi pause"
+    resume video: "kodi pause"
+    test: "alert test ok"
+    sleep: "gn8"
+    good night: "gn8"
+    radio on: "mpd radio on"
+    radio off: "mpd radio off"
+    shutdown: "sys quit"
+    quit: "sys quit"
+    bye: "sys quit"
+  nodes:
+    node_name:
+      threshold: 0.25
+      lang: en
+      timeout: 2
+      keyword: computer
 
 evdev-client:
   debug: False
   nodes:
     node_name:
-      gpio_ir_recv
-        KEY_ENTER: '@mynode mpd radio off'
-        KEY_PLAYPAUSE: '@myothernode mpd radio on'
-        KEY_UP: ''
-        KEY_DOWN: 'gn8'
-        KEY_LEFT: 'some command'
-        KEY_RIGHT: '@mynode rgb off'
+      gpio_ir_recv:
+        KEY_ENTER: "@mynode mpd radio off"
+        KEY_PLAYPAUSE: "@myothernode mpd radio on"
+        KEY_UP: ""
+        KEY_DOWN: "gn8"
+        KEY_LEFT: "some command"
+        KEY_RIGHT: "@mynode rgb off"
       some_bt_remote:
-        some_key: 'some command'
+        some_key: "some command"
 
 http-server:
- updatetimeout: 60
- nodes:
-  node_name:
-   port     : 8181
+  updatetimeout: 60
+  nodes:
+    node_name:
+      port: 8181
 
 jabber:
-# configure your xmpp account for the deamon
- jid        : james@your.domain
- password   : secret
- muc_room   : james2@conference.your.domain
- muc_nick   : JamesII
- ignored:
- - ignored@your.domain
- nodes:
-  - node_name
+  # configure your xmpp account for the daemon
+  jid: james@your.domain
+  password: secret
+  muc_room: james2@conference.your.domain
+  muc_nick: JamesII
+  ignored:
+    - ignored@your.domain
+  nodes:
+    - node_name
 
 # config for modules considered "working"
 motion:
-# where should the movies and image files be copied?
- target-dir : '/media/pot/proximity/'
-# you can leave this blank
- dropbox-dir: '/home/you/Dropbox/Public/Proximity/'
- dropbox-url: 'https://dl.dropbox.com/u/your_dropbox_id/Proximity/'
- nodes:
-  node_name:
-    watch_cmd : 'say good morning && time && mpd radio on'
+  # where should the movies and image files be copied?
+  target-dir: "/media/pot/proximity/"
+  # you can leave this blank
+  dropbox-dir: "/home/you/Dropbox/Public/Proximity/"
+  dropbox-url: "https://dl.dropbox.com/u/your_dropbox_id/Proximity/"
+  nodes:
+    node_name:
+      watch_cmd: "say good morning && time && mpd radio on"
 
 kodi:
- nodes:
-  node_name:
-   host       : localhost
-   port       : 8080
-   username   :
-   password   :
+  nodes:
+    node_name:
+      host: localhost
+      port: 8080
+      username:
+      password:
 
 raspberry:
-# pins numbers are GPIO pins!
- nodes:
-  node_name:
-    led_pins:
-      - 17
-      - 27
-      - 22
-    buttons:
-      - pin     : 23
-        seconds : 0
-        command : "@r2living mpd radio toggle"
-      - pin     : 23
-        seconds : 1
-        command : "@r2living mpd radio on virginrock"
-      - pin     : 23
-        seconds : 2
-        command : "gn8"
-      - pin     : 23
-        seconds : 3
-        command : "gn8"
-      - pin     : 23
-        seconds : 4
-        command : "gn8"
-    #   - pin     : 3
-    #     seconds : 5
-    #     command : 'alert sleep mode activated && mpd radio sleep'
-    #   - pin     : 24
-    #     seconds : 0
-    #     command : mpd radio off
-    # pull_up:
-    #   23: True
-    # switches:
-    #  - pin     : 24
-    #    cmd_on  : espeak say switch 5 on
-    #    cmd_off : espeak say switch 5 off
+  # pins numbers are GPIO pins!
+  nodes:
+    node_name:
+      led_pins:
+        - 17
+        - 27
+        - 22
+      buttons:
+        - pin: 23
+          seconds: 0
+          command: "@r2living mpd radio toggle"
+        - pin: 23
+          seconds: 1
+          command: "@r2living mpd radio on virginrock"
+        - pin: 23
+          seconds: 2
+          command: "gn8"
+        - pin: 23
+          seconds: 3
+          command: "gn8"
+        - pin: 23
+          seconds: 4
+          command: "gn8"
+      #   - pin     : 3
+      #     seconds : 5
+      #     command : 'alert sleep mode activated && mpd radio sleep'
+      #   - pin     : 24
+      #     seconds : 0
+      #     command : mpd radio off
+      # pull_up:
+      #   23: True
+      # switches:
+      #  - pin     : 24
+      #    cmd_on  : espeak say switch 5 on
+      #    cmd_off : espeak say switch 5 off
 transmission:
- dont_say:
-  - iso
-  - mp4
-  - avi
-  - mpg
-  - mkv
- nodes:
-  node_name:
-   host       : localhost
-   port       : 9091
-   username   : admin
-   password   : secret
-   loop_time  : 30
+  dont_say:
+    - iso
+    - mp4
+    - avi
+    - mpg
+    - mkv
+  nodes:
+    node_name:
+      host: localhost
+      port: 9091
+      username: admin
+      password: secret
+      loop_time: 30
 
 btpresence:
-# btpresence deamon sleep times. long if somebody is at home, short if not
- sleep_long : 60
- sleep_short: 20
- miss_count: 5
- nodes:
-  - node_name
+  # btpresence deamon sleep times. long if somebody is at home, short if not
+  sleep_long: 60
+  sleep_short: 20
+  miss_count: 5
+  nodes:
+    - node_name
 
 mpd-client:
- stations:
- # http://www.listenlive.eu/switzerland.html
-  srf1_ag   : http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
-  srf1_be   : http://stream.srg-ssr.ch/regi_be_fr_vs/mp3_128.m3u
-  srf1_zh   : http://stream.srg-ssr.ch/regi_zh_sh/mp3_128.m3u
-  srf2      : http://stream.srg-ssr.ch/drs2/mp3_128.m3u
-  srf3      : http://stream.srg-ssr.ch/drs3/mp3_128.m3u
-  srf4      : http://stream.srg-ssr.ch/drs4news/mp3_128.m3u
-  srfvirus  : http://stream.srg-ssr.ch/drsvirus/mp3_128.m3u
-  chjazz    : http://www.radioswissjazz.ch/live/aacp.m3u
-  chpop     : http://www.radioswisspop.ch/live/aacp.m3u
-  chclassic : http://www.radioswissclassic.ch/live/aacp.m3u
-  chillout  : http://www.oxi.ch/chillout.m3u
-  capitalfm : http://broadcast.infomaniak.ch/capitalfm-high.mp3.m3u
-  lounge    : http://stream-02.zic-network.ch:8000/neo1.m3u
-  radio1    : http://mp3.radio.ch/128k.m3u
-  rabe      : http://stream.rabe.ch:8000/livestream/rabe-mid.mp3.m3u
+  stations:
+    # http://www.listenlive.eu/switzerland.html
+    srf1_ag: http://stream.srg-ssr.ch/regi_ag_so/aacp_64.m3u
+    srf1_be: http://stream.srg-ssr.ch/regi_be_fr_vs/mp3_128.m3u
+    srf1_zh: http://stream.srg-ssr.ch/regi_zh_sh/mp3_128.m3u
+    srf2: http://stream.srg-ssr.ch/drs2/mp3_128.m3u
+    srf3: http://stream.srg-ssr.ch/drs3/mp3_128.m3u
+    srf4: http://stream.srg-ssr.ch/drs4news/mp3_128.m3u
+    srfvirus: http://stream.srg-ssr.ch/drsvirus/mp3_128.m3u
+    chjazz: http://www.radioswissjazz.ch/live/aacp.m3u
+    chpop: http://www.radioswisspop.ch/live/aacp.m3u
+    chclassic: http://www.radioswissclassic.ch/live/aacp.m3u
+    chillout: http://www.oxi.ch/chillout.m3u
+    capitalfm: http://broadcast.infomaniak.ch/capitalfm-high.mp3.m3u
+    lounge: http://stream-02.zic-network.ch:8000/neo1.m3u
+    radio1: http://mp3.radio.ch/128k.m3u
+    rabe: http://stream.rabe.ch:8000/livestream/rabe-mid.mp3.m3u
 
-# configure your basic radio stations
- default_st : srf1_be
- wakeup_st  : srf1_be
- sleep_st   : chillout
- noise_file : pink_noise.wav
+  # configure your basic radio stations
+  default_st: srf1_be
+  wakeup_st: srf1_be
+  sleep_st: chillout
+  noise_file: pink_noise.wav
 
- # fade time in seconds for the wakeup and sleep timers
- wakeup_fade: 900
- sleep_fade : 1800
- sleep_volume_reduction: 10
- # max and talkover (for espeak) volume for mpd
- norm_volume: 80
- noise_volume: 40
- talk_volume: 30
- nodes:
- # mpd server configurations
-  node_name:
-   coming_home: srf1_be
-   host       : localhost
-   port       :
-   password   :
+  # fade time in seconds for the wakeup and sleep timers
+  wakeup_fade: 900
+  sleep_fade: 1800
+  sleep_volume_reduction: 10
+  # max and talkover (for espeak) volume for mpd
+  norm_volume: 80
+  noise_volume: 40
+  talk_volume: 30
+  nodes:
+    # mpd server configurations
+    node_name:
+      coming_home: srf1_be
+      host: localhost
+      port:
+      password:
 
 espeak:
-# set your custom espeak command:
-# -ven+f3 -m -p 70 -s 180  this one sounds somewhat like GlaDOS (play with pitch -p)
-# -v en-rp -ven+m7         british enlish english like a butler
-# you might also use espeak-ng to use the newer version of espeak
- espeak_command: /usr/bin/espeak-ng -ven+f3 -m -p 70 -s 180
- play_command: /usr/bin/aplay
- nodes:
-  - node_name
+  # set your custom espeak command:
+  # -ven+f3 -m -p 70 -s 180  this one sounds somewhat like GlaDOS (play with pitch -p)
+  # -v en-rp -ven+m7         british enlish english like a butler
+  # you might also use espeak-ng to use the newer version of espeak
+  espeak_command: "/usr/bin/espeak-ng -v en-rp -ven+m7 --stdout"
+  # this aplay command enforces the use of the dmix output (to work together with mpd on rpis with hifiberry)
+  play_command: "/usr/bin/aplay -D plug:dmix"
+  nodes:
+    - node_name
 
 monitor:
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 netlogger:
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 timer:
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 cron:
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 wakeonlan:
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 gcal:
   ignored_events:
@@ -267,13 +268,13 @@ gcal:
   no_alarm_clock:
     - vacations
   cache_timeout: 10
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 rgb-led:
- nodes:
-  - node_name
+  nodes:
+    - node_name
 
 locations:
 # configure locations (the system will default to 'home')
- # node_name: location
+# node_name: location

@@ -160,7 +160,9 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         if not self.forced_mute:
-            self.utils.popen_and_wait(self.espeak_command + [msg] + ['|'] + self.play_command)
+            espeak_command = self.espeak_command + [msg] + ['|'] + self.play_command
+            self.utils.popen_and_wait(espeak_command)
+            self.logger.debug('Espeak command: %s' % espeak_command.join(' '))
             self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
         else:
             self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))

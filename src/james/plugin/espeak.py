@@ -160,9 +160,18 @@ class EspeakPlugin(Plugin):
 
     def speak_worker(self, msg):
         if not self.forced_mute:
-            espeak_command = self.espeak_command + [msg] + ['|'] + self.play_command
-            self.utils.popen_and_wait(espeak_command)
+            tempFile = tempfile.NamedTemporaryFile(suffix="-JamesII-Espeak", delete=False)
+
+            espeak_command = self.espeak_command + ['-w', tempFile.name] + [msg]
             self.logger.debug('Espeak command: %s' % ' '.join(espeak_command))
+
+            aplay_command = self.play_command + [tempFile.name]
+            self.logger.debug('Aplay command: %s' % ' '.join(aplay_command))
+
+            self.utils.popen_and_wait(espeak_command)
+            self.utils.popen_and_wait(aplay_command)
+            os.remove(tempFile.name)
+
             self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
         else:
             self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))

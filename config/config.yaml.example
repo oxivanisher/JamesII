@@ -239,6 +239,7 @@ espeak:
   espeak_command: "/usr/bin/espeak-ng -v en-rp -ven+m7 --stdout"
   # this aplay command enforces the use of the dmix output (to work together with mpd on rpis with hifiberry)
   play_command: "/usr/bin/aplay -D plug:dmix"
+  greet_homecomer_delay: 0
   nodes:
     - node_name
 

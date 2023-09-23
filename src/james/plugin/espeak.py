@@ -254,7 +254,13 @@ class EspeakPlugin(Plugin):
         self.logger.debug("Espeak Processing presence event")
         self.check_unmuted()
         if len(presence_now):
-            self.core.add_timeout(0, self.greet_homecomer)
+            try:
+                greeting_delay = int(self.config['greet_homecomer_delay'])
+            except ValueError:
+                self.logger.warning("greet_homecomer_delay config for espeak is not a valid int!")
+                greeting_delay = 0
+
+            self.core.add_timeout(greeting_delay, self.greet_homecomer)
 
     def check_unmuted(self):
         if len(self.core.get_present_users_here()):

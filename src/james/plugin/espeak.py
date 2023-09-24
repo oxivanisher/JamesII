@@ -179,6 +179,7 @@ class EspeakPlugin(Plugin):
 
     def speak_hook(self, args=None):
         if self.delay_speaking_until > time.time():
+            self.core.add_timeout(1, self.speak_hook)
             return
 
         if len(self.message_cache) > 0:
@@ -254,8 +255,9 @@ class EspeakPlugin(Plugin):
         if len(presence_now):
             if "greet_homecomer_delay" in self.config.keys():
                 try:
-                    self.delay_speaking_until = time.time() + self.config['greet_homecomer_delay']
-                    self.logger.info("Espeak will delay speaking for %s seconds" % self.config['greet_homecomer_delay'])
+                    self.delay_speaking_until = time.time() + float(self.config['greet_homecomer_delay'])
+                    self.logger.info("Espeak will delay speaking for %s seconds" %
+                                     float(self.config['greet_homecomer_delay']))
                 except ValueError:
                     self.logger.warning("greet_homecomer_delay config for espeak is not a valid int!")
 

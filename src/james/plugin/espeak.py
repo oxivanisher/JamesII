@@ -25,6 +25,7 @@ class EspeakPlugin(Plugin):
         self.messagesSpoke = 0
         self.talkover = False
         self.load_state('messagesSpoke', 0)
+        self.delay_speaking_until = 0.0
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (msg)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
@@ -177,6 +178,9 @@ class EspeakPlugin(Plugin):
             self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))
 
     def speak_hook(self, args=None):
+        if self.delay_speaking_until > time.time():
+            return
+
         if len(self.message_cache) > 0:
             self.messagesSpoke += len(self.message_cache)
             self.speak_lock.acquire()
@@ -207,8 +211,6 @@ class EspeakPlugin(Plugin):
                     pass
             self.core.add_timeout(1, self.speak_hook)
 
-        return
-
     def process_message(self, message):
         if message.level > 0:  # we really do not want espeak to speak all debug messages
             if self.check_unmuted():
@@ -225,12 +227,9 @@ class EspeakPlugin(Plugin):
                     'Hey ' + ' and '.join(
                         self.core.get_present_users_here()) + ' it is now %s' % self.utils.get_time_string())
 
-        self.logger.debug("b")
         if self.core.is_admin_user_here():
-            self.logger.debug("bb")
             if len(self.archived_messages) > 0:
                 # reading the log to the admin
-                self.logger.debug("bbb")
                 if len(self.archived_messages) == 1:
                     self.message_cache.append('While we where apart, the following thing happened:')
                 else:
@@ -238,7 +237,6 @@ class EspeakPlugin(Plugin):
                         'While we where apart, the following %s things happened:' % len(self.archived_messages))
                 work_archived_messages = self.archived_messages
                 self.archived_messages = []
-                self.logger.debug("bbbb")
                 for (timestamp, message) in work_archived_messages:
                     self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
 
@@ -254,14 +252,13 @@ class EspeakPlugin(Plugin):
         self.logger.debug("Espeak Processing presence event")
         self.check_unmuted()
         if len(presence_now):
-            greeting_delay = 0
             if "greet_homecomer_delay" in self.config.keys():
                 try:
-                    greeting_delay = int(self.config['greet_homecomer_delay'])
+                    self.delay_speaking_until = time.time() + self.config['greet_homecomer_delay']
                 except ValueError:
                     self.logger.warning("greet_homecomer_delay config for espeak is not a valid int!")
 
-            self.core.add_timeout(greeting_delay, self.greet_homecomer)
+            self.core.add_timeout(0, self.greet_homecomer)
 
     def check_unmuted(self):
         if len(self.core.get_present_users_here()):

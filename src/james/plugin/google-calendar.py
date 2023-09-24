@@ -196,9 +196,9 @@ class GoogleCalendarPlugin(Plugin):
                 else:
 
                     if eventTimeStart < now < eventTimeEnd:
-                        return_string = "Until %02d:%02d: " % (eventTimeEnd.hour, eventTimeEnd.minute)
+                        return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)
                     elif now < eventTimeStart:
-                        return_string = "At %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                        return_string = "Today at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
 
             if return_string:
                 if event['status'] == "tentative":

@@ -255,6 +255,7 @@ class EspeakPlugin(Plugin):
             if "greet_homecomer_delay" in self.config.keys():
                 try:
                     self.delay_speaking_until = time.time() + self.config['greet_homecomer_delay']
+                    self.logger.info("Espeak will delay speaking for %s seconds" % self.config['greet_homecomer_delay'])
                 except ValueError:
                     self.logger.warning("greet_homecomer_delay config for espeak is not a valid int!")
 

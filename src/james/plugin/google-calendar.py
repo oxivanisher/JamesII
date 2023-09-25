@@ -157,6 +157,7 @@ class GoogleCalendarPlugin(Plugin):
                 self.event_cache_timestamp = time.time()
 
         return_list = []
+        event_words = []
         no_alarm_clock_active = False
         for (person, event) in self.event_cache:
             self.logger.debug("Analyzing event for %s: %s" % (person, event['summary']))
@@ -182,6 +183,9 @@ class GoogleCalendarPlugin(Plugin):
                     self.logger.info("Found a event which activates no_alarm_clock: %s" % event['summary'])
                     no_alarm_clock_active = True
 
+            # we collect all words to check for the no_alarm_clock_active override at the end
+            event_words.extend(event['summary'].lower().split())
+
             # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
                 self.logger.debug("Ignoring event because of ignored_events: %s" % event)
@@ -206,6 +210,11 @@ class GoogleCalendarPlugin(Plugin):
                     # evil is:
                 return_string += event['summary']
                 return_list.append(return_string)
+
+        for word in event_words:
+            if word in [x.lower() for x in self.config['no_alarm_clock_override']]:
+                self.logger.info("Found a event containing a word which deactivates no_alarm_clock: %s" % word)
+                no_alarm_clock_active = False
 
         self.logger.debug("There are %s events in the cache." % len(return_list))
 

@@ -214,7 +214,7 @@ class GoogleCalendarPlugin(Plugin):
 
         for word in event_words:
             if word in [x.lower() for x in self.config['no_alarm_clock_override']]:
-                self.logger.info("Found a event containing a word which deactivates no_alarm_clock: %s" % word)
+                self.logger.info("Found a event which overrides no_alarm_clock: %s" % word)
                 no_alarm_clock_active = False
 
         self.logger.debug("There are %s events in the cache." % len(return_list))

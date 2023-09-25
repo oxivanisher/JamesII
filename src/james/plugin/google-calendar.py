@@ -200,11 +200,12 @@ class GoogleCalendarPlugin(Plugin):
                     return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 
-                    # we collect all words to check for the no_alarm_clock_active override at the end
-                    event_words.extend(event['summary'].split())
-
                     if eventTimeStart < now < eventTimeEnd:
                         return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)
+
+                        # we collect all words to check for the no_alarm_clock_active override at the end
+                        event_words.extend(event['summary'].split())
+
                     elif now < eventTimeStart:
                         return_string = "Today at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
 

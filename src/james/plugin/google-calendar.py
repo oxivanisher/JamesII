@@ -200,6 +200,9 @@ class GoogleCalendarPlugin(Plugin):
                     return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 
+                    # we collect all words to check for the no_alarm_clock_active override at the end
+                    event_words.extend(event['summary'].split())
+
                     if eventTimeStart < now < eventTimeEnd:
                         return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)
                     elif now < eventTimeStart:
@@ -212,7 +215,6 @@ class GoogleCalendarPlugin(Plugin):
                 return_string += event['summary']
                 return_list.append(return_string)
 
-        self.logger.debug("lala: %s" % ', '.join(event_words))
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
                 self.logger.info("Found a event which overrides no_alarm_clock: %s" % word)

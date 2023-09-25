@@ -177,22 +177,22 @@ class GoogleCalendarPlugin(Plugin):
                 else:
                     return_string = "Tomorrow "
 
+                # we collect all words to check for the no_alarm_clock_active override at the end.
+                if happening_today:
+                    event_words.extend(event['summary'].split())
+
             # check there is a "don't wake up" event present in google calendar
             if event['summary'].lower() in [x.lower() for x in self.config['no_alarm_clock']]:
                 if happening_today:
                     self.logger.info("Found a event which activates no_alarm_clock: %s" % event['summary'])
                     no_alarm_clock_active = True
 
-            # we collect all words to check for the no_alarm_clock_active override at the end
-            if happening_today:
-                event_words.extend(event['summary'].split())
-
             # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
                 self.logger.debug("Ignoring event because of ignored_events: %s" % event)
                 continue
 
-            # normal event:
+            # normal event (with start and end time):
             elif 'dateTime' in list(event['start'].keys()):
                 eventTimeStart = datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
@@ -200,11 +200,11 @@ class GoogleCalendarPlugin(Plugin):
                     return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
                 else:
 
+                    # we collect all words to check for the no_alarm_clock_active override at the end
+                    event_words.extend(event['summary'].split())
+
                     if eventTimeStart < now < eventTimeEnd:
                         return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)
-
-                        # we collect all words to check for the no_alarm_clock_active override at the end
-                        event_words.extend(event['summary'].split())
 
                     elif now < eventTimeStart:
                         return_string = "Today at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)

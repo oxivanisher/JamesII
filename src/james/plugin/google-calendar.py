@@ -185,7 +185,7 @@ class GoogleCalendarPlugin(Plugin):
 
             # we collect all words to check for the no_alarm_clock_active override at the end
             if happening_today:
-                event_words.extend(event['summary'].lower().split())
+                event_words.extend(event['summary'].split())
 
             # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
@@ -213,7 +213,7 @@ class GoogleCalendarPlugin(Plugin):
                 return_list.append(return_string)
 
         for word in event_words:
-            if word in [x.lower() for x in self.config['no_alarm_clock_override']]:
+            if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
                 self.logger.info("Found a event which overrides no_alarm_clock: %s" % word)
                 no_alarm_clock_active = False
 

@@ -270,6 +270,7 @@ gcal:
     - vacations
   no_alarm_clock_override:
     - wakeup
+    - (wakeup)
   cache_timeout: 10
   nodes:
     - node_name

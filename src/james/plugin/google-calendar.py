@@ -212,6 +212,7 @@ class GoogleCalendarPlugin(Plugin):
                 return_string += event['summary']
                 return_list.append(return_string)
 
+        self.logger.debug("lala: %s" % ', '.join(event_words))
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
                 self.logger.info("Found a event which overrides no_alarm_clock: %s" % word)

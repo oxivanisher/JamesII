@@ -126,8 +126,10 @@ class TimerPlugin(Plugin):
                 else:
                     saved_commands_new.append((timestamp, command))
             except IndexError:
+                saved_commands_new.append((timestamp, command))
                 ret = (['Command not found. Use syntax: mcp remove TIMESTAMP COMMAND'])
             except ValueError:
+                saved_commands_new.append((timestamp, command))
                 ret = (['Wrong use of command. Use: mcp remove TIMESTAMP COMMAND'])
         self.saved_commands = saved_commands_new
         return ret

@@ -413,7 +413,10 @@ class MpdClientPlugin(Plugin):
         self.talkoverActive = False
         self.stations = {}
 
-        self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
+        volume_command = self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
+        volume_command.create_subcommand('up', 'Increase volume by 5', self.cmd_volume_up)
+        volume_command.create_subcommand('down', 'Decrease volume by 5', self.cmd_volume_down)
+
         self.commands.create_subcommand('noise', 'Start mpd noise mode', self.mpd_noise)
 
         radio_command = self.commands.create_subcommand('radio', 'Control the web radio', None)
@@ -540,17 +543,48 @@ class MpdClientPlugin(Plugin):
             return ["Unable to connect to MPD"]
 
     def cmd_set_volume(self, args):
+        self.logger.debug('Set volume to %s' % args[0])
+        volume = None
         try:
             volume = int(args[0])
             if 0 <= volume <= 100:
                 if self.client_worker.setvol(volume):
                     return ["Volume set to: %s" % volume]
         except Exception:
-            volume = None
             pass
 
         self.logger.debug("Unable to set the volume to: %s" % volume)
         return ["Unable to set the volume to: %s" % volume]
+
+    def cmd_volume_up(self, args):
+        self.logger.debug('Increase volume by 5')
+        volume = None
+        tmp_state = self.client_worker.status()
+        try:
+            self.logger.debug('Current client volume: %s' % tmp_state['volume'])
+            volume = int(args[0]) + tmp_state['volume']
+            if self.client_worker.setvol(volume):
+                return ["Volume increased to: %s" % volume]
+        except Exception:
+            pass
+
+        self.logger.debug("Unable to increase the volume to: %s" % volume)
+        return ["Unable to increase the volume to: %s" % volume]
+
+    def cmd_volume_down(self, args):
+        self.logger.debug('Decrease volume by 5')
+        volume = None
+        tmp_state = self.client_worker.status()
+        try:
+            self.logger.debug('Current client volume: %s' % tmp_state['volume'])
+            volume = int(args[0]) + tmp_state['volume']
+            if self.client_worker.setvol(volume):
+                return ["Volume decreased to: %s" % volume]
+        except Exception:
+            pass
+
+        self.logger.debug("Unable to decrease the volume to: %s" % volume)
+        return ["Unable to decrease the volume to: %s" % volume]
 
     def mpd_sleep(self, args):
         self.sleeps += 1

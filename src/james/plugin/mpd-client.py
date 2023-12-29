@@ -563,7 +563,7 @@ class MpdClientPlugin(Plugin):
         tmp_state = self.client_worker.status()
         try:
             self.logger.debug('Current client volume: %s' % tmp_state['volume'])
-            volume = int(args[0]) + tmp_state['volume']
+            volume = max(0, min(tmp_state['volume'] + 5, 100))
             if self.client_worker.setvol(volume):
                 return ["Volume increased to: %s" % volume]
         except Exception:
@@ -578,7 +578,7 @@ class MpdClientPlugin(Plugin):
         tmp_state = self.client_worker.status()
         try:
             self.logger.debug('Current client volume: %s' % tmp_state['volume'])
-            volume = int(args[0]) + tmp_state['volume']
+            volume = max(0, min(tmp_state['volume'] - 5, 100))
             if self.client_worker.setvol(volume):
                 return ["Volume decreased to: %s" % volume]
         except Exception:

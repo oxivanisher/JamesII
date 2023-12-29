@@ -527,6 +527,7 @@ class MpdClientPlugin(Plugin):
     def radio_toggle(self, args):
         self.logger.debug('Radio toggle')
         tmp_state = self.client_worker.status()
+        self.logger.debug('Current state: %s' % tmp_state)
         if tmp_state:
             if tmp_state['state'] == 'play':
                 self.radio_off(args)

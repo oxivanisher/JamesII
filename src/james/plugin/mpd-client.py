@@ -413,7 +413,8 @@ class MpdClientPlugin(Plugin):
         self.talkoverActive = False
         self.stations = {}
 
-        volume_command = self.commands.create_subcommand('volume', 'Set the volume', self.cmd_set_volume)
+        volume_command = self.commands.create_subcommand('volume', 'Control the volume', None)
+        volume_command.create_subcommand('set', 'Set the volume', self.cmd_volume_set)
         volume_command.create_subcommand('up', 'Increase volume by 5', self.cmd_volume_up)
         volume_command.create_subcommand('down', 'Decrease volume by 5', self.cmd_volume_down)
 
@@ -542,7 +543,7 @@ class MpdClientPlugin(Plugin):
         else:
             return ["Unable to connect to MPD"]
 
-    def cmd_set_volume(self, args):
+    def cmd_volume_set(self, args):
         self.logger.debug('Set volume to %s' % args[0])
         volume = None
         try:

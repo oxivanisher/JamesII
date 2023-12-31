@@ -215,6 +215,9 @@ mpd-client:
   sleep_st: chillout
   noise_file: pink_noise.wav
 
+  # volume up and down commands in/decrease by this much
+  volume_steps: 2
+
   # fade time in seconds for the wakeup and sleep timers
   wakeup_fade: 900
   sleep_fade: 1800

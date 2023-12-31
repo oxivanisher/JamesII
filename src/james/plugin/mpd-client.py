@@ -458,6 +458,9 @@ class MpdClientPlugin(Plugin):
         self.load_state('sleeps', 0)
         self.load_state('fades', 0)
 
+        if 'volume_steps' not in self.config.keys():
+            self.config['volume_steps'] = 1
+
         for station in list(self.config['stations'].keys()):
             self.stations[station] = self.config['stations'][station]
             # methodName = 'tuneToStation_' + station
@@ -573,7 +576,7 @@ class MpdClientPlugin(Plugin):
         tmp_state = self.client_worker.status()
         try:
             self.logger.debug('Current client volume: %s' % tmp_state['volume'])
-            volume = max(0, min(int(tmp_state['volume']) + 5, 100))
+            volume = max(0, min(int(tmp_state['volume']) + self.config['volume_steps'], 100))
             self.logger.debug('Try to increase the volume to: %s' % volume)
             if self.client_worker.setvol(volume):
                 return ["Volume increased to: %s" % volume]
@@ -589,7 +592,7 @@ class MpdClientPlugin(Plugin):
         tmp_state = self.client_worker.status()
         try:
             self.logger.debug('Current client volume: %s' % tmp_state['volume'])
-            volume = max(0, min(int(tmp_state['volume']) - 5, 100))
+            volume = max(0, min(int(tmp_state['volume']) - self.config['volume_steps'], 100))
             self.logger.debug('Try to decrease the volume to: %s' % volume)
             if self.client_worker.setvol(volume):
                 return ["Volume decreased to: %s" % volume]

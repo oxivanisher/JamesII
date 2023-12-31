@@ -743,7 +743,7 @@ class Core(object):
                     self.unlock_core()
                     # self.logger.debug("process events")
                 # cpu utilization from 100% to 0%
-                time.sleep(0.1)
+                time.sleep(0.01)
             except KeyboardInterrupt:
                 self.logger.info("Keyboard interrupt detected. Exiting...")
                 self.terminate(3)

@@ -15,6 +15,7 @@ class EvdevThread(PluginThread):
         self.evdev_device = evdev.InputDevice(evdev_path)
         self.logger.debug("EVDEV Device: %s" % evdev_path)
         self.name = "%s > Device: %s - %s" % (self.name, evdev_name, evdev_path)
+        self.callback_timeout = time.time() + 2
 
     def work(self):
         # blocking = 0
@@ -28,11 +29,15 @@ class EvdevThread(PluginThread):
                         self.plugin.received_button(self.device_name, event)
                         self.plugin.workerLock.release()
 
-                self.plugin.workerLock.acquire()
-                run = self.plugin.workerRunning
-                self.plugin.workerLock.release()
+                # only check every 2 seconds to make evdev react faster
+                if self.callback_timeout < time.time():
+                    self.plugin.workerLock.acquire()
+                    run = self.plugin.workerRunning
+                    self.plugin.workerLock.release()
+                    self.callback_timeout = time.time() + 2
+
                 if run:
-                    time.sleep(0.1)
+                    time.sleep(0.05)
                 else:
                     break
 

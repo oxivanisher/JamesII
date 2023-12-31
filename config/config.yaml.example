@@ -23,9 +23,11 @@ core:
     get: tr add
     say: espeak say
     time: espeak time
-  # configure core loop sleep time in seconds. if james is using too much cpu, play with this number.
-  # they need to be float!
+  # configure core loop sleep time in seconds. if james is using too much cpu, play with those numbers.
   main_loop_sleep: 0.001
+  # passive is for special cases like the cli
+  main_loop_sleep_passive: 0.01
+  # node specific settings
   nodes_main_loop_sleep:
     node_name: 0.01
 
@@ -120,7 +122,6 @@ jabber:
 # config for modules considered "working"
 cli:
   debug: False
-  main_loop_sleep: 0.01
 
 motion:
   # where should the movies and image files be copied?

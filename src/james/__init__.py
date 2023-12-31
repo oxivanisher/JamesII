@@ -377,9 +377,7 @@ class Core(object):
             pass
 
         if self.main_loop_sleep != main_loop_sleep:
-            if initial:
-                self.logger.debug("Set main loop sleep to %s" % main_loop_sleep)
-            else:
+            if not initial:
                 self.logger.info("Set main loop sleep to %s" % main_loop_sleep)
             self.main_loop_sleep = main_loop_sleep
 

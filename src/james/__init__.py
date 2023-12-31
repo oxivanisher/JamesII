@@ -128,9 +128,6 @@ class Core(object):
         self.core_lock = threading.RLock()
         self.rabbitmq_channels = []
 
-        self.main_loop_sleep = None
-        self._set_main_loop_sleep()
-
         # Load broker configuration here, in case the hostname has to be specified
         try:
             self.broker_config = config.YamlConfig("../config/broker.yaml").get_values()
@@ -145,6 +142,9 @@ class Core(object):
 
         self.logger = self.utils.get_logger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
+
+        self.main_loop_sleep = None
+        self._set_main_loop_sleep()
 
         self.loadedState = {}
         try:

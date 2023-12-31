@@ -363,6 +363,7 @@ class Core(object):
     def _set_main_loop_sleep(self, initial = False):
         # set initial main loop sleep to a sane value also for very slow nodes
         main_loop_sleep = 0.1
+        source = "starup value"
 
         try:
             # load plugin specific setting (i.e. for cli)
@@ -370,17 +371,20 @@ class Core(object):
             if self.passive:
                 for p in self.plugins:
                     if 'main_loop_sleep' in p.config.keys():
+                        source = "plugin %s value" % p.name
                         main_loop_sleep = float(p.config['main_loop_sleep'])
 
             # for "normal" operating nodes
             else:
                 # load global core setting
                 if 'main_loop_sleep' in self.config['core'].keys():
+                    source = "system wide value"
                     main_loop_sleep = float(self.config['core']['main_loop_sleep'])
 
                 # load node specific setting
                 if 'nodes_main_loop_sleep' in self.config['core'].keys():
                     if self.hostname in self.config['core']['nodes_main_loop_sleep'].keys():
+                        source = "node specific value"
                         main_loop_sleep = float(self.config['core']['nodes_main_loop_sleep'][self.hostname])
 
 
@@ -389,7 +393,7 @@ class Core(object):
 
         if self.main_loop_sleep != main_loop_sleep:
             if not initial:
-                self.logger.info("Set main loop sleep to %s" % main_loop_sleep)
+                self.logger.info("Set main loop sleep to %s from %s" % (main_loop_sleep, source))
             self.main_loop_sleep = main_loop_sleep
 
     # plugin methods

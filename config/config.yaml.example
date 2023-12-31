@@ -118,6 +118,10 @@ jabber:
     - node_name
 
 # config for modules considered "working"
+cli:
+  debug: False
+  main_loop_sleep: 0.01
+
 motion:
   # where should the movies and image files be copied?
   target-dir: "/media/pot/proximity/"

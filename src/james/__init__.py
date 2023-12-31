@@ -365,20 +365,24 @@ class Core(object):
         main_loop_sleep = 0.1
 
         try:
-            # load global core setting
-            if 'main_loop_sleep' in self.config['core'].keys():
-                main_loop_sleep = float(self.config['core']['main_loop_sleep'])
-
-            # load node specific setting
-            if 'nodes_main_loop_sleep' in self.config['core'].keys():
-                if self.hostname in self.config['core']['nodes_main_loop_sleep'].keys():
-                    main_loop_sleep = float(self.config['core']['nodes_main_loop_sleep'][self.hostname])
-
             # load plugin specific setting (i.e. for cli)
             # this only makes sense if plugins which set that are stand-alone plugins!
-            for p in self.plugins:
-                if 'main_loop_sleep' in p.config.keys():
-                    main_loop_sleep = float(p.config['main_loop_sleep'])
+            if self.passive:
+                for p in self.plugins:
+                    if 'main_loop_sleep' in p.config.keys():
+                        main_loop_sleep = float(p.config['main_loop_sleep'])
+
+            # for "normal" operating nodes
+            else:
+                # load global core setting
+                if 'main_loop_sleep' in self.config['core'].keys():
+                    main_loop_sleep = float(self.config['core']['main_loop_sleep'])
+
+                # load node specific setting
+                if 'nodes_main_loop_sleep' in self.config['core'].keys():
+                    if self.hostname in self.config['core']['nodes_main_loop_sleep'].keys():
+                        main_loop_sleep = float(self.config['core']['nodes_main_loop_sleep'][self.hostname])
+
 
         except Exception:
             pass

@@ -378,7 +378,6 @@ class FadeThread(PluginThread):
             if step_count >= step_wait:
 
                 try:
-                    self.logger.debug('Current client volume: %s' % tmp_state['volume'])
                     self.last_vol = max(1, min(int(self.mpd_client.status()['volume']), 99))
                 except Exception:
                     pass

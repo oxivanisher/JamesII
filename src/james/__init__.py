@@ -144,7 +144,7 @@ class Core(object):
         self.logger.setLevel(logging.DEBUG)
 
         self.main_loop_sleep = None
-        self._set_main_loop_sleep()
+        self._set_main_loop_sleep(True)
 
         self.loadedState = {}
         try:
@@ -287,7 +287,6 @@ class Core(object):
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
         else:
-            self._set_main_loop_sleep()
             self.ping_nodes()
             try:
                 self.location = self.config['locations'][self.hostname]
@@ -361,7 +360,7 @@ class Core(object):
             self.logger.error('Plugin %s has no valid descriptor' % plugin_name)
 
     # core methods
-    def _set_main_loop_sleep(self):
+    def _set_main_loop_sleep(self, initial = False):
         # set initial main loop sleep to a sane value also for very slow nodes
         main_loop_sleep = 0.1
 
@@ -378,7 +377,10 @@ class Core(object):
             pass
 
         if self.main_loop_sleep != main_loop_sleep:
-            self.logger.info("Set main loop sleep to %s" % main_loop_sleep)
+            if initial:
+                self.logger.debug("Set main loop sleep to %s" % main_loop_sleep)
+            else:
+                self.logger.info("Set main loop sleep to %s" % main_loop_sleep)
             self.main_loop_sleep = main_loop_sleep
 
     # plugin methods
@@ -593,6 +595,7 @@ class Core(object):
                     if self.config != new_config:
                         self.logger.warning("Received new config from master. Reloading config on all plugins.")
                         self.config = new_config
+                        self._set_main_loop_sleep()
                         for p in self.plugins:
                             p.reload_config()
                     else:

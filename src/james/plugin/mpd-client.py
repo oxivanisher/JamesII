@@ -460,6 +460,7 @@ class MpdClientPlugin(Plugin):
 
         if 'volume_steps' not in self.config.keys():
             self.config['volume_steps'] = 1
+        self.config['volume_steps'] = int(self.config['volume_steps'])
 
         for station in list(self.config['stations'].keys()):
             self.stations[station] = self.config['stations'][station]

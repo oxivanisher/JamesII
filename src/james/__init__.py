@@ -593,8 +593,6 @@ class Core(object):
                     if self.config != new_config:
                         self.logger.warning("Received new config from master. Reloading config on all plugins.")
                         self.config = new_config
-                        self.logger.info("Temp test -.- %s" % self.config['core']['main_loop_sleep'])
-                        self._set_main_loop_sleep()
                         for p in self.plugins:
                             p.reload_config()
                     else:
@@ -602,6 +600,8 @@ class Core(object):
             elif self.master_node != sender_uuid:
                 self.logger.info("The master node but not the config has changed.")
                 self.master_node = sender_uuid
+
+        self._set_main_loop_sleep()
 
     # msg channel methods
     def send_message(self, msg):

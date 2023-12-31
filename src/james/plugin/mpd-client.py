@@ -572,7 +572,7 @@ class MpdClientPlugin(Plugin):
         return ["Unable to set the volume to: %s" % volume]
 
     def cmd_volume_up(self, args):
-        self.logger.debug('Increase volume by 5')
+        self.logger.debug('Increase volume by %s' % self.config['volume_steps'])
         volume = None
         tmp_state = self.client_worker.status()
         try:
@@ -588,7 +588,7 @@ class MpdClientPlugin(Plugin):
         return ["Unable to increase the volume to: %s" % volume]
 
     def cmd_volume_down(self, args):
-        self.logger.debug('Decrease volume by 5')
+        self.logger.debug('Decrease volume by %s' % self.config['volume_steps'])
         volume = None
         tmp_state = self.client_worker.status()
         try:

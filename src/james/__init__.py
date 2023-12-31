@@ -128,6 +128,9 @@ class Core(object):
         self.core_lock = threading.RLock()
         self.rabbitmq_channels = []
 
+        self.main_loop_sleep = None
+        self._set_main_loop_sleep()
+
         # Load broker configuration here, in case the hostname has to be specified
         try:
             self.broker_config = config.YamlConfig("../config/broker.yaml").get_values()
@@ -198,6 +201,7 @@ class Core(object):
             self.master = True
             mode_output = "master"
             self.master_node = self.uuid
+            self._set_main_loop_sleep()
             if not self.config['core']['debug']:
                 self.logger.debug('Setting loglevel to INFO')
                 self.logger.setLevel(logging.INFO)
@@ -283,6 +287,7 @@ class Core(object):
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
         else:
+            self._set_main_loop_sleep()
             self.ping_nodes()
             try:
                 self.location = self.config['locations'][self.hostname]
@@ -354,6 +359,27 @@ class Core(object):
             self.logger.warning('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
         for plugin_name in plugin_descr_error:
             self.logger.error('Plugin %s has no valid descriptor' % plugin_name)
+
+    # core methods
+    def _set_main_loop_sleep(self):
+        # set initial main loop sleep to a sane value also for very slow nodes
+        main_loop_sleep = 0.1
+
+        try:
+            if isinstance(self.config['core']['main_loop_sleep'], float):
+                main_loop_sleep = self.config['core']['main_loop_sleep']
+
+            if 'nodes_main_loop_sleep' in self.config['core'].keys():
+                if self.hostname in self.config['core']['nodes_main_loop_sleep'].keys():
+                    if isinstance(self.config['core']['nodes_main_loop_sleep'][self.hostname], float):
+                        main_loop_sleep = self.config['core']['nodes_main_loop_sleep'][self.hostname]
+
+        except Exception:
+            pass
+
+        if self.main_loop_sleep != main_loop_sleep:
+            self.logger.info("Set main loop sleep to %s" % main_loop_sleep)
+            self.main_loop_sleep = main_loop_sleep
 
     # plugin methods
     def load_plugin(self, name):
@@ -743,7 +769,7 @@ class Core(object):
                     self.unlock_core()
                     # self.logger.debug("process events")
                 # cpu utilization from 100% to 0%
-                time.sleep(0.01)
+                time.sleep(self.main_loop_sleep)
             except KeyboardInterrupt:
                 self.logger.info("Keyboard interrupt detected. Exiting...")
                 self.terminate(3)

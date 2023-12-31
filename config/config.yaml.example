@@ -23,7 +23,8 @@ core:
     get: tr add
     say: espeak say
     time: espeak time
-  # configure core loop sleep time in seconds. if james is using too much cpu, play with this number. needs to be a float
+  # configure core loop sleep time in seconds. if james is using too much cpu, play with this number.
+  # they need to be float!
   main_loop_sleep: 0.001
   nodes_main_loop_sleep:
     node_name: 0.01

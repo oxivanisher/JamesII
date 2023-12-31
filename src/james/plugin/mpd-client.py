@@ -390,8 +390,12 @@ class FadeThread(PluginThread):
                 self.mpd_client.setvol(self.last_vol)
                 step_count = 0
 
-            if self.last_vol == self.target_vol:
-                run = False
+            if increase:
+                if self.last_vol >= self.target_vol:
+                    run = False
+            else:
+                if self.last_vol <= self.target_vol:
+                    run = False
 
             time.sleep(0.1)
 

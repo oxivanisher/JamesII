@@ -367,6 +367,7 @@ class Core(object):
         try:
             if isinstance(self.config['core']['main_loop_sleep'], float):
                 main_loop_sleep = self.config['core']['main_loop_sleep']
+            self.logger.info("test f'ing debug: %s" % self.config['core']['main_loop_sleep'])
 
             if 'nodes_main_loop_sleep' in self.config['core'].keys():
                 if self.hostname in self.config['core']['nodes_main_loop_sleep'].keys():

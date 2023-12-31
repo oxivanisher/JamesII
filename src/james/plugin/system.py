@@ -26,6 +26,7 @@ class SystemPlugin(Plugin):
         nodes_command.create_subcommand('plugins', 'Show the running plugins', self.cmd_nodes_plugins)
         nodes_command.create_subcommand('ip', 'Show the ip', self.get_ip)
         nodes_command.create_subcommand('uptime', 'Show the node uptime', self.get_uptime)
+        nodes_command.create_subcommand('main_loop_sleep', 'Show the node main_loop_sleep', self.get_main_loop_sleep)
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
@@ -58,6 +59,9 @@ class SystemPlugin(Plugin):
             uptime_string = str(timedelta(seconds=uptime_seconds))
         return [
             "JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
+
+    def get_main_loop_sleep(self, args):
+        return [self.core.main_loop_sleep]
 
     def start(self):
         try:

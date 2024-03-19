@@ -735,6 +735,8 @@ class Core(object):
         update the local storage.
         """
         self.logger.info("core.events_today_listener: %s" % msg)
+        self.logger.info("self.events_today.sort(): %s" % self.events_today)
+        self.logger.info("msg['status']: %s" % msg['status'])
         if self.events_today.sort() != msg['status'].sort():
             self.logger.info("Received events_today update (listener). New value is %s" % msg['status'])
             self.events_today = msg['status']

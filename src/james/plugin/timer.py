@@ -127,7 +127,7 @@ class TimerPlugin(Plugin):
             ret.append("(%s) %s (%s, from calendar): %s" % (target_timestamp,
                                                             self.utils.get_nice_age(target_timestamp),
                                                             is_active_str,
-                                                            ' '.join(event['command'])))
+                                                            event['command']))
         
         if len(ret) > 0:
             return ret

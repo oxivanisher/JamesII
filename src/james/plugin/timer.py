@@ -154,7 +154,7 @@ class TimerPlugin(Plugin):
             self.logger.debug('Checking timed_calendar_events')
             for event in self.config['timed_calendar_events']:
                 self.logger.debug('Checking timed_calendar_event: %s' % event['event_name'])
-                if event['event_name'] in self.core.events_today:
+                if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
                     self.logger.debug('Event %s is happening today' % event['event_name'])
                     if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
                         self.logger.info('Event %s is happening this minute, registering command <%s> to run soon.' % (event['event_name'], event['command']))

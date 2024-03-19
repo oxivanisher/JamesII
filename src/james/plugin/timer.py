@@ -155,6 +155,9 @@ class TimerPlugin(Plugin):
                 saved_commands_new.append((timestamp, command))
 
         self.saved_commands = saved_commands_new
+
+        # add events_today check here... remeber to do something about the seconds!
+        
         self.core.add_timeout(1, self.command_daemon_loop)
 
     def return_status(self, verbose=False):

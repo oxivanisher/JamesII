@@ -173,7 +173,6 @@ class GoogleCalendarPlugin(Plugin):
             if 'date' in list(event['start'].keys()):
                 if event['start']['date'] == datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
-                    events_today.append(event['summary'])
                     return_string = "Today "
                 elif event['start']['date'] < datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
@@ -184,6 +183,7 @@ class GoogleCalendarPlugin(Plugin):
                 # we collect all words to check for the no_alarm_clock_active override at the end.
                 if happening_today:
                     event_words.extend(event['summary'].split())
+                    events_today.append(event['summary'])
 
             # check there is a "don't wake up" event present in google calendar
             if event['summary'].lower() in [x.lower() for x in self.config['no_alarm_clock']]:
@@ -206,6 +206,7 @@ class GoogleCalendarPlugin(Plugin):
 
                     # we collect all words to check for the no_alarm_clock_active override at the end
                     event_words.extend(event['summary'].split())
+                    events_today.append(event['summary'])
 
                     if eventTimeStart < now < eventTimeEnd:
                         return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)

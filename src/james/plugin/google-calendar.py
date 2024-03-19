@@ -161,6 +161,7 @@ class GoogleCalendarPlugin(Plugin):
         return_list = []
         event_words = []
         no_alarm_clock_active = False
+        events_today = []
         for (person, event) in self.event_cache:
             self.logger.debug("Analyzing event for %s: %s" % (person, event['summary']))
             self.eventsFetched += 1
@@ -172,6 +173,7 @@ class GoogleCalendarPlugin(Plugin):
             if 'date' in list(event['start'].keys()):
                 if event['start']['date'] == datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
+                    events_today.append(event['summary'])
                     return_string = "Today "
                 elif event['start']['date'] < datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
@@ -226,6 +228,8 @@ class GoogleCalendarPlugin(Plugin):
         self.logger.debug("There are %s events in the cache." % len(return_list))
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
+
+        self.core.events_today_update(events_today, 'gcal')
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))

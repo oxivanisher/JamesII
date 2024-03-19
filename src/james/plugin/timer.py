@@ -171,7 +171,6 @@ class TimerPlugin(Plugin):
         if self.last_events_today_check_minute != dtnow.minute:
             self.last_events_today_check_minute = dtnow.minute
             for event in self.config['timed_calendar_events']:
-                self.logger.debug('Checking timed_calendar_event: %s' % event['event_name'])
                 if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
                     self.logger.debug('Event %s is happening today' % event['event_name'])
                     if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:

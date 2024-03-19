@@ -53,7 +53,7 @@ class TimerPlugin(Plugin):
             self.logger.debug("Saving timed commands to %s" % self.command_cache_file)
         except IOError:
             self.logger.warning("Could not save cached commands to file!")
-
+    
     # command methods
     def cmd_timer_in(self, args):
         (seconds, newArgs) = self.utils.duration_string2seconds(args)
@@ -120,12 +120,9 @@ class TimerPlugin(Plugin):
                 target_time = target_time.replace(hour=event['hour'])
                 target_time = target_time.replace(minute=event['minue'])
                 target_timestamp = int(target_time.strftime('%s'))
-
-                ret.append("(%s) %s: %s" % (timestamp,
-                            self.utils.get_nice_age(timestamp),
-                            ' '.join(command)))
-
-            
+                ret.append("(%s) %s (from calendar): %s" % (target_timestamp,
+                                                            self.utils.get_nice_age(target_timestamp),
+                                                            ' '.join(event['command'])))
         
         if len(ret) > 0:
             return ret

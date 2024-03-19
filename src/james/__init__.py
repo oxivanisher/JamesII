@@ -734,16 +734,16 @@ class Core(object):
         Listens to events_today status changes on the events_today channel and
         update the local storage.
         """
-        self.logger.info("core.events_today_listener: %s" % msg)
+        self.logger.debug("core.events_today_listener: %s" % msg)
         if self.events_today.sort() != msg['status'].sort():
-            self.logger.info("Received events_today update (listener). New value is %s" % msg['status'])
+            self.logger.debug("Received events_today update (listener). New value is %s" % msg['status'])
             self.events_today = msg['status']
 
     def events_today_update(self, changed_status, events_today_source):
         """
         Always call the publish method
         """
-        self.logger.info("publish_events_today_status: %s" % changed_status)
+        self.logger.debug("publish_events_today_status: %s" % changed_status)
         self.publish_events_today_status(changed_status, events_today_source)
 
     def publish_events_today_status(self, new_status, events_today_source):
@@ -756,12 +756,12 @@ class Core(object):
         """
         send the new_status events_today status over the events_today channel.
         """
-        self.logger.info("Publishing events_today status update %s from plugin %s" %
+        self.logger.debug("Publishing events_today status update %s from plugin %s" %
                           (new_status, events_today_source))
         try:
             self.events_today_channel.send({'status': new_status,
-                                              'host': self.hostname,
-                                              'plugin': events_today_source})
+                                            'host': self.hostname,
+                                            'plugin': events_today_source})
         except Exception as e:
             self.logger.warning("Could not send events_today status (%s)" % e)
 

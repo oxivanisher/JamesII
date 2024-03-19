@@ -113,6 +113,20 @@ class TimerPlugin(Plugin):
             ret.append("(%s) %s: %s" % (timestamp,
                                         self.utils.get_nice_age(timestamp),
                                         ' '.join(command)))
+
+        target_time = datetime.datetime.now(timezone)
+        for event in self.config['timed_calendar_events']:
+            if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
+                target_time = target_time.replace(hour=event['hour'])
+                target_time = target_time.replace(minute=event['minue'])
+                target_timestamp = int(target_time.strftime('%s'))
+
+                ret.append("(%s) %s: %s" % (timestamp,
+                            self.utils.get_nice_age(timestamp),
+                            ' '.join(command)))
+
+            
+        
         if len(ret) > 0:
             return ret
         else:
@@ -147,7 +161,7 @@ class TimerPlugin(Plugin):
 
     def command_daemon_loop(self):
         now = int(time.time())
-        dtnow = datetime.datetime.now()
+        dtnow = datetime.datetime.now(timezone)
 
         # we check every new minute for commands that need to be run from events_today
         if self.last_events_today_check_minute != dtnow.minute:

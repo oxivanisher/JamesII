@@ -147,18 +147,18 @@ class TimerPlugin(Plugin):
 
     def command_daemon_loop(self):
         now = int(time.time())
+        dtnow = datetime.datetime.now()
 
         # we check every new minute for commands that need to be run from events_today
-        if self.last_events_today_check_minute != datetime.datetime.now().minute:
+        if self.last_events_today_check_minute != dtnow.minute:
             self.logger.debug('Checking timed_calendar_events')
             for event in self.config['timed_calendar_events']:
                 self.logger.debug('Checking timed_calendar_event: %s' % event['event_name'])
                 if event['event_name'] in self.core.events_today:
-                    pass
-                    # if event['minute'] ==
-        
-
-        # add events_today check here... remeber to do something about the seconds!
+                    self.logger.debug('Event %s is happening today' % event['event_name'])
+                    if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
+                        self.logger.info('Event %s is happening this minute, registering command <%s> to run soon.' % (event['event_name'], event['command']))
+                        self.saved_commands.append((int(time.time()) - 1, event['command']))
         
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:

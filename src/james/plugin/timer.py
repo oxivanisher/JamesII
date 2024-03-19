@@ -176,7 +176,7 @@ class TimerPlugin(Plugin):
                     if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
                         self.logger.info('Event %s is happening this minute, registering command <%s> to run soon.' %
                                          (event['event_name'], event['command']))
-                        self.saved_commands.append((int(time.time()) - 1, event['command']))
+                        self.saved_commands.append((int(time.time()) - 1, event['command'].split()))
         
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:

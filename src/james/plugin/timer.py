@@ -28,6 +28,8 @@ class TimerPlugin(Plugin):
         self.commandsRun = 0
         self.load_state('commandsRun', 0)
 
+        self.last_events_today_check_minute = -1
+
     def start(self):
         # wait 3 seconds before working
         self.core.add_timeout(3, self.command_daemon_loop)
@@ -51,7 +53,7 @@ class TimerPlugin(Plugin):
             self.logger.debug("Saving timed commands to %s" % self.command_cache_file)
         except IOError:
             self.logger.warning("Could not save cached commands to file!")
-
+    
     # command methods
     def cmd_timer_in(self, args):
         (seconds, newArgs) = self.utils.duration_string2seconds(args)
@@ -111,6 +113,23 @@ class TimerPlugin(Plugin):
             ret.append("(%s) %s: %s" % (timestamp,
                                         self.utils.get_nice_age(timestamp),
                                         ' '.join(command)))
+        timezone = pytz.timezone(self.core.config['core']['timezone'])
+        target_time = datetime.datetime.now(timezone)
+        for event in self.config['timed_calendar_events']:
+            if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
+                is_active_str = "active"
+            else:
+                is_active_str = "inactive"
+
+            target_time = target_time.replace(second=0)
+            target_time = target_time.replace(hour=event['hour'])
+            target_time = target_time.replace(minute=event['minute'])
+            target_timestamp = int(target_time.strftime('%s'))
+            ret.append("(%s) %s (%s, from calendar): %s" % (target_timestamp,
+                                                            self.utils.get_nice_age(target_timestamp),
+                                                            is_active_str,
+                                                            event['command']))
+        
         if len(ret) > 0:
             return ret
         else:
@@ -145,16 +164,31 @@ class TimerPlugin(Plugin):
 
     def command_daemon_loop(self):
         now = int(time.time())
+        timezone = pytz.timezone(self.core.config['core']['timezone'])
+        dtnow = datetime.datetime.now(timezone)
+
+        # we check every new minute for commands that need to be run from events_today
+        if self.last_events_today_check_minute != dtnow.minute:
+            self.last_events_today_check_minute = dtnow.minute
+            for event in self.config['timed_calendar_events']:
+                if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
+                    self.logger.debug('Event %s is happening today' % event['event_name'])
+                    if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
+                        self.logger.info('Event %s is happening this minute, registering command <%s> to run soon.' %
+                                         (event['event_name'], event['command']))
+                        self.saved_commands.append((int(time.time()) - 1, event['command'].split()))
+        
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
             if timestamp <= now:
                 self.commandsRun += 1
                 self.send_command(command)
-                self.logger.info('Running timed command (%s)' % (' '.join(command)))
+                self.logger.info('Running timed command (%s)' % command)
             else:
                 saved_commands_new.append((timestamp, command))
 
         self.saved_commands = saved_commands_new
+        
         self.core.add_timeout(1, self.command_daemon_loop)
 
     def return_status(self, verbose=False):

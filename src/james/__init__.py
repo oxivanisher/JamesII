@@ -118,6 +118,7 @@ class Core(object):
         self.location = 'home'
         self.presences = presence.Presences(self)
         self.no_alarm_clock = False
+        self.events_today = []
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
         self.ghost_commands = command.Command('ghost')
@@ -327,6 +328,10 @@ class Core(object):
         self.no_alarm_clock_channel = broadcastchannel.BroadcastChannel(self, 'no_alarm_clock')
         self.no_alarm_clock_channel.add_listener(self.no_alarm_clock_listener)
 
+        self.logger.debug("RabbitMQ: Create events_today channel")
+        self.events_today_channel = broadcastchannel.BroadcastChannel(self, 'events_today')
+        self.events_today_channel.add_listener(self.events_today_listener)
+
         self.logger.debug("RabbitMQ: Create dataRequest & dataResponse channels")
         self.data_request_channel = broadcastchannel.BroadcastChannel(self, 'dataRequest')
         self.data_request_channel.add_listener(self.data_request_listener)
@@ -515,6 +520,9 @@ class Core(object):
 
                 # send current no_alarm_clock value
                 self.no_alarm_clock_update(self.no_alarm_clock, 'core')
+
+                # send current events_today value
+                self.events_today_update(self.events_today, 'core')
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
@@ -719,6 +727,43 @@ class Core(object):
                                               'plugin': no_alarm_clock_source})
         except Exception as e:
             self.logger.warning("Could not send no_alarm_clock status (%s)" % e)
+
+    # events_today channel methods
+    def events_today_listener(self, msg):
+        """
+        Listens to events_today status changes on the events_today channel and
+        update the local storage.
+        """
+        self.logger.debug("core.events_today_listener: %s" % msg)
+        if sorted(self.events_today) != sorted(msg['status']):
+            self.logger.debug("Received events_today update (listener). New value is %s" % msg['status'])
+            self.events_today = msg['status']
+
+    def events_today_update(self, changed_status, events_today_source):
+        """
+        Always call the publish method
+        """
+        self.logger.debug("publish_events_today_status: %s" % changed_status)
+        self.publish_events_today_status(changed_status, events_today_source)
+
+    def publish_events_today_status(self, new_status, events_today_source):
+        """
+        Distribute events_today to all nodes
+        """
+        self.add_timeout(0, self.publish_events_today_status_callback, new_status, events_today_source)
+
+    def publish_events_today_status_callback(self, new_status, events_today_source):
+        """
+        send the new_status events_today status over the events_today channel.
+        """
+        self.logger.debug("Publishing events_today status update %s from plugin %s" %
+                          (new_status, events_today_source))
+        try:
+            self.events_today_channel.send({'status': new_status,
+                                            'host': self.hostname,
+                                            'plugin': events_today_source})
+        except Exception as e:
+            self.logger.warning("Could not send events_today status (%s)" % e)
 
     # discovery methods
     def ping_nodes(self):

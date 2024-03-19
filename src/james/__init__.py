@@ -330,7 +330,7 @@ class Core(object):
 
         self.logger.debug("RabbitMQ: Create events_today channel")
         self.events_today_clock_channel = broadcastchannel.BroadcastChannel(self, 'events_today')
-        self.events_today_clock_channel.add_listener(self.events_today_clock_listener)
+        self.events_today_clock_channel.add_listener(self.events_today_listener)
 
         self.logger.debug("RabbitMQ: Create dataRequest & dataResponse channels")
         self.data_request_channel = broadcastchannel.BroadcastChannel(self, 'dataRequest')

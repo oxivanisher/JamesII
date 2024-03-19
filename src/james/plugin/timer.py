@@ -115,7 +115,9 @@ class TimerPlugin(Plugin):
                                         ' '.join(command)))
         timezone = pytz.timezone(self.core.config['core']['timezone'])
         target_time = datetime.datetime.now(timezone)
+        self.logger.debug("Looping over timed_calendar_events in config")
         for event in self.config['timed_calendar_events']:
+            self.logger.debug("Current event: %s" % event)
             if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
                 is_active_str = "active"
             else:

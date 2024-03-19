@@ -176,6 +176,7 @@ class TimerPlugin(Plugin):
                 self.logger.debug("self.core.events_today: %s" % self.core.events_today)
                 if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
                     self.logger.debug('Event %s is happening today' % event['event_name'])
+                    self.logger.debug("%s == %s and %s == %s" % (event['hour'], dtnow.hour, event['minute'], dtnow.minute))
                     if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
                         self.logger.info('Event %s is happening this minute, registering command <%s> to run soon.' % (event['event_name'], event['command']))
                         self.saved_commands.append((int(time.time()) - 1, event['command']))

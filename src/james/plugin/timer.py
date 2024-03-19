@@ -28,6 +28,8 @@ class TimerPlugin(Plugin):
         self.commandsRun = 0
         self.load_state('commandsRun', 0)
 
+        self.last_events_today_check_minute = -1
+
     def start(self):
         # wait 3 seconds before working
         self.core.add_timeout(3, self.command_daemon_loop)
@@ -145,6 +147,19 @@ class TimerPlugin(Plugin):
 
     def command_daemon_loop(self):
         now = int(time.time())
+
+        # we check every new minute for commands that need to be run from events_today
+        if self.last_events_today_check_minute != datetime.datetime.now().minute:
+            self.logger.debug('Checking timed_calendar_events')
+            for event in self.config['timed_calendar_events']:
+                self.logger.debug('Checking timed_calendar_event: %s' % event['event_name'])
+                if event['event_name'] in self.core.events_today:
+                    pass
+                    # if event['minute'] ==
+        
+
+        # add events_today check here... remeber to do something about the seconds!
+        
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:
             if timestamp <= now:
@@ -155,8 +170,6 @@ class TimerPlugin(Plugin):
                 saved_commands_new.append((timestamp, command))
 
         self.saved_commands = saved_commands_new
-
-        # add events_today check here... remeber to do something about the seconds!
         
         self.core.add_timeout(1, self.command_daemon_loop)
 

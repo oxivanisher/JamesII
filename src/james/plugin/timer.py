@@ -115,16 +115,14 @@ class TimerPlugin(Plugin):
                                         ' '.join(command)))
         timezone = pytz.timezone(self.core.config['core']['timezone'])
         target_time = datetime.datetime.now(timezone)
-        self.logger.debug("Looping over timed_calendar_events in config")
         for event in self.config['timed_calendar_events']:
-            self.logger.debug("Current event: %s" % event)
             if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
                 is_active_str = "active"
             else:
                 is_active_str = "inactive"
 
             target_time = target_time.replace(hour=event['hour'])
-            target_time = target_time.replace(minute=event['minue'])
+            target_time = target_time.replace(minute=event['minute'])
             target_timestamp = int(target_time.strftime('%s'))
             ret.append("(%s) %s (%s, from calendar): %s" % (target_timestamp,
                                                             self.utils.get_nice_age(target_timestamp),

@@ -113,8 +113,7 @@ class TimerPlugin(Plugin):
             ret.append("(%s) %s: %s" % (timestamp,
                                         self.utils.get_nice_age(timestamp),
                                         ' '.join(command)))
-        timezone = pytz.timezone(self.core.config['core']['timezone'])
-        target_time = datetime.datetime.now(timezone)
+        target_time = datetime.datetime.now()
         for event in self.config['timed_calendar_events']:
             if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
                 is_active_str = "active"
@@ -164,8 +163,7 @@ class TimerPlugin(Plugin):
 
     def command_daemon_loop(self):
         now = int(time.time())
-        timezone = pytz.timezone(self.core.config['core']['timezone'])
-        dtnow = datetime.datetime.now(timezone)
+        dtnow = datetime.datetime.now()
 
         # we check every new minute for commands that need to be run from events_today
         if self.last_events_today_check_minute != dtnow.minute:

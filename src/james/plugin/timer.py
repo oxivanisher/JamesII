@@ -121,6 +121,7 @@ class TimerPlugin(Plugin):
             else:
                 is_active_str = "inactive"
 
+            target_time = target_time.replace(second=0)
             target_time = target_time.replace(hour=event['hour'])
             target_time = target_time.replace(minute=event['minute'])
             target_timestamp = int(target_time.strftime('%s'))
@@ -184,7 +185,7 @@ class TimerPlugin(Plugin):
             if timestamp <= now:
                 self.commandsRun += 1
                 self.send_command(command)
-                self.logger.info('Running timed command (%s)' % (' '.join(command)))
+                self.logger.info('Running timed command (%s)' % command)
             else:
                 saved_commands_new.append((timestamp, command))
 

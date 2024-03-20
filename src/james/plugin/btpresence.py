@@ -90,7 +90,7 @@ class BTPresencePlugin(Plugin):
             pass
         pass
 
-    def save_state(self):
+    def save_state(self, verbose=False):
         try:
             file_handler = open(self.persons_btpresence_file, 'w')
             file_handler.write(json.dumps(self.users_here))

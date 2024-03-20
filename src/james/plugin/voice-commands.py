@@ -282,7 +282,7 @@ class VoiceCommandsPlugin(Plugin):
                 file.close()
                 self.logger.debug("Saving unknown words to %s" % self.unknown_words_file)
             except IOError:
-                self.logger.warning("Could not safe unknown words to file!")
+                self.logger.warning("Could not save unknown words to file!")
 
     def return_status(self, verbose=False):
         ret = {}

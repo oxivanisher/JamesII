@@ -891,7 +891,7 @@ class Core(object):
             for p in self.plugins:
                 self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
                 with Timeout(10):
-                    saveStats[p.name] = p.safe_state(True)
+                    saveStats[p.name] = p.save_state(True)
             try:
                 file = open(self.stats_file, 'w')
                 file.write(json.dumps(saveStats))
@@ -899,9 +899,9 @@ class Core(object):
                 self.logger.info("Saved stats to %s" % self.stats_file)
             except IOError:
                 if self.passive:
-                    self.logger.info("Could not safe stats to file")
+                    self.logger.info("Could not save stats to file")
                 else:
-                    self.logger.warning("Could not safe stats to file")
+                    self.logger.warning("Could not save stats to file")
 
             for p in self.plugins:
                 self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
@@ -914,9 +914,9 @@ class Core(object):
                 self.logger.info("Saving presences to %s" % self.presences_file)
             except IOError:
                 if self.passive:
-                    self.logger.info("Could not safe presences to file")
+                    self.logger.info("Could not save presences to file")
                 else:
-                    self.logger.warning("Could not safe presences to file")
+                    self.logger.warning("Could not save presences to file")
             except KeyError:
                 # no presence state found for this location
                 pass

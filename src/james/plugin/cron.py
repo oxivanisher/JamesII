@@ -149,7 +149,7 @@ class CronPlugin(Plugin):
             file.close()
             self.logger.debug("Saving crontab to %s" % self.command_cron_file)
         except IOError:
-            self.logger.warning("Could not safe cron tab to file!")
+            self.logger.warning("Could not save cron tab to file!")
 
     def load_saved_commands(self):
         try:

@@ -65,7 +65,7 @@ class EspeakPlugin(Plugin):
             file.close()
             self.logger.debug("Saving archived messages to %s" % self.message_archive_file)
         except IOError:
-            self.logger.warning("Could not safe archived messages to file!")
+            self.logger.warning("Could not save archived messages to file!")
 
     def load_muted_state(self):
         try:
@@ -82,7 +82,7 @@ class EspeakPlugin(Plugin):
             file.close()
             self.logger.debug("Saving muted state to %s" % self.mute_file)
         except IOError:
-            self.logger.warning("Could not safe muted state to file!")
+            self.logger.warning("Could not save muted state to file!")
 
     def espeak_say(self, args):
         text = ' '.join(args)

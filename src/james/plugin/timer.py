@@ -110,10 +110,12 @@ class TimerPlugin(Plugin):
     def cmd_timer_show(self, args):
         ret = []
         for (timestamp, command) in self.saved_commands:
-            ret.append("%14-s | (%s) %s: %s" % ("Adhoc command",
-                                                timestamp,
-                                                self.utils.get_nice_age(timestamp),
-                                                ' '.join(command)))
+            comment = "Adhoc command"
+            ret.append(f"{comment:14} {timestamp} {self.utils.get_nice_age(timestamp)} {' '.join(command)}")
+            # ret.append("%14-s | (%s) %s: %s" % ("Adhoc command",
+            #                                     timestamp,
+            #                                     self.utils.get_nice_age(timestamp),
+            #                                     ' '.join(command)))
         timezone = pytz.timezone(self.core.config['core']['timezone'])
         target_time = datetime.datetime.now(timezone)
         for event in self.config['timed_calendar_events']:
@@ -126,10 +128,12 @@ class TimerPlugin(Plugin):
             target_time = target_time.replace(hour=event['hour'])
             target_time = target_time.replace(minute=event['minute'])
             target_timestamp = int(target_time.strftime('%s'))
-            ret.append("%14-s | (%s) %s: %s" % ("%s today" % is_active_str,
-                                                target_timestamp,
-                                                self.utils.get_nice_age(target_timestamp),
-                                                event['command']))
+            comment = "%s today" % is_active_str
+            ret.append(f"{comment:14} {target_timestamp} {self.utils.get_nice_age(target_timestamp)} {event['command']}")
+            # ret.append("%14-s | (%s) %s: %s" % ("%s today" % is_active_str,
+            #                                     target_timestamp,
+            #                                     self.utils.get_nice_age(target_timestamp),
+            #                                     event['command']))
         
         if len(ret) > 0:
             return ret

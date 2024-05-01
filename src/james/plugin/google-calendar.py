@@ -189,7 +189,7 @@ class GoogleCalendarPlugin(Plugin):
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
                 if no_alarm_clock_entry in event['summary'].lower() and happening_today:
                     self.logger.info(f"Found a event <{event['summary'].lower()}> which activates "
-                                      "no_alarm_clock: {no_alarm_clock_entry}")
+                                     f"no_alarm_clock: {no_alarm_clock_entry}")
                     no_alarm_clock_active = True
 
             # ignore ignored_events from config

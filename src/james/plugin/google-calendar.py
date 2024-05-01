@@ -188,7 +188,8 @@ class GoogleCalendarPlugin(Plugin):
             # check there is a "don't wake up" event present in google calendar
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
                 if no_alarm_clock_entry in event['summary'].lower() and happening_today:
-                    self.logger.info(f"Found a event <{event['summary'].lower()}> which activates no_alarm_clock: f{no_alarm_clock_entry}")
+                    self.logger.info(f"Found a event <{event['summary'].lower()}> which activates "
+                                      "no_alarm_clock: {no_alarm_clock_entry}")
                     no_alarm_clock_active = True
 
             # ignore ignored_events from config

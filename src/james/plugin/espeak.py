@@ -174,10 +174,10 @@ class EspeakPlugin(Plugin):
             tempFile = tempfile.NamedTemporaryFile(suffix="-JamesII-Espeak", delete=False)
 
             espeak_command = self.espeak_command + ['-w', tempFile.name] + [msg]
-            self.logger.debug(f'Espeak command: {' '.join(espeak_command)}')
+            self.logger.debug(f"Espeak command: {' '.join(espeak_command)}")
 
             aplay_command = self.play_command + [tempFile.name]
-            self.logger.debug(f'Aplay command: {' '.join(aplay_command)}')
+            self.logger.debug(f"Aplay command: {' '.join(aplay_command)}")
 
             self.utils.popen_and_wait(espeak_command)
             self.utils.popen_and_wait(aplay_command)

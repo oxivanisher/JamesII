@@ -34,6 +34,7 @@ class EspeakPlugin(Plugin):
                 self.speaker_sleep_timeout = int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout'])
             if 'speaker_wakeup_duration' in self.config['nodes'][self.core.hostname].keys():
                 self.speaker_wakeup_duration = int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration'])
+            self.logger.debug('Espeak will wait handle sleeping speakers')
         except TypeError as e:
             self.logger.warning("The configuration changed for espeak. Please check the example configuration.")
 
@@ -261,7 +262,6 @@ class EspeakPlugin(Plugin):
             else:
                 self.message_cache.append('Nothing happened while we where apart.')
 
-        self.logger.debug("c")
         self.speak_lock.release()
 
     def process_presence_event(self, presence_before, presence_now):

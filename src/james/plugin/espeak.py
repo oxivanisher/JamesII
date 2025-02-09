@@ -197,11 +197,11 @@ class EspeakPlugin(Plugin):
         if self.message_cache:
             if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
                 if self.last_spoken + self.speaker_sleep_timeout > current_time:
-                    # Speakers still awake
+                    # Speakers still awake, reset wakeup flag
                     self.speaker_wakeup_sent = False
-                else:
-                    if self.speaker_waking_up_until < current_time and not self.speaker_wakeup_sent:
-                        # Need to wake up speakers
+                elif self.speaker_waking_up_until < current_time:
+                    # Speakers need wake-up
+                    if not self.speaker_wakeup_sent:
                         self.logger.info(
                             f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers'
                         )
@@ -213,11 +213,11 @@ class EspeakPlugin(Plugin):
                         )
                         self.speaker_wakeup_sent = True
 
-                    # Re-check after 1 second instead of proceeding with speaking immediately
-                    self.core.add_timeout(1, self.speak_hook)
+                    # Wait for wake-up duration, then speak
+                    self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
                     return
 
-            # Speak messages
+            # **Proceed to speaking messages after wake-up**
             self.messagesSpoke += len(self.message_cache)
             with self.speak_lock:
                 msg = ''
@@ -238,7 +238,7 @@ class EspeakPlugin(Plugin):
             self.worker_threads.append(self.core.spawn_subprocess(self.speak_worker, self.speak_hook, msg, self.logger))
 
         else:
-            # Ensure talkover is disabled when nothing is being spoken
+            # **Ensure talkover is disabled when nothing is being spoken**
             if self.talkover:
                 self.talkover = False
                 try:

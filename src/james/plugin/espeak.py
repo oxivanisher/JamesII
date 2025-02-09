@@ -194,60 +194,59 @@ class EspeakPlugin(Plugin):
     def speak_hook(self, args=None):
         current_time = time.time()
 
-        if len(self.message_cache) > 0:
+        if self.message_cache:
             if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
                 if self.last_spoken + self.speaker_sleep_timeout > current_time:
                     # Speakers still awake
                     self.speaker_wakeup_sent = False
-                    pass
                 else:
-                    if self.speaker_waking_up_until < current_time:
+                    if self.speaker_waking_up_until < current_time and not self.speaker_wakeup_sent:
                         # Need to wake up speakers
-                        if not self.speaker_wakeup_sent:
-                            # Need to send wakeup command
-                            self.logger.info(
-                                f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers'
+                        self.logger.info(
+                            f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers'
+                        )
+                        self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
+                        self.worker_threads.append(
+                            self.core.spawn_subprocess(
+                                self.speak_worker, self.speak_hook, "Speaker wake", self.logger
                             )
-                            self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
-                            self.worker_threads.append(
-                                self.core.spawn_subprocess(
-                                    self.speak_worker, self.speak_hook, "Speaker wake", self.logger
-                                )
-                            )
-                            self.speaker_wakeup_sent = True
+                        )
+                        self.speaker_wakeup_sent = True
 
+                    # Re-check after 1 second instead of proceeding with speaking immediately
                     self.core.add_timeout(1, self.speak_hook)
                     return
 
-
+            # Speak messages
             self.messagesSpoke += len(self.message_cache)
-            self.speak_lock.acquire()
-            msg = ''
-            for message in self.message_cache:
-                try:
-                    end = message[-1]
-                    if end != "." and end != ":" and end != "!" and end != "?":
+            with self.speak_lock:
+                msg = ''
+                for message in self.message_cache:
+                    if message and message[-1] not in ".:!?":
                         message += "."
                     msg += message + "\n"
-                except IndexError:
-                    pass
-            self.message_cache = []
+                self.message_cache.clear()
+
             self.talkover = True
             try:
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])
             except Exception:
                 pass
-            self.speak_lock.release()
+
             self.logger.info(f'Espeak will say: {msg.rstrip()}')
             self.last_spoken = time.time()
             self.worker_threads.append(self.core.spawn_subprocess(self.speak_worker, self.speak_hook, msg, self.logger))
+
         else:
+            # Ensure talkover is disabled when nothing is being spoken
             if self.talkover:
                 self.talkover = False
                 try:
                     self.core.commands.process_args(['mpd', 'talkover', 'off'])
                 except Exception:
                     pass
+
+            # Periodically check for new messages
             self.core.add_timeout(1, self.speak_hook)
 
     def process_message(self, message):

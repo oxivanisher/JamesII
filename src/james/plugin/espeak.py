@@ -25,7 +25,7 @@ class EspeakPlugin(Plugin):
         self.messagesSpoke = 0
         self.talkover = False
         self.load_state('messagesSpoke', 0)
-        self.delay_speaking_until = 0.0
+        self.last_spoken = 0
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (msg)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
@@ -178,9 +178,14 @@ class EspeakPlugin(Plugin):
             self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))
 
     def speak_hook(self, args=None):
-        if self.delay_speaking_until > time.time():
-            self.core.add_timeout(1, self.speak_hook)
-            return
+        if all(i in ['speaker_sleep_timeout', 'speaker_wakeup_duration'] for
+               i in self.config['nodes'][self.core.hostname].keys()):
+            if self.last_spoken < time.time() + int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout']):
+                self.worker_threads.append(
+                    self.core.spawn_subprocess(self.speak_worker, self.speak_hook, "Speaker wake", self.logger))
+                self.core.add_timeout(int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration']),
+                                      self.speak_hook)
+                return
 
         if len(self.message_cache) > 0:
             self.messagesSpoke += len(self.message_cache)
@@ -202,6 +207,7 @@ class EspeakPlugin(Plugin):
                 pass
             self.speak_lock.release()
             self.logger.info('Espeak will say: %s' % msg.rstrip())
+            self.last_spoken = time.time()
             self.worker_threads.append(self.core.spawn_subprocess(self.speak_worker, self.speak_hook, msg, self.logger))
         else:
             if self.talkover:
@@ -253,14 +259,6 @@ class EspeakPlugin(Plugin):
         self.logger.debug("Espeak Processing presence event")
         self.check_unmuted()
         if len(presence_now):
-            if "greet_homecomer_delay" in self.config.keys():
-                try:
-                    self.delay_speaking_until = time.time() + float(self.config['greet_homecomer_delay'])
-                    self.logger.info("Espeak will delay speaking for %s seconds" %
-                                     float(self.config['greet_homecomer_delay']))
-                except ValueError:
-                    self.logger.warning("greet_homecomer_delay config for espeak is not a valid int!")
-
             self.core.add_timeout(0, self.greet_homecomer)
 
     def check_unmuted(self):

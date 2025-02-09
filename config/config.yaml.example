@@ -253,8 +253,14 @@ espeak:
   # this aplay command enforces the use of the dmix output (to work together with mpd on rpis with hifiberry)
   play_command: "/usr/bin/aplay -D plug:dmix"
   greet_homecomer_delay: 0
+
   nodes:
-    - node_name
+    node_name:
+      # there are speaker which power down and need some time to wake up. use the following two settings to setup
+      # the delay in seconds when the speaker go to sleep and how long it takes for them to wake up again.
+      speaker_sleep_timeout: 600
+      speaker_wakeup_duration: 12
+    node_name2:
 
 monitor:
   nodes:

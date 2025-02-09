@@ -34,7 +34,8 @@ class EspeakPlugin(Plugin):
                 self.speaker_sleep_timeout = int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout'])
             if 'speaker_wakeup_duration' in self.config['nodes'][self.core.hostname].keys():
                 self.speaker_wakeup_duration = int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration'])
-            self.logger.debug('Espeak will handle sleeping speakers')
+            self.logger.debug(
+                f"Espeak will handle sleeping speakers, {self.speaker_sleep_timeout}/{self.speaker_wakeup_duration}")
         except TypeError as e:
             self.logger.warning("The configuration changed for espeak. Please check the example configuration.")
 

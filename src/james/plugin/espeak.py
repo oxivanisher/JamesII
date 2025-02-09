@@ -102,7 +102,7 @@ class EspeakPlugin(Plugin):
         return "No text entered for espeak"
 
     def alert(self, args):
-        self.logger.debug(f'Alerting ({' '.join(args)})')
+        self.logger.debug(f"Alerting ({' '.join(args)})")
         if self.check_unmuted() and self.core.is_admin_user_here() and len(self.core.get_present_users_here()):
             self.espeak_say(args)
             if len(self.archived_messages):

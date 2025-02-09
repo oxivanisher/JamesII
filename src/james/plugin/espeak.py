@@ -197,7 +197,7 @@ class EspeakPlugin(Plugin):
             if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
                 if self.last_spoken < current_time - self.speaker_sleep_timeout:
                     if self.speaker_waking_up_until < current_time:
-                        # Wake speaker up
+                        # Wake speaker up (only once per sleep cycle)
                         self.logger.info(
                             f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers'
                         )
@@ -208,12 +208,16 @@ class EspeakPlugin(Plugin):
                             )
                         )
 
-                    # Don't process messages yet, just wake up the speaker
+                    # Wait for the speaker wake-up duration before processing messages
                     self.core.add_timeout(1, self.speak_hook)
                     return
 
-            # Speaker should be awake, process messages
-            self.last_spoken = current_time
+            # Speaker is awake, process messages
+            if self.speaker_waking_up_until < current_time:  # Ensure it doesn't process too early
+                self.last_spoken = current_time
+            else:
+                self.core.add_timeout(1, self.speak_hook)
+                return
 
             self.messagesSpoke += len(self.message_cache)
             self.speak_lock.acquire()

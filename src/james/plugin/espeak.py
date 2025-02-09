@@ -27,11 +27,15 @@ class EspeakPlugin(Plugin):
         self.load_state('messagesSpoke', 0)
         self.last_spoken = 0
         self.speaker_sleep_timeout = 0
-        if 'speaker_sleep_timeout' in self.config['nodes'][self.core.hostname].keys():
-            self.speaker_sleep_timeout = int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout'])
         self.speaker_wakeup_duration = 0
-        if 'speaker_wakeup_duration' in self.config['nodes'][self.core.hostname].keys():
-            self.speaker_wakeup_duration = int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration'])
+
+        try:
+            if 'speaker_sleep_timeout' in self.config['nodes'][self.core.hostname].keys():
+                self.speaker_sleep_timeout = int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout'])
+            if 'speaker_wakeup_duration' in self.config['nodes'][self.core.hostname].keys():
+                self.speaker_wakeup_duration = int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration'])
+        except TypeError as e:
+            self.logger.warning("The configuration changed for espeak. Please check the example configuration.")
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (msg)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)

@@ -192,7 +192,7 @@ class EspeakPlugin(Plugin):
 
     def speak_hook(self, args=None):
         if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
-            if self.last_spoken < time.time() + self.speaker_sleep_timeout:
+            if self.last_spoken < time.time() - self.speaker_sleep_timeout:
                 if self.speaker_waking_up_until < time.time():
                     # Wake speaker up
                     self.logger.info(f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers')

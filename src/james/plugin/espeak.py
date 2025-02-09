@@ -191,21 +191,29 @@ class EspeakPlugin(Plugin):
             self.logger.info(f'Espeak did not speak (muted): {msg.rstrip()}')
 
     def speak_hook(self, args=None):
+        current_time = time.time()
+
         if len(self.message_cache) > 0:
             if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
-                if self.last_spoken < time.time() - self.speaker_sleep_timeout:
-                    if self.speaker_waking_up_until < time.time():
+                if self.last_spoken < current_time - self.speaker_sleep_timeout:
+                    if self.speaker_waking_up_until < current_time:
                         # Wake speaker up
                         self.logger.info(
-                            f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers')
-                        self.speaker_waking_up_until = time.time() + self.speaker_wakeup_duration
+                            f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers'
+                        )
+                        self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
                         self.worker_threads.append(
-                            self.core.spawn_subprocess(self.speak_worker, self.speak_hook, "Speaker wake", self.logger))
-                    else:
-                        # Speakers should be awake now
-                        self.last_spoken = time.time()
+                            self.core.spawn_subprocess(
+                                self.speak_worker, self.speak_hook, "Speaker wake", self.logger
+                            )
+                        )
+
+                    # Don't process messages yet, just wake up the speaker
                     self.core.add_timeout(1, self.speak_hook)
                     return
+
+            # Speaker should be awake, process messages
+            self.last_spoken = current_time
 
             self.messagesSpoke += len(self.message_cache)
             self.speak_lock.acquire()

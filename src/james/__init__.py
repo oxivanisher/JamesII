@@ -989,8 +989,8 @@ class Core(object):
             self.logger.critical(
                 "Exception 2 in process_timeouts: %s in %s:%s %s > %s" %
                 (e, file_name, exc_tb.tb_lineno, exc_type, current_timeout))
-            self.logger.critical('timeout.seconds: %s' % current_timeout.seconds)
             self.logger.critical('timeout.handler: %s' % current_timeout.handler)
+            self.logger.critical('timeout.deadline: %s' % current_timeout.deadline)
 
             # if some event let the client crash, remove it from the list so that the node does not loop forever
             #

@@ -26,6 +26,12 @@ class EspeakPlugin(Plugin):
         self.talkover = False
         self.load_state('messagesSpoke', 0)
         self.last_spoken = 0
+        self.speaker_sleep_timeout = 0
+        if 'speaker_sleep_timeout' in self.config['nodes'][self.core.hostname].keys():
+            self.speaker_sleep_timeout = int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout'])
+        self.speaker_wakeup_duration = 0
+        if 'speaker_wakeup_duration' in self.config['nodes'][self.core.hostname].keys():
+            self.speaker_wakeup_duration = int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration'])
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (msg)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
@@ -178,13 +184,11 @@ class EspeakPlugin(Plugin):
             self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))
 
     def speak_hook(self, args=None):
-        if all(i in ['speaker_sleep_timeout', 'speaker_wakeup_duration'] for
-               i in self.config['nodes'][self.core.hostname].keys()):
-            if self.last_spoken < time.time() + int(self.config['nodes'][self.core.hostname]['speaker_sleep_timeout']):
+        if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
+            if self.last_spoken < time.time() + self.speaker_sleep_timeout:
                 self.worker_threads.append(
                     self.core.spawn_subprocess(self.speak_worker, self.speak_hook, "Speaker wake", self.logger))
-                self.core.add_timeout(int(self.config['nodes'][self.core.hostname]['speaker_wakeup_duration']),
-                                      self.speak_hook)
+                self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
                 return
 
         if len(self.message_cache) > 0:

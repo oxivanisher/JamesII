@@ -73,7 +73,7 @@ class EspeakPlugin(Plugin):
             file = open(self.message_archive_file, 'w')
             file.write(json.dumps(self.archived_messages))
             file.close()
-            self.logger.debug("Saving archived messages to %s" % self.message_archive_file)
+            self.logger.debug(f"Saving archived messages to {self.message_archive_file}")
         except IOError:
             self.logger.warning("Could not save archived messages to file!")
 
@@ -90,7 +90,7 @@ class EspeakPlugin(Plugin):
             file = open(self.mute_file, 'w')
             file.write(json.dumps(self.forced_mute))
             file.close()
-            self.logger.debug("Saving muted state to %s" % self.mute_file)
+            self.logger.debug(f"Saving muted state to {self.mute_file}")
         except IOError:
             self.logger.warning("Could not save muted state to file!")
 
@@ -98,21 +98,21 @@ class EspeakPlugin(Plugin):
         text = ' '.join(args)
         if text != '':
             self.speak(text + '.')
-            return ["Espeak will speak: '%s'" % text]
+            return [f"Espeak will speak: '{text}'"]
         return "No text entered for espeak"
 
     def alert(self, args):
-        self.logger.debug('Alerting (%s)' % ' '.join(args))
+        self.logger.debug(f'Alerting ({' '.join(args)})')
         if self.check_unmuted() and self.core.is_admin_user_here() and len(self.core.get_present_users_here()):
             self.espeak_say(args)
             if len(self.archived_messages):
                 self.greet_homecomer()
         else:
-            self.logger.debug("Added msg: %s to archive" % ' '.join(args))
+            self.logger.debug(f"Added msg: {' '.join(args)} to archive")
             self.archived_messages.append((time.time(), ' '.join(args)))
 
     def espeak_time(self, args):
-        self.speak('It is now %s' % self.utils.get_time_string())
+        self.speak(f'It is now {self.utils.get_time_string()}')
         return "Espeak will speak the time"
 
     def cmd_waiting(self, args):
@@ -174,22 +174,23 @@ class EspeakPlugin(Plugin):
             tempFile = tempfile.NamedTemporaryFile(suffix="-JamesII-Espeak", delete=False)
 
             espeak_command = self.espeak_command + ['-w', tempFile.name] + [msg]
-            self.logger.debug('Espeak command: %s' % ' '.join(espeak_command))
+            self.logger.debug(f'Espeak command: {' '.join(espeak_command)}')
 
             aplay_command = self.play_command + [tempFile.name]
-            self.logger.debug('Aplay command: %s' % ' '.join(aplay_command))
+            self.logger.debug(f'Aplay command: {' '.join(aplay_command)}')
 
             self.utils.popen_and_wait(espeak_command)
             self.utils.popen_and_wait(aplay_command)
             os.remove(tempFile.name)
 
-            self.logger.debug('Espeak spoke: %s' % (msg.rstrip()))
+            self.logger.debug(f'Espeak spoke: {msg.rstrip()}')
         else:
-            self.logger.info('Espeak did not speak (muted): %s' % (msg.rstrip()))
+            self.logger.info(f'Espeak did not speak (muted): {msg.rstrip()}')
 
     def speak_hook(self, args=None):
         if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
             if self.last_spoken < time.time() + self.speaker_sleep_timeout:
+                self.logger.info(f'Espeak will wait {self.speaker_wakeup_duration} seconds to wake the speakers')
                 self.worker_threads.append(
                     self.core.spawn_subprocess(self.speak_worker, self.speak_hook, "Speaker wake", self.logger))
                 self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
@@ -214,7 +215,7 @@ class EspeakPlugin(Plugin):
             except Exception:
                 pass
             self.speak_lock.release()
-            self.logger.info('Espeak will say: %s' % msg.rstrip())
+            self.logger.info(f'Espeak will say: {msg.rstrip()}')
             self.last_spoken = time.time()
             self.worker_threads.append(self.core.spawn_subprocess(self.speak_worker, self.speak_hook, msg, self.logger))
         else:
@@ -239,8 +240,8 @@ class EspeakPlugin(Plugin):
         if (time.time() - self.core.startup_timestamp) > 10:
             if len(self.core.get_present_users_here()):
                 self.message_cache.append(
-                    'Hey ' + ' and '.join(
-                        self.core.get_present_users_here()) + ' it is now %s' % self.utils.get_time_string())
+                    f'Hey ' + ' and '.join(
+                        self.core.get_present_users_here()) + ' it is now {self.utils.get_time_string()')
 
         if self.core.is_admin_user_here():
             if len(self.archived_messages) > 0:
@@ -249,7 +250,7 @@ class EspeakPlugin(Plugin):
                     self.message_cache.append('While we where apart, the following thing happened:')
                 else:
                     self.message_cache.append(
-                        'While we where apart, the following %s things happened:' % len(self.archived_messages))
+                        f'While we where apart, the following {len(self.archived_messages)} things happened:')
                 work_archived_messages = self.archived_messages
                 self.archived_messages = []
                 for (timestamp, message) in work_archived_messages:

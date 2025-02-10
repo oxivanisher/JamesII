@@ -207,7 +207,7 @@ class EspeakPlugin(Plugin):
                     self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
                     self.worker_threads.append(
                         self.core.spawn_subprocess(
-                            self.speak_worker, self.speak_hook, "Speaker wake", self.logger
+                            self.speak_worker, self.speak_hook, "i", self.logger
                         )
                     )
                     self.speaker_wakeup_sent = True

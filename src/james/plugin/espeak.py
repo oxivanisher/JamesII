@@ -212,13 +212,13 @@ class EspeakPlugin(Plugin):
                     )
                     self.speaker_wakeup_sent = True
 
-                    # **Delay speaking until speakers are awake**
+                    # Delay speaking until speakers are awake
                     self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
                     return
 
             # **Ensure wake-up period has passed before speaking**
             if self.speaker_waking_up_until > current_time:
-                self.logger.info(
+                self.logger.debug(
                     f'Waiting for speakers to wake up ({round(self.speaker_waking_up_until - current_time, 2)}s left)...')
                 self.core.add_timeout(1, self.speak_hook)
                 return

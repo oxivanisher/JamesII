@@ -194,36 +194,37 @@ class EspeakPlugin(Plugin):
     def speak_hook(self, args=None):
         current_time = time.time()
 
-        if self.message_cache:
-            if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
-                if self.last_spoken + self.speaker_sleep_timeout > current_time:
-                    # Speakers are still awake
-                    self.speaker_wakeup_sent = False
-                elif not self.speaker_wakeup_sent:
-                    # Need to wake up speakers
-                    self.logger.info(
-                        f'Waking up speakers, waiting {self.speaker_wakeup_duration} seconds before speaking...'
-                    )
-                    self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
-                    self.worker_threads.append(
-                        self.core.spawn_subprocess(
-                            self.speak_worker, self.speak_hook, "i", self.logger
+        with self.speak_lock:
+            if self.message_cache:
+                if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
+                    if self.last_spoken + self.speaker_sleep_timeout > current_time:
+                        # Speakers are still awake
+                        self.speaker_wakeup_sent = False
+                    elif not self.speaker_wakeup_sent:
+                        # Need to wake up speakers
+                        self.logger.info(
+                            f'Waking up speakers, waiting {self.speaker_wakeup_duration} seconds before speaking...'
                         )
-                    )
-                    self.speaker_wakeup_sent = True
+                        self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
+                        self.worker_threads.append(
+                            self.core.spawn_subprocess(
+                                self.speak_worker, self.speak_hook, "i", self.logger
+                            )
+                        )
+                        self.speaker_wakeup_sent = True
 
-                    # Delay speaking until speakers are awake
-                    self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
+                        # Delay speaking until speakers are awake
+                        self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
+                        return
+
+                # Ensure wake-up period has passed before speaking
+                if self.speaker_waking_up_until > current_time:
+                    self.logger.debug(
+                        f'Waiting for speakers to wake up ({round(self.speaker_waking_up_until - current_time, 2)}s left)...')
+                    self.core.add_timeout(1, self.speak_hook)
                     return
 
-            # **Ensure wake-up period has passed before speaking**
-            if self.speaker_waking_up_until > current_time:
-                self.logger.debug(
-                    f'Waiting for speakers to wake up ({round(self.speaker_waking_up_until - current_time, 2)}s left)...')
-                self.core.add_timeout(1, self.speak_hook)
-                return
-
-            # **Proceed to speaking**
+            # Proceed to speaking
             self.messagesSpoke += len(self.message_cache)
             with self.speak_lock:
                 msg = ''
@@ -244,7 +245,7 @@ class EspeakPlugin(Plugin):
             self.worker_threads.append(self.core.spawn_subprocess(self.speak_worker, self.speak_hook, msg, self.logger))
 
         else:
-            # **Ensure talkover is disabled when nothing is being spoken**
+            # Ensure talkover is disabled when nothing is being spoken
             if self.talkover:
                 self.talkover = False
                 try:

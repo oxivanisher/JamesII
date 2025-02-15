@@ -238,6 +238,7 @@ class EspeakPlugin(Plugin):
             with self.speak_lock:
                 self.talkover = True
             try:
+                self.logger.debug('Enabling talkover')
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])
             except Exception:
                 pass
@@ -252,6 +253,7 @@ class EspeakPlugin(Plugin):
                 with self.speak_lock:
                     self.talkover = False
                 try:
+                    self.logger.debug('Disabling talkover')
                     self.core.commands.process_args(['mpd', 'talkover', 'off'])
                 except Exception:
                     pass

@@ -214,9 +214,6 @@ class EspeakPlugin(Plugin):
                         f'Waking up speakers, waiting {self.speaker_wakeup_duration} seconds before speaking...'
                     )
                     self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
-                    # aplay might error out with the message that the device is already in use ... but
-                    # since we only want to trigger a speaker wakeup, this is actually "solving" the "issue",
-                    # that the noise would play over runnig music.
                     self.utils.popen_and_wait(self.play_command + ['../media/short_noise.wav'])
 
                     with self.speak_lock:

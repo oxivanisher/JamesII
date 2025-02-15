@@ -235,7 +235,8 @@ class EspeakPlugin(Plugin):
                     msg += message + "\n"
                 self.message_cache.clear()
 
-            self.talkover = True
+            with self.speak_lock:
+                self.talkover = True
             try:
                 self.core.commands.process_args(['mpd', 'talkover', 'on'])
             except Exception:
@@ -248,7 +249,8 @@ class EspeakPlugin(Plugin):
         else:
             # Ensure talkover is disabled when nothing is being spoken
             if self.talkover:
-                self.talkover = False
+                with self.speak_lock:
+                    self.talkover = False
                 try:
                     self.core.commands.process_args(['mpd', 'talkover', 'off'])
                 except Exception:

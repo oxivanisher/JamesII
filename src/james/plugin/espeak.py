@@ -214,11 +214,8 @@ class EspeakPlugin(Plugin):
                         f'Waking up speakers, waiting {self.speaker_wakeup_duration} seconds before speaking...'
                     )
                     self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
-                    self.worker_threads.append(
-                        self.core.spawn_subprocess(
-                            self.speak_worker, self.speak_hook, "i", self.logger
-                        )
-                    )
+                    self.utils.popen_and_wait(self.play_command + ['../media/short_noise.wav'])
+
                     with self.speak_lock:
                         self.speaker_wakeup_sent = True
 

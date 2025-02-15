@@ -24,6 +24,7 @@ class EspeakPlugin(Plugin):
         self.message_cache = []
         self.messagesSpoke = 0
         self.talkover = False
+        self.talking_finished = False
         self.load_state('messagesSpoke', 0)
         self.last_spoken = 0
         self.speaker_waking_up_until = 0
@@ -183,11 +184,16 @@ class EspeakPlugin(Plugin):
             aplay_command = self.play_command + [tempFile.name]
             self.logger.debug(f"Aplay command: {' '.join(aplay_command)}")
 
+            with self.speak_lock:
+                self.talking_finished = False
+
             self.utils.popen_and_wait(espeak_command)
             self.utils.popen_and_wait(aplay_command)
             os.remove(tempFile.name)
 
             self.logger.debug(f'Espeak spoke: {msg.rstrip()}')
+            with self.speak_lock:
+                self.talking_finished = True
         else:
             self.logger.info(f'Espeak did not speak (muted): {msg.rstrip()}')
 
@@ -239,7 +245,7 @@ class EspeakPlugin(Plugin):
                 self.talkover = True
             try:
                 self.logger.debug('Enabling talkover')
-                self.core.commands.process_args(['mpd', 'talkover', 'on'])
+                self.core.commands.process_args([f'@{self.name}', 'mpd', 'talkover', 'on'])
             except Exception:
                 pass
 
@@ -249,14 +255,12 @@ class EspeakPlugin(Plugin):
 
         else:
             # Ensure talkover is disabled when nothing is being spoken
-            if self.talkover:
-                with self.speak_lock:
+            with self.speak_lock:
+                if self.talking_finished and self.talkover:
                     self.talkover = False
-                try:
+                    self.talking_finished = False
                     self.logger.debug('Disabling talkover')
-                    self.core.commands.process_args(['mpd', 'talkover', 'off'])
-                except Exception:
-                    pass
+                    self.core.commands.process_args([f'@{self.name}', 'mpd', 'talkover', 'off'])
 
             # Periodically check for new messages
             self.core.add_timeout(1, self.speak_hook)

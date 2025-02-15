@@ -194,35 +194,36 @@ class EspeakPlugin(Plugin):
     def speak_hook(self, args=None):
         current_time = time.time()
 
-        with self.speak_lock:
-            if self.message_cache:
-                if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
-                    if self.last_spoken + self.speaker_sleep_timeout > current_time:
-                        # Speakers are still awake
+        if self.message_cache:
+            if self.speaker_sleep_timeout and self.speaker_wakeup_duration:
+                if self.last_spoken + self.speaker_sleep_timeout > current_time:
+                    # Speakers are still awake
+                    with self.speak_lock:
                         self.speaker_wakeup_sent = False
-                    elif not self.speaker_wakeup_sent:
-                        # Need to wake up speakers
-                        self.logger.info(
-                            f'Waking up speakers, waiting {self.speaker_wakeup_duration} seconds before speaking...'
+                elif not self.speaker_wakeup_sent:
+                    # Need to wake up speakers
+                    self.logger.info(
+                        f'Waking up speakers, waiting {self.speaker_wakeup_duration} seconds before speaking...'
+                    )
+                    self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
+                    self.worker_threads.append(
+                        self.core.spawn_subprocess(
+                            self.speak_worker, self.speak_hook, "i", self.logger
                         )
-                        self.speaker_waking_up_until = current_time + self.speaker_wakeup_duration
-                        self.worker_threads.append(
-                            self.core.spawn_subprocess(
-                                self.speak_worker, self.speak_hook, "i", self.logger
-                            )
-                        )
+                    )
+                    with self.speak_lock:
                         self.speaker_wakeup_sent = True
 
-                        # Delay speaking until speakers are awake
-                        self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
-                        return
-
-                # Ensure wake-up period has passed before speaking
-                if self.speaker_waking_up_until > current_time:
-                    self.logger.debug(
-                        f'Waiting for speakers to wake up ({round(self.speaker_waking_up_until - current_time, 2)}s left)...')
-                    self.core.add_timeout(1, self.speak_hook)
+                    # Delay speaking until speakers are awake
+                    self.core.add_timeout(self.speaker_wakeup_duration, self.speak_hook)
                     return
+
+            # Ensure wake-up period has passed before speaking
+            if self.speaker_waking_up_until > current_time:
+                self.logger.debug(
+                    f'Waiting for speakers to wake up ({round(self.speaker_waking_up_until - current_time, 2)}s left)...')
+                self.core.add_timeout(1, self.speak_hook)
+                return
 
             # Proceed to speaking
             self.messagesSpoke += len(self.message_cache)
@@ -264,33 +265,30 @@ class EspeakPlugin(Plugin):
                 self.archived_messages.append((time.time(), message.header))
 
     def greet_homecomer(self):
-        self.speak_lock.acquire()
-
-        if (time.time() - self.core.startup_timestamp) > 10:
-            if len(self.core.get_present_users_here()):
-                self.message_cache.append(
-                    f'Hey ' + ' and '.join(
-                        self.core.get_present_users_here()) + ' it is now {self.utils.get_time_string()')
-
-        if self.core.is_admin_user_here():
-            if len(self.archived_messages) > 0:
-                # reading the log to the admin
-                if len(self.archived_messages) == 1:
-                    self.message_cache.append('While we where apart, the following thing happened:')
-                else:
+        with self.speak_lock:
+            if (time.time() - self.core.startup_timestamp) > 10:
+                if len(self.core.get_present_users_here()):
                     self.message_cache.append(
-                        f'While we where apart, the following {len(self.archived_messages)} things happened:')
-                work_archived_messages = self.archived_messages
-                self.archived_messages = []
-                for (timestamp, message) in work_archived_messages:
-                    self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
+                        f'Hey ' + ' and '.join(
+                            self.core.get_present_users_here()) + ' it is now {self.utils.get_time_string()')
 
-                self.message_cache.append("End of Log")
+            if self.core.is_admin_user_here():
+                if len(self.archived_messages) > 0:
+                    # reading the log to the admin
+                    if len(self.archived_messages) == 1:
+                        self.message_cache.append('While we where apart, the following thing happened:')
+                    else:
+                        self.message_cache.append(
+                            f'While we where apart, the following {len(self.archived_messages)} things happened:')
+                    work_archived_messages = self.archived_messages
+                    self.archived_messages = []
+                    for (timestamp, message) in work_archived_messages:
+                        self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
 
-            else:
-                self.message_cache.append('Nothing happened while we where apart.')
+                    self.message_cache.append("End of Log")
 
-        self.speak_lock.release()
+                else:
+                    self.message_cache.append('Nothing happened while we where apart.')
 
     def process_presence_event(self, presence_before, presence_now):
         self.logger.debug("Espeak Processing presence event")

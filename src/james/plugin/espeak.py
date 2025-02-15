@@ -187,6 +187,8 @@ class EspeakPlugin(Plugin):
             with self.speak_lock:
                 self.talking_finished = False
 
+            time.sleep(1) # give mpd a little bit time to enable talkover
+
             self.utils.popen_and_wait(espeak_command)
             self.utils.popen_and_wait(aplay_command)
             os.remove(tempFile.name)

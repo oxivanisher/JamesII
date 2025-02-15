@@ -245,7 +245,7 @@ class EspeakPlugin(Plugin):
                 self.talkover = True
             try:
                 self.logger.debug('Enabling talkover')
-                self.core.commands.process_args([f'@{self.name}', 'mpd', 'talkover', 'on'])
+                self.core.commands.process_args(['mpd', 'talkover', 'on'])
             except Exception:
                 pass
 
@@ -260,7 +260,7 @@ class EspeakPlugin(Plugin):
                     self.talkover = False
                     self.talking_finished = False
                     self.logger.debug('Disabling talkover')
-                    self.core.commands.process_args([f'@{self.name}', 'mpd', 'talkover', 'off'])
+                    self.core.commands.process_args(['mpd', 'talkover', 'off'])
 
             # Periodically check for new messages
             self.core.add_timeout(1, self.speak_hook)

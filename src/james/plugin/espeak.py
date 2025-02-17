@@ -276,7 +276,7 @@ class EspeakPlugin(Plugin):
             if (time.time() - self.core.startup_timestamp) > 10:
                 if len(self.core.get_present_users_here()):
                     self.message_cache.append(
-                        f"Hey {" and ".join(self.core.get_present_users_here())} it is now {self.utils.get_time_string()}")
+                        f"Hey {' and '.join(self.core.get_present_users_here())} it is now {self.utils.get_time_string()}")
 
             if self.core.is_admin_user_here():
                 if len(self.archived_messages) > 0:

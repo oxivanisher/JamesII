@@ -1,6 +1,6 @@
 import uuid
 import os
-import imp
+import importlib.util
 import threading
 import time
 import logging
@@ -337,15 +337,31 @@ class Factory(object):
             # Skip if not valid module
             if ext != '.py' or name == '__init__':
                 continue
-            # Load plugin
+
+            # Load plugin using importlib
             plugin = None
-            info = imp.find_module(name, [path])
             try:
-                plugin = imp.load_module(name, *info)
-                available_plugins.append(name)
+                # Construct the full path to the module file
+                module_path = os.path.join(path, f)
+                # Create the spec
+                spec = importlib.util.spec_from_file_location(name, module_path)
+                if spec is None:
+                    plugin_warning.append((name, ImportError("Could not create module spec")))
+                    continue
+
+                # Create the module and execute it
+                plugin = importlib.util.module_from_spec(spec)
+                try:
+                    spec.loader.exec_module(plugin)
+                    available_plugins.append(name)
+                except Exception as e:
+                    plugin_warning.append((name, e))
+                    continue
+
             except ImportError as e:
                 plugin_warning.append((name, e))
                 continue
+
             # Check plugin descriptor
             try:
                 descriptor = plugin.__dict__['descriptor']

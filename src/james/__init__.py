@@ -699,7 +699,8 @@ class Core(object):
         """
         self.logger.debug("core.no_alarm_clock_listener: %s" % msg)
         if self.no_alarm_clock != msg['status']:
-            self.logger.info("Received no_alarm_clock update (listener). New value is %s" % msg['status'])
+            stringret = 'disabled' if msg['status'] else 'enabled'
+            self.logger.info(f"Received no_alarm_clock update (listener). Alarm clock is now {stringret}.")
             self.no_alarm_clock = msg['status']
 
     def no_alarm_clock_update(self, changed_status, no_alarm_clock_source):

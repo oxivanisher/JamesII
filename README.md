@@ -49,6 +49,7 @@ JamesII is mostly ported to python 3. The core things are working great, but the
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
 * Google Calendar integration > is working but needs more documentation. In short, save your [`client_secret.json`](https://developers.google.com/calendar/api/quickstart/python) to `~/.james2_google_client_secret.json`
+* CalDAV integration (tested with Nextcloud calendar)
 * YAML Schema to detect wrong config files
 * Doorbell extension for RaspberryPi Plugin
 * plugin requirement checks before load for external files

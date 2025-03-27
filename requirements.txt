@@ -64,6 +64,9 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 
+# plugin caldav-calendar
+caldav
+
 # plugin httpserver-plugin
 storm
 

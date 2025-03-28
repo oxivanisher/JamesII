@@ -1,11 +1,23 @@
 import os
 import time
 
-from datetime import datetime, timedelta
-import pytz
+from datetime import datetime, timedelta, date
 from caldav import DAVClient
+from operator import itemgetter
+import pytz
+import re
 
 from james.plugin import *
+
+
+def create_birthday_message(summary):
+    match = re.search(r"\((\d{4})\)", summary)  # Find (YYYY)
+    if match:
+        birth_year = int(match.group(1))
+        current_year = datetime.now().year
+        age = current_year - birth_year
+        summary = summary.replace(f" ({birth_year})", "")
+    return f"Happy {age}th birthday {summary}"
 
 
 class CaldavCalendarPlugin(Plugin):
@@ -37,7 +49,8 @@ class CaldavCalendarPlugin(Plugin):
         else:
             self.event_cache_timeout = 10
 
-        self.core.add_timeout(10, self.update_automatically)
+        # self.core.add_timeout(10, self.update_automatically)
+        self.request_events()
 
     # internal commands
     def update_automatically(self):
@@ -50,133 +63,128 @@ class CaldavCalendarPlugin(Plugin):
         self.logger.debug(f"CalDAV calendar was just fetched. Will fetch again in {seconds_until_next_quarter_day} seconds")
         self.core.add_timeout(seconds_until_next_quarter_day, self.update_automatically)
 
-    def fetch_events(self, calendar_name):
-        timezone = pytz.timezone("Europe/Zurich")
-        today = datetime.now(timezone).date()
-        midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
-        last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
-        midnight_today_utc = midnight_today.astimezone(pytz.utc)
-        last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
-
-        midnight_today_utc_rfc3339 = midnight_today_utc.isoformat()
-        last_second_tomorrow_utc_rfc3339 = last_second_tomorrow_utc.isoformat()
-
+    def get_current_calendars(self):
         # Fetch calendars
         principal = self.client.principal()
         calendars = principal.calendars()
 
         # Filter calendars
         self.logger.debug(f"Available CalDAV calendars: {', '.join([x.name for x in calendars])}")
-        selected_calendars = [cal for cal in calendars if cal.name == calendar_name]
-        self.logger.debug(f"Selected calendar: f{", ".join(selected_calendars)}")
-
-        events = []
-        for calendar in selected_calendars:
-            self.logger.debug(f"Fetching calendar: {calendar.name}")
-            results = calendar.search(
-                start=midnight_today_utc_rfc3339, end=last_second_tomorrow_utc_rfc3339 + timedelta(days=30), event=True
-            )
-            self.logger.debug(f"Found {len(results)} results: {results}")
-
-            for event in results:
-                ical = event.icalendar_component
-                self.logger.debug(f"Event: {event}")
-                for comp in ical.walk():
-                    if comp.name != "VEVENT":
-                        continue
-
-                    summary = comp.get("SUMMARY", "No Title")
-                    if summary in self.ignored:
-                        continue
-                    # replace birthday emoji with ascii
-                    summary = summary.replace("🎂", "[_i_]")
-
-                    start = comp.get("DTSTART").dt
-                    if isinstance(start, datetime):  # Ensure it's datetime, not date
-                        start_str = start.isoformat()
-                    else:
-                        start = datetime.combine(start, datetime.min.time())
-                        start_str = start.isoformat()
-
-                    events.append((start_str, summary))
-
-        # Sort events by start date
-        return events.sort()
-
-    def get_calendar_names(self):
-        person_calendar_name = {}
-        for person in self.core.get_present_users_here():
-            self.logger.debug("Found person: %s" % person)
-            person_calendar_name[person] = []
-            try:
-                for calendar_name in self.core.config['persons'][person]['caldavs']:
-                    person_calendar_name[person].append(calendar_name)
-                    self.logger.debug("Found calendar: %s" % calendar_name)
-            except KeyError:
-                pass
-        self.logger.debug("get_calendar_names returns: %s" % person_calendar_name)
-        return person_calendar_name
+        wanted_calendars = []
+        persons_here = self.core.get_present_users_here()
+        for person in self.core.config['persons'].keys():
+            if person in persons_here:
+                if 'caldavs' in self.core.config['persons'][person].keys():
+                    self.logger.debug(f"Person {person} is here, fetching calendar entries")
+                    wanted_calendars += self.core.config['persons'][person]['caldavs']
+            else:
+                self.logger.debug(f"Person {person} is not here, not fetching calendar entries")
+        self.logger.debug(f"Wanted CalDAV calendars: {', '.join(wanted_calendars)}")
+        selected_calendars = [cal for cal in calendars if cal.name in wanted_calendars]
+        self.logger.debug(f"Selected calendar: {', '.join([x.name for x in selected_calendars])}")
+        return list(set(selected_calendars))
 
     def request_events(self, show=True):
         self.logger.debug("requestEvents from caldav calendar")
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("Cache is still valid, answering with the cache data")
-
         else:
-            self.logger.debug("Cache is invalid, fetching new data")
+            self.logger.debug("Cache is no longer valid, requesting events")
+            timezone = pytz.timezone("Europe/Zurich")
+            today = datetime.now(timezone).date()
+            midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
+            last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+            midnight_today_utc = midnight_today.astimezone(pytz.utc)
+            last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
+
+            events = []
+            for calendar in self.get_current_calendars():
+                self.logger.debug(f"Fetching calendar: {calendar.name}")
+                results = calendar.search(
+                    start=midnight_today_utc, end=last_second_tomorrow_utc + timedelta(days=30), event=True
+                )
+                self.logger.debug(f"Found {len(results)} results:")
+
+                for event in results:
+                    self.eventsFetched += 1
+                    ical = event.icalendar_component
+                    self.logger.debug(f"Event: {event}")
+                    for comp in ical.walk():
+                        if comp.name != "VEVENT":
+                            continue
+
+                        summary = comp.get("SUMMARY", "No Title")
+                        if summary in self.config['ignored_events']:
+                            continue
+                        # replace birthday emoji with ascii
+                        summary = summary.replace("🎂 ", "")
+                        new_event = {'summary': summary,
+                                     'start': comp.get("DTSTART").dt,
+                                     'start_str': comp.get("DTSTART").dt.isoformat()}
+
+                        if "DTEND" in comp.keys():
+                            new_event['end'] = comp["DTEND"].dt
+
+                        events.append(new_event)
+
+            # Sort events by start date and store to cache
             self.event_cache = []
-            person_calendar_names = self.get_calendar_names()
-
-            for person in person_calendar_names.keys():
-                self.logger.debug(f"Fetching calendars for person: {person}")
-                for calendar in person_calendar_names[person]:
-                    self.logger.debug(f"Fetching calendar: {calendar}")
-                    calendar_events = []
-                    events = self.fetch_events(calendar)
-                    if not events:
-                        continue
-
-                    while True:
-                        for event in events:
-                            calendar_events.append(event)
-                            self.event_cache.append((person, event))
-
-                    self.logger.debug(f"Fetched %s events for calendar {(len(calendar_events), calendar)}:")
-                    for event in calendar_events:
-                        self.logger.debug(event)
-                else:
-                    self.logger.debug(f"No calendars for: {person}")
-
-                self.event_cache_timestamp = time.time()
+            for event in sorted(events, key=itemgetter('start_str')):
+                self.event_cache.append(event)
+            self.event_cache_timestamp = time.time()
 
         return_list = []
         event_words = []
         no_alarm_clock_active = False
         events_today = []
-        for (person, event) in self.event_cache:
-            self.logger.debug(f"Analyzing event for {person}: {event['summary']}")
-            self.eventsFetched += 1
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+        tomorrow = today + timedelta(days=1)
+        now = datetime.now()
+
+        for event in self.event_cache:
+            self.logger.debug(f"Analyzing event {event['summary']} which starts at {event['start_str']}")
+
+            start = event['start']
+            end = event['end'] if 'end' in event.keys() else None  # Some events may not have an end time
+
             return_string = False
             happening_today = False
-            now = datetime.now()
+            happening_tomorrow = False
+            birthday = False
 
-            # TODO Start here
+            # Convert start and end times for comparison
+            if isinstance(start, date) and not isinstance(start, datetime):
+                start_date = start  # All-day events
+                end_date = end if isinstance(end, date) else (end.date() if end else start_date)
 
-            # whole day event:
-            if 'date' in list(event['start'].keys()):
-                if event['start']['date'] == datetime.now(self.timezone).strftime('%Y-%m-%d'):
+                if start.year < today.year and start.month == today.month and start.day == today.day:
+                    self.logger.debug(f"Most likely a birthday: {event['summary']}")
+                    happening_today = True
+                    birthday = True
+                elif start_date == today:
+                    self.logger.debug(f"Today's event: {event['summary']}")
                     happening_today = True
                     return_string = "Today "
-                elif event['start']['date'] < datetime.now(self.timezone).strftime('%Y-%m-%d'):
+                elif start_date == tomorrow:
+                    self.logger.debug(f"Tomorrow's event: {event['summary']}")
+                    happening_tomorrow = True
+                    return_string = "Tomorrow "
+                elif start_date == yesterday and end_date >= today:
+                    self.logger.debug(f"Ongoing event from yesterday: {event['summary']}")
                     happening_today = True
                     return_string = "Still "
                 else:
-                    return_string = "Tomorrow "
+                    self.logger.debug(f"Ignoring future event: {event['summary']}")
 
-                # we collect all words to check for the no_alarm_clock_active override at the end.
-                if happening_today:
-                    event_words.extend(event['summary'].split())
-                    events_today.append(event['summary'])
+            else:
+                start_date = start.date()  # Timed events
+                end_date = end.date() if end else start_date  # Convert end time if available
+
+            # we collect all words to check for the no_alarm_clock_active override at the end.
+            if happening_today:
+                event_words.extend(event['summary'].split())
+                events_today.append(event['summary'])
 
             # check there is a "don't wake up" event present in caldav calendar
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
@@ -191,27 +199,28 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             # normal event (with start and end time):
-            elif 'dateTime' in list(event['start'].keys()):
-                eventTimeStart = datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                eventTimeEnd = datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
-                if eventTimeStart.day > datetime.now().day:
-                    return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
-                else:
+            elif isinstance(start, datetime):
+                if start.tzinfo is not None and now.tzinfo is None:
+                    now = now.replace(tzinfo=start.tzinfo)
+                elif start.tzinfo is None and now.tzinfo is not None:
+                    start = start.replace(tzinfo=now.tzinfo)
 
+                if happening_tomorrow:
+                    return_string = f"Tomorrow at {start.strftime("%H:%M")}: "
+                else:
                     # we collect all words to check for the no_alarm_clock_active override at the end
                     event_words.extend(event['summary'].split())
                     events_today.append(event['summary'])
 
-                    if eventTimeStart < now < eventTimeEnd:
-                        return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)
+                    if start < now < end:
+                        return_string = f"Until {end.strftime("%H:%M")} today: "
 
-                    elif now < eventTimeStart:
-                        return_string = "Today at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                    elif now < end:
+                        return_string = f"Today at {start.strftime("%H:%M")}: "
 
-            if return_string:
-                if event['status'] == "tentative":
-                    return_string += " possibly "
-                    # evil is:
+            if birthday:
+                return_list.append(create_birthday_message(event['summary']))
+            elif return_string:
                 return_string += event['summary']
                 return_list.append(return_string)
 
@@ -222,9 +231,9 @@ class CaldavCalendarPlugin(Plugin):
 
         self.logger.debug("There are %s events in the cache." % len(return_list))
 
-        self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
+        self.core.no_alarm_clock_update(no_alarm_clock_active, 'caldav')
 
-        self.core.events_today_update(events_today, 'gcal')
+        self.core.events_today_update(events_today, 'caldav')
 
         if len(return_list):
             self.logger.debug("Returning %s events" % len(return_list))
@@ -244,11 +253,9 @@ class CaldavCalendarPlugin(Plugin):
 
     def cmd_calendars_list(self, args):
         try:
-            retList = ['CalDAV calendars:', 'ID: Name']
-            calendars = self.service.calendarList().list().execute()
-            for cal in calendars['items']:
-                if cal['kind'] == 'calendar#calendarListEntry':
-                    retList.append(cal['id'] + ": " + cal['summary'])
+            retList = ['CalDAV calendars:']
+            for calendar in self.get_current_calendars():
+                retList.append(calendar.name)
             return retList
         except Exception as e:
             print(e)
@@ -268,9 +275,9 @@ class CaldavCalendarPlugin(Plugin):
 
 
 descriptor = {
-    'name': 'gcal',
+    'name': 'caldav',
     'help_text': 'CalDAV Calendar integration',
-    'command': 'gcal',
+    'command': 'caldav',
     'mode': PluginMode.MANAGED,
     'class': CaldavCalendarPlugin,
     'detailsNames': {'eventFetches': "Amount of event fetches",

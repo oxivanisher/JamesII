@@ -49,8 +49,7 @@ class CaldavCalendarPlugin(Plugin):
         else:
             self.event_cache_timeout = 10
 
-        # self.core.add_timeout(10, self.update_automatically)
-        self.request_events()
+        self.core.add_timeout(10, self.update_automatically)
 
     # internal commands
     def update_automatically(self):

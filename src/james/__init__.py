@@ -117,7 +117,7 @@ class Core(object):
         self.uuid = str(uuid.uuid1())
         self.location = 'home'
         self.presences = presence.Presences(self)
-        self.no_alarm_clock = False
+        self.no_alarm_clock_data = {}
         self.events_today = []
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
@@ -692,16 +692,29 @@ class Core(object):
             self.logger.warning("Could not send presence update (%s)" % e)
 
     # no_alarm_clock channel methods
+    def check_no_alarm_clock(self):
+        """
+        Check all reported plugins. If any one sent "true", return True.
+        """
+        for plugin_name in self.no_alarm_clock_data.keys():
+            if self.no_alarm_clock_data[plugin_name]:
+                return True
+        return False
+
     def no_alarm_clock_listener(self, msg):
         """
         Listens to no_alarm_clock status changes on the no_alarm_clock channel and
         update the local storage.
         """
         self.logger.debug("core.no_alarm_clock_listener: %s" % msg)
-        if self.no_alarm_clock != msg['status']:
-            stringret = 'disabled' if msg['status'] else 'enabled'
-            self.logger.info(f"Received no_alarm_clock update (listener). Alarm clock is now {stringret}.")
-            self.no_alarm_clock = msg['status']
+
+        if msg['plugin'] not in self.no_alarm_clock_data.keys():
+            self.no_alarm_clock_data[msg['plugin']] = False
+        if self.no_alarm_clock_data[msg['plugin']] != msg['status']:
+            self.no_alarm_clock_data[msg['plugin']] = msg['status']
+            stringret = 'disabled' if self.check_no_alarm_clock() else 'enabled'
+            self.logger.info(f"Received no_alarm_clock update from {msg['plugin']} plugin (listener). Global alarm clock is now {stringret}.")
+            self.no_alarm_clock_data[msg['plugin']] = msg['status']
 
     def no_alarm_clock_update(self, changed_status, no_alarm_clock_source):
         """

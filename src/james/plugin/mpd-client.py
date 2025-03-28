@@ -668,7 +668,7 @@ class MpdClientPlugin(Plugin):
             if activate:
                 self.logger.debug('Activating wakeup mode')
                 if len(self.core.get_present_users_here()):
-                    if self.core.no_alarm_clock:
+                    if self.core.check_no_alarm_clock():
                         msg = "MPD Wakeup mode NOT activated due no_alarm_clock is set (check gcal)"
                         self.logger.info(msg)
                         return [msg]

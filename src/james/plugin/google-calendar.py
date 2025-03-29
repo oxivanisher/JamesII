@@ -17,9 +17,9 @@ class GoogleCalendarPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(GoogleCalendarPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('show', 'Show calendar entries from google', self.cmd_calendar_show)
+        self.commands.create_subcommand('events', 'Show calendar entries from google', self.cmd_calendar_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
-        self.commands.create_subcommand('list', 'List all google calendars', self.cmd_calendars_list)
+        self.commands.create_subcommand('calendars', 'List all google calendars', self.cmd_calendars_list)
 
         self.timezone = pytz.timezone(self.core.config['core']['timezone'])
 
@@ -75,10 +75,9 @@ class GoogleCalendarPlugin(Plugin):
         self.core.add_timeout(seconds_until_next_quarter_day, self.update_automatically)
 
     def fetch_events(self, calendar_id, page_token=None):
-        timezone = pytz.timezone("Europe/Zurich")
-        today = datetime.now(timezone).date()
-        midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
-        last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+        today = datetime.now(self.timezone).date()
+        midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
+        last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
         midnight_today_utc = midnight_today.astimezone(pytz.utc)
         last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
 
@@ -251,12 +250,12 @@ class GoogleCalendarPlugin(Plugin):
 
     def cmd_calendars_list(self, args):
         try:
-            retList = ['Google calendars:', 'ID: Name']
+            ret_list = ['Google calendars:', 'ID: Name']
             calendars = self.service.calendarList().list().execute()
             for cal in calendars['items']:
                 if cal['kind'] == 'calendar#calendarListEntry':
-                    retList.append(cal['id'] + ": " + cal['summary'])
-            return retList
+                    ret_list.append(cal['id'] + ": " + cal['summary'])
+            return ret_list
         except Exception as e:
             print(e)
 

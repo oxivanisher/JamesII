@@ -25,9 +25,10 @@ class CaldavCalendarPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(CaldavCalendarPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('show', 'Show calendar entries from caldav', self.cmd_calendar_show)
+        self.commands.create_subcommand('events', 'Show calendar entries from caldav', self.cmd_calendar_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from caldav', self.cmd_calendar_speak)
-        self.commands.create_subcommand('list', 'List all caldav calendars', self.cmd_calendars_list)
+        self.commands.create_subcommand('all_calendars', 'List all available caldav calendars', self.cmd_calendars_list_all)
+        self.commands.create_subcommand('active_calendars', 'List currently active caldav calendars', self.cmd_calendars_list_active)
 
         self.timezone = pytz.timezone(self.core.config['core']['timezone'])
 
@@ -62,13 +63,14 @@ class CaldavCalendarPlugin(Plugin):
         self.logger.debug(f"CalDAV calendar was just fetched. Will fetch again in {seconds_until_next_quarter_day} seconds")
         self.core.add_timeout(seconds_until_next_quarter_day, self.update_automatically)
 
-    def get_current_calendars(self):
+    def get_all_calendars(self):
         # Fetch calendars
         principal = self.client.principal()
         calendars = principal.calendars()
-
-        # Filter calendars
         self.logger.debug(f"Available CalDAV calendars: {', '.join([x.name for x in calendars])}")
+        return calendars
+
+    def get_current_calendars(self):
         wanted_calendars = []
         persons_here = self.core.get_present_users_here()
         for person in self.core.config['persons'].keys():
@@ -79,7 +81,7 @@ class CaldavCalendarPlugin(Plugin):
             else:
                 self.logger.debug(f"Person {person} is not here, not fetching calendar entries")
         self.logger.debug(f"Wanted CalDAV calendars: {', '.join(wanted_calendars)}")
-        selected_calendars = [cal for cal in calendars if cal.name in wanted_calendars]
+        selected_calendars = [cal for cal in self.get_all_calendars() if cal.name in wanted_calendars]
         self.logger.debug(f"Selected calendar: {', '.join([x.name for x in selected_calendars])}")
         return list(set(selected_calendars))
 
@@ -89,10 +91,9 @@ class CaldavCalendarPlugin(Plugin):
             self.logger.debug("Cache is still valid, answering with the cache data")
         else:
             self.logger.debug("Cache is no longer valid, requesting events")
-            timezone = pytz.timezone("Europe/Zurich")
-            today = datetime.now(timezone).date()
-            midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
-            last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+            today = datetime.now(self.timezone).date()
+            midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
+            last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
             midnight_today_utc = midnight_today.astimezone(pytz.utc)
             last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
 
@@ -139,7 +140,7 @@ class CaldavCalendarPlugin(Plugin):
         today = date.today()
         yesterday = today - timedelta(days=1)
         tomorrow = today + timedelta(days=1)
-        now = datetime.now()
+        now = datetime.now(self.timezone)
 
         for event in self.event_cache:
             self.logger.debug(f"Analyzing event {event['summary']} which starts at {event['start_str']}")
@@ -250,12 +251,21 @@ class CaldavCalendarPlugin(Plugin):
         if len(events):
             self.send_command(['espeak', 'say', '. '.join(events)])
 
-    def cmd_calendars_list(self, args):
+    def cmd_calendars_list_all(self, args):
         try:
-            retList = ['CalDAV calendars:']
+            ret_list = ['All available CalDAV calendars:']
+            for calendar in self.get_all_calendars():
+                ret_list.append(calendar.name)
+            return ret_list
+        except Exception as e:
+            print(e)
+
+    def cmd_calendars_list_active(self, args):
+        try:
+            ret_list = ['Currently active CalDAV calendars:']
             for calendar in self.get_current_calendars():
-                retList.append(calendar.name)
-            return retList
+                ret_list.append(calendar.name)
+            return ret_list
         except Exception as e:
             print(e)
 

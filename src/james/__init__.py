@@ -519,7 +519,9 @@ class Core(object):
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
 
                 # send current no_alarm_clock value
-                self.no_alarm_clock_update(self.no_alarm_clock, 'core')
+                for plugin_name in self.no_alarm_clock_data.keys():
+                    no_alarm_clock = self.no_alarm_clock_data[plugin_name]
+                    self.no_alarm_clock_update(no_alarm_clock['message'], plugin_name)
 
                 # send current events_today value
                 self.events_today_update(self.events_today, 'core')

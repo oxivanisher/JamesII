@@ -194,7 +194,7 @@ class CaldavCalendarPlugin(Plugin):
 
             # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
-                self.logger.debug("Ignoring event because of ignored_events: %s" % event)
+                self.logger.debug(f"Ignoring event because of ignored_events: {event}")
                 continue
 
             # normal event (with start and end time):
@@ -205,17 +205,17 @@ class CaldavCalendarPlugin(Plugin):
                     start = start.replace(tzinfo=now.tzinfo)
 
                 if happening_tomorrow:
-                    return_string = f"Tomorrow at {start.strftime("%H:%M")}: "
+                    return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
                 else:
                     # we collect all words to check for the no_alarm_clock_active override at the end
                     event_words.extend(event['summary'].split())
                     events_today.append(event['summary'])
 
                     if start < now < end:
-                        return_string = f"Until {end.strftime("%H:%M")} today: "
+                        return_string = f"Until {end.strftime('%H:%M')} today: "
 
                     elif now < end:
-                        return_string = f"Today at {start.strftime("%H:%M")}: "
+                        return_string = f"Today at {start.strftime('%H:%M')}: "
 
             if birthday:
                 return_list.append(create_birthday_message(event['summary']))

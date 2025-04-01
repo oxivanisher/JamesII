@@ -705,57 +705,57 @@ class Core(object):
 
     def no_alarm_clock_listener(self, msg):
         """
-        Listens to no_alarm_clock status changes on the no_alarm_clock channel and
+        Listens to no_alarm_clock events changes on the no_alarm_clock channel and
         update the local storage.
         """
         self.logger.debug("core.no_alarm_clock_listener: %s" % msg)
 
         if msg['plugin'] not in self.no_alarm_clock_data.keys():
             self.no_alarm_clock_data[msg['plugin']] = False
-        if self.no_alarm_clock_data[msg['plugin']] != msg['status']:
-            self.no_alarm_clock_data[msg['plugin']] = msg['status']
+        if self.no_alarm_clock_data[msg['plugin']] != msg['events']:
+            self.no_alarm_clock_data[msg['plugin']] = msg['events']
             stringret = 'disabled' if self.check_no_alarm_clock() else 'enabled'
             self.logger.info(f"Received no_alarm_clock update from {msg['plugin']} plugin (listener). Global alarm clock is now {stringret}.")
-            self.no_alarm_clock_data[msg['plugin']] = msg['status']
+            self.no_alarm_clock_data[msg['plugin']] = msg['events']
 
-    def no_alarm_clock_update(self, changed_status, no_alarm_clock_source):
+    def no_alarm_clock_update(self, changed_events, no_alarm_clock_source):
         """
         Always call the publish method
         """
-        self.logger.debug("publish_no_alarm_clock_status: %s" % changed_status)
-        self.publish_no_alarm_clock_status(changed_status, no_alarm_clock_source)
+        self.logger.debug("publish_no_alarm_clock_events: %s" % changed_events)
+        self.publish_no_alarm_clock_events(changed_events, no_alarm_clock_source)
 
-    def publish_no_alarm_clock_status(self, new_status, no_alarm_clock_source):
+    def publish_no_alarm_clock_events(self, new_events, no_alarm_clock_source):
         """
         Distribute no_alarm_clock to all nodes
         """
-        self.add_timeout(0, self.publish_no_alarm_clock_status_callback, new_status, no_alarm_clock_source)
+        self.add_timeout(0, self.publish_no_alarm_clock_events_callback, new_events, no_alarm_clock_source)
 
-    def publish_no_alarm_clock_status_callback(self, new_status, no_alarm_clock_source):
+    def publish_no_alarm_clock_events_callback(self, new_events, no_alarm_clock_source):
         """
-        send the new_status no_alarm_clock status over the no_alarm_clock channel.
+        send the new_events no_alarm_clock events over the no_alarm_clock channel.
         """
-        self.logger.debug("Publishing no_alarm_clock status update %s from plugin %s" %
-                          (new_status, no_alarm_clock_source))
+        self.logger.debug("Publishing no_alarm_clock events update %s from plugin %s" %
+                          (new_events, no_alarm_clock_source))
         try:
-            self.no_alarm_clock_channel.send({'status': new_status,
+            self.no_alarm_clock_channel.send({'events': new_events,
                                               'host': self.hostname,
                                               'plugin': no_alarm_clock_source})
         except Exception as e:
-            self.logger.warning("Could not send no_alarm_clock status (%s)" % e)
+            self.logger.warning("Could not send no_alarm_clock events (%s)" % e)
 
     # events_today channel methods
     def events_today_listener(self, msg):
         """
-        Listens to events_today status changes on the events_today channel and
+        Listens to events_today events changes on the events_today channel and
         update the local storage.
         """
         self.logger.debug("core.events_today_listener: %s" % msg)
         if msg['plugin'] not in self.events_today.keys():
             self.events_today[msg['plugin']] = []
-        if sorted(self.events_today[msg['plugin']]) != sorted(msg['status']):
-            self.logger.debug(f"Received events_today update (listener). Sender plugin is {msg['plugin']} and new value is {msg['status']}")
-            self.events_today[msg['plugin']] = msg['status']
+        if sorted(self.events_today[msg['plugin']]) != sorted(msg['events']):
+            self.logger.debug(f"Received events_today update (listener). Sender plugin is {msg['plugin']} and new value is {msg['events']}")
+            self.events_today[msg['plugin']] = msg['events']
 
     def events_today_update(self, changed_events, events_today_source):
         """
@@ -765,28 +765,28 @@ class Core(object):
         self.logger.debug("publish_events_today_status: %s" % changed_events)
         if events_today_source == 'core':
             for source in self.config['core']['events_today'].keys():
-                self.publish_events_today_status(changed_events, source)
+                self.publish_events_today_events(changed_events, source)
         else:
-            self.publish_events_today_status(changed_events, events_today_source)
+            self.publish_events_today_events(changed_events, events_today_source)
 
-    def publish_events_today_status(self, new_status, events_today_source):
+    def publish_events_today_events(self, new_events, events_today_source):
         """
         Distribute events_today to all nodes
         """
-        self.add_timeout(0, self.publish_events_today_status_callback, new_status, events_today_source)
+        self.add_timeout(0, self.publish_events_today_events_callback, new_events, events_today_source)
 
-    def publish_events_today_status_callback(self, new_events, events_today_source):
+    def publish_events_today_events_callback(self, new_events, events_today_source):
         """
-        send the new_status events_today status over the events_today channel.
+        send the new_events events_today events over the events_today channel.
         """
-        self.logger.debug("Publishing events_today status update %s from plugin %s" %
+        self.logger.debug("Publishing events_today events update %s from plugin %s" %
                           (new_events, events_today_source))
         try:
-            self.events_today_channel.send({'status': new_events,
+            self.events_today_channel.send({'events': new_events,
                                             'host': self.hostname,
                                             'plugin': events_today_source})
         except Exception as e:
-            self.logger.warning("Could not send events_today status (%s)" % e)
+            self.logger.warning("Could not send events_today events (%s)" % e)
 
     # discovery methods
     def ping_nodes(self):

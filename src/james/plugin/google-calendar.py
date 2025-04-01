@@ -17,7 +17,7 @@ class GoogleCalendarPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(GoogleCalendarPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('events', 'Show calendar entries from google', self.cmd_calendar_show)
+        self.commands.create_subcommand('events', 'Show calendar entries from google', self.cmd_events_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
         self.commands.create_subcommand('calendars', 'List all google calendars', self.cmd_calendars_list)
 
@@ -75,9 +75,10 @@ class GoogleCalendarPlugin(Plugin):
         self.core.add_timeout(seconds_until_next_quarter_day, self.update_automatically)
 
     def fetch_events(self, calendar_id, page_token=None):
-        today = datetime.now(self.timezone).date()
-        midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
-        last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+        timezone = pytz.timezone(self.core.config['core']['timezone'])
+        today = datetime.now(timezone).date()
+        midnight_today = timezone.localize(datetime.combine(today, datetime.min.time()))
+        last_second_tomorrow = timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
         midnight_today_utc = midnight_today.astimezone(pytz.utc)
         last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
 
@@ -239,7 +240,7 @@ class GoogleCalendarPlugin(Plugin):
         return []
 
     # commands
-    def cmd_calendar_show(self, args):
+    def cmd_events_show(self, args):
         # self.core.add_timeout(0, self.requestEvents, True)
         return self.request_events()
 

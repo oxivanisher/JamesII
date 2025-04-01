@@ -118,7 +118,7 @@ class Core(object):
         self.location = 'home'
         self.presences = presence.Presences(self)
         self.no_alarm_clock_data = {}
-        self.events_today = []
+        self.events_today = {}
         self.commands = command.Command('root')
         self.data_commands = command.Command('data')
         self.ghost_commands = command.Command('ghost')
@@ -751,16 +751,23 @@ class Core(object):
         update the local storage.
         """
         self.logger.debug("core.events_today_listener: %s" % msg)
-        if sorted(self.events_today) != sorted(msg['status']):
-            self.logger.debug("Received events_today update (listener). New value is %s" % msg['status'])
-            self.events_today = msg['status']
+        if msg['plugin'] not in self.events_today.keys():
+            self.events_today[msg['plugin']] = []
+        if sorted(self.events_today[msg['plugin']]) != sorted(msg['status']):
+            self.logger.debug(f"Received events_today update (listener). Sender plugin is {msg['plugin']} and new value is {msg['status']}")
+            self.events_today[msg['plugin']] = msg['status']
 
-    def events_today_update(self, changed_status, events_today_source):
+    def events_today_update(self, changed_events, events_today_source):
         """
         Always call the publish method
+        If the source is 'core', send all the things.
         """
-        self.logger.debug("publish_events_today_status: %s" % changed_status)
-        self.publish_events_today_status(changed_status, events_today_source)
+        self.logger.debug("publish_events_today_status: %s" % changed_events)
+        if events_today_source == 'core':
+            for source in self.config['core']['events_today'].keys():
+                self.publish_events_today_status(changed_events, source)
+        else:
+            self.publish_events_today_status(changed_events, events_today_source)
 
     def publish_events_today_status(self, new_status, events_today_source):
         """
@@ -768,14 +775,14 @@ class Core(object):
         """
         self.add_timeout(0, self.publish_events_today_status_callback, new_status, events_today_source)
 
-    def publish_events_today_status_callback(self, new_status, events_today_source):
+    def publish_events_today_status_callback(self, new_events, events_today_source):
         """
         send the new_status events_today status over the events_today channel.
         """
         self.logger.debug("Publishing events_today status update %s from plugin %s" %
-                          (new_status, events_today_source))
+                          (new_events, events_today_source))
         try:
-            self.events_today_channel.send({'status': new_status,
+            self.events_today_channel.send({'status': new_events,
                                             'host': self.hostname,
                                             'plugin': events_today_source})
         except Exception as e:

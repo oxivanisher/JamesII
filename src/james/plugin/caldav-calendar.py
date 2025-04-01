@@ -25,7 +25,7 @@ class CaldavCalendarPlugin(Plugin):
     def __init__(self, core, descriptor):
         super(CaldavCalendarPlugin, self).__init__(core, descriptor)
 
-        self.commands.create_subcommand('events', 'Show calendar entries from caldav', self.cmd_calendar_show)
+        self.commands.create_subcommand('events', 'Show calendar entries from caldav', self.cmd_events_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from caldav', self.cmd_calendar_speak)
         self.commands.create_subcommand('all_calendars', 'List all available caldav calendars', self.cmd_calendars_list_all)
         self.commands.create_subcommand('active_calendars', 'List currently active caldav calendars', self.cmd_calendars_list_active)
@@ -242,7 +242,7 @@ class CaldavCalendarPlugin(Plugin):
         return []
 
     # commands
-    def cmd_calendar_show(self, args):
+    def cmd_events_show(self, args):
         # self.core.add_timeout(0, self.requestEvents, True)
         return self.request_events()
 

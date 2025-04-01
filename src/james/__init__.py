@@ -757,17 +757,12 @@ class Core(object):
             self.logger.debug(f"Received events_today update (listener). Sender plugin is {msg['plugin']} and new value is {msg['events']}")
             self.events_today[msg['plugin']] = msg['events']
 
-    def events_today_update(self, changed_events, events_today_source):
+    def events_today_update(self, changed_status, events_today_source):
         """
         Always call the publish method
-        If the source is 'core', send all the things.
         """
-        self.logger.debug("publish_events_today_status: %s" % changed_events)
-        if events_today_source == 'core':
-            for source in self.config['core']['events_today'].keys():
-                self.publish_events_today_events(changed_events, source)
-        else:
-            self.publish_events_today_events(changed_events, events_today_source)
+        self.logger.debug(f"publish_events_today_status from plugin {events_today_source}: {changed_status}")
+        self.publish_events_today_events(changed_status, events_today_source)
 
     def publish_events_today_events(self, new_events, events_today_source):
         """

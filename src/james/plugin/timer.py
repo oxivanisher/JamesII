@@ -165,9 +165,11 @@ class TimerPlugin(Plugin):
 
         # we check every new minute for commands that need to be run from events_today
         if self.last_events_today_check_minute != dtnow.minute:
+            self.logger.debug("timer command_daemon_loop is checking for events happening today")
             self.last_events_today_check_minute = dtnow.minute
             for plugin in self.core.events_today.keys():
                 for event in self.config['timed_calendar_events']:
+                    self.logger.debug(f"Checking if {event['event_name']} from {plugin} is active today")
                     if event['event_name'].lower() in [x.lower() for x in self.core.events_today[plugin]]:
                         self.logger.debug(f'Event {event['event_name']} from plugin {plugin} is happening today')
                         if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:

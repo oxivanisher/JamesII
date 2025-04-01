@@ -111,7 +111,7 @@ class TimerPlugin(Plugin):
         ret = []
         for (timestamp, command) in self.saved_commands:
             comment = "Adhoc command"
-            ret.append(f"{comment:14} {timestamp} {self.utils.get_nice_age(timestamp)} {' '.join(command)}")
+            ret.append(f"{comment:25} | {timestamp} {self.utils.get_nice_age(timestamp)} {' '.join(command)}")
         timezone = pytz.timezone(self.core.config['core']['timezone'])
         target_time = datetime.datetime.now(timezone)
         for event in self.config['timed_calendar_events']:

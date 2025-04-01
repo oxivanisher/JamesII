@@ -114,17 +114,18 @@ class TimerPlugin(Plugin):
             ret.append(f"{comment:14} {timestamp} {self.utils.get_nice_age(timestamp)} {' '.join(command)}")
         timezone = pytz.timezone(self.core.config['core']['timezone'])
         target_time = datetime.datetime.now(timezone)
-        for event in self.config['timed_calendar_events']:
-            if event['event_name'].lower() in [x.lower() for x in self.core.events_today]:
-                is_active_str = "Active today"
-            else:
-                is_active_str = "Inactive today"
+        for plugin in self.core.events_today.keys():
+            for event in self.config['timed_calendar_events']:
+                if event['event_name'].lower() in [x.lower() for x in self.core.events_today[plugin]]:
+                    is_active_str = "Active today"
+                else:
+                    is_active_str = "Inactive today"
 
             target_time = target_time.replace(second=0)
             target_time = target_time.replace(hour=event['hour'])
             target_time = target_time.replace(minute=event['minute'])
             target_timestamp = int(target_time.strftime('%s'))
-            ret.append(f"{is_active_str:14} {target_timestamp} {self.utils.get_nice_age(target_timestamp)} {event['command']}")
+            ret.append(f"{is_active_str:14} {target_timestamp} {self.utils.get_nice_age(target_timestamp)} {event['command']} ({plugin})")
 
         if len(ret) > 0:
             return ret

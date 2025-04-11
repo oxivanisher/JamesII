@@ -93,8 +93,8 @@ class CaldavCalendarPlugin(Plugin):
         else:
             self.logger.debug("Cache is no longer valid, requesting events")
             # today = datetime.now(self.timezone).date()
-            midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
-            last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+            # midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
+            # last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
 
             today = datetime.now(pytz.utc).date()
             # midnight_today_utc = pytz.utc.localize(datetime.combine(today, datetime.min.time()))

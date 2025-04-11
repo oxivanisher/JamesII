@@ -92,17 +92,19 @@ class CaldavCalendarPlugin(Plugin):
             self.logger.debug("Cache is still valid, answering with the cache data")
         else:
             self.logger.debug("Cache is no longer valid, requesting events")
-            today = datetime.now(self.timezone).date()
-            midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
-            last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
-            midnight_today_utc = midnight_today.astimezone(pytz.utc)
-            last_second_tomorrow_utc = last_second_tomorrow.astimezone(pytz.utc)
+            # today = datetime.now(self.timezone).date()
+            # midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
+            # last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+
+            today = datetime.now(pytz.utc).date()
+            midnight_today_utc = pytz.utc.localize(datetime.combine(today, datetime.min.time()))
+            last_second_tomorrow_utc = pytz.utc.localize(datetime.combine(today, datetime.max.time()))
 
             events = []
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
-                # results = calendar.search(start=midnight_today_utc, end=last_second_tomorrow_utc, event=True)
-                results = calendar.search(start=midnight_today, end=last_second_tomorrow, event=True)
+                # results = calendar.search(start=midnight_today, end=last_second_tomorrow, event=True)
+                results = calendar.search(start=midnight_today_utc, end=last_second_tomorrow_utc, event=True)
                 self.logger.debug(f"Found {len(results)} results:")
 
                 for event in results:

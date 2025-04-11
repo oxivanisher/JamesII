@@ -243,8 +243,8 @@ class CaldavCalendarPlugin(Plugin):
 
     # commands
     def cmd_events_show(self, args):
-        # self.core.add_timeout(0, self.requestEvents, True)
-        return self.request_events()
+        self.core.add_timeout(0, self.requestEvents, True)
+        # return self.request_events()
 
     def cmd_calendar_speak(self, args):
         events = self.request_events()

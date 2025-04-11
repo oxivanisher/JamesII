@@ -54,7 +54,8 @@ class CaldavCalendarPlugin(Plugin):
 
     # internal commands
     def update_automatically(self):
-        self.core.add_timeout(0, self.request_events, False)
+        # self.core.add_timeout(0, self.request_events, False)
+        self.core.add_timeout(0, self.request_events)
         now = datetime.now()
         seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
         seconds_until_midnight: int = int(86400 - seconds_since_midnight) # a day has 86400 seconds
@@ -243,7 +244,8 @@ class CaldavCalendarPlugin(Plugin):
 
     # commands
     def cmd_events_show(self, args):
-        self.core.add_timeout(0, self.requestEvents, True)
+        # self.core.add_timeout(0, self.requestEvents, True)
+        self.core.add_timeout(0, self.requestEvents)
         # return self.request_events()
 
     def cmd_calendar_speak(self, args):

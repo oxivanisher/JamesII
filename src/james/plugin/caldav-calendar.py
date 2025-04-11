@@ -103,8 +103,13 @@ class CaldavCalendarPlugin(Plugin):
             events = []
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
-                results = calendar.search(start=midnight_today, end=last_second_tomorrow, event=True)
+                # results = calendar.search(start=midnight_today, end=last_second_tomorrow, event=True)
                 # results = calendar.search(start=midnight_today_utc, end=last_second_tomorrow_utc, event=True)
+
+                start_range = self.timezone.localize(datetime.combine(today, datetime.min.time()))
+                end_range = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.min.time()))
+                results = calendar.search(start=start_range, end=end_range, event=True)
+
                 self.logger.debug(f"Found {len(results)} results:")
 
                 for event in results:

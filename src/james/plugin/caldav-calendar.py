@@ -139,7 +139,7 @@ class CaldavCalendarPlugin(Plugin):
         event_words = []
         no_alarm_clock_active = False
         events_today = []
-        today = date.today()
+        today = datetime.now(self.timezone).date()
         yesterday = today - timedelta(days=1)
         tomorrow = today + timedelta(days=1)
         now = datetime.now(self.timezone)
@@ -202,10 +202,18 @@ class CaldavCalendarPlugin(Plugin):
 
             # normal event (with start and end time):
             elif isinstance(start, datetime):
-                if start.tzinfo is not None and now.tzinfo is None:
-                    now = now.replace(tzinfo=start.tzinfo)
-                elif start.tzinfo is None and now.tzinfo is not None:
-                    start = start.replace(tzinfo=now.tzinfo)
+                # always make sure `now` and `start/end` are timezone-aware in same tz
+                if start.tzinfo is None:
+                    start = self.timezone.localize(start)
+                else:
+                    start = start.astimezone(self.timezone)
+
+                if end and end.tzinfo is None:
+                    end = self.timezone.localize(end)
+                elif end:
+                    end = end.astimezone(self.timezone)
+
+                now = datetime.now(self.timezone)
 
                 if happening_tomorrow:
                     return_string = f"Tomorrow at {start.strftime('%H:%M')}: "

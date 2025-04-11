@@ -50,7 +50,7 @@ class CaldavCalendarPlugin(Plugin):
         else:
             self.event_cache_timeout = 10
 
-        self.core.add_timeout(10, self.update_automatically)
+        self.core.add_timeout(10, self.update_automatically, None)
 
     # internal commands
     def update_automatically(self):
@@ -245,8 +245,8 @@ class CaldavCalendarPlugin(Plugin):
     # commands
     def cmd_events_show(self, args):
         # self.core.add_timeout(0, self.requestEvents, True)
-        self.core.add_timeout(0, self.requestEvents)
-        # return self.request_events()
+        # self.core.add_timeout(0, self.requestEvents)
+        return self.request_events()
 
     def cmd_calendar_speak(self, args):
         events = self.request_events()

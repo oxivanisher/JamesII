@@ -101,7 +101,7 @@ class CaldavCalendarPlugin(Plugin):
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
                 results = calendar.search(
-                    start=midnight_today_utc, end=last_second_tomorrow_utc + timedelta(days=30), event=True
+                    start=midnight_today_utc, end=last_second_tomorrow_utc + timedelta(days=2), event=True
                 )
                 self.logger.debug(f"Found {len(results)} results:")
 

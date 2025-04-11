@@ -98,7 +98,7 @@ class CaldavCalendarPlugin(Plugin):
 
             today = datetime.now(pytz.utc).date()
             midnight_today_utc = pytz.utc.localize(datetime.combine(today, datetime.min.time()))
-            last_second_tomorrow_utc = pytz.utc.localize(datetime.combine(today, datetime.max.time()))
+            last_second_tomorrow_utc = pytz.utc.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
 
             events = []
             for calendar in self.get_current_calendars():

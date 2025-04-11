@@ -101,9 +101,8 @@ class CaldavCalendarPlugin(Plugin):
             events = []
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
-                results = calendar.search(
-                    start=midnight_today_utc, end=last_second_tomorrow_utc, event=True
-                )
+                # results = calendar.search(start=midnight_today_utc, end=last_second_tomorrow_utc, event=True)
+                results = calendar.search(start=midnight_today, end=last_second_tomorrow, event=True)
                 self.logger.debug(f"Found {len(results)} results:")
 
                 for event in results:
@@ -244,8 +243,6 @@ class CaldavCalendarPlugin(Plugin):
 
     # commands
     def cmd_events_show(self, args):
-        # self.core.add_timeout(0, self.requestEvents, True)
-        # self.core.add_timeout(0, self.requestEvents)
         return self.request_events()
 
     def cmd_calendar_speak(self, args):

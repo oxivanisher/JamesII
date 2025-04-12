@@ -2,6 +2,7 @@ import os
 import time
 
 from datetime import datetime, timedelta, date
+from dateutil.rrule import rrulestr
 from caldav import DAVClient
 from operator import itemgetter
 import pytz
@@ -167,7 +168,11 @@ class CaldavCalendarPlugin(Plugin):
 
                 # iCalendar: DTEND is exclusive for all-day events
                 # So an event with DTSTART=yesterday and DTEND=today ended yesterday
-                if start_date <= today < end_date:
+                if start.year < today.year and start.month == today.month and start.day == today.day:
+                    self.logger.debug(f"Most likely a birthday: {event['summary']}")
+                    happening_today = True
+                    birthday = True
+                elif start_date <= today < end_date:
                     self.logger.debug(f"Active all-day event: {event['summary']}")
                     happening_today = True
                     return_string = "Today "

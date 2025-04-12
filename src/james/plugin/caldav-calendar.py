@@ -161,29 +161,26 @@ class CaldavCalendarPlugin(Plugin):
             birthday = False
 
             # Convert start and end times for comparison
-            if isinstance(start, date) and not isinstance(start, datetime):
-                start_date = start  # All-day events
+            if isinstance(start, date) and not isinstance(start, datetime):  # All-day event
+                start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
 
-                if start.year < today.year and start.month == today.month and start.day == today.day:
-                    self.logger.debug(f"Most likely a birthday: {event['summary']}")
-                    happening_today = True
-                    birthday = True
-                elif start_date == today:
-                    self.logger.debug(f"Today's event: {event['summary']}")
+                # iCalendar: DTEND is exclusive for all-day events
+                # So an event with DTSTART=yesterday and DTEND=today ended yesterday
+                if start_date <= today < end_date:
+                    self.logger.debug(f"Active all-day event: {event['summary']}")
                     happening_today = True
                     return_string = "Today "
                 elif start_date == tomorrow:
-                    self.logger.debug(f"Tomorrow's event: {event['summary']}")
+                    self.logger.debug(f"Tomorrow's all-day event: {event['summary']}")
                     happening_tomorrow = True
                     return_string = "Tomorrow "
-                elif start_date == yesterday and end_date >= today:
-                    self.logger.debug(f"Ongoing event from yesterday: {event['summary']}")
+                elif start_date < today and end_date > today:
+                    self.logger.debug(f"Ongoing all-day event from earlier: {event['summary']}")
                     happening_today = True
                     return_string = "Still "
                 else:
-                    self.logger.debug(f"Ignoring future event: {event['summary']}")
-                    self.logger.debug(f"start_date: {start_date}, end_date: {end_date}")
+                    self.logger.debug(f"Ignoring all-day event: {event['summary']}")
 
             else:
                 start_date = start.date()  # Timed events

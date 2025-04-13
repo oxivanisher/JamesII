@@ -158,7 +158,6 @@ class CaldavCalendarPlugin(Plugin):
 
             return_string = False
             happening_today = False
-            happening_tomorrow = False
             birthday = False
 
             # Convert start and end times for comparison
@@ -223,18 +222,25 @@ class CaldavCalendarPlugin(Plugin):
 
                 now = datetime.now(self.timezone)
 
-                if start.year < today.year and start.month == today.month and start.day == today.day:
-                    return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
-                else:
+                if start.date() == now.date():
                     # we collect all words to check for the no_alarm_clock_active override at the end
                     event_words.extend(event['summary'].split())
                     events_today.append(event['summary'])
 
                     if start < now < end:
+                        self.logger.debug(f"Timed event is still happening today: {event['summary']}")
                         return_string = f"Until {end.strftime('%H:%M')} today: "
-
                     elif now < end:
+                        self.logger.debug(f"Timed event will happen today: {event['summary']}")
                         return_string = f"Today at {start.strftime('%H:%M')}: "
+                    else:
+                        self.logger.warning(f"You should check why this timed event is ending up here: {event['summary']}")
+                else:
+                    self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
+                    return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
+
+            else:
+                self.logger.warning(f"You should check why this event is ending up here with a {type(start)} start type: {event['summary']}")
 
             if birthday:
                 return_list.append(create_birthday_message(event['summary']))

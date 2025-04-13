@@ -124,7 +124,7 @@ class CaldavCalendarPlugin(Plugin):
                         if summary in self.config['ignored_events']:
                             continue
 
-                        dtstart = comp.get("DTSTART")
+                        dtstart = comp.get("RECURRENCE-ID", comp.get("DTSTART"))
                         dtend = comp.get("DTEND") if "DTEND" in comp else None
 
                         if not dtstart:

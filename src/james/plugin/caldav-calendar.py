@@ -189,19 +189,6 @@ class CaldavCalendarPlugin(Plugin):
 
             else:
                 start_date = start.date()  # Timed events
-                if start_date < today:
-                    self.logger.debug(f"Ongoing timed event from earlier: {event['summary']}")
-                    happening_today = True
-                    return_string = "Still "
-                elif start_date == today:
-                    self.logger.debug(f"Active timed event: {event['summary']}")
-                    happening_today = True
-                    return_string = "Today "
-                elif start_date == tomorrow:
-                    self.logger.debug(f"Tomorrow's timed event: {event['summary']}")
-                    happening_tomorrow = True
-                    return_string = "Tomorrow "
-
                 end_date = end.date() if end else start_date  # Convert end time if available
 
             # we collect all words to check for the no_alarm_clock_active override at the end.
@@ -236,7 +223,7 @@ class CaldavCalendarPlugin(Plugin):
 
                 now = datetime.now(self.timezone)
 
-                if happening_tomorrow:
+                if start.year < today.year and start.month == today.month and start.day == today.day:
                     return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
                 else:
                     # we collect all words to check for the no_alarm_clock_active override at the end

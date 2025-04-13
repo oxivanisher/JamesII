@@ -208,7 +208,7 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             # normal event (with start and end time):
-            elif isinstance(start, datetime):
+            elif isinstance(start, datetime.date):
                 # always make sure `now` and `start/end` are timezone-aware in same tz
                 if start.tzinfo is None:
                     start = self.timezone.localize(start)

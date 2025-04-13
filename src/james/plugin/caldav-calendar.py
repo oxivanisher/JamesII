@@ -88,6 +88,14 @@ class CaldavCalendarPlugin(Plugin):
         return list(set(selected_calendars))
 
     def request_events(self, show=True):
+        def ensure_aware(dt_obj, timezone):
+            if isinstance(dt_obj, datetime):
+                return timezone.localize(dt_obj) if dt_obj.tzinfo is None else dt_obj.astimezone(timezone)
+            elif isinstance(dt_obj, date):
+                return timezone.localize(datetime.combine(dt_obj, datetime.min.time()))
+            else:
+                raise ValueError("Unsupported date/time object")
+
         self.logger.debug("requestEvents from caldav calendar")
 
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
@@ -147,6 +155,7 @@ class CaldavCalendarPlugin(Plugin):
             happening_today = False
             birthday = False
 
+            # All-Day-Events
             if isinstance(start, date) and not isinstance(start, datetime):
                 start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
@@ -179,7 +188,7 @@ class CaldavCalendarPlugin(Plugin):
                                          f"no_alarm_clock because of <{no_alarm_clock_entry}>")
                         no_alarm_clock_active = True
 
-                start_dt = self.timezone.localize(datetime.combine(start_date, datetime.min.time()))
+                start_dt = ensure_aware(start_date, self.timezone)
 
                 if birthday:
                     return_list.append({'text': create_birthday_message(event['summary']), 'start': start_dt})
@@ -189,18 +198,9 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             # Timed Events
-            if isinstance(start, datetime):
-                if start.tzinfo is None:
-                    start = self.timezone.localize(start)
-                else:
-                    start = start.astimezone(self.timezone)
-
+            start = ensure_aware(start, self.timezone)
             if end:
-                if isinstance(end, datetime):
-                    if end.tzinfo is None:
-                        end = self.timezone.localize(end)
-                    else:
-                        end = end.astimezone(self.timezone)
+                end = ensure_aware(end, self.timezone)
 
             if start.date() == now.date():
                 event_words.extend(event['summary'].split())

@@ -208,8 +208,8 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             # normal event (with start and end time):
-            # elif isinstance(start, datetime): since this test is failing because of the import at the top
-            else:
+            #  since this test is failing because of the import at the top
+            elif isinstance(start, datetime):
                 # always make sure `now` and `start/end` are timezone-aware in same tz
                 if start.tzinfo is None:
                     start = self.timezone.localize(start)
@@ -240,8 +240,8 @@ class CaldavCalendarPlugin(Plugin):
                     self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
                     return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
 
-            # else:
-            #     self.logger.warning(f"You should check why this event is ending up here with a {type(start)} start type: {event['summary']}")
+            else:
+                self.logger.warning(f"You should check why this event is ending up here with a {type(start)} start type: {event['summary']}")
 
             if birthday:
                 return_list.append(create_birthday_message(event['summary']))

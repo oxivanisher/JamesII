@@ -107,6 +107,8 @@ class CaldavCalendarPlugin(Plugin):
             end_range = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
 
             events = []
+            now = datetime.now(self.timezone)
+
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
                 results = calendar.search(start=start_range, end=end_range, event=True)
@@ -115,7 +117,6 @@ class CaldavCalendarPlugin(Plugin):
                 for event in results:
                     self.eventsFetched += 1
                     ical = event.icalendar_component
-                    self.logger.debug(f"Event object: {event}")
                     for comp in ical.walk():
                         if comp.name != "VEVENT":
                             continue
@@ -124,20 +125,43 @@ class CaldavCalendarPlugin(Plugin):
                         if summary in self.config['ignored_events']:
                             continue
 
-                        dtstart = comp.get("RECURRENCE-ID", comp.get("DTSTART"))
-                        dtend = comp.get("DTEND") if "DTEND" in comp else None
+                        dtstart_raw = comp.get("DTSTART").dt
+                        dtend_raw = comp.get("DTEND").dt if "DTEND" in comp else None
+                        rrule_data = comp.get("RRULE")
 
-                        if not dtstart:
-                            self.logger.warning(f"Skipping event without DTSTART: {summary}")
-                            continue
+                        effective_start = dtstart_raw
+                        effective_end = dtend_raw
 
-                        self.logger.debug(
-                            f"Parsed VEVENT: DTSTART={dtstart.dt} (type={type(dtstart.dt)}), SUMMARY={summary}")
+                        # handle RRULE / recurrence
+                        if rrule_data:
+                            if isinstance(dtstart_raw, date) and not isinstance(dtstart_raw, datetime):
+                                dtstart_raw = datetime.combine(dtstart_raw, datetime.min.time())
+
+                            dtstart_raw = ensure_aware(dtstart_raw, self.timezone)
+
+                            rule = rrulestr(str(rrule_data.to_ical(), 'utf-8'), dtstart=dtstart_raw)
+                            next_occurrence = rule.after(now - timedelta(minutes=1), inc=True)
+
+                            if next_occurrence:
+                                effective_start = next_occurrence
+                                duration = None
+                                if dtend_raw:
+                                    dtend_raw = ensure_aware(dtend_raw, self.timezone)
+                                    duration = dtend_raw - dtstart_raw
+                                effective_end = next_occurrence + duration if duration else None
+                                self.logger.debug(f"RRULE: next occurrence for '{summary}' is {effective_start}")
+                            else:
+                                self.logger.debug(f"RRULE exists but no upcoming occurrence for {summary}")
+                                continue
+                        else:
+                            effective_start = ensure_aware(dtstart_raw, self.timezone)
+                            if dtend_raw:
+                                effective_end = ensure_aware(dtend_raw, self.timezone)
 
                         events.append({
                             'summary': summary,
-                            'start': dtstart.dt,
-                            'end': dtend.dt if dtend else None
+                            'start': effective_start,
+                            'end': effective_end
                         })
 
             self.event_cache = events
@@ -160,9 +184,9 @@ class CaldavCalendarPlugin(Plugin):
             happening_today = False
             birthday = False
 
-            self.logger.debug(f"Analyzing event {summary} with raw start={start}")
+            self.logger.debug(f"Analyzing event '{summary}' with effective start={start}")
 
-            # All-day event handling
+            # All-day event detection
             if isinstance(start, date) and not isinstance(start, datetime):
                 start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
@@ -179,7 +203,7 @@ class CaldavCalendarPlugin(Plugin):
                     self.logger.debug(f"Tomorrow's all-day event: {summary}")
                     return_string = "Tomorrow "
                 elif start_date < today and end_date > today:
-                    self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
+                    self.logger.debug(f"Ongoing all-day event: {summary}")
                     happening_today = True
                     return_string = "Still "
                 else:
@@ -194,7 +218,7 @@ class CaldavCalendarPlugin(Plugin):
                         self.logger.info(f"No-alarm clock triggered by all-day event: {summary}")
                         no_alarm_clock_active = True
 
-                start_dt = ensure_aware(start_date, self.timezone)
+                start_dt = ensure_aware(start, self.timezone)
 
                 if birthday:
                     return_list.append({'text': create_birthday_message(summary), 'start': start_dt})
@@ -203,7 +227,7 @@ class CaldavCalendarPlugin(Plugin):
 
                 continue
 
-            # Timed event handling
+            # Timed events
             start = ensure_aware(start, self.timezone)
             if end:
                 end = ensure_aware(end, self.timezone)
@@ -213,15 +237,15 @@ class CaldavCalendarPlugin(Plugin):
                 events_today.append(summary)
 
                 if start < now < end:
-                    self.logger.debug(f"Event ongoing: {summary}")
+                    self.logger.debug(f"Ongoing timed event: {summary}")
                     return_string = f"Until {end.strftime('%H:%M')} today: "
                 elif now < end:
-                    self.logger.debug(f"Upcoming today: {summary}")
+                    self.logger.debug(f"Upcoming timed event: {summary}")
                     return_string = f"Today at {start.strftime('%H:%M')}: "
                 else:
-                    self.logger.warning(f"Past event still in list? {summary}")
+                    self.logger.warning(f"Past event still visible? {summary}")
             else:
-                self.logger.debug(f"Future event: {summary}")
+                self.logger.debug(f"Future timed event: {summary}")
                 return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
 
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
@@ -230,7 +254,7 @@ class CaldavCalendarPlugin(Plugin):
                     no_alarm_clock_active = True
 
             if summary.lower() in [x.lower() for x in self.config['ignored_events']]:
-                self.logger.debug(f"Ignored via config: {summary}")
+                self.logger.debug(f"Ignoring event (ignored_events): {summary}")
                 continue
 
             if return_string:
@@ -238,10 +262,10 @@ class CaldavCalendarPlugin(Plugin):
 
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
-                self.logger.info(f"Found override word '{word}', disabling no-alarm mode.")
+                self.logger.info(f"No-alarm override triggered by word: {word}")
                 no_alarm_clock_active = False
 
-        self.logger.debug(f"{len(return_list)} events prepared for output.")
+        self.logger.debug(f"{len(return_list)} events ready after processing")
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'caldav')
         self.core.events_today_update(events_today, 'caldav')

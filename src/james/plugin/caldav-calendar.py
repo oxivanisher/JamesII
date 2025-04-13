@@ -179,12 +179,12 @@ class CaldavCalendarPlugin(Plugin):
                                          f"no_alarm_clock because of <{no_alarm_clock_entry}>")
                         no_alarm_clock_active = True
 
+                start_dt = self.timezone.localize(datetime.combine(start_date, datetime.min.time()))
+
                 if birthday:
-                    return_list.append({'text': create_birthday_message(event['summary']),
-                                        'start': datetime.combine(start_date, datetime.min.time())})
+                    return_list.append({'text': create_birthday_message(event['summary']), 'start': start_dt})
                 elif return_string:
-                    return_list.append({'text': return_string + event['summary'],
-                                        'start': datetime.combine(start_date, datetime.min.time())})
+                    return_list.append({'text': return_string + event['summary'], 'start': start_dt})
 
                 continue
 

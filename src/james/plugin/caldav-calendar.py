@@ -115,26 +115,32 @@ class CaldavCalendarPlugin(Plugin):
                 for event in results:
                     self.eventsFetched += 1
                     ical = event.icalendar_component
-                    self.logger.debug(f"Event: {event}")
+                    self.logger.debug(f"Event object: {event}")
                     for comp in ical.walk():
                         if comp.name != "VEVENT":
                             continue
 
-                        summary = comp.get("SUMMARY", "No Title")
+                        summary = comp.get("SUMMARY", "No Title").replace("🎂 ", "")
                         if summary in self.config['ignored_events']:
                             continue
 
-                        summary = summary.replace("🎂 ", "")
-                        start = comp.get("DTSTART").dt
-                        end = comp.get("DTEND").dt if "DTEND" in comp else None
+                        dtstart = comp.get("DTSTART")
+                        dtend = comp.get("DTEND") if "DTEND" in comp else None
+
+                        if not dtstart:
+                            self.logger.warning(f"Skipping event without DTSTART: {summary}")
+                            continue
+
+                        self.logger.debug(
+                            f"Parsed VEVENT: DTSTART={dtstart.dt} (type={type(dtstart.dt)}), SUMMARY={summary}")
 
                         events.append({
                             'summary': summary,
-                            'start': start,
-                            'end': end
+                            'start': dtstart.dt,
+                            'end': dtend.dt if dtend else None
                         })
 
-            self.event_cache = events  # unsortiert zwischenspeichern
+            self.event_cache = events
             self.event_cache_timestamp = time.time()
 
         return_list = []
@@ -147,95 +153,95 @@ class CaldavCalendarPlugin(Plugin):
         now = datetime.now(self.timezone)
 
         for event in self.event_cache:
-            self.logger.debug(f"Analyzing event {event['summary']} which starts at {event['start']}")
+            summary = event['summary']
             start = event['start']
             end = event.get('end')
             return_string = None
             happening_today = False
             birthday = False
 
-            # All-Day-Events
+            self.logger.debug(f"Analyzing event {summary} with raw start={start}")
+
+            # All-day event handling
             if isinstance(start, date) and not isinstance(start, datetime):
                 start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
 
                 if start.year < today.year and start.month == today.month and start.day == today.day:
-                    self.logger.debug(f"Most likely a birthday: {event['summary']}")
+                    self.logger.debug(f"Birthday detected: {summary}")
                     happening_today = True
                     birthday = True
                 elif start_date <= today < end_date:
-                    self.logger.debug(f"Active all-day event: {event['summary']}")
+                    self.logger.debug(f"Active all-day event: {summary}")
                     happening_today = True
                     return_string = "Today "
                 elif start_date == tomorrow:
-                    self.logger.debug(f"Tomorrow's all-day event: {event['summary']}")
+                    self.logger.debug(f"Tomorrow's all-day event: {summary}")
                     return_string = "Tomorrow "
                 elif start_date < today and end_date > today:
-                    self.logger.debug(f"Ongoing all-day event from earlier: {event['summary']}")
+                    self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
                     happening_today = True
                     return_string = "Still "
                 else:
-                    self.logger.debug(f"Ignoring all-day event: {event['summary']}")
+                    self.logger.debug(f"Ignoring all-day event: {summary}")
 
                 if happening_today:
-                    event_words.extend(event['summary'].split())
-                    events_today.append(event['summary'])
+                    event_words.extend(summary.split())
+                    events_today.append(summary)
 
                 for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
-                    if no_alarm_clock_entry in event['summary'].lower():
-                        self.logger.info(f"Found the event <{event['summary'].lower()}> which activates "
-                                         f"no_alarm_clock because of <{no_alarm_clock_entry}>")
+                    if no_alarm_clock_entry in summary.lower():
+                        self.logger.info(f"No-alarm clock triggered by all-day event: {summary}")
                         no_alarm_clock_active = True
 
                 start_dt = ensure_aware(start_date, self.timezone)
 
                 if birthday:
-                    return_list.append({'text': create_birthday_message(event['summary']), 'start': start_dt})
+                    return_list.append({'text': create_birthday_message(summary), 'start': start_dt})
                 elif return_string:
-                    return_list.append({'text': return_string + event['summary'], 'start': start_dt})
+                    return_list.append({'text': return_string + summary, 'start': start_dt})
 
                 continue
 
-            # Timed Events
+            # Timed event handling
             start = ensure_aware(start, self.timezone)
             if end:
                 end = ensure_aware(end, self.timezone)
 
             if start.date() == now.date():
-                event_words.extend(event['summary'].split())
-                events_today.append(event['summary'])
+                event_words.extend(summary.split())
+                events_today.append(summary)
 
                 if start < now < end:
-                    self.logger.debug(f"Timed event is still happening today: {event['summary']}")
+                    self.logger.debug(f"Event ongoing: {summary}")
                     return_string = f"Until {end.strftime('%H:%M')} today: "
                 elif now < end:
-                    self.logger.debug(f"Timed event will happen today: {event['summary']}")
+                    self.logger.debug(f"Upcoming today: {summary}")
                     return_string = f"Today at {start.strftime('%H:%M')}: "
                 else:
-                    self.logger.warning(f"You should check why this timed event is ending up here: {event['summary']}")
+                    self.logger.warning(f"Past event still in list? {summary}")
             else:
-                self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
+                self.logger.debug(f"Future event: {summary}")
                 return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
 
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
-                if no_alarm_clock_entry in event['summary'].lower() and start.date() == today:
-                    self.logger.info(f"Found the event <{event['summary'].lower()}> which activates "
-                                     f"no_alarm_clock because of <{no_alarm_clock_entry}>")
+                if no_alarm_clock_entry in summary.lower() and start.date() == today:
+                    self.logger.info(f"No-alarm clock triggered by timed event: {summary}")
                     no_alarm_clock_active = True
 
-            if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
-                self.logger.debug(f"Ignoring event because of ignored_events: {event}")
+            if summary.lower() in [x.lower() for x in self.config['ignored_events']]:
+                self.logger.debug(f"Ignored via config: {summary}")
                 continue
 
             if return_string:
-                return_list.append({'text': return_string + event['summary'], 'start': start})
+                return_list.append({'text': return_string + summary, 'start': start})
 
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
-                self.logger.info("Found a event which overrides no_alarm_clock: %s" % word)
+                self.logger.info(f"Found override word '{word}', disabling no-alarm mode.")
                 no_alarm_clock_active = False
 
-        self.logger.debug("There are %s events in the cache." % len(return_list))
+        self.logger.debug(f"{len(return_list)} events prepared for output.")
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'caldav')
         self.core.events_today_update(events_today, 'caldav')

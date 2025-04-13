@@ -208,23 +208,29 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             # normal event (with start and end time):
-            #  since this test is failing because of the import at the top
             else:
-                # always make sure `now` and `start/end` are timezone-aware in same tz
-                if start.tzinfo is None:
-                    start = self.timezone.localize(start)
-                else:
-                    start = start.astimezone(self.timezone)
+                # ensure start and end are timezone-aware and datetime objects
+                if isinstance(start, datetime):
+                    if start.tzinfo is None:
+                        start = self.timezone.localize(start)
+                    else:
+                        start = start.astimezone(self.timezone)
+                elif isinstance(start, date):
+                    start = self.timezone.localize(datetime.combine(start, datetime.min.time()))
 
-                if end and end.tzinfo is None:
-                    end = self.timezone.localize(end)
-                elif end:
-                    end = end.astimezone(self.timezone)
+                if end:
+                    if isinstance(end, datetime):
+                        if end.tzinfo is None:
+                            end = self.timezone.localize(end)
+                        else:
+                            end = end.astimezone(self.timezone)
+                    elif isinstance(end, date):
+                        end = self.timezone.localize(datetime.combine(end, datetime.max.time()))
 
                 now = datetime.now(self.timezone)
 
                 if start.date() == now.date():
-                    # we collect all words to check for the no_alarm_clock_active override at the end
+                    # collect words for override logic
                     event_words.extend(event['summary'].split())
                     events_today.append(event['summary'])
 
@@ -235,7 +241,8 @@ class CaldavCalendarPlugin(Plugin):
                         self.logger.debug(f"Timed event will happen today: {event['summary']}")
                         return_string = f"Today at {start.strftime('%H:%M')}: "
                     else:
-                        self.logger.warning(f"You should check why this timed event is ending up here: {event['summary']}")
+                        self.logger.warning(
+                            f"You should check why this timed event is ending up here: {event['summary']}")
                 else:
                     self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
                     return_string = f"Tomorrow at {start.strftime('%H:%M')}: "

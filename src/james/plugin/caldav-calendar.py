@@ -89,30 +89,21 @@ class CaldavCalendarPlugin(Plugin):
 
     def request_events(self, show=True):
         self.logger.debug("requestEvents from caldav calendar")
+
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
             self.logger.debug("Cache is still valid, answering with the cache data")
         else:
             self.logger.debug("Cache is no longer valid, requesting events")
             today = datetime.now(self.timezone).date()
-            # midnight_today = self.timezone.localize(datetime.combine(today, datetime.min.time()))
-            # last_second_tomorrow = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
-
-            # today = datetime.now(pytz.utc).date()
-            # midnight_today_utc = pytz.utc.localize(datetime.combine(today, datetime.min.time()))
-            # last_second_tomorrow_utc = pytz.utc.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+            start_range = self.timezone.localize(datetime.combine(today, datetime.min.time()))
+            end_range = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
 
             events = []
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
-                # results = calendar.search(start=midnight_today, end=last_second_tomorrow, event=True)
-                # results = calendar.search(start=midnight_today_utc, end=last_second_tomorrow_utc, event=True)
-
-                start_range = self.timezone.localize(datetime.combine(today, datetime.min.time()))
-                end_range = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
                 results = calendar.search(start=start_range, end=end_range, event=True)
 
                 self.logger.debug(f"Found {len(results)} results:")
-
                 for event in results:
                     self.eventsFetched += 1
                     ical = event.icalendar_component
@@ -124,49 +115,44 @@ class CaldavCalendarPlugin(Plugin):
                         summary = comp.get("SUMMARY", "No Title")
                         if summary in self.config['ignored_events']:
                             continue
-                        # replace birthday emoji with ascii
+
                         summary = summary.replace("🎂 ", "")
-                        new_event = {'summary': summary,
-                                     'start': comp.get("DTSTART").dt,
-                                     'start_str': comp.get("DTSTART").dt.isoformat()}
+                        start = comp.get("DTSTART").dt
+                        end = comp.get("DTEND").dt if "DTEND" in comp else None
 
-                        if "DTEND" in comp.keys():
-                            new_event['end'] = comp["DTEND"].dt
+                        events.append({
+                            'summary': summary,
+                            'start': start,
+                            'end': end,
+                            'start_str': start.isoformat()
+                        })
 
-                        events.append(new_event)
-
-            # Sort events by start date and store to cache
-            self.event_cache = []
-            for event in sorted(events, key=itemgetter('start_str')):
-                self.event_cache.append(event)
+            # Cache aktualisieren
+            self.event_cache = sorted(events, key=itemgetter('start_str'))
             self.event_cache_timestamp = time.time()
 
         return_list = []
         event_words = []
         no_alarm_clock_active = False
         events_today = []
+
         today = datetime.now(self.timezone).date()
-        yesterday = today - timedelta(days=1)
         tomorrow = today + timedelta(days=1)
         now = datetime.now(self.timezone)
 
         for event in self.event_cache:
             self.logger.debug(f"Analyzing event {event['summary']} which starts at {event['start_str']}")
-
             start = event['start']
-            end = event['end'] if 'end' in event.keys() else None  # Some events may not have an end time
-
-            return_string = False
+            end = event.get('end')
+            return_string = None
             happening_today = False
             birthday = False
 
-            # Convert start and end times for comparison
-            if isinstance(start, date) and not isinstance(start, datetime):  # All-day event
+            # All-Day-Events
+            if isinstance(start, date) and not isinstance(start, datetime):
                 start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
 
-                # iCalendar: DTEND is exclusive for all-day events
-                # So an event with DTSTART=yesterday and DTEND=today ended yesterday
                 if start.year < today.year and start.month == today.month and start.day == today.day:
                     self.logger.debug(f"Most likely a birthday: {event['summary']}")
                     happening_today = True
@@ -177,7 +163,6 @@ class CaldavCalendarPlugin(Plugin):
                     return_string = "Today "
                 elif start_date == tomorrow:
                     self.logger.debug(f"Tomorrow's all-day event: {event['summary']}")
-                    happening_tomorrow = True
                     return_string = "Tomorrow "
                 elif start_date < today and end_date > today:
                     self.logger.debug(f"Ongoing all-day event from earlier: {event['summary']}")
@@ -186,75 +171,65 @@ class CaldavCalendarPlugin(Plugin):
                 else:
                     self.logger.debug(f"Ignoring all-day event: {event['summary']}")
 
-            else:
-                start_date = start.date()  # Timed events
-                end_date = end.date() if end else start_date  # Convert end time if available
+                if happening_today:
+                    event_words.extend(event['summary'].split())
+                    events_today.append(event['summary'])
 
-            # we collect all words to check for the no_alarm_clock_active override at the end.
-            if happening_today:
+                for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
+                    if no_alarm_clock_entry in event['summary'].lower():
+                        self.logger.info(f"Found the event <{event['summary'].lower()}> which activates "
+                                         f"no_alarm_clock because of <{no_alarm_clock_entry}>")
+                        no_alarm_clock_active = True
+
+                if birthday:
+                    return_list.append(create_birthday_message(event['summary']))
+                elif return_string:
+                    return_list.append(return_string + event['summary'])
+
+                continue  # All-day events done, skip further checks
+
+            # Timed Events
+            if isinstance(start, datetime):
+                if start.tzinfo is None:
+                    start = self.timezone.localize(start)
+                else:
+                    start = start.astimezone(self.timezone)
+
+            if end:
+                if isinstance(end, datetime):
+                    if end.tzinfo is None:
+                        end = self.timezone.localize(end)
+                    else:
+                        end = end.astimezone(self.timezone)
+
+            if start.date() == now.date():
                 event_words.extend(event['summary'].split())
                 events_today.append(event['summary'])
 
-            # check there is a "don't wake up" event present in caldav calendar
+                if start < now < end:
+                    self.logger.debug(f"Timed event is still happening today: {event['summary']}")
+                    return_string = f"Until {end.strftime('%H:%M')} today: "
+                elif now < end:
+                    self.logger.debug(f"Timed event will happen today: {event['summary']}")
+                    return_string = f"Today at {start.strftime('%H:%M')}: "
+                else:
+                    self.logger.warning(f"You should check why this timed event is ending up here: {event['summary']}")
+            else:
+                self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
+                return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
+
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
-                if no_alarm_clock_entry in event['summary'].lower() and happening_today:
+                if no_alarm_clock_entry in event['summary'].lower() and start.date() == today:
                     self.logger.info(f"Found the event <{event['summary'].lower()}> which activates "
                                      f"no_alarm_clock because of <{no_alarm_clock_entry}>")
                     no_alarm_clock_active = True
 
-            # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
                 self.logger.debug(f"Ignoring event because of ignored_events: {event}")
                 continue
 
-            # normal event (with start and end time):
-            else:
-                # ensure start and end are timezone-aware and datetime objects
-                if isinstance(start, datetime):
-                    if start.tzinfo is None:
-                        start = self.timezone.localize(start)
-                    else:
-                        start = start.astimezone(self.timezone)
-                elif isinstance(start, date):
-                    start = self.timezone.localize(datetime.combine(start, datetime.min.time()))
-
-                if end:
-                    if isinstance(end, datetime):
-                        if end.tzinfo is None:
-                            end = self.timezone.localize(end)
-                        else:
-                            end = end.astimezone(self.timezone)
-                    elif isinstance(end, date):
-                        end = self.timezone.localize(datetime.combine(end, datetime.max.time()))
-
-                now = datetime.now(self.timezone)
-
-                if start.date() == now.date():
-                    # collect words for override logic
-                    event_words.extend(event['summary'].split())
-                    events_today.append(event['summary'])
-
-                    if start < now < end:
-                        self.logger.debug(f"Timed event is still happening today: {event['summary']}")
-                        return_string = f"Until {end.strftime('%H:%M')} today: "
-                    elif now < end:
-                        self.logger.debug(f"Timed event will happen today: {event['summary']}")
-                        return_string = f"Today at {start.strftime('%H:%M')}: "
-                    else:
-                        self.logger.warning(
-                            f"You should check why this timed event is ending up here: {event['summary']}")
-                else:
-                    self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
-                    return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
-
-            # else:
-            #     self.logger.warning(f"You should check why this event is ending up here with a {type(start)} start type: {event['summary']}")
-
-            if birthday:
-                return_list.append(create_birthday_message(event['summary']))
-            elif return_string:
-                return_string += event['summary']
-                return_list.append(return_string)
+            if return_string:
+                return_list.append(return_string + event['summary'])
 
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
@@ -264,13 +239,12 @@ class CaldavCalendarPlugin(Plugin):
         self.logger.debug("There are %s events in the cache." % len(return_list))
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'caldav')
-
         self.core.events_today_update(events_today, 'caldav')
 
-        if len(return_list):
+        if len(return_list) and show:
             self.logger.debug("Returning %s events" % len(return_list))
-            if show:
-                return return_list
+            return return_list
+
         return []
 
     # commands

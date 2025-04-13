@@ -209,7 +209,7 @@ class CaldavCalendarPlugin(Plugin):
 
             # normal event (with start and end time):
             #  since this test is failing because of the import at the top
-            elif isinstance(start, datetime):
+            else:
                 # always make sure `now` and `start/end` are timezone-aware in same tz
                 if start.tzinfo is None:
                     start = self.timezone.localize(start)

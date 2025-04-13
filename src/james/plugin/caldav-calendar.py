@@ -240,8 +240,8 @@ class CaldavCalendarPlugin(Plugin):
                     self.logger.debug(f"Timed event happening tomorrow: {event['summary']}")
                     return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
 
-            else:
-                self.logger.warning(f"You should check why this event is ending up here with a {type(start)} start type: {event['summary']}")
+            # else:
+            #     self.logger.warning(f"You should check why this event is ending up here with a {type(start)} start type: {event['summary']}")
 
             if birthday:
                 return_list.append(create_birthday_message(event['summary']))

@@ -131,11 +131,10 @@ class CaldavCalendarPlugin(Plugin):
                         events.append({
                             'summary': summary,
                             'start': start,
-                            'end': end,
-                            'start_str': start.isoformat()
+                            'end': end
                         })
 
-            self.event_cache = sorted(events, key=itemgetter('start_str'))
+            self.event_cache = events  # unsortiert zwischenspeichern
             self.event_cache_timestamp = time.time()
 
         return_list = []
@@ -148,7 +147,7 @@ class CaldavCalendarPlugin(Plugin):
         now = datetime.now(self.timezone)
 
         for event in self.event_cache:
-            self.logger.debug(f"Analyzing event {event['summary']} which starts at {event['start_str']}")
+            self.logger.debug(f"Analyzing event {event['summary']} which starts at {event['start']}")
             start = event['start']
             end = event.get('end')
             return_string = None
@@ -242,8 +241,12 @@ class CaldavCalendarPlugin(Plugin):
         self.core.events_today_update(events_today, 'caldav')
 
         if show and return_list:
-            self.logger.debug("Returning %s events" % len(return_list))
-            return [e['text'] for e in sorted(return_list, key=lambda e: e['start'])]
+            sorted_list = sorted(return_list, key=lambda e: e['start'])
+
+            for e in sorted_list:
+                self.logger.debug(f"Sorted event: {e['start']} -> {e['text']}")
+
+            return [e['text'] for e in sorted_list]
 
         return []
 

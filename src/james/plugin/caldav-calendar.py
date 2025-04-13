@@ -127,7 +127,6 @@ class CaldavCalendarPlugin(Plugin):
                             'start_str': start.isoformat()
                         })
 
-            # Cache aktualisieren
             self.event_cache = sorted(events, key=itemgetter('start_str'))
             self.event_cache_timestamp = time.time()
 
@@ -148,7 +147,6 @@ class CaldavCalendarPlugin(Plugin):
             happening_today = False
             birthday = False
 
-            # All-Day-Events
             if isinstance(start, date) and not isinstance(start, datetime):
                 start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
@@ -182,11 +180,13 @@ class CaldavCalendarPlugin(Plugin):
                         no_alarm_clock_active = True
 
                 if birthday:
-                    return_list.append(create_birthday_message(event['summary']))
+                    return_list.append({'text': create_birthday_message(event['summary']),
+                                        'start': datetime.combine(start_date, datetime.min.time())})
                 elif return_string:
-                    return_list.append(return_string + event['summary'])
+                    return_list.append({'text': return_string + event['summary'],
+                                        'start': datetime.combine(start_date, datetime.min.time())})
 
-                continue  # All-day events done, skip further checks
+                continue
 
             # Timed Events
             if isinstance(start, datetime):
@@ -229,7 +229,7 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             if return_string:
-                return_list.append(return_string + event['summary'])
+                return_list.append({'text': return_string + event['summary'], 'start': start})
 
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
@@ -241,9 +241,9 @@ class CaldavCalendarPlugin(Plugin):
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'caldav')
         self.core.events_today_update(events_today, 'caldav')
 
-        if len(return_list) and show:
+        if show and return_list:
             self.logger.debug("Returning %s events" % len(return_list))
-            return return_list
+            return [e['text'] for e in sorted(return_list, key=lambda e: e['start'])]
 
         return []
 

@@ -696,7 +696,7 @@ class Core(object):
     # no_alarm_clock channel methods
     def check_no_alarm_clock(self):
         """
-        Check all reported plugins. If any one sent "true", return True.
+        Check all reported plugins. If anyone sent "true", return True.
         """
         for plugin_name in self.no_alarm_clock_data.keys():
             if self.no_alarm_clock_data[plugin_name]:

@@ -35,19 +35,39 @@ class SystemPlugin(Plugin):
         self.commands.create_subcommand('quit_node', 'Quit supplied node name(s)', self.cmd_quit_node)
         self.commands.create_subcommand('quit_all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
+        self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
+        self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
+
         if self.core.master:
+            self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
+            self.commands.create_subcommand('alarmclock_status', 'Show if the alarmclock is enabled today',
+                                            self.cmd_show_alarmclock_status)
             self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
-            self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-            self.commands.create_subcommand('quit_core', 'Quits the JamesII master node which reloads the config on '
-                                                         'startup.', self.cmd_quit_core)
             self.commands.create_subcommand('presence_detail', 'Show all cached presences on core',
                                             self.cmd_show_presence_detail)
+            self.commands.create_subcommand('quit_core', 'Quits the JamesII master node which reloads the config on '
+                                                         'startup.', self.cmd_quit_core)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
 
-        self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
-        self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
+
+    # core debug commands
+    def cmd_activate_core_debug(self, args):
+        self.core.logger.info('Activating core debug')
+        self.core.logger.setLevel(logging.DEBUG)
+
+    def cmd_deactivate_core_debug(self, args):
+        self.core.logger.info('Deactivating core debug')
+        self.core.logger.setLevel(logging.INFO)
+
+    # nodes commands
+    def cmd_nodes_plugins(self, args):
+        plugin_names = []
+        for p in self.core.plugins:
+            plugin_names.append(p.name)
+        plugin_names.sort()
+        return [', '.join(plugin_names)]
 
     def get_ip(self, args):
         return [subprocess.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
@@ -59,6 +79,39 @@ class SystemPlugin(Plugin):
             uptime_string = str(timedelta(seconds=uptime_seconds))
         return [
             "JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
+
+    def cmd_version(self, args):
+        version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')
+        version = version_pipe.read().strip()
+        version_pipe.close()
+        return [version]
+
+    def cmd_show_presence_overview(self, args):
+        if len(self.core.get_present_users_here()):
+            return (["%-10s %s are at %s" % (self.core.hostname,
+                                             ', '.join(self.core.get_present_users_here()),
+                                             self.core.location)])
+        else:
+            return (["%-10s nobody is at %s" % (self.core.hostname,
+                                                self.core.location)])
+
+    def cmd_quit_node(self, args):
+        if self.core.hostname in args:
+            message = self.core.new_message(self.name)
+            message.header = "Bye bye, james node %s is shutting down." % self.core.hostname
+            message.level = 2
+            message.send()
+
+            self.core.terminate()
+
+    def cmd_quit_all_nodes(self, args):
+        if self.core.master:
+            message = self.core.new_message(self.name)
+            message.header = "Bye bye, all james nodes are shutting down."
+            message.level = 2
+            message.send()
+
+        self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
 
     def get_main_loop_sleep(self, args):
         return [self.core.main_loop_sleep]
@@ -81,107 +134,6 @@ class SystemPlugin(Plugin):
         except IOError:
             pass
         pass
-
-    def cmd_show_presence_overview(self, args):
-        if len(self.core.get_present_users_here()):
-            return (["%-10s %s are at %s" % (self.core.hostname,
-                                             ', '.join(self.core.get_present_users_here()),
-                                             self.core.location)])
-        else:
-            return (["%-10s nobody is at %s" % (self.core.hostname,
-                                                self.core.location)])
-
-    def cmd_show_presence_detail(self, args):
-        return_message = []
-
-        def crate_message(location, plugin, host, last_update, users):
-            return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
-
-        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
-        for presence in self.core.presences.presences:
-            return_message.append(
-                crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 4),
-                              ', '.join(presence.users)))
-
-        return return_message
-
-    def cmd_activate_core_debug(self, args):
-        self.core.logger.info('Activating core debug')
-        self.core.logger.setLevel(logging.DEBUG)
-
-    def cmd_deactivate_core_debug(self, args):
-        self.core.logger.info('Deactivating core debug')
-        self.core.logger.setLevel(logging.INFO)
-
-    def cmd_version(self, args):
-        version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')
-        version = version_pipe.read().strip()
-        version_pipe.close()
-        return [version]
-
-    def cmd_message(self, args):
-        message_string = ' '.join(args)
-        message_list = message_string.split(';')
-
-        message = self.core.new_message("cli_message")
-        message.level = 1
-        try:
-            message.body = message_list[1].strip()
-        except IndexError:
-            message.body = None
-
-        try:
-            message.header = message_list[0].strip()
-            message.send()
-            return ["Message header: %s; body: %s" % (message.header, message.body)]
-        except Exception as e:
-            return ["Message could not be sent (%s)" % e]
-
-    def cmd_quit_node(self, args):
-        if self.core.hostname in args:
-            message = self.core.new_message(self.name)
-            message.header = "Bye bye, james node %s is shutting down." % self.core.hostname
-            message.level = 2
-            message.send()
-
-            self.core.terminate()
-
-    def cmd_quit_all_nodes(self, args):
-        if self.core.master:
-            message = self.core.new_message(self.name)
-            message.header = "Bye bye, all james nodes are shutting down."
-            message.level = 2
-            message.send()
-
-        self.core.discovery_channel.send(['shutdown', self.core.hostname, self.uuid])
-
-    def cmd_quit_core(self, args):
-        if self.core.master:
-            message = self.core.new_message(self.name)
-            message.header = "Bye bye, james core is shutting down."
-            message.level = 2
-            message.send()
-
-            self.core.terminate()
-
-    def cmd_ping(self, args):
-        self.core.ping_nodes()
-
-    def cmd_nodes_show(self, args):
-        nodes_online_dict = {}
-        nodes_online_list = []
-        for uuid in list(self.core.nodes_online.keys()):
-            hostname = self.core.nodes_online[uuid]
-            try:
-                nodes_online_dict[hostname]
-            except Exception:
-                nodes_online_dict[hostname] = 0
-            nodes_online_dict[hostname] += 1
-
-        for node in list(nodes_online_dict.keys()):
-            nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
-
-        return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
     def cmd_get_details(self, args):
         # if plugin == 'system':
@@ -212,23 +164,83 @@ class SystemPlugin(Plugin):
                 ret[plugin.name] = pluginData
         return ret
 
-    def alert(self, args):
-        for plugin in self.core.plugins:
-            if plugin != self:
-                plugin.alert(args)
-
-    def cmd_nodes_plugins(self, args):
-        plugin_names = []
-        for p in self.core.plugins:
-            plugin_names.append(p.name)
-        plugin_names.sort()
-        return [', '.join(plugin_names)]
-
+    # core exclusive commands
     def cmd_show_aliases(self, args):
         ret = []
         for command in sorted(self.command_aliases.keys()):
             ret.append("%-10s %s" % (command, self.command_aliases[command]))
         return ret
+
+    def cmd_show_alarmclock_status(self, args):
+        if self.core.check_no_alarm_clock():
+            return ["Alarmclock is not enabled today"]
+        else:
+            return ["Alarmclock is enabled today"]
+
+    def cmd_message(self, args):
+        message_string = ' '.join(args)
+        message_list = message_string.split(';')
+
+        message = self.core.new_message("cli_message")
+        message.level = 1
+        try:
+            message.body = message_list[1].strip()
+        except IndexError:
+            message.body = None
+
+        try:
+            message.header = message_list[0].strip()
+            message.send()
+            return ["Message header: %s; body: %s" % (message.header, message.body)]
+        except Exception as e:
+            return ["Message could not be sent (%s)" % e]
+
+    def cmd_ping(self, args):
+        self.core.ping_nodes()
+
+    def cmd_show_presence_detail(self, args):
+        return_message = []
+
+        def crate_message(location, plugin, host, last_update, users):
+            return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
+
+        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
+        for presence in self.core.presences.presences:
+            return_message.append(
+                crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 4),
+                              ', '.join(presence.users)))
+
+        return return_message
+
+    def cmd_quit_core(self, args):
+        if self.core.master:
+            message = self.core.new_message(self.name)
+            message.header = "Bye bye, james core is shutting down."
+            message.level = 2
+            message.send()
+
+            self.core.terminate()
+
+    def cmd_nodes_show(self, args):
+        nodes_online_dict = {}
+        nodes_online_list = []
+        for uuid in list(self.core.nodes_online.keys()):
+            hostname = self.core.nodes_online[uuid]
+            try:
+                nodes_online_dict[hostname]
+            except Exception:
+                nodes_online_dict[hostname] = 0
+            nodes_online_dict[hostname] += 1
+
+        for node in list(nodes_online_dict.keys()):
+            nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
+
+        return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
+
+    def alert(self, args):
+        for plugin in self.core.plugins:
+            if plugin != self:
+                plugin.alert(args)
 
     # call from core for requests
     # only the master should process aliases

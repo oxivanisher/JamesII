@@ -191,8 +191,9 @@ class CaldavCalendarPlugin(Plugin):
 
                 for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
                     if no_alarm_clock_entry in summary.lower():
-                        self.logger.info(f"No-alarm clock triggered by all-day event: {summary}")
-                        no_alarm_clock_active = True
+                        if happening_today:
+                            self.logger.info(f"No-alarm clock triggered by all-day event: {summary}")
+                            no_alarm_clock_active = True
 
                 start_dt = ensure_aware(start_date, self.timezone)
 

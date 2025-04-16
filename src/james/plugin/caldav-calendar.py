@@ -109,7 +109,7 @@ class CaldavCalendarPlugin(Plugin):
             events = []
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
-                results = calendar.search(start=start_range, end=end_range, event=True)
+                results = calendar.search(start=start_range, end=end_range, event=True, expand=True)
 
                 self.logger.debug(f"Found {len(results)} results:")
                 for event in results:

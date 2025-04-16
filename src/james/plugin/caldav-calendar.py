@@ -22,7 +22,7 @@ def create_birthday_message(summary):
         if 10 <= age % 100 <= 20:
             suffix = "th"
         else:
-            suffix = {1: "st", 2: "nd", 3: "rd"}.get(agt % 10, "th")
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(age % 10, "th")
 
     return f"{age}{suffix} birthday of {summary}"
 

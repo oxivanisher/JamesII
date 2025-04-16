@@ -306,6 +306,8 @@ caldav:
   server: https://some.domain.tld/caldav
   username: john
   password: secret
+  birthday_calendars:
+    - Contact birthdays
   ignored_events:
     - something recurring for example
   no_alarm_clock:

@@ -14,11 +14,16 @@ from james.plugin import *
 def create_birthday_message(summary):
     match = re.search(r"\((\d{4})\)", summary)  # Find (YYYY)
     if match:
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+
         birth_year = int(match.group(1))
         current_year = datetime.now().year
         age = current_year - birth_year
         summary = summary.replace(f" ({birth_year})", "")
-    return f"Happy {age}th birthday {summary}"
+    return f"{age}{suffix} birthday of {summary}"
 
 
 class CaldavCalendarPlugin(Plugin):
@@ -109,6 +114,9 @@ class CaldavCalendarPlugin(Plugin):
             events = []
             for calendar in self.get_current_calendars():
                 self.logger.debug(f"Fetching calendar: {calendar.name}")
+                birthday = False
+                if calendar.name in self.config['birthday_calendars']:
+                    birthday = True
                 results = calendar.search(start=start_range, end=end_range, event=True, expand=True)
 
                 self.logger.debug(f"Found {len(results)} results:")
@@ -137,7 +145,8 @@ class CaldavCalendarPlugin(Plugin):
                         events.append({
                             'summary': summary,
                             'start': dtstart.dt,
-                            'end': dtend.dt if dtend else None
+                            'end': dtend.dt if dtend else None,
+                            'birthday': birthday
                         })
 
             self.event_cache = events
@@ -158,7 +167,6 @@ class CaldavCalendarPlugin(Plugin):
             end = event.get('end')
             return_string = None
             happening_today = False
-            birthday = False
 
             self.logger.debug(f"Analyzing event {summary} with raw start={start}")
 
@@ -167,18 +175,14 @@ class CaldavCalendarPlugin(Plugin):
                 start_date = start
                 end_date = end if isinstance(end, date) else (end.date() if end else start_date)
 
-                if start.year < today.year and start.month == today.month and start.day == today.day:
-                    self.logger.debug(f"Birthday detected: {summary}")
-                    happening_today = True
-                    birthday = True
-                elif start_date <= today < end_date:
+                if start_date <= today < end_date:
                     self.logger.debug(f"Active all-day event: {summary}")
                     happening_today = True
                     return_string = "Today "
                 elif start_date == tomorrow:
                     self.logger.debug(f"Tomorrow's all-day event: {summary}")
                     return_string = "Tomorrow "
-                elif start_date < today and end_date > today:
+                elif start_date < today < end_date:
                     self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
                     happening_today = True
                     return_string = "Still "
@@ -197,8 +201,8 @@ class CaldavCalendarPlugin(Plugin):
 
                 start_dt = ensure_aware(start_date, self.timezone)
 
-                if birthday:
-                    return_list.append({'text': create_birthday_message(summary), 'start': start_dt})
+                if event['birthday']:
+                    return_list.append({'text': return_string + create_birthday_message(summary), 'start': start_dt})
                 elif return_string:
                     return_list.append({'text': return_string + summary, 'start': start_dt})
 

@@ -14,15 +14,16 @@ from james.plugin import *
 def create_birthday_message(summary):
     match = re.search(r"\((\d{4})\)", summary)  # Find (YYYY)
     if match:
-        if 10 <= n % 100 <= 20:
+        birth_year = int(match.group(1))
+        current_year = datetime.now().year
+        age = int(current_year - birth_year)
+        summary = summary.replace(f" ({birth_year})", "")
+
+        if 10 <= age % 100 <= 20:
             suffix = "th"
         else:
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
 
-        birth_year = int(match.group(1))
-        current_year = datetime.now().year
-        age = current_year - birth_year
-        summary = summary.replace(f" ({birth_year})", "")
     return f"{age}{suffix} birthday of {summary}"
 
 

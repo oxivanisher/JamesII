@@ -33,7 +33,7 @@ class RGBLEDPlugin(Plugin):
     def cmd_sunrise(self, args):
         if len(self.core.get_present_users_here()):
             if self.core.check_no_alarm_clock():
-                msg = "Sunrise not activated. no_alarm_clock is set (check gcal)."
+                msg = "Sunrise not activated. no_alarm_clock is set (check sys alarmclock status)."
                 self.logger.info(msg)
                 return [msg]
             self.sunrise()

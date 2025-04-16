@@ -186,8 +186,8 @@ class SystemPlugin(Plugin):
 
     def cmd_show_alarmclock_details(self, args):
         ret = ["Plugin          Disabling alarmclock?"]
-        for plugin_name in self.no_alarm_clock_data.keys():
-            ret.append(f"{plugin_name:<15} {self.no_alarm_clock_data[plugin_name]}")
+        for plugin_name in self.core.no_alarm_clock_data.keys():
+            ret.append(f"{plugin_name:<15} {self.core.no_alarm_clock_data[plugin_name]}")
         return ret
 
     def cmd_message(self, args):

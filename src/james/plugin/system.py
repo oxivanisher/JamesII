@@ -30,23 +30,30 @@ class SystemPlugin(Plugin):
         if os.path.isfile('/usr/bin/git'):
             nodes_command.create_subcommand('version', 'Shows the current git checkout HEAD', self.cmd_version)
 
-        self.commands.create_subcommand('presence_overview', 'Show presence location and users there',
+        presence_command = self.commands.create_subcommand('presence', 'Presence functions', None)
+        presence_command.create_subcommand('overview', 'Show presence location and users there',
                                         self.cmd_show_presence_overview)
-        self.commands.create_subcommand('quit_node', 'Quit supplied node name(s)', self.cmd_quit_node)
-        self.commands.create_subcommand('quit_all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
+
+        quit_command = self.commands.create_subcommand('quit', 'Quit functions', None)
+        quit_command.create_subcommand('node', 'Quit supplied node name(s)', self.cmd_quit_node)
+        quit_command.create_subcommand('all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
         self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
 
         if self.core.master:
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
-            self.commands.create_subcommand('alarmclock_status', 'Show if the alarmclock is enabled today',
+
+            alarmclock_command = self.commands.create_subcommand('alarmclock', 'Alarmclock functions', None)
+            alarmclock_command.create_subcommand('details', 'Show the alarmclock status for each plugin',
+                                            self.cmd_show_alarmclock_details)
+            alarmclock_command.create_subcommand('status', 'Show if the alarmclock is enabled today',
                                             self.cmd_show_alarmclock_status)
             self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
             self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
-            self.commands.create_subcommand('presence_detail', 'Show all cached presences on core',
+            presence_command.create_subcommand('detail', 'Show all cached presences on core',
                                             self.cmd_show_presence_detail)
-            self.commands.create_subcommand('quit_core', 'Quits the JamesII master node which reloads the config on '
+            quit_command.create_subcommand('core', 'Quits the JamesII master node which reloads the config on '
                                                          'startup.', self.cmd_quit_core)
 
             nodes_command.create_subcommand('show', 'Shows currently online nodes', self.cmd_nodes_show)
@@ -176,6 +183,12 @@ class SystemPlugin(Plugin):
             return ["Alarmclock is not enabled today"]
         else:
             return ["Alarmclock is enabled today"]
+
+    def cmd_show_alarmclock_details(self, args):
+        ret = ["Plugin          Disabling alarmclock?"]
+        for plugin_name in self.no_alarm_clock_data.keys():
+            ret.append(f"{plugin_name:<15} {self.no_alarm_clock_data[plugin_name]}")
+        return ret
 
     def cmd_message(self, args):
         message_string = ' '.join(args)

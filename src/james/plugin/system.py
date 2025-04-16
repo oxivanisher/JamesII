@@ -180,7 +180,7 @@ class SystemPlugin(Plugin):
 
     def cmd_show_alarmclock_status(self, args):
         if self.core.check_no_alarm_clock():
-            return ["Alarmclock is not enabled today"]
+            return ["Alarmclock is disabled today"]
         else:
             return ["Alarmclock is enabled today"]
 

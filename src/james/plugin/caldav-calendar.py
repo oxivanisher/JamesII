@@ -111,6 +111,7 @@ class CaldavCalendarPlugin(Plugin):
             today = datetime.now(self.timezone).date()
             start_range = self.timezone.localize(datetime.combine(today, datetime.min.time()))
             end_range = self.timezone.localize(datetime.combine(today + timedelta(days=1), datetime.max.time()))
+            self.logger.debug(f"Calendar search range start: {start_range:%Y-%m-%d %H:%M:%S}; end: {end_range:%Y-%m-%d %H:%M:%S}")
 
             events = []
             for calendar in self.get_current_calendars():

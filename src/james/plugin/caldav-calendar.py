@@ -24,7 +24,8 @@ def create_birthday_message(summary):
         else:
             suffix = {1: "st", 2: "nd", 3: "rd"}.get(age % 10, "th")
 
-    return f"{age}{suffix} birthday of {summary}"
+        return f"{age}{suffix} birthday of {summary}"
+    return summary
 
 
 class CaldavCalendarPlugin(Plugin):
@@ -85,7 +86,7 @@ class CaldavCalendarPlugin(Plugin):
             if person in persons_here:
                 if 'caldavs' in self.core.config['persons'][person].keys():
                     self.logger.debug(f"Person {person} is here, fetching calendar entries")
-                    wanted_calendars += self.core.config['persons'][person]['caldavs']
+                    wanted_calendars += self.core.config['persons'][person]['caldavs'] or []
             else:
                 self.logger.debug(f"Person {person} is not here, not fetching calendar entries")
         self.logger.debug(f"Wanted CalDAV calendars: {', '.join(wanted_calendars)}")
@@ -167,7 +168,7 @@ class CaldavCalendarPlugin(Plugin):
             summary = event['summary']
             start = event['start']
             end = event.get('end')
-            return_string = None
+            return_string = ""
             happening_today = False
 
             self.logger.debug(f"Analyzing event {summary} with raw start={start}")

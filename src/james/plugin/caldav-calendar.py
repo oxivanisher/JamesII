@@ -190,7 +190,8 @@ class CaldavCalendarPlugin(Plugin):
                     happening_today = True
                     return_string = "Still "
                 else:
-                    self.logger.debug(f"Ignoring all-day event: {summary}")
+                    self.logger.debug(f"Ignoring event (wrong start/end?): {summary}; start: {start_date:%Y-%m-%d %H:%M:%S}; end: {end_date:%Y-%m-%d %H:%M:%S}")
+                    continue
 
                 if happening_today:
                     event_words.extend(summary.split())

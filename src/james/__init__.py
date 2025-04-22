@@ -714,8 +714,9 @@ class Core(object):
             self.no_alarm_clock_data[msg['plugin']] = False
         if self.no_alarm_clock_data[msg['plugin']] != msg['events']:
             self.no_alarm_clock_data[msg['plugin']] = msg['events']
-            stringret = 'disabled' if self.check_no_alarm_clock() else 'enabled'
-            self.logger.info(f"Received no_alarm_clock update from {msg['plugin']} plugin (listener). Global alarm clock is now {stringret}.")
+            global_alarmclock_str_state = 'disabled' if self.check_no_alarm_clock() else 'enabled'
+            plugin_alarmclock_str_state = 'disabled' if msg['events'] else 'enabled'
+            self.logger.info(f"Received no_alarm_clock update for {msg['plugin']} to {plugin_alarmclock_str_state} (listener). Global alarm clock is now {global_alarmclock_str_state}.")
             self.no_alarm_clock_data[msg['plugin']] = msg['events']
 
     def no_alarm_clock_update(self, changed_events, no_alarm_clock_source):

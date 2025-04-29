@@ -528,9 +528,8 @@ class Core(object):
                 self.logger.debug("Sending current no_alarm_clock value")
                 for plugin_name in self.no_alarm_clock_data.keys():
                     no_alarm_clock = self.no_alarm_clock_data[plugin_name]
-                    self.logger.debug("Sending current no_alarm_clock value for %s" % plugin_name)
-                    self.logger.debug("message %s" % no_alarm_clock['message'])
-                    self.no_alarm_clock_update(no_alarm_clock['message'], plugin_name)
+                    self.logger.debug(f"Sending current no_alarm_clock value {no_alarm_clock} for {plugin_name}")
+                    self.no_alarm_clock_update(no_alarm_clock, plugin_name)
 
                 # send current events_today value
                 self.logger.debug("Sending current events_today value")

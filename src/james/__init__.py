@@ -525,17 +525,17 @@ class Core(object):
                 self.unlock_core()
 
                 # send current no_alarm_clock value
-                logging.debug("Sending current no_alarm_clock value")
+                self.logger.debug("Sending current no_alarm_clock value")
                 for plugin_name in self.no_alarm_clock_data.keys():
                     no_alarm_clock = self.no_alarm_clock_data[plugin_name]
                     self.no_alarm_clock_update(no_alarm_clock['message'], plugin_name)
 
                 # send current events_today value
-                logging.debug("Sending current events_today value")
+                self.logger.debug("Sending current events_today value")
                 self.events_today_update(self.events_today, 'core')
 
             # Broadcast command list
-            logging.debug("Sending command list")
+            self.logger.debug("Sending command list")
             for p in self.plugins:
                 if p.commands:
                     self.lock_core()

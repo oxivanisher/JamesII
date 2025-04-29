@@ -101,14 +101,19 @@ class KodiPlugin(Plugin):
 
     def cmd_update(self, args):
         if self.updateNode:
-            if self.send_rpc("VideoLibrary.Scan"):
-                self.updates += 1
-                self.logger.info("Database updating")
-                return ["Video database is updating"]
-            else:
-                return ["Could not send update command"]
+            self.core.add_timeout(0, self._send_kodi_update)
+            self.logger.info("Database update scheduled")
+            return ["Video database update scheduled."]
         else:
-            self.logger.debug("Not update database because i am no updateNode")
+            self.logger.debug("Not updating database because I am not an updateNode")
+            return ["Not updateNode, no database update."]
+
+    def _send_kodi_update(self):
+        """This will be called later, safely outside of the event loop."""
+        if self.send_rpc("VideoLibrary.Scan"):
+            self.logger.info("Database update sent successfully")
+        else:
+            self.logger.error("Failed to send database update")
 
     def cmd_info(self, args):
         status = self.return_status()

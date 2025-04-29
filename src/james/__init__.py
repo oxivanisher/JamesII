@@ -102,16 +102,6 @@ class ThreadedCore(threading.Thread):
         return result
 
 
-def lock_core_method(fn):
-    def wrapper(self, *args, **kwargs):
-        self.core.lock_core()
-        try:
-            return fn(self, *args, **kwargs)
-        finally:
-            self.core.unlock_core()
-    return wrapper
-
-
 class Core(object):
 
     def __init__(self, passive=False, catch_signals=True):

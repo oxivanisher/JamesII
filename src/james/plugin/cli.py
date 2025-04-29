@@ -215,7 +215,9 @@ class CliPlugin(Plugin):
 
         try:
             message.header = message_list[0].strip()
+            self.core.lock_core()
             message.send()
+            self.core.unlock_core()
             return "Message header: %s; body: %s" % (message.header, message.body)
         except Exception as e:
             return "Message could not me sent (%s)" % e

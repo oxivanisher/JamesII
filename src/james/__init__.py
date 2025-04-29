@@ -104,11 +104,11 @@ class ThreadedCore(threading.Thread):
 
 def lock_core_method(fn):
     def wrapper(self, *args, **kwargs):
-        self.lock_core()
+        self.core.lock_core()
         try:
             return fn(self, *args, **kwargs)
         finally:
-            self.unlock_core()
+            self.core.unlock_core()
     return wrapper
 
 

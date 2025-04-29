@@ -44,6 +44,7 @@ class KodiPlugin(Plugin):
     def send_rpc(self, method, params={}):
         my_id = str(uuid.uuid1())
         rawData = [{"jsonrpc": "2.0", 'id': my_id, 'method': method, 'params': params}]
+        self.logger.debug('RPC request: (%s) (%s)' % (rawData, method))
 
         data = json.dumps(rawData)
         try:
@@ -56,6 +57,7 @@ class KodiPlugin(Plugin):
                 self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
                 return False
             else:
+                self.logger.debug('RPC request successful: (%s) (%s)' % (rawData, rpcReturn))
                 return rpcReturn
 
         except Exception as e:

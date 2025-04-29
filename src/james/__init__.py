@@ -102,6 +102,16 @@ class ThreadedCore(threading.Thread):
         return result
 
 
+def lock_core_method(fn):
+    def wrapper(self, *args, **kwargs):
+        self.lock_core()
+        try:
+            return fn(self, *args, **kwargs)
+        finally:
+            self.unlock_core()
+    return wrapper
+
+
 class Core(object):
 
     def __init__(self, passive=False, catch_signals=True):
@@ -867,7 +877,9 @@ class Core(object):
                 self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
             except TypeError as e:
-                self.logger.critical("Pika sometimes crashes with TypeError for unknown reason. Continue looping... Error: %s" % e)
+                self.logger.critical("Pika sometimes crashed with TypeError due to multithreading and locked cores. "
+                                     "This should not have happen again! Please investigate; Error: %s" % e)
+                self.terminate(2)
 
             # if I hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:

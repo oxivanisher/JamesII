@@ -28,7 +28,9 @@ class BroadcastChannel(object):
 
         while not msg_sent:
             try:
+                self.core.lock_core()
                 self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
+                self.core.unlock_core()
                 msg_sent = True
             except pika.exceptions.ConnectionClosed:
                 try_count += 1

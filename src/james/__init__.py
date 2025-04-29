@@ -867,7 +867,7 @@ class Core(object):
                 self.logger.critical("Detected hanging core. Exiting...")
                 self.terminate(2)
             except TypeError as e:
-                self.logger.critical("Maybe pika sometimes fucks up with TypeError? Continue looping... Error: %s" % e)
+                self.logger.critical("Pika sometimes crashes with TypeError for unknown reason. Continue looping... Error: %s" % e)
 
             # if I hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:

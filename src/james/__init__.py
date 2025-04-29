@@ -268,7 +268,9 @@ class Core(object):
             while not self.config:
                 try:
                     with Timeout(180):
+                        self.lock_core()
                         self.connection.process_data_events()
+                        self.unlock_core()
                 except KeyboardInterrupt:
                     self.logger.warning("Keyboard interrupt detected. Exiting...")
                     sys.exit(3)

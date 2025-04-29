@@ -44,7 +44,7 @@ class KodiPlugin(Plugin):
     def send_rpc(self, method, params={}):
         my_id = str(uuid.uuid1())
         rawData = [{"jsonrpc": "2.0", 'id': my_id, 'method': method, 'params': params}]
-        self.logger.debug('RPC request: (%s) (%s)' % (rawData, method))
+        self.logger.debug('Kodi RPC request: (%s) (%s)' % (rawData, method))
 
         data = json.dumps(rawData)
         try:
@@ -54,10 +54,10 @@ class KodiPlugin(Plugin):
             r = h.getresponse()
             rpcReturn = json.loads(r.read())[0]
             if 'error' in list(rpcReturn.keys()):
-                self.logger.debug('Unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+                self.logger.debug('Kodi unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
                 return False
             else:
-                self.logger.debug('RPC request successful: (%s) (%s)' % (rawData, rpcReturn))
+                self.logger.debug('Kodi RPC request successful: (%s) (%s)' % (rawData, rpcReturn))
                 return rpcReturn
 
         except Exception as e:
@@ -114,8 +114,10 @@ class KodiPlugin(Plugin):
         """This will be called later, safely outside of the event loop."""
         if self.send_rpc("VideoLibrary.Scan"):
             self.logger.info("Database update sent successfully")
+            return []
         else:
             self.logger.error("Failed to send database update")
+            return []
 
     def cmd_info(self, args):
         status = self.return_status()

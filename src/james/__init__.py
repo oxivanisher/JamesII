@@ -260,7 +260,9 @@ class Core(object):
         self.config_channel.add_listener(self.config_listener)
 
         # Send hello
+        self.lock_core()
         self.discovery_channel.send(['hello', self.hostname, self.uuid])
+        self.unlock_core()
 
         # Wait for configuration if not master
         if not self.master:
@@ -517,8 +519,10 @@ class Core(object):
 
             # Broadcast configuration if master
             if self.master:
+                self.lock_core()
                 self.config_channel.send((self.config, self.uuid))
                 self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+                self.unlock_core()
 
                 # send current no_alarm_clock value
                 for plugin_name in self.no_alarm_clock_data.keys():
@@ -530,13 +534,17 @@ class Core(object):
             # Broadcast command list
             for p in self.plugins:
                 if p.commands:
+                    self.lock_core()
                     self.discovery_channel.send(['commands', p.commands])
+                    self.unlock_core()
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
             if not self.master:
                 self.logger.debug('Node ping received, sending pong')
+            self.lock_core()
             self.discovery_channel.send(['pong', self.hostname, self.uuid])
+            self.unlock_core()
 
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
@@ -632,7 +640,9 @@ class Core(object):
         """
         Sends a msg over the msg channel.
         """
+        self.lock_core()
         self.message_channel.send(msg)
+        self.unlock_core()
 
     def new_message(self, name="uninitialized_message"):
         """
@@ -691,7 +701,9 @@ class Core(object):
         """
         self.logger.debug("Publishing presence update %s" % new_presence)
         try:
+            self.lock_core()
             self.presence_channel.send(new_presence)
+            self.unlock_core()
         except Exception as e:
             self.logger.warning("Could not send presence update (%s)" % e)
 
@@ -741,9 +753,11 @@ class Core(object):
         self.logger.debug("Publishing no_alarm_clock events update %s from plugin %s" %
                           (new_events, no_alarm_clock_source))
         try:
+            self.lock_core()
             self.no_alarm_clock_channel.send({'events': new_events,
                                               'host': self.hostname,
                                               'plugin': no_alarm_clock_source})
+            self.unlock_core()
         except Exception as e:
             self.logger.warning("Could not send no_alarm_clock events (%s)" % e)
 
@@ -780,9 +794,11 @@ class Core(object):
         self.logger.debug("Publishing events_today events update %s from plugin %s" %
                           (new_events, events_today_source))
         try:
+            self.lock_core()
             self.events_today_channel.send({'events': new_events,
                                             'host': self.hostname,
                                             'plugin': events_today_source})
+            self.unlock_core()
         except Exception as e:
             self.logger.warning("Could not send events_today events (%s)" % e)
 
@@ -793,7 +809,9 @@ class Core(object):
         """
         if self.master:
             self.logger.debug('Pinging slave nodes.')
+            self.lock_core()
             self.discovery_channel.send(['ping', self.hostname, self.uuid])
+            self.unlock_core()
 
     def master_send_nodes_online(self):
         """
@@ -806,7 +824,9 @@ class Core(object):
                 nodes_online.append(self.nodes_online[node])
             self.logger.debug('Publishing online nodes: %s' % nodes_online)
 
+            self.lock_core()
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+            self.unlock_core()
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
     def master_ping_nodes(self):
@@ -828,7 +848,9 @@ class Core(object):
         # Broadcast command list
         for p in self.plugins:
             if p.commands:
+                self.lock_core()
                 self.discovery_channel.send(['commands', p.commands])
+                self.unlock_core()
 
         if self.passive:
             self.logger.debug(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
@@ -908,7 +930,9 @@ class Core(object):
             with Timeout(10):
                 try:
                     self.logger.info("Sending byebye to discovery channel (with 10 seconds timeout)")
+                    self.lock_core()
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
+                    self.unlock_core()
                 except Exception:
                     pass
 

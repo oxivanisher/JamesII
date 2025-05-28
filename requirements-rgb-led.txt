@@ -1,0 +1,2 @@
+# plugin rgb-led
+smbus2

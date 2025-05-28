@@ -57,7 +57,8 @@ JamesII is mostly ported to python 3. The core things are working great, but the
 
 ## You Need:
 * python3
-* ideally a venv to install all the requirements in `requirements.txt`
+* Ideally a venv to install all the requirements in `requirements.txt`
+* Some plugins require additional python libraries and have their own `requirements-*.txt`. Those got excluded from the main `requirements.txt` file since they are mostly only used seldom or are not very Raspberry Pi friendly.
 
 ### Optional (Plugin specific):
 #### Raspbian packages (`apt install XXX`)

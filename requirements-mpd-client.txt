@@ -1,0 +1,2 @@
+# plugin mpd-client
+python-mpd2

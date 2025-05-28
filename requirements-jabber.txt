@@ -1,0 +1,5 @@
+# plugin jabber
+#python-xmpp debian package (https://packages.debian.org/buster/python-xmpp) was used. needs replacing!
+#xmppy
+# this might be the sucessor: https://github.com/xmpppy/xmpppy
+xmpppy

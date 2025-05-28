@@ -1,0 +1,4 @@
+# plugin lirc-plugin
+# pylirc2
+# replaced with evdev
+evdev; platform_system != "Windows"

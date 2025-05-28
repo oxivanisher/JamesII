@@ -30,7 +30,7 @@ dnspython
 # see requirements-mpd-client.txt
 
 # plugin transmission
-# see requirements-transmission.txt
+transmissionrpc
 
 # plugin evdev
 # see requirements-evdev-plugin.txt
@@ -51,4 +51,4 @@ dnspython
 # see requirements-httpserver-plugin.txt
 
 # plugin raspberry
-# see requirements-raspberry.txt
+wiringpi; platform_system != "Windows"

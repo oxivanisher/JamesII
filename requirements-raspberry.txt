@@ -51,4 +51,4 @@ dnspython
 # see requirements-httpserver-plugin.txt
 
 # plugin raspberry
-# see requirements-raspberry.txt
+wiringpi; platform_system != "Windows"

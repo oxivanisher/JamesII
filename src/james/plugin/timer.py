@@ -118,9 +118,10 @@ class TimerPlugin(Plugin):
             event_active = False
             event_active_plugin = ""
             for plugin in self.core.events_today.keys():
-                if event['event_name'].lower() in [x.lower() for x in self.core.events_today[plugin]]:
-                    event_active = True
-                    event_active_plugin = plugin
+                for event_name in event['event_names']:
+                    if event_name.lower() in [x.lower() for x in self.core.events_today[plugin]]:
+                        event_active = True
+                        event_active_plugin = plugin
 
             if event_active:
                 is_active_str = f"Activated by {event_active_plugin} today"

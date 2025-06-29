@@ -277,7 +277,9 @@ timer:
   nodes:
     - node_name
   timed_calendar_events:
-    - event_name: Get up early
+    - event_names:
+        - Get up early
+        - Wake up early
       hour: 6
       minute: 20
       command: wakeup

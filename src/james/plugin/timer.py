@@ -177,12 +177,13 @@ class TimerPlugin(Plugin):
             self.last_events_today_check_minute = dtnow.minute
             for plugin in self.core.events_today.keys():
                 for event in self.config['timed_calendar_events']:
-                    self.logger.debug(f"Checking if {event['event_name']} from {plugin} is active today")
-                    if event['event_name'].lower() in [x.lower() for x in self.core.events_today[plugin]]:
-                        self.logger.debug(f"Event {event['event_name']} from plugin {plugin} is happening today")
-                        if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
-                            self.logger.info(f"Event {event['event_name']} is happening this minute, registering command <{event['command']}> to run soon.")
-                            self.saved_commands.append((int(time.time()) - 1, event['command'].split()))
+                    for event_name in event['event_names']:
+                        self.logger.debug(f"Checking if {event_name} from {plugin} is active today")
+                        if event_name.lower() in [x.lower() for x in self.core.events_today[plugin]]:
+                            self.logger.debug(f"Event {event_name} from plugin {plugin} is happening today")
+                            if event['hour'] == dtnow.hour and event['minute'] == dtnow.minute:
+                                self.logger.info(f"Event {event_name} is happening this minute, registering command <{event['command']}> to run soon.")
+                                self.saved_commands.append((int(time.time()) - 1, event['command'].split()))
         
         saved_commands_new = []
         for (timestamp, command) in self.saved_commands:

@@ -530,9 +530,11 @@ class MpdClientPlugin(Plugin):
         if station:
             radio_name = args[0]
             radio_url = self.stations[args[0]]
+            self.logger.debug(f'Will try to play station {radio_name} from {radio_url}')
         else:
             radio_name = self.config['default_st']
             radio_url = self.stations[radio_name]
+            self.logger.debug(f'Will try to play default station {radio_name} from {radio_url}')
 
         if self.client_worker.play_url(radio_url, self.config['norm_volume']):
             self.radioStarted += 1

@@ -66,7 +66,7 @@ JamesII is mostly ported to python 3. The core things are working great, but the
 * motion (motion plugin)
 
 #### pip packages (`pip install XXX`)
-* wiringpi (raspberrypi plugin, pip install)
+* lgpio (raspberrypi plugin, pip install)
 
 #### Notes on some plugins
 #### mpd noise
@@ -152,11 +152,10 @@ After setting up motion, add the following lines to your /etc/motion/motion.conf
 
 #### RaspberryPi Plugin:
 The system uses the GPIO numbers. Please be aware, that there are three (!) pin numbering schemes.
-To reduce confusion, here are some resources which help translate  and explain the different schemes:
+To reduce confusion, here are some resources which help translate and explain the different schemes:
 
 * [Interactive Raspberry Pi pinout](https://pinout.xyz/pinout/)
-* [WiringPi library pin explanation](http://wiringpi.com/pins/)
-* [Gordons Projects - WiringPi - Pins](https://projects.drogon.net/raspberry-pi/wiringpi/pins/)
+* [Lgpio homepage](https://abyz.me.uk/lg/py_lgpio.html)
 
 See the `electronics/rasp_plugin_circuits` folder for circuit examples created with
 [www.circuit-diagram.org](https://www.circuit-diagram.org/).

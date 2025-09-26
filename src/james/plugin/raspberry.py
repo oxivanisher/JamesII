@@ -1,4 +1,4 @@
-import wiringpi
+import lgpio
 import time
 import threading
 import math
@@ -45,41 +45,45 @@ class RaspberryThread(PluginThread):
         self.switch_pins = switch_pins
         self.led_pins = led_pins
         self.pin_state_cache = {}
-        # wiringpi = wiringpi2.GPIO(wiringpi2.GPIO.WPI_MODE_PINS)
-        # wiringpi.wiringPiSetup()
-        # wiringpi.wiringPiSetupSys()
-        wiringpi.wiringPiSetupGpio()
-        self.led_blink_list = []
         self.pull_up = pull_up
         self.loop_sleep = 100
 
+        # open default gpiochip
+        self.chip = lgpio.gpiochip_open(0)
+
+        self.led_blink_list = []
+
     def rasp_init(self):
+        # configure pull resistors and directions
         for pin in list(self.pull_up.keys()):
             if self.pull_up[pin]:
                 self.logger.info("Raspberry plugin pulling up pin %s" % pin)
-                wiringpi.pullUpDnControl(int(pin), 2)
+                lgpio.gpio_claim_input(self.chip, pin, lgpio.SET_PULL_UP)
             else:
                 self.logger.info("Raspberry plugin pulling down pin %s" % pin)
-                wiringpi.pullUpDnControl(int(pin), 1)
+                lgpio.gpio_claim_input(self.chip, pin, lgpio.SET_PULL_DOWN)
 
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
-            wiringpi.pinMode(pin, 0)
-            self.pin_state_cache['switch'][pin] = {'count': 0,
-                                                   'state': self.read_pin(pin)}
+            lgpio.gpio_claim_input(self.chip, pin)   # already pulled above if needed
+            self.pin_state_cache['switch'][pin] = {
+                'count': 0,
+                'state': self.read_pin(pin)
+            }
 
         for pin in self.led_pins:
-            wiringpi.pinMode(pin, 1)
-            wiringpi.digitalWrite(pin, 0)
+            lgpio.gpio_claim_output(self.chip, pin, 0)
 
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
-            wiringpi.pinMode(pin, 0)
+            lgpio.gpio_claim_input(self.chip, pin)
             initial_state = self.read_pin(pin)
-            self.pin_state_cache['buttons'][pin] = {'count': 0,
-                                                    'state': initial_state,
-                                                    'start': initial_state,
-                                                    'pressed': 0}
+            self.pin_state_cache['buttons'][pin] = {
+                'count': 0,
+                'state': initial_state,
+                'start': initial_state,
+                'pressed': 0
+            }
 
     def work(self):
         self.rasp_init()
@@ -202,16 +206,15 @@ class RaspberryThread(PluginThread):
         self.led_blink_list.append(BlinkLed(self, pin, amount, cycles))
 
     def set_pin(self, pin, mode):
-        if mode:
-            wiringpi.digitalWrite(pin, 1)
-        else:
-            wiringpi.digitalWrite(pin, 0)
+        lgpio.gpio_write(self.chip, pin, 1 if mode else 0)
 
     def read_pin(self, pin):
-        return wiringpi.digitalRead(pin)
+        return lgpio.gpio_read(self.chip, pin)
 
     # called when the worker ends
     def on_exit(self, result):
+        # release chip on exit
+        lgpio.gpiochip_close(self.chip)
         self.logger.info("Raspberry worker exited")
 
 

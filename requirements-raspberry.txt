@@ -1,2 +1,2 @@
 # plugin raspberry
-wiringpi; platform_system != "Windows"
+lgpio; platform_system != "Windows"

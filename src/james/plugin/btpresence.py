@@ -44,6 +44,10 @@ class BTPresencePlugin(Plugin):
                 always_at_home_command.create_subcommand('on', 'Activate always at home', self.always_at_home_on)
                 always_at_home_command.create_subcommand('off', 'Deactivate always at home', self.always_at_home_off)
 
+            errors_command = self.commands.create_subcommand('errors', 'Show and clear gathered l2ping errors', None)
+            errors_command.create_subcommand('clear', 'Clear l2ping errors', self.errors_clear)
+            errors_command.create_subcommand('show', 'Show l2ping errors', self.errors_show)
+
         atexit.register(self.save_state)
         self.persons_btpresence_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_status")
         self.proxy_send_lock = False
@@ -147,6 +151,18 @@ class BTPresencePlugin(Plugin):
                          "%s@%s" % (self.always_at_home, self.core.location))
         self.presence_event(self.users_here)
         return ["Always at home override DISABLED"]
+
+    def errors_clear(self, args):
+        self.logger.info("Clearing gathered l2ping errors")
+        self.l2ping_errors = {}
+        return ["l2ping errors cleared"]
+
+    def errors_show(self, args):
+        self.logger.debug("Showing gathered l2ping errors")
+        ret = []
+        for l2ping_error in sorted(self.l2ping_errors.keys()):
+            ret.append(f'{l2ping_error}: {self.l2ping_errors[l2ping_error]}')
+        return ret
 
     # ensure to send our presence info at least every self.core.config['presence_timeout']
     def presence_keepalive_daemon(self):
@@ -301,17 +317,13 @@ class BTPresencePlugin(Plugin):
         self.wait_for_threads(self.worker_threads)
 
     def return_status(self, verbose=False):
-        l2ping_errors = []
-        for l2ping_error in sorted(self.l2ping_errors.keys()):
-            l2ping_errors.append(f'{l2ping_error}: {self.l2ping_errors[l2ping_error]}')
-
         ret = {'presence_checks': self.presence_checks, 'presence_updates': self.presence_updates,
                'alwaysAtHome': self.always_at_home, 'last_presence_check_start': self.last_presence_check_start,
                'last_presence_check_end': self.last_presence_check_end,
                'last_presence_check_duration': self.last_presence_check_duration,
                'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.users_here,
                'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time(),
-               'l2ping_errors': l2ping_errors}
+               'l2ping_errors': sorted(self.l2ping_errors.keys())}
         return ret
 
 

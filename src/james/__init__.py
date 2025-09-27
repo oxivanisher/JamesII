@@ -1100,28 +1100,28 @@ class Core(object):
         return thread
 
     # signal handlers
-    def on_sigint_signal(self, signal, frame):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+    def on_sigint_signal(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[sig], 0)
+
+    def on_sigterm_signal(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
         self.handle_signal(self.signal_names[signal], 0)
 
-    def on_sigterm_signal(self, signal, frame):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+    def on_sighup_signal(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
         self.handle_signal(self.signal_names[signal], 0)
 
-    def on_sighup_signal(self, signal, frame):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+    def on_sigquit_signal(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
         self.handle_signal(self.signal_names[signal], 0)
 
-    def on_sigquit_signal(self, signal, frame):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+    def on_sigtstp_signal(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
         self.handle_signal(self.signal_names[signal], 0)
 
-    def on_sigtstp_signal(self, signal, frame):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[signal], 0)
-
-    def on_sigsegv_signal(self, signal, frame):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+    def on_sigsegv_signal(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
         self.handle_signal(self.signal_names[signal], 1)
 
     def handle_signal(self, sig_name, exit_code):

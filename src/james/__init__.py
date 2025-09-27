@@ -910,7 +910,7 @@ class Core(object):
                     self.core_lock.release()
                 self.terminate(1)
 
-        self.logger.debug("Exiting with return code (%s)" % self.return_code)
+        self.logger.debug(f"Exiting with return code ({self.return_code})")
         sys.exit(self.return_code)
 
     def lock_core(self):
@@ -951,7 +951,7 @@ class Core(object):
 
             # check if all child threads are done
             if threading.active_count() > 1:
-                self.logger.info("Shutdown not yet complete. %s thread(s) remaining" % threading.active_count())
+                self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) remaining")
 
                 main_thread = threading.current_thread()
                 for t in threading.enumerate():
@@ -959,15 +959,19 @@ class Core(object):
                         continue
                     if t.name == "MainThread":
                         continue
-                    self.logger.info('Joining thread %s' % t.name)
+                    self.logger.info(f'Joining thread {t.name}')
 
                     try:
                         t.join(3.0)
+                        if t.is_alive():
+                            self.logger.warning(f"Thread {t.name} did not exit cleanly after 3 seconds.")
                     except RuntimeError:
                         self.logger.warning("Unable to join thread %s because we would run into a deadlock." % t.name)
                         pass
 
             else:
+                self.logger.info("Shutdown in progress, only main thread should remaining.")
+
                 try:
                     file = open(self.stats_file, 'w')
                     file.write(json.dumps(saveStats))
@@ -1063,17 +1067,17 @@ class Core(object):
         """
         if not logger:
             logger = self.logger
-        logger.debug('Spawning subprocess (%s)' % target)
+        logger.debug(f'Spawning subprocess ({target})')
 
         def run_in_thread(target, on_exit, target_args):
             if target_args is not None:
-                self.logger.debug('Ending subprocess (%s)' % target)
+                self.logger.debug(f'Ending subprocess ({target})')
                 self.add_timeout(0, on_exit, target(target_args))
             else:
-                self.logger.debug('Ending subprocess (%s)' % target)
+                self.logger.debug(f'Ending subprocess ({target})')
                 self.add_timeout(0, on_exit, target())
 
-        thread = threading.Thread(name="%s %s" % (target, target_args), target=run_in_thread,
+        thread = threading.Thread(name=f"{target} {target_args}", target=run_in_thread,
                                   args=(target, on_exit, target_args))
         thread.start()
         return thread

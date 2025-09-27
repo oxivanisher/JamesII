@@ -932,6 +932,7 @@ class Core(object):
             self.return_code = return_code
             self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
+            # informing other nodes of my departure
             with Timeout(10):
                 try:
                     self.logger.info("Sending byebye to discovery channel (with 10 seconds timeout)")
@@ -941,40 +942,14 @@ class Core(object):
                 except Exception:
                     pass
 
+            # gather stats from all plugins
             saveStats = {}
             for p in self.plugins:
                 self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
                 with Timeout(10):
                     saveStats[p.name] = p.save_state(True)
-            try:
-                file = open(self.stats_file, 'w')
-                file.write(json.dumps(saveStats))
-                file.close()
-                self.logger.info("Saved stats to %s" % self.stats_file)
-            except IOError:
-                if self.passive:
-                    self.logger.info("Could not save stats to file")
-                else:
-                    self.logger.warning("Could not save stats to file")
 
-            for p in self.plugins:
-                self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
-                with Timeout(30):
-                    p.terminate()
-            try:
-                file = open(self.presences_file, 'w')
-                file.write(json.dumps(self.presences.dump()))
-                file.close()
-                self.logger.info("Saving presences to %s" % self.presences_file)
-            except IOError:
-                if self.passive:
-                    self.logger.info("Could not save presences to file")
-                else:
-                    self.logger.warning("Could not save presences to file")
-            except KeyError:
-                # no presence state found for this location
-                pass
-
+            # check if all child threads are done
             if threading.active_count() > 1:
                 self.logger.info("Shutdown not yet complete. %s thread(s) remaining" % threading.active_count())
 
@@ -993,6 +968,36 @@ class Core(object):
                         pass
 
             else:
+                try:
+                    file = open(self.stats_file, 'w')
+                    file.write(json.dumps(saveStats))
+                    file.close()
+                    self.logger.info("Saved stats to %s" % self.stats_file)
+                except IOError:
+                    if self.passive:
+                        self.logger.info("Could not save stats to file")
+                    else:
+                        self.logger.warning("Could not save stats to file")
+
+                for p in self.plugins:
+                    self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
+                    with Timeout(30):
+                        p.terminate()
+
+                try:
+                    file = open(self.presences_file, 'w')
+                    file.write(json.dumps(self.presences.dump()))
+                    file.close()
+                    self.logger.info("Saving presences to %s" % self.presences_file)
+                except IOError:
+                    if self.passive:
+                        self.logger.info("Could not save presences to file")
+                    else:
+                        self.logger.warning("Could not save presences to file")
+                except KeyError:
+                    # no presence state found for this location
+                    pass
+
                 self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
                                  threading.active_count())
 

@@ -341,7 +341,7 @@ class BTPresencePlugin(Plugin):
 
     def terminate(self):
         self.need_to_terminate = True
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
 
     def return_status(self, verbose=False):
         l2ping_errors = []

@@ -951,13 +951,22 @@ class Core(object):
 
             # tell plugins to terminate
             for p in self.plugins:
-                self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
-                with Timeout(30):
+                self.logger.info(f"Calling terminate() on plugin {p.name} (with 5 seconds timeout)")
+                with Timeout(5):
                     p.terminate()
+
+            # giving the threads a second to exit cleanly
+            time.sleep(1)
+
+            # wait for plugin threads to terminate all its threads in 30 seconds
+            for p in self.plugins:
+                self.logger.info(f"Calling wait_for_threads() on plugin {p.name} (with 31 seconds timeout)")
+                with Timeout(31):
+                    p.wait_for_threads()
 
             # check if all child threads are done
             if threading.active_count() > 1:
-                self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) remaining")
+                self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) still remaining")
 
                 main_thread = threading.current_thread()
                 for t in threading.enumerate():

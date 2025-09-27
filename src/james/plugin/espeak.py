@@ -310,7 +310,8 @@ class EspeakPlugin(Plugin):
         return self.unmuted
 
     def terminate(self):
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
+        pass
 
     def return_status(self, verbose=False):
         ret = {'archivedMessage': len(self.archived_messages), 'messagesCache': len(self.message_cache),

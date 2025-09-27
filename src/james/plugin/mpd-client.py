@@ -477,7 +477,7 @@ class MpdClientPlugin(Plugin):
         self.client_worker.terminate()
         self.client_worker.unlock()
         self.logger.debug("Calling wait_for_threads for MPD")
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
 
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')

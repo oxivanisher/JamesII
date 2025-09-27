@@ -287,7 +287,7 @@ class RaspberryPlugin(Plugin):
 
     def terminate(self):
         self.worker_must_exit()
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
 
     # james command methods
     def cmd_show_buttons(self, args):

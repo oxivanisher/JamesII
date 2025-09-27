@@ -91,6 +91,7 @@ class MpdClientWorker(object):
         self.my_port = my_port
         self.pre_talk_volume = None
         self.worker_lock = threading.Lock()
+        self.name = f"{plugin.name} > Host: {my_host}:{my_port}"
 
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 

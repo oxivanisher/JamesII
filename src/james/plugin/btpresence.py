@@ -50,6 +50,7 @@ class BTPresencePlugin(Plugin):
 
         atexit.register(self.save_state)
         self.persons_btpresence_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_status")
+        self.l2ping_errors_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_errors")
         self.proxy_send_lock = False
         self.load_saved_state()
 
@@ -87,7 +88,7 @@ class BTPresencePlugin(Plugin):
     def load_saved_state(self):
         try:
             # load saved presence persons
-            self.logger.debug("Loading btpresence status from %s" % self.persons_btpresence_file)
+            self.logger.debug(f"Loading btpresence status from {self.persons_btpresence_file}")
             presence_file = open(self.persons_btpresence_file, 'r')
             self.users_here = json.loads(presence_file.read())
             presence_file.close()
@@ -95,14 +96,32 @@ class BTPresencePlugin(Plugin):
             pass
         pass
 
+        try:
+            # load saved presence persons
+            self.logger.debug(f"Loading l2ping errors from {self.l2ping_errors_file}")
+            errors_file = open(self.l2ping_errors_file, 'r')
+            self.l2ping_errors = json.loads(errors_file.read())
+            errors_file.close()
+        except IOError:
+            pass
+        pass
+
     def save_state(self, verbose=False):
         try:
-            file_handler = open(self.persons_btpresence_file, 'w')
-            file_handler.write(json.dumps(self.users_here))
-            file_handler.close()
-            self.logger.debug("Saving persons status to %s" % self.persons_btpresence_file)
+            presence_file = open(self.persons_btpresence_file, 'w')
+            presence_file.write(json.dumps(self.users_here))
+            presence_file.close()
+            self.logger.debug(f"Saving persons status to {self.persons_btpresence_file}")
         except IOError:
             self.logger.warning("Could not save persons status to file!")
+
+        try:
+            errors_file = open(self.l2ping_errors_file, 'w')
+            errors_file.write(json.dumps(self.l2ping_errors))
+            errors_file.close()
+            self.logger.debug(f"Saving l2ping errors to f{self.l2ping_errors_file}")
+        except IOError:
+            self.logger.warning("Could not save l2ping errors to file!")
 
     # command methods
     def test(self, args):
@@ -158,16 +177,12 @@ class BTPresencePlugin(Plugin):
         return ["l2ping errors cleared"]
 
     def errors_show(self, args):
-        self.logger.info("Showing gathered l2ping errors")
+        self.logger.debug("Showing gathered l2ping errors")
         ret = []
-        self.logger.info("len %d", len(self.l2ping_errors.keys()))
         if len(self.l2ping_errors.keys()):
-            self.logger.info("len ok")
             for key in sorted(self.l2ping_errors.keys()):
-                self.logger.info("looping on %s", key)
                 ret.append(f"{key}: {self.l2ping_errors[key]}")
         else:
-            self.logger.info("no len")
             ret.append("No l2ping errors gathered")
         return ret
 
@@ -324,12 +339,17 @@ class BTPresencePlugin(Plugin):
         self.wait_for_threads(self.worker_threads)
 
     def return_status(self, verbose=False):
+        l2ping_errors = []
+        for key in sorted(self.l2ping_errors.keys()):
+            l2ping_errors.append(f"{key}: {self.l2ping_errors[key]}")
+
         ret = {'presence_checks': self.presence_checks, 'presence_updates': self.presence_updates,
                'alwaysAtHome': self.always_at_home, 'last_presence_check_start': self.last_presence_check_start,
                'last_presence_check_end': self.last_presence_check_end,
                'last_presence_check_duration': self.last_presence_check_duration,
                'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.users_here,
-               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time()}
+               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time(),
+               'l2ping_errors': l2ping_errors}
         return ret
 
 
@@ -347,5 +367,6 @@ descriptor = {
                      'current_presence_sleep': "Current sleep time",
                      'current_presence_state': "Current presence state",
                      'nextCheckIn': "Next check in",
-                     'last_presence_check_duration': "Last Proximity check duration"}
+                     'last_presence_check_duration': "Last Proximity check duration",
+                     'l2ping_errors': "Gathered l2ping errors"}
 }

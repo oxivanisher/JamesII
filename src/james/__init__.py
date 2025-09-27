@@ -1081,11 +1081,11 @@ class Core(object):
     # signal handlers
     def on_kill_sig(self, signal, frame):
         self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        self.terminate(3)
+        self.add_timeout(0, self.terminate, 3)
 
     def on_fault_sig(self, signal, frame):
         self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        self.terminate(1)
+        self.add_timeout(0, self.terminate, 1)
 
     # catchall handler
     # def sighandler(self, signal, frame):

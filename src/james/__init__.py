@@ -109,6 +109,7 @@ class Core(object):
         self.timeouts = []
         self.timeout_queue = queue.Queue()
         self.terminated = False
+        self.terminating = False
         self.return_code = 0
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
@@ -923,6 +924,11 @@ class Core(object):
         """
         Terminate the core. This method will first call the terminate() method on each plugin.
         """
+
+        # Ensure all plugins can check if they should stop to work
+        self.lock_core()
+        self.terminating = True
+        self.unlock_core()
 
         # setting log level to debug, if not shutting down clean
         if return_code:

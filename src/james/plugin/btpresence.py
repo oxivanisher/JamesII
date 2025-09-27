@@ -189,6 +189,10 @@ class BTPresencePlugin(Plugin):
 
     # ensure to send our presence info at least every self.core.config['presence_timeout']
     def presence_keepalive_daemon(self):
+        # stop checking for presence if the core wants to quit
+        if self.core.terminating:
+            return
+
         self.presence_event(self.users_here)
         sleep = self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
         self.core.add_timeout(sleep, self.presence_keepalive_daemon)

@@ -186,15 +186,15 @@ class Core(object):
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
         if catch_signals:
-            signal.signal(signal.SIGINT, self.on_signal)
-            signal.signal(signal.SIGTERM, self.on_signal)
-            signal.signal(signal.SIGSEGV, self.on_signal)
-            signal.signal(signal.SIGHUP, self.on_signal)
+            signal.signal(signal.SIGINT, self.on_sigint_signal)
+            signal.signal(signal.SIGTERM, self.on_sigterm_signal)
+            signal.signal(signal.SIGSEGV, self.on_sigsegv_signal)
+            signal.signal(signal.SIGHUP, self.on_sighup_signal)
 
             # Fixme: Windows has no support for some signals
             if os.name == 'posix':
-                signal.signal(signal.SIGQUIT, self.on_signal)
-                signal.signal(signal.SIGTSTP, self.on_signal)
+                signal.signal(signal.SIGQUIT, self.on_sigquit_signal)
+                signal.signal(signal.SIGTSTP, self.on_sigtstp_signal)
 
         # Load master configuration
         self.config = None
@@ -1099,14 +1099,36 @@ class Core(object):
         thread.start()
         return thread
 
-    # signal handler
-    def on_signal(self, signal, frame):
-        self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        if signal in [signal.SIGINT, signal.SIGTSTP, signal.SIGTERM, signal.SIGQUIT, signal.SIGHUP]:
-            self.terminate(0)
+    # signal handlers
+    def on_sigint_signal(self, signal, frame):
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
+        self.terminate(0)
 
-        elif signal in [signal.SIGSEGV]:
-            self.terminate(1)
+    def on_sigterm_signal(self, signal, frame):
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)  # ignore additional signals
+        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
+        self.terminate(0)
+
+    def on_sighup_signal(self, signal, frame):
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)  # ignore additional signals
+        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
+        self.terminate(0)
+
+    def on_sigquit_signal(self, signal, frame):
+        signal.signal(signal.SIGQUIT, signal.SIG_IGN)  # ignore additional signals
+        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
+        self.terminate(0)
+
+    def on_sigtstp_signal(self, signal, frame):
+        signal.signal(signal.SIGTSTP, signal.SIG_IGN)  # ignore additional signals
+        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
+        self.terminate(0)
+
+    def on_sigsegv_signal(self, signal, frame):
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
+        self.terminate(1)
 
     # catchall handler
     # def sighandler(self, signal, frame):

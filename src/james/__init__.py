@@ -186,15 +186,15 @@ class Core(object):
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
         if catch_signals:
-            signal.signal(signal.SIGINT, self.on_sigint_signal)
-            signal.signal(signal.SIGTERM, self.on_sigterm_signal)
-            signal.signal(signal.SIGSEGV, self.on_sigsegv_signal)
-            signal.signal(signal.SIGHUP, self.on_sighup_signal)
+            signal.signal(signal.SIGINT, self.on_kill_sig)
+            signal.signal(signal.SIGTERM, self.on_kill_sig)
+            signal.signal(signal.SIGSEGV, self.on_fault_sig)
+            signal.signal(signal.SIGHUP, self.on_kill_sig)
 
             # Fixme: Windows has no support for some signals
             if os.name == 'posix':
-                signal.signal(signal.SIGQUIT, self.on_sigquit_signal)
-                signal.signal(signal.SIGTSTP, self.on_sigtstp_signal)
+                signal.signal(signal.SIGQUIT, self.on_kill_sig)
+                signal.signal(signal.SIGTSTP, self.on_kill_sig)
 
         # Load master configuration
         self.config = None
@@ -1100,32 +1100,16 @@ class Core(object):
         return thread
 
     # signal handlers
-    def on_sigint_signal(self, sig, frame):
+    def on_kill_sig(self, sig, frame):
         signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[sig], 0)
+        self.handle_signal(sig, 0)
 
-    def on_sigterm_signal(self, sig, frame):
+    def on_fault_sig(self, sig, frame):
         signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[signal], 0)
+        self.handle_signal(sig, 1)
 
-    def on_sighup_signal(self, sig, frame):
-        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[signal], 0)
-
-    def on_sigquit_signal(self, sig, frame):
-        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[signal], 0)
-
-    def on_sigtstp_signal(self, sig, frame):
-        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[signal], 0)
-
-    def on_sigsegv_signal(self, sig, frame):
-        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[signal], 1)
-
-    def handle_signal(self, sig_name, exit_code):
-        self.logger.warning(f"{sig_name} detected. Exiting wit exit code {exit_code}...")
+    def handle_signal(self, sig, exit_code):
+        self.logger.warning(f"{self.signal_names[sig]} detected. Exiting wit exit code {exit_code}...")
         self.terminate(exit_code)
 
     # catchall handler

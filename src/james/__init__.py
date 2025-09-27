@@ -1080,12 +1080,14 @@ class Core(object):
 
     # signal handlers
     def on_kill_sig(self, signal, frame):
-        self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        self.add_timeout(0, self.terminate, 3)
+        self.add_timeout(0, self.handle_signal, signal, 3)
 
     def on_fault_sig(self, signal, frame):
+        self.add_timeout(0, self.handle_signal, signal, 1)
+
+    def handle_signal(self, signal, exitcode):
         self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        self.add_timeout(0, self.terminate, 1)
+        self.terminate(exitcode)
 
     # catchall handler
     # def sighandler(self, signal, frame):

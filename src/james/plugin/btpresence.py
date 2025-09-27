@@ -160,7 +160,7 @@ class BTPresencePlugin(Plugin):
     def errors_show(self, args):
         self.logger.debug("Showing gathered l2ping errors")
         ret = []
-        if len(self.l2ping_errors):
+        if len(self.l2ping_errors.keys()):
             for l2ping_error in sorted(self.l2ping_errors.keys()):
                 ret.append(f'{l2ping_error}: {self.l2ping_errors[l2ping_error]}')
         else:

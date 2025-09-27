@@ -62,6 +62,7 @@ class BTPresencePlugin(Plugin):
         self.missing_count = -1
         self.messageCache = []
         self.always_at_home = False
+        self.l2ping_errors = {}
 
     def presence_event(self, users):
         if self.always_at_home:
@@ -184,6 +185,20 @@ class BTPresencePlugin(Plugin):
                         for line in clear_list:
                             if "bytes from" in line:
                                 mac_addresses.append(mac)
+                            if "Can't connect:" in line:
+                                error_str = line[15:]
+                                if error_str == "Host is down":
+                                    self.logger.debug(f'Bluetooth host {mac} is down')
+                                else:
+                                    error_msg = f'Bluetooth l2ping error for {mac}: {error_str}'
+
+                                    if error_str not in self.l2ping_errors.keys():
+                                        self.l2ping_errors[error_str] = 0
+                                        self.send_broadcast(error_msg)
+
+                                    self.logger.warning(error_msg)
+                                    self.l2ping_errors[error_str] += 1
+
             except KeyError:
                 # person has no bt_devices
                 pass
@@ -286,12 +301,17 @@ class BTPresencePlugin(Plugin):
         self.wait_for_threads(self.worker_threads)
 
     def return_status(self, verbose=False):
+        l2ping_errors = []
+        for l2ping_error in sorted(self.l2ping_errors.keys()):
+            l2ping_errors.append(f'{l2ping_error}: {self.l2ping_errors[l2ping_error]}')
+
         ret = {'presence_checks': self.presence_checks, 'presence_updates': self.presence_updates,
                'alwaysAtHome': self.always_at_home, 'last_presence_check_start': self.last_presence_check_start,
                'last_presence_check_end': self.last_presence_check_end,
                'last_presence_check_duration': self.last_presence_check_duration,
                'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.users_here,
-               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time()}
+               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time(),
+               'l2ping_errors': l2ping_errors}
         return ret
 
 
@@ -309,5 +329,6 @@ descriptor = {
                      'current_presence_sleep': "Current sleep time",
                      'current_presence_state': "Current presence state",
                      'nextCheckIn': "Next check in",
-                     'last_presence_check_duration': "Last Proximity check duration"}
+                     'last_presence_check_duration': "Last Proximity check duration",
+                     'l2ping_errors': "Gathered l2ping errors"}
 }

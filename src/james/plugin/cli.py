@@ -167,7 +167,7 @@ class CliPlugin(Plugin):
         self.send_command(['sys', 'allstatus'])
 
     def cmd_send_broadcast(self, args):
-        self.send_broadcast('test me')
+        self.send_broadcast('Broadcast test message')
 
     def process_command_response(self, args, host, plugin):
         for line in args:

@@ -949,6 +949,12 @@ class Core(object):
                 with Timeout(10):
                     saveStats[p.name] = p.save_state(True)
 
+            # tell plugins to terminate
+            for p in self.plugins:
+                self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
+                with Timeout(30):
+                    p.terminate()
+
             # check if all child threads are done
             if threading.active_count() > 1:
                 self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) remaining")
@@ -982,11 +988,6 @@ class Core(object):
                         self.logger.info("Could not save stats to file")
                     else:
                         self.logger.warning("Could not save stats to file")
-
-                for p in self.plugins:
-                    self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
-                    with Timeout(30):
-                        p.terminate()
 
                 try:
                     file = open(self.presences_file, 'w')

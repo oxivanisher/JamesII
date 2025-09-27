@@ -120,7 +120,7 @@ class BTPresencePlugin(Plugin):
             errors_file = open(self.l2ping_errors_file, 'w')
             errors_file.write(json.dumps(self.l2ping_errors))
             errors_file.close()
-            self.logger.debug(f"Saving l2ping errors to f{self.l2ping_errors_file}")
+            self.logger.debug(f"Saving l2ping errors to {self.l2ping_errors_file}")
         except IOError:
             self.logger.warning("Could not save l2ping errors to file!")
 

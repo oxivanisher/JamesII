@@ -472,7 +472,9 @@ class MpdClientPlugin(Plugin):
 
     def terminate(self):
         self.logger.debug("Terminating MPD client worker")
+        self.client_worker.lock()
         self.client_worker.terminate()
+        self.client_worker.unlock()
         self.logger.debug("Calling wait_for_threads for MPD")
         self.wait_for_threads(self.worker_threads)
 

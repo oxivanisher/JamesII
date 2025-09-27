@@ -325,8 +325,7 @@ class BTPresencePlugin(Plugin):
                'last_presence_check_end': self.last_presence_check_end,
                'last_presence_check_duration': self.last_presence_check_duration,
                'current_presence_sleep': self.current_presence_sleep, 'current_presence_state': self.users_here,
-               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time(),
-               'l2ping_errors': sorted(self.l2ping_errors.keys())}
+               'nextCheckIn': self.last_presence_check_end + self.current_presence_sleep - time.time()}
         return ret
 
 
@@ -344,6 +343,5 @@ descriptor = {
                      'current_presence_sleep': "Current sleep time",
                      'current_presence_state': "Current presence state",
                      'nextCheckIn': "Next check in",
-                     'last_presence_check_duration': "Last Proximity check duration",
-                     'l2ping_errors': "Gathered l2ping errors"}
+                     'last_presence_check_duration': "Last Proximity check duration"}
 }

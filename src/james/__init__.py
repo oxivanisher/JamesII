@@ -1102,33 +1102,31 @@ class Core(object):
     # signal handlers
     def on_sigint_signal(self, signal, frame):
         signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
-        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
-        self.terminate(0)
+        self.handle_signal(self.signal_names[signal], 0)
 
     def on_sigterm_signal(self, signal, frame):
-        signal.signal(signal.SIGTERM, signal.SIG_IGN)  # ignore additional signals
-        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
-        self.terminate(0)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[signal], 0)
 
     def on_sighup_signal(self, signal, frame):
-        signal.signal(signal.SIGHUP, signal.SIG_IGN)  # ignore additional signals
-        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
-        self.terminate(0)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[signal], 0)
 
     def on_sigquit_signal(self, signal, frame):
-        signal.signal(signal.SIGQUIT, signal.SIG_IGN)  # ignore additional signals
-        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
-        self.terminate(0)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[signal], 0)
 
     def on_sigtstp_signal(self, signal, frame):
-        signal.signal(signal.SIGTSTP, signal.SIG_IGN)  # ignore additional signals
-        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
-        self.terminate(0)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[signal], 0)
 
     def on_sigsegv_signal(self, signal, frame):
         signal.signal(signal.SIGINT, signal.SIG_IGN)  # ignore additional signals
-        self.logger.info(f"{self.signal_names[signal]} detected. Exiting...")
-        self.terminate(1)
+        self.handle_signal(self.signal_names[signal], 1)
+
+    def handle_signal(self, sig_name, exit_code):
+        self.logger.warning(f"{sig_name} detected. Exiting wit exit code {exit_code}...")
+        self.terminate(exit_code)
 
     # catchall handler
     # def sighandler(self, signal, frame):

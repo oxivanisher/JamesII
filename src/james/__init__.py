@@ -186,14 +186,15 @@ class Core(object):
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
         if catch_signals:
-            signal.signal(signal.SIGINT, self.on_kill_sig)
-            signal.signal(signal.SIGTERM, self.on_kill_sig)
-            signal.signal(signal.SIGSEGV, self.on_fault_sig)
+            signal.signal(signal.SIGINT, self.on_signal)
+            signal.signal(signal.SIGTERM, self.on_signal)
+            signal.signal(signal.SIGSEGV, self.on_signal)
+            signal.signal(signal.SIGHUP, self.on_signal)
 
             # Fixme: Windows has no support for some signals
             if os.name == 'posix':
-                signal.signal(signal.SIGQUIT, self.on_kill_sig)
-                signal.signal(signal.SIGTSTP, self.on_kill_sig)
+                signal.signal(signal.SIGQUIT, self.on_signal)
+                signal.signal(signal.SIGTSTP, self.on_signal)
 
         # Load master configuration
         self.config = None
@@ -880,7 +881,7 @@ class Core(object):
                 time.sleep(self.main_loop_sleep)
             except KeyboardInterrupt:
                 self.logger.info("Keyboard interrupt detected. Exiting...")
-                self.terminate(3)
+                self.terminate(0)
             except pika.exceptions.ChannelClosed:
                 # channel closed error
                 self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
@@ -1098,16 +1099,14 @@ class Core(object):
         thread.start()
         return thread
 
-    # signal handlers
-    def on_kill_sig(self, signal, frame):
-        self.add_timeout(0, self.handle_signal, signal, 3)
-
-    def on_fault_sig(self, signal, frame):
-        self.add_timeout(0, self.handle_signal, signal, 1)
-
-    def handle_signal(self, signal, exitcode):
+    # signal handler
+    def on_signal(self, signal, frame):
         self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        self.terminate(exitcode)
+        if signal in [signal.SIGINT, signal.SIGTSTP, signal.SIGTERM, signal.SIGQUIT, signal.SIGHUP]:
+            self.terminate(0)
+
+        elif signal in [signal.SIGSEGV]:
+            self.terminate(1)
 
     # catchall handler
     # def sighandler(self, signal, frame):

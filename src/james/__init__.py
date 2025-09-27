@@ -152,10 +152,10 @@ class Core(object):
             file = open(self.stats_file, 'r')
             self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
-            if self.config['core']['debug']:
-                self.logger.debug("Loading states from %s" % self.stats_file)
+            self.logger.debug("Loading states from %s" % self.stats_file)
+
         except Exception:
-            pass
+            self.logger.warning("Unable to load states from %s" % self.stats_file)
 
         atexit.register(self.terminate)
 

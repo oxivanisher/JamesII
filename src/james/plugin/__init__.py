@@ -194,8 +194,10 @@ class Plugin(object):
     def wait_for_threads(self, thread_list):
         for thread in thread_list:
             if thread.is_alive():
-                self.logger.info("Waiting 10 seconds for thread %s of %s to exit" % (thread.name, self.name))
+                self.logger.info(f"Waiting for up to 10 seconds for thread {thread.name} of {self.name} to exit")
+                join_ts = time.time()
                 thread.join(10.0)
+                self.logger.info(f"Thread {thread.name} of {self.name} exited after {time.time() - join_ts:.1f} seconds")
 
         self.logger.info("All threads of %s ended" % self.name)
 

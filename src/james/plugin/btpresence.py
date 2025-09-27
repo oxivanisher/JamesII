@@ -68,6 +68,7 @@ class BTPresencePlugin(Plugin):
         self.messageCache = []
         self.always_at_home = False
         self.l2ping_errors = {}
+        self.need_to_terminate = False
 
     def presence_event(self, users):
         if self.always_at_home:
@@ -194,6 +195,9 @@ class BTPresencePlugin(Plugin):
 
     # presence daemon methods
     def presence_check_daemon(self):
+        if self.need_to_terminate:
+            return
+
         self.presence_check(None)
         sleep = self.config['sleep_short'] + random.randint(-2, 2)
         if len(self.users_here):
@@ -336,6 +340,7 @@ class BTPresencePlugin(Plugin):
         self.presence_event(self.users_here)
 
     def terminate(self):
+        self.need_to_terminate = True
         self.wait_for_threads(self.worker_threads)
 
     def return_status(self, verbose=False):

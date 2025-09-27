@@ -160,15 +160,15 @@ class BTPresencePlugin(Plugin):
     def errors_show(self, args):
         self.logger.debug("Showing gathered l2ping errors")
         ret = []
-        self.logger.debug("len", self.l2ping_errors.keys())
-        if len(self.l2ping_errors.keys()):
+        self.logger.debug("len %d", len(self.l2ping_errors))
+        if self.l2ping_errors:
             self.logger.debug("len ok")
-            for l2ping_error in sorted(self.l2ping_errors.keys()):
-                self.logger.debug("loop")
-                ret.append(f'{l2ping_error}: {self.l2ping_errors[l2ping_error]}')
+            for key in sorted(self.l2ping_errors.keys()):
+                self.logger.debug("looping on %s", key)
+                ret.append(f"{key}: {self.l2ping_errors[key]}")
         else:
             self.logger.debug("no len")
-            ret = ['No l2ping errors gathered']
+            ret = ["No l2ping errors gathered"]
         return ret
 
     # ensure to send our presence info at least every self.core.config['presence_timeout']

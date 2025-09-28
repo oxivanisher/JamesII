@@ -996,7 +996,7 @@ class Core(object):
                     try:
                         t.join(timeout)
                         if t.is_alive():
-                            self.logger.warning(f"Thread {t.name} did not exit cleanly after {timeout} seconds. PID {t.native_id}")
+                            self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")
                     except RuntimeError:
                         self.logger.warning(f"Unable to join thread {t.name} because we would run into a deadlock.")
                         pass

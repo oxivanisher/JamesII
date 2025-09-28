@@ -145,6 +145,8 @@ class Core(object):
         self.logger = self.utils.get_logger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
 
+        self.logger.info(f"JamesII starting up with PID {os.getpid()}")
+
         self.main_loop_sleep = None
         self._set_main_loop_sleep(True)
 

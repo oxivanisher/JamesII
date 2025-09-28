@@ -962,9 +962,6 @@ class Core(object):
                 with Timeout(5):
                     p.terminate()
 
-            # giving the threads a second to exit cleanly
-            time.sleep(1)
-
             # wait for plugin threads to terminate all its threads in 30 seconds
             for p in self.plugins:
                 self.logger.info(f"Calling wait_for_threads() on plugin {p.name} (with 31 seconds timeout)")

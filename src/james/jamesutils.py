@@ -326,7 +326,11 @@ class JamesUtils(object):
 class ShortNameFormatter(logging.Formatter):
     def format(self, record):
         # keep only the last component of the logger name
-        record.shortname = record.name.split('.')[2:]
+        short_name_list = record.name.split('.')[2:]
+        if len(short_name_list):
+            record.shortname = '.'.join(short_name_list)
+        else:
+            record.shortname = 'core'
         return super().format(record)
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C

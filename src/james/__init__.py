@@ -951,22 +951,28 @@ class Core(object):
 
             # gather stats from all plugins
             saveStats = {}
+            timeout = 10
             for p in self.plugins:
-                self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
-                with Timeout(10):
+                self.logger.info("Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
+                with Timeout(timeout):
                     saveStats[p.name] = p.save_state(True)
+                    self.logger.info("Stats collected for plugin %s (with {timeout} seconds timeout)" % p.name)
 
             # tell plugins to terminate
+            timeout = 10
             for p in self.plugins:
-                self.logger.info(f"Calling terminate() on plugin {p.name} (with 10 seconds timeout)")
-                with Timeout(10):
+                self.logger.info(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
+                with Timeout(timeout):
                     p.terminate()
+                    self.logger.info(f"Terminated plugin {p.name} (with {timeout} seconds timeout)")
 
             # wait for plugin threads to terminate all its threads in 30 seconds
+            timeout = 31
             for p in self.plugins:
-                self.logger.info(f"Calling wait_for_threads() on plugin {p.name} (with 31 seconds timeout)")
-                with Timeout(31):
+                self.logger.info(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
+                with Timeout(timeout):
                     p.wait_for_threads()
+                    self.logger.info(f"Waiting for plugin {p.name} (with {timeout} seconds timeout)")
 
             # check if all child threads are done
             if threading.active_count() > 1:

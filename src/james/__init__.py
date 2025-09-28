@@ -953,10 +953,10 @@ class Core(object):
             saveStats = {}
             timeout = 10
             for p in self.plugins:
-                self.logger.info("Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
+                self.logger.info(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
                 with Timeout(timeout):
                     saveStats[p.name] = p.save_state(True)
-                    self.logger.info("Stats collected for plugin %s (with {timeout} seconds timeout)" % p.name)
+                    self.logger.info(f"Stats collected for plugin %s (with {timeout} seconds timeout)" % p.name)
 
             # tell plugins to terminate
             timeout = 10

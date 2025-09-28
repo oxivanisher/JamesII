@@ -955,6 +955,10 @@ class Core(object):
                 except Exception:
                     pass
 
+            # disconnecting pika
+            self.logger.debug("Closing pika connection.")
+            self.connection.close()
+
             # gather stats from all plugins
             saveStats = {}
             timeout = 10

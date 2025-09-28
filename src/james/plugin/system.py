@@ -259,7 +259,10 @@ class SystemPlugin(Plugin):
     def cmd_show_threads(self, args):
         ret = []
         for thread in threading.enumerate():
-            ret.append('%-10s %-20s %s' % (thread.native_id,  getattr(thread, "_target", None), thread.name))
+            name = thread.name
+            if name == 'Thread-2':
+                name = f'{thread.name} (most likely the RabbitMQ connection)'
+            ret.append('%-10s %-20s %s' % (thread.native_id,  getattr(thread, "_target", None), name))
         return ret
 
     def cmd_trace_thread(self, args):

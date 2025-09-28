@@ -945,7 +945,7 @@ class Core(object):
             # informing other nodes of my departure
             with Timeout(10):
                 try:
-                    self.logger.info("Sending byebye to discovery channel (with 10 seconds timeout)")
+                    self.logger.debug("Sending byebye to discovery channel (with 10 seconds timeout)")
                     self.lock_core()
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
                     self.unlock_core()
@@ -956,26 +956,26 @@ class Core(object):
             saveStats = {}
             timeout = 10
             for p in self.plugins:
-                self.logger.info(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
+                self.logger.debug(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
                 with Timeout(timeout):
                     saveStats[p.name] = p.save_state(True)
-                    self.logger.info(f"Stats collected for plugin %s (with {timeout} seconds timeout)" % p.name)
+                    self.logger.info(f"Stats collected for plugin %s" % p.name)
 
             # tell plugins to terminate
             timeout = 10
             for p in self.plugins:
-                self.logger.info(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
+                self.logger.debug(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
                     p.terminate()
-                    self.logger.info(f"Terminated plugin {p.name} (with {timeout} seconds timeout)")
+                    self.logger.info(f"Terminated plugin {p.name}")
 
             # wait for plugin threads to terminate all its threads in 30 seconds
             timeout = 31
             for p in self.plugins:
-                self.logger.info(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
+                self.logger.debug(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
                     p.wait_for_threads()
-                    self.logger.info(f"Waiting for plugin {p.name} (with {timeout} seconds timeout)")
+                    self.logger.info(f"All threads ended for plugin {p.name}")
 
             # check if all child threads are done
             if threading.active_count() > 1:
@@ -1004,7 +1004,7 @@ class Core(object):
                     file = open(self.stats_file, 'w')
                     file.write(json.dumps(saveStats))
                     file.close()
-                    self.logger.info("Saved stats to %s" % self.stats_file)
+                    self.logger.debug("Saved stats to %s" % self.stats_file)
                 except IOError:
                     if self.passive:
                         self.logger.info("Could not save stats to file")
@@ -1015,7 +1015,7 @@ class Core(object):
                     file = open(self.presences_file, 'w')
                     file.write(json.dumps(self.presences.dump()))
                     file.close()
-                    self.logger.info("Saving presences to %s" % self.presences_file)
+                    self.logger.debug("Saving presences to %s" % self.presences_file)
                 except IOError:
                     if self.passive:
                         self.logger.info("Could not save presences to file")
@@ -1025,8 +1025,7 @@ class Core(object):
                     # no presence state found for this location
                     pass
 
-                self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
-                                 threading.active_count())
+                self.logger.info(f"Shutdown complete. {threading.active_count() - 1} thread(s) remaining")
 
             self.terminated = True
 

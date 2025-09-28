@@ -4,6 +4,7 @@ import sys
 import socket
 import time
 import subprocess
+import threading
 from datetime import timedelta
 
 from james.plugin import *
@@ -40,6 +41,8 @@ class SystemPlugin(Plugin):
 
         self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
+
+        self.commands.create_subcommand('threads', 'Show alls threads', self.cmd_show_threads)
 
         if self.core.master:
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
@@ -249,6 +252,18 @@ class SystemPlugin(Plugin):
             nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
+
+    def cmd_show_threads(self, args):
+        ret = ['%20s %s' % ("Name", "PID")]
+        main_thread = threading.current_thread()
+        for thread in threading.enumerate():
+            # if t is main_thread:
+            #     continue
+            # if t.name == "MainThread":
+            #     continue
+            ret.append('%20s %s' % (thread.name, thread.native_id))
+
+        return ret
 
     def alert(self, args):
         for plugin in self.core.plugins:

@@ -6,6 +6,7 @@ import time
 import subprocess
 import threading
 import traceback
+import io
 from datetime import timedelta
 
 from james.plugin import *
@@ -274,13 +275,15 @@ class SystemPlugin(Plugin):
                 break
 
         if thread:
+            output = io.StringIO()
             for thread_id, frame in sys._current_frames().items():
-                print(f"Thread ID: {thread_id}")
-                traceback.print_stack(frame)
-                print("-" * 40)
+                output.write(f"Thread ID: {thread_id}\n")
+                traceback.print_stack(frame, file=output)
+                output.write("-" * 40 + "\n")
+            ret = [output.getvalue()]
+            output.close()
 
         return ret
-
 
     def alert(self, args):
         for plugin in self.core.plugins:

@@ -44,8 +44,8 @@ class SystemPlugin(Plugin):
         self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
 
-        self.commands.create_subcommand('threads', 'Show all threads', self.cmd_show_threads)
-        self.commands.create_subcommand('trace', 'Trrace a thread', self.cmd_trace_thread)
+        self.commands.create_subcommand('threads', 'Show PID and name of all threads', self.cmd_show_threads)
+        self.commands.create_subcommand('trace', 'Trace a PID and show its threads', self.cmd_trace_thread)
 
         if self.core.master:
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
@@ -257,9 +257,9 @@ class SystemPlugin(Plugin):
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
     def cmd_show_threads(self, args):
-        ret = ['%10s %-20s %s' % ("PID", "Target", "Name")]
+        ret = []
         for thread in threading.enumerate():
-            ret.append('%10s %-20s %s' % (thread.native_id,  getattr(thread, "_target", None), thread.name))
+            ret.append('%-10s %-20s %s' % (thread.native_id,  getattr(thread, "_target", None), thread.name))
         return ret
 
     def cmd_trace_thread(self, args):
@@ -275,12 +275,13 @@ class SystemPlugin(Plugin):
                 break
 
         if thread:
+            ret = [f"Listing threads of PID {pid}:"]
             output = io.StringIO()
             for thread_id, frame in sys._current_frames().items():
                 output.write(f"Thread ID: {thread_id}\n")
                 traceback.print_stack(frame, file=output)
                 output.write("-" * 40 + "\n")
-            ret = output.getvalue().split("\n")
+            ret += output.getvalue().split("\n")
             output.close()
 
         return ret

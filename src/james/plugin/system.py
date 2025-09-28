@@ -254,14 +254,14 @@ class SystemPlugin(Plugin):
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
     def cmd_show_threads(self, args):
-        ret = ['%20s %s' % ("Name", "PID")]
+        ret = ['%10s %s' % ("PID", "Name")]
         main_thread = threading.current_thread()
         for thread in threading.enumerate():
             # if t is main_thread:
             #     continue
             # if t.name == "MainThread":
             #     continue
-            ret.append('%20s %s' % (thread.name, thread.native_id))
+            ret.append('%10s %s' % (thread.native_id, thread.name))
 
         return ret
 

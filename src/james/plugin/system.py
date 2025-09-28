@@ -262,19 +262,22 @@ class SystemPlugin(Plugin):
         return ret
 
     def cmd_trace_thread(self, args):
+        self.logging.debug(f"Tracing thread with PID {pid}")
         pid = int(args[0])
         thread = None
         ret = [f"No thread with PID {pid} found"]
 
         for t in threading.enumerate():
+            self.logger.debug(f"Testing PID {t.native_id}...")
             if t.native_id == pid:
                 thread = t
                 break
 
         if thread:
             for thread_id, frame in sys._current_frames().items():
-                if thread_id == pid:
-                    ret = traceback.print_stack(frame)
+                print(f"Thread ID: {thread_id}")
+                traceback.print_stack(frame)
+                print("-" * 40)
 
         return ret
 

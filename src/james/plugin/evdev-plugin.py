@@ -46,7 +46,7 @@ class EvdevThread(PluginThread):
             time.sleep(5)
             self.work()
 
-    def on_exit(self, result):
+    def on_exit(self, result=0):
         self.logger.info('Exited with (%s)' % result)
 
 

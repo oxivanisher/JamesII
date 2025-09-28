@@ -43,7 +43,8 @@ class SystemPlugin(Plugin):
         self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
 
-        self.commands.create_subcommand('threads', 'Show alls threads', self.cmd_show_threads)
+        self.commands.create_subcommand('threads', 'Show all threads', self.cmd_show_threads)
+        self.commands.create_subcommand('trace', 'Trrace a thread', self.cmd_trace_thread)
 
         if self.core.master:
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
@@ -259,6 +260,24 @@ class SystemPlugin(Plugin):
         for thread in threading.enumerate():
             ret.append('%10s %-20s %s' % (thread.native_id,  getattr(thread, "_target", None), thread.name))
         return ret
+
+    def cmd_trace_thread(self, args):
+        pid = int(args[0])
+        thread = None
+        ret = [f"No thread with PID {pid} found"]
+
+        for t in threading.enumerate():
+            if t.native_id == pid:
+                thread = t
+                break
+
+        if thread:
+            for thread_id, frame in sys._current_frames().items():
+                if thread_id == pid:
+                    ret = traceback.print_stack(frame)
+
+        return ret
+
 
     def alert(self, args):
         for plugin in self.core.plugins:

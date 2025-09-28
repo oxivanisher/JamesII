@@ -72,7 +72,8 @@ class MotionPlugin(Plugin):
             self.logger.warning("Could not save motion events to file!")
 
     def terminate(self):
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
+        pass
 
     def log_event(self, message, file_name):
         self.log.insert(0, (int(time.time()), message, file_name))

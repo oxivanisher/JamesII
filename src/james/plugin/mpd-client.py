@@ -91,6 +91,7 @@ class MpdClientWorker(object):
         self.my_port = my_port
         self.pre_talk_volume = None
         self.worker_lock = threading.Lock()
+        self.name = f"{plugin.name} > Host: {my_host}:{my_port}"
 
         signal.signal(signal.SIGALRM, self.sig_timeout_handler)
 
@@ -373,7 +374,7 @@ class FadeThread(PluginThread):
             self.mpd_client.unlock()
 
             if not fade_state:
-                return
+                return self.on_exit()
 
             if step_count >= step_wait:
 
@@ -399,7 +400,7 @@ class FadeThread(PluginThread):
 
             time.sleep(0.1)
 
-    def on_exit(self, result):
+    def on_exit(self):
         self.plugin.core.add_timeout(0, self.plugin.fade_ended)
 
 
@@ -473,8 +474,9 @@ class MpdClientPlugin(Plugin):
     def terminate(self):
         self.logger.debug("Terminating MPD client worker")
         self.client_worker.terminate()
-        self.logger.debug("Calling wait_for_threads for MPD")
-        self.wait_for_threads(self.worker_threads)
+        self.logger.debug("MPD client worker exited")
+        # self.logger.debug("Calling wait_for_threads for MPD")
+        # self.wait_for_threads()
 
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')
@@ -621,6 +623,7 @@ class MpdClientPlugin(Plugin):
                                          self.config['sleep_fade'],
                                          0)
                 self.thread.start()
+                self.logger.debug(f"Spawned worker for mpd_sleep {self.thread.name} with PID {self.thread.native_id}")
                 self.worker_threads.append(self.thread)
                 self.logger.info("MPD Sleep mode activated")
         else:
@@ -643,6 +646,7 @@ class MpdClientPlugin(Plugin):
                                          self.config['wakeup_fade'],
                                          self.config['noise_volume'])
                 self.thread.start()
+                self.logger.debug(f"Spawned worker for mpd_noise {self.thread.name} with PID {self.thread.native_id}")
                 self.worker_threads.append(self.thread)
                 self.logger.info("MPD Noise mode activated")
                 return ["MPD Noise mode activated"]
@@ -687,6 +691,7 @@ class MpdClientPlugin(Plugin):
                                                  self.config['wakeup_fade'],
                                                  self.config['norm_volume'])
                         self.thread.start()
+                        self.logger.debug(f"Spawned worker for mpd_wakeup {self.thread.name} with PID {self.thread.native_id}")
                         self.worker_threads.append(self.thread)
                         msg = "MPD Wakeup mode activated"
                         self.logger.info(msg)
@@ -730,14 +735,14 @@ class MpdClientPlugin(Plugin):
     def return_status(self, verbose=False):
         self.logger.debug('Showing status')
         if verbose:
-            self.logger.warning("Unlocking mpd client worker")
+            self.logger.debug("Unlocking mpd client worker")
         self.client_worker.unlock()
         status = self.client_worker.status()
         if verbose:
-            self.logger.warning("Requesting status of mpd client worker")
+            self.logger.debug("Requesting status of mpd client worker")
         current_song = self.client_worker.current_song()
         if verbose:
-            self.logger.warning("Requesting current song of mpd client worker")
+            self.logger.debug("Requesting current song of mpd client worker")
 
         name = ""
         title = ""

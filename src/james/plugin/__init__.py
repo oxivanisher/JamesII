@@ -191,13 +191,17 @@ class Plugin(object):
         self.logger.debug('Deactivating debug')
         self.logger.setLevel(logging.INFO)
 
-    def wait_for_threads(self, thread_list):
+    def wait_for_threads(self, thread_list=[]):
+        if not thread_list and len(self.worker_threads):
+            thread_list = self.worker_threads
         for thread in thread_list:
             if thread.is_alive():
-                self.logger.info("Waiting 10 seconds for thread %s of %s to exit" % (thread.name, self.name))
-                thread.join(10.0)
+                self.logger.debug(f"Waiting for up to 30 seconds for thread {thread.name} of {self.name} to exit")
+                thread.join(30.0)
+                if thread.is_alive():
+                    self.logger.warning(f"Thread {thread.name} of {self.name} did not exit after 30 seconds")
 
-        self.logger.info("All threads of %s ended" % self.name)
+        self.logger.debug("All threads of plugin %s ended" % self.name)
 
     # msg methods
     def process_message(self, message):

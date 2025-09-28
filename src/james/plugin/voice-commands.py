@@ -256,6 +256,7 @@ class VoiceCommandsPlugin(Plugin):
                                        1,
                                        44100, )
         self.voiceThread.start()
+        self.logger.debug(f"Spawned worker for voice-commands {self.voiceThread.name} with PID {self.voiceThread.native_id}")
 
         # FIXME: i am dirty ... HATE unicode HATE
         if self.core.master:

@@ -54,11 +54,6 @@ do
 		GITPULL=false
 		echo -e "\nJamesII connection error detected. Sleeping for 10 seconds\n"
 		sleep 10
-	elif [[ $RESULT -eq 3 ]];
-	then
-		GITPULL=true
-		echo -e "\nJamesII keyboard interrupt detected. Sleeping for 10 seconds\n"
-		sleep 10
 	else
 		GITPULL=true
 		echo -e "\nJamesII crash detected. Sleeping for 10 seconds\n"

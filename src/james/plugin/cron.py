@@ -281,6 +281,10 @@ class CronPlugin(Plugin):
         self.send_command(args)
 
     def crontab_daemon_loop(self):
+        # stop processing events if the core wants to quit
+        if self.core.terminating:
+            return
+
         self.crontab.run()
         seconds = int(time.time() % 60)
         self.core.add_timeout((60 - seconds), self.crontab_daemon_loop)

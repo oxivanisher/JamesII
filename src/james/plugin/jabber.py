@@ -667,7 +667,7 @@ class JabberPlugin(Plugin):
                                          self.config['muc_room'],
                                          self.config['muc_nick'])
         self.jabberThread.start()
-        self.logger.info('XMPP worker starting')
+        self.logger.debug(f"Spawned worker for XMPP {self.jabberThread.name} with PID {self.jabberThread.native_id}")
         return 'XMPP worker starting'
 
     def worker_must_exit(self):

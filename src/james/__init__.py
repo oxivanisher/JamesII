@@ -109,6 +109,7 @@ class Core(object):
         self.timeouts = []
         self.timeout_queue = queue.Queue()
         self.terminated = False
+        self.terminating = False
         self.return_code = 0
         self.startup_timestamp = time.time()
         self.utils = jamesutils.JamesUtils(self)
@@ -143,6 +144,8 @@ class Core(object):
 
         self.logger = self.utils.get_logger('%s.%s' % (self.hostname, int(time.time() * 100)))
         self.logger.setLevel(logging.DEBUG)
+
+        self.logger.debug(f"JamesII starting up with PID {os.getpid()}")
 
         self.main_loop_sleep = None
         self._set_main_loop_sleep(True)
@@ -188,6 +191,7 @@ class Core(object):
             signal.signal(signal.SIGINT, self.on_kill_sig)
             signal.signal(signal.SIGTERM, self.on_kill_sig)
             signal.signal(signal.SIGSEGV, self.on_fault_sig)
+            signal.signal(signal.SIGHUP, self.on_kill_sig)
 
             # Fixme: Windows has no support for some signals
             if os.name == 'posix':
@@ -879,7 +883,7 @@ class Core(object):
                 time.sleep(self.main_loop_sleep)
             except KeyboardInterrupt:
                 self.logger.info("Keyboard interrupt detected. Exiting...")
-                self.terminate(3)
+                self.terminate(0)
             except pika.exceptions.ChannelClosed:
                 # channel closed error
                 self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
@@ -893,8 +897,11 @@ class Core(object):
                 self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 self.terminate(2)
             except Timeout.Timeout:
-                self.logger.critical("Detected hanging core. Exiting...")
-                self.terminate(2)
+                if not self.terminating:
+                    self.logger.critical("Detected hanging core. Exiting...")
+                    self.terminate(2)
+                else:
+                    self.logger.info("Ignoring Timeout exception on core, since shutdown is in progress.")
             except TypeError as e:
                 self.logger.critical("Pika sometimes crashed with TypeError due to multithreading and locked cores. "
                                      "This should not have happen again! Please investigate; Error: %s" % e)
@@ -910,7 +917,7 @@ class Core(object):
                     self.core_lock.release()
                 self.terminate(1)
 
-        self.logger.debug("Exiting with return code (%s)" % self.return_code)
+        self.logger.debug(f"Exiting with return code ({self.return_code})")
         sys.exit(self.return_code)
 
     def lock_core(self):
@@ -924,6 +931,11 @@ class Core(object):
         Terminate the core. This method will first call the terminate() method on each plugin.
         """
 
+        # Ensure all plugins can check if they should stop to work
+        self.lock_core()
+        self.terminating = True
+        self.unlock_core()
+
         # setting log level to debug, if not shutting down clean
         if return_code:
             self.logger.setLevel(logging.DEBUG)
@@ -933,74 +945,107 @@ class Core(object):
             self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             # informing other nodes of my departure
-            with Timeout(10):
+            timeout = 10
+            with Timeout(timeout):
                 try:
-                    self.logger.info("Sending byebye to discovery channel (with 10 seconds timeout)")
+                    self.logger.debug(f"Sending byebye to discovery channel (with {timeout} seconds timeout)")
                     self.lock_core()
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
                     self.unlock_core()
                 except Exception:
                     pass
 
+            # # disconnecting pika
+            self.logger.debug("Closing pika connection")
+            self.connection.close()
+
+            # timeout = time.time() + 10  # 10 seconds from now
+            # while time.time() < timeout:
+            #     if not self.connection.is_closed:
+            #         # still safe to close
+            #         self.connection.close()
+            #         break
+            #     time.sleep(0.1)  # small delay to avoid busy loop
+            # else:
+            #     # timed out
+            #     self.logger.warning("RabbitMQ connection is still closing after 10 seconds, giving up.")
+
             # gather stats from all plugins
             saveStats = {}
+            timeout = 10
             for p in self.plugins:
-                self.logger.info("Collecting stats for plugin %s (with 10 seconds timeout)" % p.name)
-                with Timeout(10):
+                self.logger.debug(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
+                with Timeout(timeout):
                     saveStats[p.name] = p.save_state(True)
+                    self.logger.debug(f"Stats collected for plugin %s" % p.name)
 
-            # check if all child threads are done
-            if threading.active_count() > 1:
-                self.logger.info("Shutdown not yet complete. %s thread(s) remaining" % threading.active_count())
+            # save stats to file
+            try:
+                file = open(self.stats_file, 'w')
+                file.write(json.dumps(saveStats))
+                file.close()
+                self.logger.debug(f"Saved stats to {self.stats_file}")
+            except IOError:
+                if self.passive:
+                    self.logger.info("Could not save stats to file")
+                else:
+                    self.logger.warning("Could not save stats to file")
 
-                main_thread = threading.current_thread()
-                for t in threading.enumerate():
-                    if t is main_thread:
-                        continue
-                    if t.name == "MainThread":
-                        continue
-                    self.logger.info('Joining thread %s' % t.name)
+            # save presence to file
+            try:
+                file = open(self.presences_file, 'w')
+                file.write(json.dumps(self.presences.dump()))
+                file.close()
+                self.logger.debug(f"Saving presences to {self.presences_file}")
+            except IOError:
+                if self.passive:
+                    self.logger.info("Could not save presences to file")
+                else:
+                    self.logger.warning("Could not save presences to file")
+            except KeyError:
+                # no presence state found for this location
+                pass
 
-                    try:
-                        t.join(3.0)
-                    except RuntimeError:
-                        self.logger.warning("Unable to join thread %s because we would run into a deadlock." % t.name)
-                        pass
+            # tell plugins to terminate
+            timeout = 10
+            for p in self.plugins:
+                self.logger.debug(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
+                with Timeout(timeout):
+                    p.terminate()
+                    self.logger.debug(f"Terminated plugin {p.name}")
 
-            else:
+            # wait for plugin threads to terminate all its threads in 30 seconds
+            timeout = 31
+            for p in self.plugins:
+                self.logger.debug(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
+                with Timeout(timeout):
+                    p.wait_for_threads()
+                    self.logger.debug(f"All threads ended for plugin {p.name}")
+
+            # check if all child threads are done and kill them if not
+            self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) still remaining")
+            main_thread = threading.current_thread()
+            for t in threading.enumerate():
+                if t is main_thread:
+                    continue
+                if t.name == "MainThread":
+                    continue
+                self.logger.debug(f'Joining thread {t.name} with PID {t.native_id}')
+
+                timeout = 5.0
                 try:
-                    file = open(self.stats_file, 'w')
-                    file.write(json.dumps(saveStats))
-                    file.close()
-                    self.logger.info("Saved stats to %s" % self.stats_file)
-                except IOError:
-                    if self.passive:
-                        self.logger.info("Could not save stats to file")
-                    else:
-                        self.logger.warning("Could not save stats to file")
-
-                for p in self.plugins:
-                    self.logger.info("Calling terminate() on plugin %s (with 30 seconds timeout)" % p.name)
-                    with Timeout(30):
-                        p.terminate()
-
-                try:
-                    file = open(self.presences_file, 'w')
-                    file.write(json.dumps(self.presences.dump()))
-                    file.close()
-                    self.logger.info("Saving presences to %s" % self.presences_file)
-                except IOError:
-                    if self.passive:
-                        self.logger.info("Could not save presences to file")
-                    else:
-                        self.logger.warning("Could not save presences to file")
-                except KeyError:
-                    # no presence state found for this location
+                    if t.name == "Thread-2":
+                        # Pika connection has a stupid name
+                        self.logger.debug(f"Ignoring thread 2 with PID {t.native_id} since its probably the RabbitMQ connection.")
+                        continue
+                    t.join(timeout)
+                    if t.is_alive():
+                        self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")
+                except RuntimeError:
+                    self.logger.warning(f"Unable to join thread {t.name} because we would run into a deadlock.")
                     pass
 
-                self.logger.info("Shutdown complete. %s thread(s) incl. main thread remaining" %
-                                 threading.active_count())
-
+            self.logger.info(f"Shutdown complete. {threading.active_count() - 1} thread(s) remaining")
             self.terminated = True
 
     # threading methods
@@ -1063,31 +1108,34 @@ class Core(object):
         """
         if not logger:
             logger = self.logger
-        logger.debug('Spawning subprocess (%s)' % target)
+        logger.debug(f'Spawning subprocess ({target})')
 
         def run_in_thread(target, on_exit, target_args):
             if target_args is not None:
-                self.logger.debug('Ending subprocess (%s)' % target)
+                self.logger.debug(f'Ending subprocess ({target})')
                 self.add_timeout(0, on_exit, target(target_args))
             else:
-                self.logger.debug('Ending subprocess (%s)' % target)
+                self.logger.debug(f'Ending subprocess ({target})')
                 self.add_timeout(0, on_exit, target())
 
-        thread = threading.Thread(name="%s %s" % (target, target_args), target=run_in_thread,
+        thread = threading.Thread(name=f"{target} {target_args}", target=run_in_thread,
                                   args=(target, on_exit, target_args))
         thread.start()
+        self.logger.debug(f"Started thread for {target} with PID {thread.native_id}")
         return thread
 
     # signal handlers
-    def on_kill_sig(self, signal, frame):
-        self.add_timeout(0, self.handle_signal, signal, 3)
+    def on_kill_sig(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[sig], 0)
 
-    def on_fault_sig(self, signal, frame):
-        self.add_timeout(0, self.handle_signal, signal, 1)
+    def on_fault_sig(self, sig, frame):
+        signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
+        self.handle_signal(self.signal_names[sig], 1)
 
-    def handle_signal(self, signal, exitcode):
-        self.logger.info("%s detected. Exiting..." % self.signal_names[signal])
-        self.terminate(exitcode)
+    def handle_signal(self, sig_name, exit_code):
+        self.logger.warning(f"{sig_name} detected. Exiting wit exit code {exit_code}...")
+        self.terminate(exit_code)
 
     # catchall handler
     # def sighandler(self, signal, frame):

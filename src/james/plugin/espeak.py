@@ -200,6 +200,9 @@ class EspeakPlugin(Plugin):
             self.logger.info(f'Espeak did not speak (muted): {msg.rstrip()}')
 
     def speak_hook(self, args=None):
+        if self.core.terminating:
+            return
+
         current_time = time.time()
 
         if self.message_cache:
@@ -261,7 +264,9 @@ class EspeakPlugin(Plugin):
                     self.logger.debug('Disabling talkover')
                     self.core.commands.process_args(['mpd', 'talkover', 'off'])
 
-            # Periodically check for new messages
+            # Periodically check for new messages if the core does not want to quit
+            if self.core.terminating:
+                return
             self.core.add_timeout(1, self.speak_hook)
 
     def process_message(self, message):
@@ -310,7 +315,8 @@ class EspeakPlugin(Plugin):
         return self.unmuted
 
     def terminate(self):
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
+        pass
 
     def return_status(self, verbose=False):
         ret = {'archivedMessage': len(self.archived_messages), 'messagesCache': len(self.message_cache),

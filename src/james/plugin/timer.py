@@ -196,6 +196,9 @@ class TimerPlugin(Plugin):
 
         self.saved_commands = saved_commands_new
         
+        # stop processing events if the core wants to quit
+        if self.core.terminating:
+            return
         self.core.add_timeout(1, self.command_daemon_loop)
 
     def return_status(self, verbose=False):

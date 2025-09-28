@@ -4,6 +4,9 @@ import sys
 import socket
 import time
 import subprocess
+import threading
+import traceback
+import io
 from datetime import timedelta
 
 from james.plugin import *
@@ -40,6 +43,9 @@ class SystemPlugin(Plugin):
 
         self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
+
+        self.commands.create_subcommand('threads', 'Show PID and name of all threads', self.cmd_show_threads)
+        self.commands.create_subcommand('trace', 'Trace a PID and show its threads', self.cmd_trace_thread)
 
         if self.core.master:
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
@@ -84,8 +90,7 @@ class SystemPlugin(Plugin):
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
             uptime_string = str(timedelta(seconds=uptime_seconds))
-        return [
-            "JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
+        return [f"JamesII started {self.utils.get_nice_age(self.core.startup_timestamp)}, the system {uptime_string}"]
 
     def cmd_version(self, args):
         version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')
@@ -95,17 +100,14 @@ class SystemPlugin(Plugin):
 
     def cmd_show_presence_overview(self, args):
         if len(self.core.get_present_users_here()):
-            return (["%-10s %s are at %s" % (self.core.hostname,
-                                             ', '.join(self.core.get_present_users_here()),
-                                             self.core.location)])
+            return [f"{self.core.hostname:10} {', '.join(self.core.get_present_users_here())} are at {self.core.location}"]
         else:
-            return (["%-10s nobody is at %s" % (self.core.hostname,
-                                                self.core.location)])
+            return [f"{self.core.hostname:10} nobody is at {self.core.location}"]
 
     def cmd_quit_node(self, args):
         if self.core.hostname in args:
             message = self.core.new_message(self.name)
-            message.header = "Bye bye, james node %s is shutting down." % self.core.hostname
+            message.header = f"Bye bye, james node {self.core.hostname} is shutting down."
             message.level = 2
             message.send()
 
@@ -128,14 +130,13 @@ class SystemPlugin(Plugin):
             file = open(self.crash_detection_file, 'r')
             timestamp = int(file.read())
             file.close()
-            self.logger.debug("Checking for crash restart in %s" % self.crash_detection_file)
+            self.logger.debug(f"Checking for crash restart in {self.crash_detection_file}")
             os.remove(self.crash_detection_file)
-            self.logger.info('JamesII started after crash %s' % (self.utils.get_nice_age(timestamp)))
+            self.logger.info(f'JamesII started after crash {self.utils.get_nice_age(timestamp)}')
 
             message = self.core.new_message(self.name)
             message.level = 2
-            message.header = (
-                    "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
+            message.header = f"James crash detected on {self.core.hostname} {self.utils.get_nice_age(timestamp)}."
             message.send()
 
         except IOError:
@@ -158,7 +159,7 @@ class SystemPlugin(Plugin):
 
         for (plugin, pluginData) in displayData:
             for (key, value) in pluginData:
-                ret.append("%-15s %-30s %s" % (plugin, key, value))
+                ret.append(f"{plugin:15} {key:30} {value}")
 
         return ret
 
@@ -204,9 +205,9 @@ class SystemPlugin(Plugin):
         try:
             message.header = message_list[0].strip()
             message.send()
-            return ["Message header: %s; body: %s" % (message.header, message.body)]
+            return [f"Message header: {message.header}; body: {message.body}"]
         except Exception as e:
-            return ["Message could not be sent (%s)" % e]
+            return [f"Message could not be sent ({e})"]
 
     def cmd_ping(self, args):
         self.core.ping_nodes()
@@ -215,7 +216,7 @@ class SystemPlugin(Plugin):
         return_message = []
 
         def crate_message(location, plugin, host, last_update, users):
-            return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
+            return f"{location:10} {plugin:10} {host:10} {last_update:10} {users}"
 
         return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
         for presence in self.core.presences.presences:
@@ -249,6 +250,39 @@ class SystemPlugin(Plugin):
             nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
+
+    def cmd_show_threads(self, args):
+        ret = []
+        for thread in threading.enumerate():
+            name = thread.name
+            if name == 'Thread-2':
+                name = f'{thread.name} (most likely the RabbitMQ connection)'
+            ret.append(f'{thread.native_id:10} {name}')
+        return ret
+
+    def cmd_trace_thread(self, args):
+        pid = int(args[0])
+        self.logger.debug(f"Tracing thread with PID {pid}")
+        thread = None
+        ret = [f"No thread with PID {pid} found"]
+
+        for t in threading.enumerate():
+            self.logger.debug(f"Testing PID {t.native_id}...")
+            if t.native_id == pid:
+                thread = t
+                break
+
+        if thread:
+            ret = [f"Listing threads of PID {pid}:"]
+            output = io.StringIO()
+            for thread_id, frame in sys._current_frames().items():
+                output.write(f"Thread ID: {thread_id}\n")
+                traceback.print_stack(frame, file=output)
+                output.write("-" * 40 + "\n")
+            ret += output.getvalue().split("\n")
+            output.close()
+
+        return ret
 
     def alert(self, args):
         for plugin in self.core.plugins:

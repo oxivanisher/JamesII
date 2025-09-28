@@ -199,7 +199,7 @@ class RaspberryThread(PluginThread):
         # and disable all buttons and switches
         for pin in self.button_pins + self.switch_pins:
             self.set_pin(pin, False)
-        self.logger.info("All sub threads of raspberry worker ended")
+        self.logger.debug("All sub threads of raspberry worker ended")
 
     # rasp gpio methods
     def led_blink(self, pin, amount=1, cycles=5):
@@ -287,7 +287,7 @@ class RaspberryPlugin(Plugin):
 
     def terminate(self):
         self.worker_must_exit()
-        self.wait_for_threads(self.worker_threads)
+        # self.wait_for_threads()
 
     # james command methods
     def cmd_show_buttons(self, args):
@@ -388,6 +388,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.release()
         self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull_up)
         self.rasp_thread.start()
+        self.logger.debug(f"Spawned worker for evdev {self.rasp_thread.name} with PID {self.rasp_thread.native_id}")
         self.worker_threads.append(self.rasp_thread)
         msg = "Raspberry worker starting"
         self.logger.info(msg)

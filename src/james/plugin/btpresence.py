@@ -44,8 +44,13 @@ class BTPresencePlugin(Plugin):
                 always_at_home_command.create_subcommand('on', 'Activate always at home', self.always_at_home_on)
                 always_at_home_command.create_subcommand('off', 'Deactivate always at home', self.always_at_home_off)
 
+            errors_command = self.commands.create_subcommand('errors', 'Show and clear gathered l2ping errors', None)
+            errors_command.create_subcommand('clear', 'Clear l2ping errors', self.errors_clear)
+            errors_command.create_subcommand('show', 'Show l2ping errors', self.errors_show)
+
         atexit.register(self.save_state)
         self.persons_btpresence_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_status")
+        self.l2ping_errors_file = os.path.join(os.path.expanduser("~"), ".james_btpresence_errors")
         self.proxy_send_lock = False
         self.load_saved_state()
 
@@ -63,6 +68,9 @@ class BTPresencePlugin(Plugin):
         self.messageCache = []
         self.always_at_home = False
         self.l2ping_errors = {}
+        self.need_to_terminate = False
+        self.next_presence_keepalive_run = 0
+        self.next_presence_check_run = 0
 
     def presence_event(self, users):
         if self.always_at_home:
@@ -83,7 +91,7 @@ class BTPresencePlugin(Plugin):
     def load_saved_state(self):
         try:
             # load saved presence persons
-            self.logger.debug("Loading btpresence status from %s" % self.persons_btpresence_file)
+            self.logger.debug(f"Loading btpresence status from {self.persons_btpresence_file}")
             presence_file = open(self.persons_btpresence_file, 'r')
             self.users_here = json.loads(presence_file.read())
             presence_file.close()
@@ -91,14 +99,32 @@ class BTPresencePlugin(Plugin):
             pass
         pass
 
+        try:
+            # load saved presence persons
+            self.logger.debug(f"Loading l2ping errors from {self.l2ping_errors_file}")
+            errors_file = open(self.l2ping_errors_file, 'r')
+            self.l2ping_errors = json.loads(errors_file.read())
+            errors_file.close()
+        except IOError:
+            pass
+        pass
+
     def save_state(self, verbose=False):
         try:
-            file_handler = open(self.persons_btpresence_file, 'w')
-            file_handler.write(json.dumps(self.users_here))
-            file_handler.close()
-            self.logger.debug("Saving persons status to %s" % self.persons_btpresence_file)
+            presence_file = open(self.persons_btpresence_file, 'w')
+            presence_file.write(json.dumps(self.users_here))
+            presence_file.close()
+            self.logger.debug(f"Saving persons status to {self.persons_btpresence_file}")
         except IOError:
             self.logger.warning("Could not save persons status to file!")
+
+        try:
+            errors_file = open(self.l2ping_errors_file, 'w')
+            errors_file.write(json.dumps(self.l2ping_errors))
+            errors_file.close()
+            self.logger.debug(f"Saving l2ping errors to {self.l2ping_errors_file}")
+        except IOError:
+            self.logger.warning("Could not save l2ping errors to file!")
 
     # command methods
     def test(self, args):
@@ -148,21 +174,59 @@ class BTPresencePlugin(Plugin):
         self.presence_event(self.users_here)
         return ["Always at home override DISABLED"]
 
+    def errors_clear(self, args):
+        self.logger.info("Clearing gathered l2ping errors")
+        self.l2ping_errors = {}
+        return ["l2ping errors cleared"]
+
+    def errors_show(self, args):
+        self.logger.debug("Showing gathered l2ping errors")
+        ret = []
+        if len(self.l2ping_errors.keys()):
+            for key in sorted(self.l2ping_errors.keys()):
+                ret.append(f"{key}: {self.l2ping_errors[key]}")
+        else:
+            ret.append("No l2ping errors gathered")
+        return ret
+
     # ensure to send our presence info at least every self.core.config['presence_timeout']
     def presence_keepalive_daemon(self):
-        self.presence_event(self.users_here)
-        sleep = self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
-        self.core.add_timeout(sleep, self.presence_keepalive_daemon)
+        # stop checking for presence if the core wants to quit
+        if self.core.terminating:
+            return
+
+        if time.time() >  self.next_presence_keepalive_run:
+            self.next_presence_keepalive_run = time.time() + self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
+            self.presence_event(self.users_here)
+
+        self.core.add_timeout(3, self.presence_keepalive_daemon)
 
     # presence daemon methods
     def presence_check_daemon(self):
-        self.presence_check(None)
-        sleep = self.config['sleep_short'] + random.randint(-2, 2)
-        if len(self.users_here):
-            sleep = self.config['sleep_long'] + random.randint(-2, 2)
-        self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
-        self.current_presence_sleep = sleep
-        self.core.add_timeout(sleep, self.presence_check_daemon)
+        if self.core.terminating:
+            return
+
+        timeout = 10
+        if time.time() > self.next_presence_check_run:
+            self.presence_check(None)
+
+            self.next_presence_check_run = time.time() + self.config['sleep_short'] + random.randint(-2, 2)
+            if len(self.users_here):
+                self.next_presence_check_run = time.time() + self.config['sleep_long'] + random.randint(-2, 2)
+
+        time_remaining = self.next_presence_check_run - time.time()
+        if time_remaining > timeout:
+            self.core.add_timeout(timeout, self.presence_check_daemon)
+        else:
+            self.core.add_timeout(time_remaining, self.presence_check_daemon)
+
+        # self.presence_check(None)
+        # sleep = self.config['sleep_short'] + random.randint(-2, 2)
+        # if len(self.users_here):
+        #     sleep = self.config['sleep_long'] + random.randint(-2, 2)
+        # self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
+        # self.current_presence_sleep = sleep
+        # self.core.add_timeout(sleep, self.presence_check_daemon)
 
     def presence_check(self, args):
         self.last_presence_check_start = time.time()
@@ -298,12 +362,13 @@ class BTPresencePlugin(Plugin):
         self.presence_event(self.users_here)
 
     def terminate(self):
-        self.wait_for_threads(self.worker_threads)
+        self.need_to_terminate = True
+        # self.wait_for_threads()
 
     def return_status(self, verbose=False):
         l2ping_errors = []
-        for l2ping_error in sorted(self.l2ping_errors.keys()):
-            l2ping_errors.append(f'{l2ping_error}: {self.l2ping_errors[l2ping_error]}')
+        for key in sorted(self.l2ping_errors.keys()):
+            l2ping_errors.append(f"{key}: {self.l2ping_errors[key]}")
 
         ret = {'presence_checks': self.presence_checks, 'presence_updates': self.presence_updates,
                'alwaysAtHome': self.always_at_home, 'last_presence_check_start': self.last_presence_check_start,

@@ -277,7 +277,7 @@ class JamesUtils(object):
         else:
             # %(module)s
             file_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(msg)s')
-            screen_formatter = ShortNameFormatter('%(asctime)s %(levelname)-8s %(shortname)s: %(msg)s')
+            screen_formatter = ShortNameFormatter('%(asctime)s %(levelname)-8s %(shortname)-15s %(msg)s')
 
             log = logging.getLogger(name)
             log.setLevel(logging.INFO)
@@ -326,11 +326,12 @@ class JamesUtils(object):
 class ShortNameFormatter(logging.Formatter):
     def format(self, record):
         # keep only the last component of the logger name
+
         short_name_list = record.name.split('.')[2:]
         if len(short_name_list):
-            record.shortname = '.'.join(short_name_list)
+            record.shortname = f"Plugin {'.'.join(short_name_list)}"
         else:
-            record.shortname = 'core'
+            record.shortname = f'Core'
         return super().format(record)
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C

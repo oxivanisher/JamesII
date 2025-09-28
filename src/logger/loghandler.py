@@ -195,6 +195,7 @@ class RecordSaver(logserver.LogServerHandler):
         self.workerMustExit = False
         self.db_thread = RecordSaverWorkerThread(self, self.queue, self.config)
         self.db_thread.start()
+        self.logger.info(f"Spawned db thread {self.db_thread.name} with PID {self.db_thread.native_id}")
         pass
 
     def handle_log_record(self, record):

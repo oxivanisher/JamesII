@@ -70,6 +70,7 @@ class BTPresencePlugin(Plugin):
         self.l2ping_errors = {}
         self.need_to_terminate = False
         self.next_presence_keepalive_run = 0
+        self.next_presence_check_run = 0
 
     def presence_event(self, users):
         if self.always_at_home:
@@ -198,20 +199,29 @@ class BTPresencePlugin(Plugin):
             self.next_presence_keepalive_run = time.time() + self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
             self.presence_event(self.users_here)
 
-        self.core.add_timeout(1, self.presence_keepalive_daemon)
+        self.core.add_timeout(3, self.presence_keepalive_daemon)
 
     # presence daemon methods
     def presence_check_daemon(self):
         if self.need_to_terminate:
             return
 
-        self.presence_check(None)
-        sleep = self.config['sleep_short'] + random.randint(-2, 2)
-        if len(self.users_here):
-            sleep = self.config['sleep_long'] + random.randint(-2, 2)
-        self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
-        self.current_presence_sleep = sleep
-        self.core.add_timeout(sleep, self.presence_check_daemon)
+        if time.time() > self.next_presence_check_run:
+            self.presence_check(None)
+
+            self.next_presence_check_run = time.time() + self.config['sleep_short'] + random.randint(-2, 2)
+            if len(self.users_here):
+                self.next_presence_check_run = time.time() + self.config['sleep_long'] + random.randint(-2, 2)
+
+        self.core.add_timeout(3, self.presence_check_daemon)
+
+        # self.presence_check(None)
+        # sleep = self.config['sleep_short'] + random.randint(-2, 2)
+        # if len(self.users_here):
+        #     sleep = self.config['sleep_long'] + random.randint(-2, 2)
+        # self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
+        # self.current_presence_sleep = sleep
+        # self.core.add_timeout(sleep, self.presence_check_daemon)
 
     def presence_check(self, args):
         self.last_presence_check_start = time.time()

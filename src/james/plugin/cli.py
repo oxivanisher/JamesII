@@ -152,7 +152,7 @@ class CliPlugin(Plugin):
         else:
             self.console_thread = ConsoleThread(self)
             self.console_thread.start()
-            self.logger.info(f"Spawned console thread {self.console_thread.name} with PID {self.console_thread.native_id}")
+            self.logger.debug(f"Spawned console thread {self.console_thread.name} with PID {self.console_thread.native_id}")
 
     def terminate(self):
         self.worker_lock.acquire()

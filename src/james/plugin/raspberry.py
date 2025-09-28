@@ -388,7 +388,7 @@ class RaspberryPlugin(Plugin):
         self.worker_lock.release()
         self.rasp_thread = RaspberryThread(self, self.button_pins, self.switch_pins, self.led_pins, self.pull_up)
         self.rasp_thread.start()
-        self.logger.info(f"Spawned worker for evdev {self.rasp_thread.name} with PID {self.rasp_thread.native_id}")
+        self.logger.debug(f"Spawned worker for evdev {self.rasp_thread.name} with PID {self.rasp_thread.native_id}")
         self.worker_threads.append(self.rasp_thread)
         msg = "Raspberry worker starting"
         self.logger.info(msg)

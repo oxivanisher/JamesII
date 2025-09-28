@@ -623,7 +623,7 @@ class MpdClientPlugin(Plugin):
                                          self.config['sleep_fade'],
                                          0)
                 self.thread.start()
-                self.logger.info(f"Spawned worker for mpd_sleep {self.thread.name} with PID {self.thread.native_id}")
+                self.logger.debug(f"Spawned worker for mpd_sleep {self.thread.name} with PID {self.thread.native_id}")
                 self.worker_threads.append(self.thread)
                 self.logger.info("MPD Sleep mode activated")
         else:
@@ -646,7 +646,7 @@ class MpdClientPlugin(Plugin):
                                          self.config['wakeup_fade'],
                                          self.config['noise_volume'])
                 self.thread.start()
-                self.logger.info(f"Spawned worker for mpd_noise {self.thread.name} with PID {self.thread.native_id}")
+                self.logger.debug(f"Spawned worker for mpd_noise {self.thread.name} with PID {self.thread.native_id}")
                 self.worker_threads.append(self.thread)
                 self.logger.info("MPD Noise mode activated")
                 return ["MPD Noise mode activated"]
@@ -691,7 +691,7 @@ class MpdClientPlugin(Plugin):
                                                  self.config['wakeup_fade'],
                                                  self.config['norm_volume'])
                         self.thread.start()
-                        self.logger.info(f"Spawned worker for mpd_wakeup {self.thread.name} with PID {self.thread.native_id}")
+                        self.logger.debug(f"Spawned worker for mpd_wakeup {self.thread.name} with PID {self.thread.native_id}")
                         self.worker_threads.append(self.thread)
                         msg = "MPD Wakeup mode activated"
                         self.logger.info(msg)

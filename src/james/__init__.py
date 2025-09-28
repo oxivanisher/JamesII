@@ -961,7 +961,7 @@ class Core(object):
 
             timeout = time.time() + 10  # 10 seconds from now
             while time.time() < timeout:
-                if not self.connection.is_closing:
+                if not self.connection.is_closed:
                     # still safe to close
                     self.connection.close()
                     break

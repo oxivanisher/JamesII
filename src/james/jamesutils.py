@@ -329,9 +329,9 @@ class ShortNameFormatter(logging.Formatter):
 
         short_name_list = record.name.split('.')[2:]
         if len(short_name_list):
-            record.shortname = f"Plugin {'.'.join(short_name_list)}"
+            record.shortname = '.'.join(short_name_list)
         else:
-            record.shortname = f'Core'
+            record.shortname = 'core'
         return super().format(record)
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C

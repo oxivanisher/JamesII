@@ -1009,6 +1009,10 @@ class Core(object):
 
                     timeout = 5.0
                     try:
+                        if t.name == "Thread-2":
+                            # Pika connection has a stupid name
+                            self.logger.debug(f"Ignoring thread 2 with PID {t.native_id} since its probably the RabbitMQ connection.")
+                            continue
                         t.join(timeout)
                         if t.is_alive():
                             self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")

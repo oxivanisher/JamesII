@@ -90,8 +90,7 @@ class SystemPlugin(Plugin):
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
             uptime_string = str(timedelta(seconds=uptime_seconds))
-        return [
-            "JamesII started " + self.utils.get_nice_age(self.core.startup_timestamp) + ", the system " + uptime_string]
+        return [f"JamesII started {self.utils.get_nice_age(self.core.startup_timestamp)}, the system {uptime_string}"]
 
     def cmd_version(self, args):
         version_pipe = os.popen('/usr/bin/git log -n 1 --pretty="format:%h %ci"')
@@ -101,17 +100,14 @@ class SystemPlugin(Plugin):
 
     def cmd_show_presence_overview(self, args):
         if len(self.core.get_present_users_here()):
-            return (["%-10s %s are at %s" % (self.core.hostname,
-                                             ', '.join(self.core.get_present_users_here()),
-                                             self.core.location)])
+            return [f"{self.core.hostname:10} {', '.join(self.core.get_present_users_here())} are at {self.core.location}"]
         else:
-            return (["%-10s nobody is at %s" % (self.core.hostname,
-                                                self.core.location)])
+            return [f"{self.core.hostname:10} nobody is at {self.core.location}"]
 
     def cmd_quit_node(self, args):
         if self.core.hostname in args:
             message = self.core.new_message(self.name)
-            message.header = "Bye bye, james node %s is shutting down." % self.core.hostname
+            message.header = f"Bye bye, james node {self.core.hostname} is shutting down."
             message.level = 2
             message.send()
 
@@ -134,14 +130,13 @@ class SystemPlugin(Plugin):
             file = open(self.crash_detection_file, 'r')
             timestamp = int(file.read())
             file.close()
-            self.logger.debug("Checking for crash restart in %s" % self.crash_detection_file)
+            self.logger.debug(f"Checking for crash restart in {self.crash_detection_file}")
             os.remove(self.crash_detection_file)
-            self.logger.info('JamesII started after crash %s' % (self.utils.get_nice_age(timestamp)))
+            self.logger.info(f'JamesII started after crash {self.utils.get_nice_age(timestamp)}')
 
             message = self.core.new_message(self.name)
             message.level = 2
-            message.header = (
-                    "James crash detected on %s %s." % (self.core.hostname, self.utils.get_nice_age(timestamp)))
+            message.header = f"James crash detected on {self.core.hostname} {self.utils.get_nice_age(timestamp)}."
             message.send()
 
         except IOError:
@@ -164,7 +159,7 @@ class SystemPlugin(Plugin):
 
         for (plugin, pluginData) in displayData:
             for (key, value) in pluginData:
-                ret.append("%-15s %-30s %s" % (plugin, key, value))
+                ret.append(f"{plugin:15} {key:30} {value}")
 
         return ret
 
@@ -210,9 +205,9 @@ class SystemPlugin(Plugin):
         try:
             message.header = message_list[0].strip()
             message.send()
-            return ["Message header: %s; body: %s" % (message.header, message.body)]
+            return [f"Message header: {message.header}; body: {message.body}"]
         except Exception as e:
-            return ["Message could not be sent (%s)" % e]
+            return [f"Message could not be sent ({e})"]
 
     def cmd_ping(self, args):
         self.core.ping_nodes()
@@ -221,7 +216,7 @@ class SystemPlugin(Plugin):
         return_message = []
 
         def crate_message(location, plugin, host, last_update, users):
-            return "%-10s %-10s %-10s %-10s %s" % (location, plugin, host, last_update, users)
+            return f"{location:10} {plugin:10} {host:10} {last_update:10} {users}"
 
         return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
         for presence in self.core.presences.presences:
@@ -262,7 +257,7 @@ class SystemPlugin(Plugin):
             name = thread.name
             if name == 'Thread-2':
                 name = f'{thread.name} (most likely the RabbitMQ connection)'
-            ret.append('%-10s %-20s %s' % (thread.native_id,  getattr(thread, "_target", None), name))
+            ret.append(f'{thread.native_id:10} {name}')
         return ret
 
     def cmd_trace_thread(self, args):

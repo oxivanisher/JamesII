@@ -895,8 +895,11 @@ class Core(object):
                 self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 self.terminate(2)
             except Timeout.Timeout:
-                self.logger.critical("Detected hanging core. Exiting...")
-                self.terminate(2)
+                if not self.terminating:
+                    self.logger.critical("Detected hanging core. Exiting...")
+                    self.terminate(2)
+                else:
+                    self.logger.info("Ignoring Timeout exception on core, since shutdown is in progress.")
             except TypeError as e:
                 self.logger.critical("Pika sometimes crashed with TypeError due to multithreading and locked cores. "
                                      "This should not have happen again! Please investigate; Error: %s" % e)

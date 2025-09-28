@@ -69,6 +69,7 @@ class BTPresencePlugin(Plugin):
         self.always_at_home = False
         self.l2ping_errors = {}
         self.need_to_terminate = False
+        self.next_presence_keepalive_run = 0
 
     def presence_event(self, users):
         if self.always_at_home:
@@ -193,9 +194,11 @@ class BTPresencePlugin(Plugin):
         if self.core.terminating:
             return
 
-        self.presence_event(self.users_here)
-        sleep = self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
-        self.core.add_timeout(sleep, self.presence_keepalive_daemon)
+        if time.time() >  self.next_presence_keepalive_run:
+            self.next_presence_keepalive_run = time.time() + self.core.config['core']['presence_timeout'] + random.randint(-15, -5)
+            self.presence_event(self.users_here)
+
+        self.core.add_timeout(1, self.presence_keepalive_daemon)
 
     # presence daemon methods
     def presence_check_daemon(self):

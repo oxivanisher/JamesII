@@ -958,8 +958,8 @@ class Core(object):
 
             # tell plugins to terminate
             for p in self.plugins:
-                self.logger.info(f"Calling terminate() on plugin {p.name} (with 5 seconds timeout)")
-                with Timeout(5):
+                self.logger.info(f"Calling terminate() on plugin {p.name} (with 10 seconds timeout)")
+                with Timeout(10):
                     p.terminate()
 
             # wait for plugin threads to terminate all its threads in 30 seconds

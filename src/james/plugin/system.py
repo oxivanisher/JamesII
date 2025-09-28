@@ -262,8 +262,8 @@ class SystemPlugin(Plugin):
         return ret
 
     def cmd_trace_thread(self, args):
-        self.logging.debug(f"Tracing thread with PID {pid}")
         pid = int(args[0])
+        self.logger.debug(f"Tracing thread with PID {pid}")
         thread = None
         ret = [f"No thread with PID {pid} found"]
 

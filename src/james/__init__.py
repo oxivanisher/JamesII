@@ -1104,7 +1104,7 @@ class Core(object):
         thread = threading.Thread(name=f"{target} {target_args}", target=run_in_thread,
                                   args=(target, on_exit, target_args))
         thread.start()
-        self.logger.info(f"Started thread for {target} with PID {t.native_id}")
+        self.logger.info(f"Started thread for {target} with PID {thread.native_id}")
         return thread
 
     # signal handlers

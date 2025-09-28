@@ -979,6 +979,33 @@ class Core(object):
                     saveStats[p.name] = p.save_state(True)
                     self.logger.debug(f"Stats collected for plugin %s" % p.name)
 
+            # save stats to file
+            try:
+                file = open(self.stats_file, 'w')
+                file.write(json.dumps(saveStats))
+                file.close()
+                self.logger.debug(f"Saved stats to {self.stats_file}")
+            except IOError:
+                if self.passive:
+                    self.logger.info("Could not save stats to file")
+                else:
+                    self.logger.warning("Could not save stats to file")
+
+            # save presence to file
+            try:
+                file = open(self.presences_file, 'w')
+                file.write(json.dumps(self.presences.dump()))
+                file.close()
+                self.logger.debug(f"Saving presences to {self.presences_file}")
+            except IOError:
+                if self.passive:
+                    self.logger.info("Could not save presences to file")
+                else:
+                    self.logger.warning("Could not save presences to file")
+            except KeyError:
+                # no presence state found for this location
+                pass
+
             # tell plugins to terminate
             timeout = 10
             for p in self.plugins:
@@ -995,61 +1022,30 @@ class Core(object):
                     p.wait_for_threads()
                     self.logger.debug(f"All threads ended for plugin {p.name}")
 
-            # check if all child threads are done
-            if threading.active_count() > 1:
-                self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) still remaining")
+            # check if all child threads are done and kill them if not
+            self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) still remaining")
+            main_thread = threading.current_thread()
+            for t in threading.enumerate():
+                if t is main_thread:
+                    continue
+                if t.name == "MainThread":
+                    continue
+                self.logger.debug(f'Joining thread {t.name} with PID {t.native_id}')
 
-                main_thread = threading.current_thread()
-                for t in threading.enumerate():
-                    if t is main_thread:
-                        continue
-                    if t.name == "MainThread":
-                        continue
-                    self.logger.debug(f'Joining thread {t.name} with PID {t.native_id}')
-
-                    timeout = 5.0
-                    try:
-                        if t.name == "Thread-2":
-                            # Pika connection has a stupid name
-                            self.logger.debug(f"Ignoring thread 2 with PID {t.native_id} since its probably the RabbitMQ connection.")
-                            continue
-                        t.join(timeout)
-                        if t.is_alive():
-                            self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")
-                    except RuntimeError:
-                        self.logger.warning(f"Unable to join thread {t.name} because we would run into a deadlock.")
-                        pass
-
-            else:
-                self.logger.info("Shutdown in progress, only main thread should remaining.")
-
+                timeout = 5.0
                 try:
-                    file = open(self.stats_file, 'w')
-                    file.write(json.dumps(saveStats))
-                    file.close()
-                    self.logger.debug(f"Saved stats to {self.stats_file}")
-                except IOError:
-                    if self.passive:
-                        self.logger.info("Could not save stats to file")
-                    else:
-                        self.logger.warning("Could not save stats to file")
-
-                try:
-                    file = open(self.presences_file, 'w')
-                    file.write(json.dumps(self.presences.dump()))
-                    file.close()
-                    self.logger.debug(f"Saving presences to {self.presences_file}")
-                except IOError:
-                    if self.passive:
-                        self.logger.info("Could not save presences to file")
-                    else:
-                        self.logger.warning("Could not save presences to file")
-                except KeyError:
-                    # no presence state found for this location
+                    if t.name == "Thread-2":
+                        # Pika connection has a stupid name
+                        self.logger.debug(f"Ignoring thread 2 with PID {t.native_id} since its probably the RabbitMQ connection.")
+                        continue
+                    t.join(timeout)
+                    if t.is_alive():
+                        self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")
+                except RuntimeError:
+                    self.logger.warning(f"Unable to join thread {t.name} because we would run into a deadlock.")
                     pass
 
-                self.logger.info(f"Shutdown complete. {threading.active_count() - 1} thread(s) remaining")
-
+            self.logger.info(f"Shutdown complete. {threading.active_count() - 1} thread(s) remaining")
             self.terminated = True
 
     # threading methods

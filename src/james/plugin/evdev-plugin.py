@@ -112,7 +112,7 @@ class EvdevPlugin(Plugin):
         return ret
 
     def terminate(self):
-        self.logger.info('Signalling the device workers to exit')
+        self.logger.debug('Signalling the device workers to exit')
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()

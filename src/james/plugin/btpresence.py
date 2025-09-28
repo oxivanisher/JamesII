@@ -206,6 +206,7 @@ class BTPresencePlugin(Plugin):
         if self.core.terminating:
             return
 
+        timeout = 10
         if time.time() > self.next_presence_check_run:
             self.presence_check(None)
 
@@ -213,7 +214,11 @@ class BTPresencePlugin(Plugin):
             if len(self.users_here):
                 self.next_presence_check_run = time.time() + self.config['sleep_long'] + random.randint(-2, 2)
 
-        self.core.add_timeout(3, self.presence_check_daemon)
+        time_remaining = self.next_presence_check_run - time.time()
+        if time_remaining > timeout:
+            self.core.add_timeout(timeout, self.presence_check_daemon)
+        else:
+            self.core.add_timeout(time_remaining, self.presence_check_daemon)
 
         # self.presence_check(None)
         # sleep = self.config['sleep_short'] + random.randint(-2, 2)

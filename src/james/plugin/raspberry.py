@@ -199,7 +199,7 @@ class RaspberryThread(PluginThread):
         # and disable all buttons and switches
         for pin in self.button_pins + self.switch_pins:
             self.set_pin(pin, False)
-        self.logger.info("All sub threads of raspberry worker ended")
+        self.logger.debug("All sub threads of raspberry worker ended")
 
     # rasp gpio methods
     def led_blink(self, pin, amount=1, cycles=5):

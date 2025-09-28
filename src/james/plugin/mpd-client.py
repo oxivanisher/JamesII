@@ -732,14 +732,14 @@ class MpdClientPlugin(Plugin):
     def return_status(self, verbose=False):
         self.logger.debug('Showing status')
         if verbose:
-            self.logger.warning("Unlocking mpd client worker")
+            self.logger.debug("Unlocking mpd client worker")
         self.client_worker.unlock()
         status = self.client_worker.status()
         if verbose:
-            self.logger.warning("Requesting status of mpd client worker")
+            self.logger.debug("Requesting status of mpd client worker")
         current_song = self.client_worker.current_song()
         if verbose:
-            self.logger.warning("Requesting current song of mpd client worker")
+            self.logger.debug("Requesting current song of mpd client worker")
 
         name = ""
         title = ""

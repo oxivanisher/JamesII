@@ -943,9 +943,10 @@ class Core(object):
             self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             # informing other nodes of my departure
-            with Timeout(10):
+            timeout = 10
+            with Timeout(timeout):
                 try:
-                    self.logger.debug("Sending byebye to discovery channel (with 10 seconds timeout)")
+                    self.logger.debug(f"Sending byebye to discovery channel (with {timeout} seconds timeout)")
                     self.lock_core()
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
                     self.unlock_core()
@@ -959,7 +960,7 @@ class Core(object):
                 self.logger.debug(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
                 with Timeout(timeout):
                     saveStats[p.name] = p.save_state(True)
-                    self.logger.info(f"Stats collected for plugin %s" % p.name)
+                    self.logger.debug(f"Stats collected for plugin %s" % p.name)
 
             # tell plugins to terminate
             timeout = 10
@@ -967,7 +968,7 @@ class Core(object):
                 self.logger.debug(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
                     p.terminate()
-                    self.logger.info(f"Terminated plugin {p.name}")
+                    self.logger.debug(f"Terminated plugin {p.name}")
 
             # wait for plugin threads to terminate all its threads in 30 seconds
             timeout = 31
@@ -975,7 +976,7 @@ class Core(object):
                 self.logger.debug(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
                     p.wait_for_threads()
-                    self.logger.info(f"All threads ended for plugin {p.name}")
+                    self.logger.debug(f"All threads ended for plugin {p.name}")
 
             # check if all child threads are done
             if threading.active_count() > 1:
@@ -989,12 +990,13 @@ class Core(object):
                         continue
                     self.logger.info(f'Joining thread {t.name}')
 
+                    timeout = 5.0
                     try:
-                        t.join(3.0)
+                        t.join(timeout)
                         if t.is_alive():
-                            self.logger.warning(f"Thread {t.name} did not exit cleanly after 3 seconds.")
+                            self.logger.warning(f"Thread {t.name} did not exit cleanly after {timeout} seconds. PID {t.native_id}")
                     except RuntimeError:
-                        self.logger.warning("Unable to join thread %s because we would run into a deadlock." % t.name)
+                        self.logger.warning(f"Unable to join thread {t.name} because we would run into a deadlock.")
                         pass
 
             else:
@@ -1004,7 +1006,7 @@ class Core(object):
                     file = open(self.stats_file, 'w')
                     file.write(json.dumps(saveStats))
                     file.close()
-                    self.logger.debug("Saved stats to %s" % self.stats_file)
+                    self.logger.debug(f"Saved stats to {self.stats_file}")
                 except IOError:
                     if self.passive:
                         self.logger.info("Could not save stats to file")
@@ -1015,7 +1017,7 @@ class Core(object):
                     file = open(self.presences_file, 'w')
                     file.write(json.dumps(self.presences.dump()))
                     file.close()
-                    self.logger.debug("Saving presences to %s" % self.presences_file)
+                    self.logger.debug(f"Saving presences to {self.presences_file}")
                 except IOError:
                     if self.passive:
                         self.logger.info("Could not save presences to file")

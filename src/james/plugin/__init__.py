@@ -201,7 +201,7 @@ class Plugin(object):
                 if thread.is_alive():
                     self.logger.warning(f"Thread {thread.name} of {self.name} did not exit after 30 seconds")
 
-        self.logger.info("All threads of plugin %s ended" % self.name)
+        self.logger.debug("All threads of plugin %s ended" % self.name)
 
     # msg methods
     def process_message(self, message):

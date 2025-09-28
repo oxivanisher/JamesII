@@ -955,20 +955,20 @@ class Core(object):
                 except Exception:
                     pass
 
-            # disconnecting pika
-            self.logger.debug("Closing pika connection (timeout 10 seconds).")
+            # # disconnecting pika
+            self.logger.debug("Closing pika connection")
             self.connection.close()
 
-            timeout = time.time() + 10  # 10 seconds from now
-            while time.time() < timeout:
-                if not self.connection.is_closed:
-                    # still safe to close
-                    self.connection.close()
-                    break
-                time.sleep(0.1)  # small delay to avoid busy loop
-            else:
-                # timed out
-                self.logger.warning("RabbitMQ connection is still closing after 10 seconds, giving up.")
+            # timeout = time.time() + 10  # 10 seconds from now
+            # while time.time() < timeout:
+            #     if not self.connection.is_closed:
+            #         # still safe to close
+            #         self.connection.close()
+            #         break
+            #     time.sleep(0.1)  # small delay to avoid busy loop
+            # else:
+            #     # timed out
+            #     self.logger.warning("RabbitMQ connection is still closing after 10 seconds, giving up.")
 
             # gather stats from all plugins
             saveStats = {}

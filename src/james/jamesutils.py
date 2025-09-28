@@ -277,7 +277,7 @@ class JamesUtils(object):
         else:
             # %(module)s
             file_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(msg)s')
-            screen_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(msg)s')
+            screen_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(shortname)s: %(msg)s')
 
             log = logging.getLogger(name)
             log.setLevel(logging.INFO)
@@ -323,6 +323,11 @@ class JamesUtils(object):
         else:
             return dict1 == dict2
 
+class ShortNameFormatter(logging.Formatter):
+    def format(self, record):
+        # keep only the last component of the logger name
+        record.shortname = record.name.split('.')[-1]
+        return super().format(record)
 
 # http://programmersought.com/article/25261763501/;jsessionid=DFBA728A86933CC02C3CE05B8353610C
 # https://stackoverflow.com/questions/39146039/pickle-typeerror-a-bytes-like-object-is-required-not-str

@@ -280,7 +280,7 @@ class SystemPlugin(Plugin):
                 output.write(f"Thread ID: {thread_id}\n")
                 traceback.print_stack(frame, file=output)
                 output.write("-" * 40 + "\n")
-            ret = [output.getvalue()]
+            ret = [output.getvalue().split("\n")]
             output.close()
 
         return ret

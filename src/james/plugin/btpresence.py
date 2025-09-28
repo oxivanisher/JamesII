@@ -203,7 +203,7 @@ class BTPresencePlugin(Plugin):
 
     # presence daemon methods
     def presence_check_daemon(self):
-        if self.need_to_terminate:
+        if self.core.terminating:
             return
 
         if time.time() > self.next_presence_check_run:

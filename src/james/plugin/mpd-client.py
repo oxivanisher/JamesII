@@ -374,7 +374,7 @@ class FadeThread(PluginThread):
             self.mpd_client.unlock()
 
             if not fade_state:
-                return self.on_exit()
+                self.on_exit()
 
             if step_count >= step_wait:
 

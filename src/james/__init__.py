@@ -1131,14 +1131,16 @@ class Core(object):
     # signal handlers
     def on_kill_sig(self, sig, frame):
         signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
-        self.handle_signal(self.signal_names[sig], 0)
+        sig_num = getattr(signal, self.signal_names[sig])
+        exit_code = 128 + sig_num
+        self.handle_signal(self.signal_names[sig], exit_code)
 
     def on_fault_sig(self, sig, frame):
         signal.signal(sig, signal.SIG_IGN)  # ignore additional signals
         self.handle_signal(self.signal_names[sig], 1)
 
     def handle_signal(self, sig_name, exit_code):
-        self.logger.warning(f"{sig_name} detected. Exiting wit exit code {exit_code}...")
+        self.logger.warning(f"{sig_name} detected. Exiting with exit code {exit_code}...")
         self.terminate(exit_code)
 
     # catchall handler

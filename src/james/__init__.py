@@ -945,7 +945,7 @@ class Core(object):
             self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             # informing other nodes of my departure
-            timeout = 3.0
+            timeout = 3
             try:
                 self.logger.debug(f"Sending byebye to discovery channel (with {timeout} seconds timeout)")
                 self.lock_core()
@@ -977,7 +977,7 @@ class Core(object):
 
             # gather stats from all plugins
             saveStats = {}
-            timeout = 10.0
+            timeout = 10
             for p in self.plugins:
                 self.logger.debug(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
                 with Timeout(timeout):
@@ -1012,7 +1012,7 @@ class Core(object):
                 pass
 
             # tell plugins to terminate
-            timeout = 10.0
+            timeout = 10
             for p in self.plugins:
                 self.logger.debug(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
@@ -1020,7 +1020,7 @@ class Core(object):
                     self.logger.debug(f"Terminated plugin {p.name}")
 
             # wait for plugin threads to terminate all its threads in 30 seconds
-            timeout = 31.0
+            timeout = 31
             for p in self.plugins:
                 self.logger.debug(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
@@ -1039,7 +1039,7 @@ class Core(object):
 
                 self.logger.debug(f'Joining thread {t.name} with PID {t.native_id}')
 
-                timeout = 5.0
+                timeout = 5
                 try:
                     if t.name == "Thread-2":
                         # Pika connection has a stupid name and it is not configurable :shrug:

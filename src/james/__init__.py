@@ -1028,23 +1028,20 @@ class Core(object):
                     self.logger.debug(f"All threads ended for plugin {p.name}")
 
             # check if all child threads are done and kill them if not
+            timeout = 5
             self.logger.info(f"Shutdown in progress, {threading.active_count() - 1} child thread(s) still remaining")
             main_thread = threading.current_thread()
             for t in threading.enumerate():
                 if t is main_thread:
                     continue
-                if t.name in ["MainThread", "ConsoleThread"]:
-                    self.logger.debug("Ignoring main and console thread")
+                if t.name in ["MainThread", "ConsoleThread", "Thread-2"]:
+                    # Pika connection has a stupid name "Thread-2" and it is not configurable :shrug:
+                    self.logger.debug(f"Ignoring thread {t.name} on exit")
                     continue
 
                 self.logger.debug(f'Joining thread {t.name} with PID {t.native_id}')
 
-                timeout = 5
                 try:
-                    if t.name == "Thread-2":
-                        # Pika connection has a stupid name and it is not configurable :shrug:
-                        self.logger.debug(f"Ignoring thread 2 with PID {t.native_id} since its probably the RabbitMQ connection.")
-                        continue
                     t.join(timeout)
                     if t.is_alive():
                         self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")

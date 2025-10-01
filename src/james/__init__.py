@@ -946,14 +946,15 @@ class Core(object):
 
             # informing other nodes of my departure
             timeout = 10
-            with Timeout(timeout):
-                try:
-                    self.logger.debug(f"Sending byebye to discovery channel (with {timeout} seconds timeout)")
-                    self.lock_core()
+            try:
+                self.logger.debug(f"Sending byebye to discovery channel (with {timeout} seconds timeout)")
+                self.lock_core()
+                with Timeout(timeout):
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
-                    self.unlock_core()
-                except Exception:
-                    pass
+            except Exception:
+                pass
+            finally:
+                self.unlock_core()
 
             # # disconnecting pika
             self.logger.debug("Closing pika connection")

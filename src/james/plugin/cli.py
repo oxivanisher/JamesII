@@ -43,8 +43,8 @@ class ConsoleThread(threading.Thread):
             self.plugin.worker_lock.acquire()
             if self.plugin.worker_exit:
                 self.plugin.worker_lock.release()
-                self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
+                self.plugin.core.add_timeout(0.1, self.plugin.core.terminate)
                 continue
             else:
                 self.plugin.worker_lock.release()
@@ -55,12 +55,12 @@ class ConsoleThread(threading.Thread):
                 line = input()
             except KeyboardInterrupt:
                 # http://bytes.com/topic/python/answers/43936-canceling-interrupting-raw_input
-                self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
+                self.plugin.core.add_timeout(0.1, self.plugin.core.terminate)
                 continue
             except EOFError:
-                self.plugin.core.add_timeout(0, self.plugin.core.terminate)
                 self.terminated = True
+                self.plugin.core.add_timeout(0.1, self.plugin.core.terminate)
                 continue
 
             line = line.strip()

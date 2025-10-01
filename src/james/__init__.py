@@ -945,20 +945,24 @@ class Core(object):
             self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
 
             # informing other nodes of my departure
-            timeout = 10
+            timeout = 3
             try:
                 self.logger.debug(f"Sending byebye to discovery channel (with {timeout} seconds timeout)")
                 self.lock_core()
                 with Timeout(timeout):
                     self.discovery_channel.send(['byebye', self.hostname, self.uuid])
             except Exception:
-                pass
+                self.logger.debug("Core.terminate() raised an exception on sending byebye")
             finally:
                 self.unlock_core()
 
             # # disconnecting pika
             self.logger.debug("Closing pika connection")
-            self.connection.close()
+            try:
+                with Timeout(timeout):
+                    self.connection.close()
+            except Exception:
+                self.logger.debug("Core.terminate() raised an exception on closing pika connection")
 
             # timeout = time.time() + 10  # 10 seconds from now
             # while time.time() < timeout:

@@ -14,7 +14,7 @@ class ConsoleThread(threading.Thread):
         self.plugin = plugin
         self.terminated = False
         self.logger = self.plugin.utils.get_logger('thread', self.plugin.logger)
-        self.name = "ConsoleThread: %s" % self.__class__.__name__
+        self.name = self.__class__.__name__
 
         self.keywords = []
 

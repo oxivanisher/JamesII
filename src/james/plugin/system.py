@@ -218,10 +218,10 @@ class SystemPlugin(Plugin):
         def crate_message(location, plugin, host, last_update, users):
             return f"{location:10} {plugin:10} {host:10} {last_update:10} {users}"
 
-        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (secs)", "Users"))
+        return_message.append(crate_message("Location", "Plugin", "Hostname", "Age (s)", "Users"))
         for presence in self.core.presences.presences:
             return_message.append(
-                crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 4),
+                crate_message(presence.location, presence.plugin, presence.host, round((time.time() - presence.last_update), 1),
                               ', '.join(presence.users)))
 
         return return_message

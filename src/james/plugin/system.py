@@ -38,6 +38,7 @@ class SystemPlugin(Plugin):
                                         self.cmd_show_presence_overview)
 
         quit_command = self.commands.create_subcommand('quit', 'Quit functions', None)
+        quit_command.create_subcommand('crash', 'Simulate crash (exit 1) supplied node name(s)', self.cmd_crash_node)
         quit_command.create_subcommand('node', 'Quit supplied node name(s)', self.cmd_quit_node)
         quit_command.create_subcommand('all_nodes', 'Quit all nodes', self.cmd_quit_all_nodes)
 
@@ -103,6 +104,15 @@ class SystemPlugin(Plugin):
             return [f"{self.core.hostname:10} {', '.join(self.core.get_present_users_here())} are at {self.core.location}"]
         else:
             return [f"{self.core.hostname:10} nobody is at {self.core.location}"]
+
+    def cmd_crash_node(self, args):
+        if self.core.hostname in args:
+            message = self.core.new_message(self.name)
+            message.header = f"Bye bye, james node {self.core.hostname} is crashing."
+            message.level = 2
+            message.send()
+
+            self.core.terminate(1)
 
     def cmd_quit_node(self, args):
         if self.core.hostname in args:

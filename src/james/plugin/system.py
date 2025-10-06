@@ -85,7 +85,7 @@ class SystemPlugin(Plugin):
 
     def get_ip(self, args):
         return [subprocess.getoutput("/sbin/ifconfig | grep -i \"inet\" | grep -iv \"inet6\" | " +
-                                     "awk {'print $2'} | sed -ne 's/addr\:/ /p' | grep -v '127.0.0.1'").strip()]
+                                     "awk {'print $2'} | grep -v '127.0.0.1'").strip()]
 
     def get_uptime(self, args):
         with open('/proc/uptime', 'r') as f:

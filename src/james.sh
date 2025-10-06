@@ -27,4 +27,19 @@ then
 else
 	sudo ./james.py
 fi	
+
+case $? in
+  0)
+    echo -e "\nJamesII graceful shutdown detected\n"
+    ;;
+  2)
+    echo -e "\nJamesII connection error detected. Sleeping for 10 seconds\n"
+    ;;
+  *)
+    echo -e "\nJamesII crash detected. Sleeping for 10 seconds\n"
+    echo $(date +%s) > ./.james_crashed
+    chmod 666 ./.james_crashed
+    echo -e "Console Log:\n$(sudo tail -n 100 ./.james_console_log)\n\n\nJamesII Log:\n$(sudo cat ./JamesII.log) " | mail root -s "JamesII Crash on $(hostname)"
+esac
+
 rm /var/lock/JamesII.pid

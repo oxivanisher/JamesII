@@ -1105,6 +1105,11 @@ class Core(object):
             #
             self.timeouts.remove(current_timeout)
 
+            # Handling some really special cases.
+            if e == "can't start new thread":
+                self.logger.critical("Since we can't start new threads, we should probably restart james")
+                self.terminate(1)
+
     def spawn_subprocess(self, target, on_exit, target_args=None, logger=None):
         """
         Spawns a subprocess with call target and calls on_exit with the return

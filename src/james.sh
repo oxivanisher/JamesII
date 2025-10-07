@@ -39,7 +39,7 @@ case $? in
     echo -e "\nJamesII crash detected. Sleeping for 10 seconds\n"
     echo $(date +%s) > ./.james_crashed
     chmod 666 ./.james_crashed
-    echo -e "Console Log:\n$(tail -n 50 ./.james_console_log)\n\n\nJamesII Log:\n$(tail -n 50 ./JamesII.log) " | mail root -s "JamesII Crash on $(hostname)"
+    echo -e "Console Log:\n$(tail -n 50 ./.james_console_log)\n\n\nJamesII Log:\n$(tail -n 100 ./JamesII.log) " | mail root -s "JamesII Crash on $(hostname)"
 esac
 
 rm /var/lock/JamesII.pid

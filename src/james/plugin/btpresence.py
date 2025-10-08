@@ -12,6 +12,9 @@ from james.plugin import *
 # FIXME add net scan with "arp-scan -I $NETINTERFACE -q --localnet | sort -t . -k 1,1n -k 2,2n -k 3,3n -k 4,4n"
 # where do we keep the store of mac addresses? objects, objects, objects
 
+# no longer use l2ping?
+# https://chatgpt.com/c/68e6bc08-2580-832e-bc2b-df734c272a32
+
 class BTPresencePlugin(Plugin):
 
     def __init__(self, core, descriptor):
@@ -71,6 +74,7 @@ class BTPresencePlugin(Plugin):
         self.need_to_terminate = False
         self.next_presence_keepalive_run = 0
         self.next_presence_check_run = 0
+        self.presence_check_error_count = 0 # this should not be required ... but here we are
 
     def presence_event(self, users):
         if self.always_at_home:
@@ -230,10 +234,23 @@ class BTPresencePlugin(Plugin):
 
     def presence_check(self, args):
         self.last_presence_check_start = time.time()
-        self.worker_threads.append(self.core.spawn_subprocess(self.presence_check_worker,
-                                                              self.presence_check_worker_callback,
-                                                              None,
-                                                              self.logger))
+        try:
+            self.worker_threads.append(self.core.spawn_subprocess(self.presence_check_worker,
+                                                                  self.presence_check_worker_callback,
+                                                                  None,
+                                                                  self.logger))
+            self.presence_check_error_count = 0
+        except Exception as e:
+            self.presence_check_error_count += 1
+
+        # All this should not be required ... but for some reason, we sometimes are not allowed to spawn a l2ping
+        # thread. One missing ping is not a problem, lets see how bad it is (and migrate to a python only solution
+        # down the road!)
+        if self.presence_check_error_count:
+            self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
+            if self.presence_check_error_count > 2:
+                self.logger.error(f"Restarting the node to hopefully recover l2ping functionality.")
+                self.core.termintate(1)
 
     def presence_check_worker(self):
         self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)

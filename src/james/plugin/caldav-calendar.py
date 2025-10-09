@@ -250,7 +250,6 @@ class CaldavCalendarPlugin(Plugin):
             if end:
                 end = ensure_aware(end, self.timezone)
 
-            self.logger.debug(f"Comparing event start.date() and now.date(): {start.date()} == {now.date()}")
             if start.date() == now.date():
                 event_words.extend(summary.split())
                 events_today.append(summary)

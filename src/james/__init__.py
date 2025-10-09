@@ -943,10 +943,10 @@ class Core(object):
                     self.terminate(2)
                 else:
                     self.logger.info("Ignoring Timeout exception on core, since shutdown is in progress.")
-            except TypeError as e:
-                self.logger.critical("Pika sometimes crashed with TypeError due to multithreading and locked cores. "
-                                     "This should not have happen again! Please investigate; Error: %s" % e)
-                self.terminate(2)
+            # except TypeError as e:
+            #     self.logger.critical("Pika sometimes crashed with TypeError due to multithreading and locked cores. "
+            #                          "This should not have happen again! Please investigate; Error: %s" % e)
+            #     self.terminate(2)
 
             # if I hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:

@@ -106,6 +106,22 @@ class CaldavCalendarPlugin(Plugin):
                 self.system_message(f"Unknown type date/time object detected")
                 raise ValueError("Unsupported date/time object")
 
+        def sort_key(event):
+            start = event["start"]
+
+            if isinstance(start, datetime):
+                # ensure timezone-aware
+                if start.tzinfo is None:
+                    start = self.timezone.localize(start)
+                else:
+                    start = start.astimezone(self.timezone)
+                return start.timestamp()
+
+            elif isinstance(start, date):
+                # convert to midnight in local timezone
+                dt = self.timezone.localize(datetime.combine(start, datetime.min.time()))
+                return dt.timestamp()
+
         self.logger.debug("requestEvents from caldav calendar")
 
         if time.time() < (self.event_cache_timestamp + self.event_cache_timeout):
@@ -175,7 +191,7 @@ class CaldavCalendarPlugin(Plugin):
         timed_today_string = "Today at"
         timed_tomorrow_string = "Tomorrow at"
 
-        for event in sorted(self.event_cache, key=lambda e: e["start"]):
+        for event in sorted(self.event_cache, key=sort_key):
             summary = event['summary']
             start = event['start']
             end = event.get('end')

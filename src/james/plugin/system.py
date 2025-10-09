@@ -304,8 +304,7 @@ class SystemPlugin(Plugin):
         self.logger.debug("Getting system message...")
         ret = []
         for plugin, message, timestamp in self.core.system_messages_get():
-            ret.append(f"{self.utils.get_nice_age(timestamp)} {plugin:<15}: {message}")
-
+            ret.append(f"{time.strftime("%Y-%m-%d %H:%M:%S", timestamp)} {plugin:>15} {message}")
         return ret
 
     def cmd_sys_msg_clear(self, args):

@@ -185,6 +185,9 @@ class CaldavCalendarPlugin(Plugin):
         tomorrow = today + timedelta(days=1)
         now = datetime.now(self.timezone)
 
+        still_string = "Still"
+        until_string = "Until"
+
         allday_today_string = "Today"
         allday_tomorrow_string = "Tomorrow"
 
@@ -217,8 +220,8 @@ class CaldavCalendarPlugin(Plugin):
                 elif start_date < today < end_date:
                     self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
                     happening_today = True
-                    still_string = "Still"
                     return_string = f"{still_string:>11}"
+                    still_string = "And still"
                 else:
                     self.logger.debug(f"Ignoring event (wrong start/end?): {summary}; start: {start_date:%Y-%m-%d %H:%M:%S}; end: {end_date:%Y-%m-%d %H:%M:%S}")
                     continue
@@ -254,12 +257,13 @@ class CaldavCalendarPlugin(Plugin):
 
                 if start < now < end:
                     self.logger.debug(f"Event ongoing: {summary}")
-                    until_string = "Until"
                     return_string = f"{until_string:>11} {end.strftime('%H:%M')}:"
+                    until_string = "And until"
+
                 elif now < end:
                     self.logger.debug(f"Upcoming today: {summary}")
                     return_string = f"{timed_today_string:>11} {start.strftime('%H:%M')}:"
-                    timed_today_string = "      At"
+                    timed_today_string = "At"
                 else:
                     sys_msg = f"Past event still in list (open and save in calendar, seems to be a bug in nc calendar)? {summary}"
                     self.logger.warning(sys_msg)
@@ -267,7 +271,7 @@ class CaldavCalendarPlugin(Plugin):
             else:
                 self.logger.debug(f"Future event: {summary}")
                 return_string = f"{timed_tomorrow_string:>11} {start.strftime('%H:%M')}:"
-                timed_tomorrow_string = "         At"
+                timed_tomorrow_string = "At"
 
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
                 if no_alarm_clock_entry in summary.lower() and start.date() == today:

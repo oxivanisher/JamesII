@@ -193,11 +193,11 @@ class CaldavCalendarPlugin(Plugin):
                     self.logger.debug(f"Active all-day event: {summary}")
                     happening_today = True
                     return_string = f"{allday_today_string}"
-                    allday_today_string = " and"
+                    allday_today_string = "  and"
                 elif start_date == tomorrow:
                     self.logger.debug(f"Tomorrow's all-day event: {summary}")
                     return_string = f"{allday_tomorrow_string}"
-                    allday_tomorrow_string = " and"
+                    allday_tomorrow_string = "     and"
                 elif start_date < today < end_date:
                     self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
                     happening_today = True
@@ -230,6 +230,7 @@ class CaldavCalendarPlugin(Plugin):
             if end:
                 end = ensure_aware(end, self.timezone)
 
+            self.logger.debug(f"Comparing event start.date() and now.date(): {start.date()} == {now.date()}")
             if start.date() == now.date():
                 event_words.extend(summary.split())
                 events_today.append(summary)
@@ -239,8 +240,8 @@ class CaldavCalendarPlugin(Plugin):
                     return_string = f"Until {end.strftime('%H:%M')} today:"
                 elif now < end:
                     self.logger.debug(f"Upcoming today: {summary}")
-                    return_string = f"{timed_today_string} {start.strftime('%H:%M')}"
-                    timed_today_string = "At"
+                    return_string = f"{timed_today_string} {start.strftime('%H:%M')}:"
+                    timed_today_string = "      At"
                 else:
                     sys_msg = f"Past event still in list (open and save in calendar, seems to be a bug in nc calendar)? {summary}"
                     self.logger.warning(sys_msg)
@@ -248,7 +249,7 @@ class CaldavCalendarPlugin(Plugin):
             else:
                 self.logger.debug(f"Future event: {summary}")
                 return_string = f"{timed_tomorrow_string} {start.strftime('%H:%M')}:"
-                timed_tomorrow_string = "At"
+                timed_tomorrow_string = "         At"
 
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
                 if no_alarm_clock_entry in summary.lower() and start.date() == today:

@@ -2,6 +2,8 @@ import os
 import time
 
 from datetime import datetime, timedelta, date
+from os import times_result, times
+
 from dateutil.rrule import rrulestr
 from caldav import DAVClient
 from operator import itemgetter
@@ -166,6 +168,12 @@ class CaldavCalendarPlugin(Plugin):
         tomorrow = today + timedelta(days=1)
         now = datetime.now(self.timezone)
 
+        allday_today_string = "Today"
+        allday_tomorrow_string = "Tomorrow"
+
+        timed_today_string = "Today"
+        timed_tomorrow_string = "Tomorrow"
+
         for event in self.event_cache:
             summary = event['summary']
             start = event['start']
@@ -183,10 +191,12 @@ class CaldavCalendarPlugin(Plugin):
                 if start_date <= today < end_date:
                     self.logger.debug(f"Active all-day event: {summary}")
                     happening_today = True
-                    return_string = "Today "
+                    return_string = f"{allday_today_string} "
+                    allday_today_string = " and"
                 elif start_date == tomorrow:
                     self.logger.debug(f"Tomorrow's all-day event: {summary}")
-                    return_string = "Tomorrow "
+                    return_string = f"{allday_tomorrow_string} "
+                    allday_tomorrow_string = " and"
                 elif start_date < today < end_date:
                     self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
                     happening_today = True
@@ -228,14 +238,16 @@ class CaldavCalendarPlugin(Plugin):
                     return_string = f"Until {end.strftime('%H:%M')} today: "
                 elif now < end:
                     self.logger.debug(f"Upcoming today: {summary}")
-                    return_string = f"Today at {start.strftime('%H:%M')}: "
+                    return_string = f"{timed_today_string} at {start.strftime('%H:%M')}: "
+                    timed_today_string = "   "
                 else:
                     sys_msg = f"Past event still in list? {summary}"
                     self.logger.warning(sys_msg)
                     self.system_message_add(sys_msg)
             else:
                 self.logger.debug(f"Future event: {summary}")
-                return_string = f"Tomorrow at {start.strftime('%H:%M')}: "
+                return_string = f"{timed_tomorrow_string} at {start.strftime('%H:%M')}: "
+                timed_tomorrow_string = "   "
 
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
                 if no_alarm_clock_entry in summary.lower() and start.date() == today:

@@ -61,7 +61,9 @@ class KodiPlugin(Plugin):
                 return rpcReturn
 
         except Exception as e:
-            self.logger.warning('Unable to connect to Kodi: %s' % e)
+            sys_msg = f"Unable to connect to Kodi: {e}"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
             return False
 
     def send_rpc_message(self, title, message):
@@ -116,7 +118,10 @@ class KodiPlugin(Plugin):
             self.logger.info("Database update sent successfully")
             return []
         else:
-            self.logger.error("Failed to send database update")
+            sys_msg = "Failed to send database update"
+            self.logger.error(sys_msg)
+            self.system_message_add(sys_msg)
+
             return []
 
     def cmd_info(self, args):

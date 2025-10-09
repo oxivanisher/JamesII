@@ -208,16 +208,17 @@ class CaldavCalendarPlugin(Plugin):
                 if start_date <= today < end_date:
                     self.logger.debug(f"Active all-day event: {summary}")
                     happening_today = True
-                    return_string = f"{allday_today_string}"
+                    return_string = f"{allday_today_string:>11}"
                     allday_today_string = "  and"
                 elif start_date == tomorrow:
                     self.logger.debug(f"Tomorrow's all-day event: {summary}")
-                    return_string = f"{allday_tomorrow_string}"
+                    return_string = f"{allday_tomorrow_string:>11}"
                     allday_tomorrow_string = "     and"
                 elif start_date < today < end_date:
                     self.logger.debug(f"Ongoing all-day event from earlier: {summary}")
                     happening_today = True
-                    return_string = "Still"
+                    still_string = "Still"
+                    return_string = f"{still_string:>11}"
                 else:
                     self.logger.debug(f"Ignoring event (wrong start/end?): {summary}; start: {start_date:%Y-%m-%d %H:%M:%S}; end: {end_date:%Y-%m-%d %H:%M:%S}")
                     continue
@@ -235,9 +236,9 @@ class CaldavCalendarPlugin(Plugin):
                 start_dt = ensure_aware(start_date, self.timezone)
 
                 if event['birthday']:
-                    return_list.append({'text': f"{return_string} {create_birthday_message(summary)}", 'start': start_dt})
+                    return_list.append({'text': f"{return_string:<11} {create_birthday_message(summary)}", 'start': start_dt})
                 elif return_string:
-                    return_list.append({'text': f"{return_string} {summary}", 'start': start_dt})
+                    return_list.append({'text': f"{return_string:<11} {summary}", 'start': start_dt})
 
                 continue
 
@@ -253,10 +254,11 @@ class CaldavCalendarPlugin(Plugin):
 
                 if start < now < end:
                     self.logger.debug(f"Event ongoing: {summary}")
-                    return_string = f"Until {end.strftime('%H:%M')} today:"
+                    until_string = "Until"
+                    return_string = f"{until_string:>11} {end.strftime('%H:%M')}:"
                 elif now < end:
                     self.logger.debug(f"Upcoming today: {summary}")
-                    return_string = f"{timed_today_string} {start.strftime('%H:%M')}:"
+                    return_string = f"{timed_today_string:>11} {start.strftime('%H:%M')}:"
                     timed_today_string = "      At"
                 else:
                     sys_msg = f"Past event still in list (open and save in calendar, seems to be a bug in nc calendar)? {summary}"
@@ -264,7 +266,7 @@ class CaldavCalendarPlugin(Plugin):
                     self.system_message_add(sys_msg)
             else:
                 self.logger.debug(f"Future event: {summary}")
-                return_string = f"{timed_tomorrow_string} {start.strftime('%H:%M')}:"
+                return_string = f"{timed_tomorrow_string:>11} {start.strftime('%H:%M')}:"
                 timed_tomorrow_string = "         At"
 
             for no_alarm_clock_entry in [x.lower() for x in self.config['no_alarm_clock']]:
@@ -277,7 +279,7 @@ class CaldavCalendarPlugin(Plugin):
                 continue
 
             if return_string:
-                return_list.append({'text': f"{return_string} {summary}.", 'start': start})
+                return_list.append({'text': f"{return_string:>11} {summary}.", 'start': start})
 
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:

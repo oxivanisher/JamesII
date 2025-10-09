@@ -63,7 +63,9 @@ class MonitorPlugin(Plugin):
             self.file_cache = []
             return ["Monitor logfile saved"]
         except IOError:
-            self.logger.warning("Could not save monitor log to file!")
+            sys_msg = "Could not save monitor log to file!"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
 
     def process_message(self, message):
         self.process_event(("%s@%s" % (message.sender_name, message.sender_host)),

@@ -127,6 +127,7 @@ class Core(object):
         self.master_node = ''
         self.presences_file = os.path.join(os.path.expanduser("~"), ".james_presences")
         self.stats_file = os.path.join(os.path.expanduser("~"), ".james_stats")
+        self.system_messages_file = os.path.join(os.path.expanduser("~"), ".james_system_messages")
         self.core_lock = threading.RLock()
         self.rabbitmq_channels = []
 
@@ -847,6 +848,46 @@ class Core(object):
             self.nodes_online = {}
             self.ping_nodes()
             self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)
+
+    # System message methods
+    def system_message_add(self, plugin, message, timestamp=time.time()):
+        """
+        Add a new system message to the file.
+        """
+        self.logger.info(f"Add system message {plugin}: {message}")
+        system_message = self.system_messages_get()
+        system_message.append([plugin, message, timestamp])
+        try:
+            with open(self.system_messages_file, 'w') as f:
+                json.dump(system_message, f)
+        except IOError as e:
+            self.logger.error(f"Could not write to file {e}")
+
+    def system_messages_get(self):
+        """
+        Return all system messages
+        """
+        self.logger.debug(f"Get system messages")
+        system_message = []
+        try:
+            if os.path.isfile(self.system_messages_file):
+                with open(self.system_messages_file) as f:
+                    system_message = json.load(f)
+        except IOError as e:
+            self.logger.warning("Could not read system messages file (%s)" % e)
+
+        return system_message
+
+    def system_messages_clear(self):
+        """
+        Clear all system messages
+        """
+        self.logger.warning(f"Clear system messages")
+        try:
+            with open(self.system_messages_file, 'w') as f:
+                json.dump([["core", "System messages cleared", time.time()]], f)
+        except IOError as e:
+            self.logger.error("Could not clear system messages (%s)" % e)
 
     # base methods
     def run(self):

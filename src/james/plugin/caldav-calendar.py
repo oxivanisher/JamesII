@@ -139,7 +139,9 @@ class CaldavCalendarPlugin(Plugin):
                         dtend = comp.get("DTEND") if "DTEND" in comp else None
 
                         if not dtstart:
-                            self.logger.warning(f"Skipping event without DTSTART: {summary}")
+                            sys_msg = f"Skipping event without DTSTART: {summary}"
+                            self.system_message_add(sys_msg)
+                            self.logger.warning(sys_msg)
                             continue
 
                         self.logger.debug(
@@ -228,7 +230,9 @@ class CaldavCalendarPlugin(Plugin):
                     self.logger.debug(f"Upcoming today: {summary}")
                     return_string = f"Today at {start.strftime('%H:%M')}: "
                 else:
-                    self.logger.warning(f"Past event still in list? {summary}")
+                    sys_msg = f"Past event still in list? {summary}"
+                    self.logger.warning(sys_msg)
+                    self.system_message_add(sys_msg)
             else:
                 self.logger.debug(f"Future event: {summary}")
                 return_string = f"Tomorrow at {start.strftime('%H:%M')}: "

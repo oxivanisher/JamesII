@@ -52,7 +52,9 @@ class TimerPlugin(Plugin):
             file.close()
             self.logger.debug("Saving timed commands to %s" % self.command_cache_file)
         except IOError:
-            self.logger.warning("Could not save cached commands to file!")
+            sys_msg = "Could not save cached commands to file!"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
     
     # command methods
     def cmd_timer_in(self, args):

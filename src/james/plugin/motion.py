@@ -69,7 +69,9 @@ class MotionPlugin(Plugin):
             file.close()
             self.logger.debug("Saving motion events to %s" % self.log_file)
         except IOError:
-            self.logger.warning("Could not save motion events to file!")
+            sys_msg = "Could not save motion events to file!"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
 
     def terminate(self):
         # self.wait_for_threads()
@@ -118,7 +120,9 @@ class MotionPlugin(Plugin):
                 self.logger.info('Motion video file removed')
                 self.cam_control(False)
             except Exception as e:
-                self.logger.error("Motion video file error: %s" % e)
+                sys_msg = f"Motion video file error: {e}"
+                self.logger.error(sys_msg)
+                self.system_message_add(sys_msg)
         else:
             # nobody is at home .. so ...why do we have movement? DANGER WILL ROBINSON!
             try:

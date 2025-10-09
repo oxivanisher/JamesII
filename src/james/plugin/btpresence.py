@@ -120,7 +120,9 @@ class BTPresencePlugin(Plugin):
             presence_file.close()
             self.logger.debug(f"Saving persons status to {self.persons_btpresence_file}")
         except IOError:
-            self.logger.warning("Could not save persons status to file!")
+            sys_msg = "Could not save persons status to file!"
+            self.system_message_add(sys_msg)
+            self.logger.warning(sys_msg)
 
         try:
             errors_file = open(self.l2ping_errors_file, 'w')
@@ -128,7 +130,9 @@ class BTPresencePlugin(Plugin):
             errors_file.close()
             self.logger.debug(f"Saving l2ping errors to {self.l2ping_errors_file}")
         except IOError:
-            self.logger.warning("Could not save l2ping errors to file!")
+            sys_msg = "Could not save l2ping errors to file!"
+            self.system_message_add(sys_msg)
+            self.logger.warning(sys_msg)
 
     # command methods
     def test(self, args):
@@ -249,7 +253,9 @@ class BTPresencePlugin(Plugin):
             if self.presence_check_error_count:
                 self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
                 if self.presence_check_error_count > 2:
-                    self.logger.error(f"Restarting the node to hopefully recover l2ping functionality.")
+                    sys_msg = f"Restarting the node to hopefully recover l2ping functionality."
+                    self.logger.error(sys_msg)
+                    self.system_message_add(sys_msg)
                     self.core.terminate(1)
 
     def presence_check_worker(self):
@@ -277,6 +283,7 @@ class BTPresencePlugin(Plugin):
                                         self.l2ping_errors[error_str] = 0
                                         self.send_broadcast(error_msg)
 
+                                    self.system_message_add(error_msg)
                                     self.logger.warning(error_msg)
                                     self.l2ping_errors[error_str] += 1
 

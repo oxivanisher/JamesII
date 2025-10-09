@@ -58,7 +58,9 @@ class GoogleCalendarPlugin(Plugin):
         try:
             self.service = build('calendar', 'v3', credentials=creds)
         except Exception as e:
-            self.logger.warning("Google calendar was unable to update due to error: %s" % e)
+            sys_msg = f"Google calendar was unable to update due to error: {e}"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
 
         self.core.add_timeout(10, self.update_automatically)
 

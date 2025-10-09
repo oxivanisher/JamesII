@@ -237,6 +237,10 @@ class Plugin(object):
     def return_status(self, verbose=False):
         return {}
 
+    def system_message_add(self, message, timestamp=time.time()):
+        self.logger.debug(f"Processing system_message: {message}")
+        self.core.system_message_add(message, timestamp)
+
     def cmd_show_plugin_status(self, args):
         ret = []
         data = self.return_status()

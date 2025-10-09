@@ -99,7 +99,7 @@ class TransmissionPlugin(Plugin):
             try:
                 self.tr_conn.add_uri(args[0])
                 self.addedTorrents += 1
-                self.logger.info('Download of (%s) starting' % args[0])
+                self.loggerlogger.info('Download of (%s) starting' % args[0])
                 self.send_command(['jab', 'msg', 'Torrent download started'])
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:

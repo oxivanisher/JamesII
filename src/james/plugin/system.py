@@ -45,8 +45,13 @@ class SystemPlugin(Plugin):
         self.commands.create_subcommand('allstatus', "Returns detailed system informations", self.cmd_get_details)
         self.data_commands.create_subcommand('allstatus', 'Returns detailed system informations', self.get_data_details)
 
-        self.commands.create_subcommand('threads', 'Show PID and name of all threads', self.cmd_show_threads)
-        self.commands.create_subcommand('trace', 'Trace a PID and show its threads', self.cmd_trace_thread)
+        thread_commands = self.commands.create_subcommand('thread', 'Thread functions', None)
+        thread_commands.create_subcommand('threads', 'Show PID and name of all threads', self.cmd_show_threads)
+        thread_commands.create_subcommand('trace', 'Trace a PID and show its threads', self.cmd_trace_thread)
+
+        sys_msg_commands = self.commands.create_subcommand('msg', '(System) message functions', None)
+        sys_msg_commands.create_subcommand('get', 'Show stored system messages', self.cmd_sys_msg_get)
+        sys_msg_commands.create_subcommand('clear', 'Clear stored system messages', self.cmd_sys_msg_clear)
 
         if self.core.master:
             self.commands.create_subcommand('aliases', 'Show command aliases', self.cmd_show_aliases)
@@ -56,8 +61,9 @@ class SystemPlugin(Plugin):
                                             self.cmd_show_alarmclock_details)
             alarmclock_command.create_subcommand('status', 'Show if the alarmclock is enabled today',
                                             self.cmd_show_alarmclock_status)
-            self.commands.create_subcommand('msg', 'Sends a msg (head[;body])', self.cmd_message)
-            self.commands.create_subcommand('ping', 'Ping all available nodes over rabbitmq', self.cmd_ping)
+            sys_msg_commands.create_subcommand('send', 'Sends a normal (not system) msg (head[;body])', self.cmd_message)
+            nodes_command.create_subcommand('ping', 'Ping all available nodes over rabbitmq (will not return pong)',
+                                            self.cmd_ping)
             presence_command.create_subcommand('detail', 'Show all cached presences on core',
                                             self.cmd_show_presence_detail)
             quit_command.create_subcommand('core', 'Quits the JamesII master node which reloads the config on '
@@ -257,7 +263,7 @@ class SystemPlugin(Plugin):
             nodes_online_dict[hostname] += 1
 
         for node in list(nodes_online_dict.keys()):
-            nodes_online_list.append('%s(%s)' % (node, nodes_online_dict[node]))
+            nodes_online_list.append(f"{node}({nodes_online_dict[node]})")
 
         return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
 
@@ -265,9 +271,9 @@ class SystemPlugin(Plugin):
         ret = []
         for thread in threading.enumerate():
             name = thread.name
-            if name == 'Thread-2':
-                name = f'{thread.name} (most likely the RabbitMQ connection)'
-            ret.append(f'{thread.native_id:10} {name}')
+            if name == "Thread-2":
+                name = f"{thread.name} (most likely the RabbitMQ connection)"
+            ret.append(f"{thread.native_id:10} {name}")
         return ret
 
     def cmd_trace_thread(self, args):
@@ -293,6 +299,18 @@ class SystemPlugin(Plugin):
             output.close()
 
         return ret
+
+    def cmd_sys_msg_get(self, args):
+        self.logger.debug("Getting system message...")
+        ret = []
+        for plugin, message, timestamp in self.core.system_messages_get():
+            ret.append(f"{self.utils.get_nice_age(timestamp):<15} | {plugin:<15} | {message}")
+        return ret
+
+    def cmd_sys_msg_clear(self, args):
+        self.logger.debug("Cleared all messages")
+        self.core.system_messages_clear()
+        return ["Cleared all system messages"]
 
     def alert(self, args):
         for plugin in self.core.plugins:

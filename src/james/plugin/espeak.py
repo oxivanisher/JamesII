@@ -40,7 +40,9 @@ class EspeakPlugin(Plugin):
             self.logger.debug(
                 f"Espeak will handle sleeping speakers, {self.speaker_sleep_timeout}/{self.speaker_wakeup_duration}")
         except TypeError as e:
-            self.logger.warning("The configuration changed for espeak. Please check the example configuration.")
+            sys_msg = "The configuration changed for espeak. Please check the example configuration."
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
 
         self.commands.create_subcommand('say', 'Speak some text via espeak (msg)', self.espeak_say)
         self.commands.create_subcommand('time', 'Speaks the current time)', self.espeak_time)
@@ -80,7 +82,9 @@ class EspeakPlugin(Plugin):
             file.close()
             self.logger.debug(f"Saving archived messages to {self.message_archive_file}")
         except IOError:
-            self.logger.warning("Could not save archived messages to file!")
+            sys_msg = "Could not save archived messages to file!"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
 
     def load_muted_state(self):
         try:
@@ -97,7 +101,9 @@ class EspeakPlugin(Plugin):
             file.close()
             self.logger.debug(f"Saving muted state to {self.mute_file}")
         except IOError:
-            self.logger.warning("Could not save muted state to file!")
+            sys_msg = "Could not save muted state to file!"
+            self.logger.warning(sys_msg)
+            self.system_message_add(sys_msg)
 
     def espeak_say(self, args):
         text = ' '.join(args)

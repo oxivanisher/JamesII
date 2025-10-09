@@ -243,14 +243,14 @@ class BTPresencePlugin(Plugin):
         except Exception as e:
             self.presence_check_error_count += 1
 
-        # All this should not be required ... but for some reason, we sometimes are not allowed to spawn a l2ping
-        # thread. One missing ping is not a problem, lets see how bad it is (and migrate to a python only solution
-        # down the road!)
-        if self.presence_check_error_count:
-            self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
-            if self.presence_check_error_count > 2:
-                self.logger.error(f"Restarting the node to hopefully recover l2ping functionality.")
-                self.core.termintate(1)
+            # All this should not be required ... but for some reason, we sometimes are not allowed to spawn a l2ping
+            # thread. One missing ping is not a problem, lets see how bad it is (and migrate to a python only solution
+            # down the road!)
+            if self.presence_check_error_count:
+                self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
+                if self.presence_check_error_count > 2:
+                    self.logger.error(f"Restarting the node to hopefully recover l2ping functionality.")
+                    self.core.termintate(1)
 
     def presence_check_worker(self):
         self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)

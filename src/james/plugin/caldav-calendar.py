@@ -175,7 +175,7 @@ class CaldavCalendarPlugin(Plugin):
         timed_today_string = "Today at"
         timed_tomorrow_string = "Tomorrow at"
 
-        for event in self.event_cache:
+        for event in sorted(self.event_cache, key=lambda e: e["start"]):
             summary = event['summary']
             start = event['start']
             end = event.get('end')

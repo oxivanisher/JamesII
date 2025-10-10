@@ -257,7 +257,7 @@ class BTPresencePlugin(Plugin):
 
             if self.presence_check_error_count:
                 self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
-                if self.presence_check_error_count > 9:
+                if self.presence_check_error_count > 2:
                     sys_msg = f"Restarting the node to hopefully recover l2ping functionality after {self.presence_check_error_count} fails"
                     self.logger.error(sys_msg)
                     self.system_message_add(sys_msg)

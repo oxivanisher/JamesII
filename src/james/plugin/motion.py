@@ -216,6 +216,9 @@ class MotionPlugin(Plugin):
     def on_cam_control_callback(self, state):
         self.logger.info(state)
 
+        # cleanup worker threads
+        self.worker_threads = [t for t in self.worker_threads if t.is_alive()]
+
     # react on presence events
     def process_presence_event(self, presence_before, presence_now):
         self.logger.debug("Motion processing presence event")

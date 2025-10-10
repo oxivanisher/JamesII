@@ -209,6 +209,9 @@ class EspeakPlugin(Plugin):
         if self.core.terminating:
             return
 
+        # cleanup worker threads
+        self.worker_threads = [t for t in self.worker_threads if t.is_alive()]
+
         current_time = time.time()
 
         if self.message_cache:

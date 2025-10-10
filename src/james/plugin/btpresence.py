@@ -311,6 +311,9 @@ class BTPresencePlugin(Plugin):
         self.last_presence_check_duration = self.last_presence_check_end - self.last_presence_check_start
         persons_detected = []
 
+        # cleanup worker threads
+        self.worker_threads = [t for t in self.worker_threads if t.is_alive()]
+
         # registering the person for which devices as detected
         for mac_address in mac_addresses:
             for person in list(self.core.config['persons'].keys()):

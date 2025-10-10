@@ -238,25 +238,34 @@ class BTPresencePlugin(Plugin):
 
     def presence_check(self, args):
         self.last_presence_check_start = time.time()
+        # All this try/except should not be required ... but for some reason, we sometimes are not allowed to spawn a
+        # l2ping thread. One missing ping is not a problem, lets see how bad it is (and migrate to a python only
+        # solution down the road!)
+
         try:
             self.worker_threads.append(self.core.spawn_subprocess(self.presence_check_worker,
                                                                   self.presence_check_worker_callback,
                                                                   None,
                                                                   self.logger))
+            if self.presence_check_error_count:
+                sys_msg = f"The btpresence check was able to recover after {self.presence_check_error_count} checks"
+                self.logger.warning(sys_msg)
+                self.system_message_add(sys_msg)
             self.presence_check_error_count = 0
         except Exception as e:
             self.presence_check_error_count += 1
 
-            # All this should not be required ... but for some reason, we sometimes are not allowed to spawn a l2ping
-            # thread. One missing ping is not a problem, lets see how bad it is (and migrate to a python only solution
-            # down the road!)
             if self.presence_check_error_count:
                 self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
-                if self.presence_check_error_count > 2:
-                    sys_msg = f"Restarting the node to hopefully recover l2ping functionality."
+                if self.presence_check_error_count > 9:
+                    sys_msg = f"Restarting the node to hopefully recover l2ping functionality after {self.presence_check_error_count} fails"
                     self.logger.error(sys_msg)
                     self.system_message_add(sys_msg)
                     self.core.terminate(1)
+                else:
+                    # Simulating not having found any device
+                    self.presence_check_worker_callback([])
+
 
     def presence_check_worker(self):
         self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)

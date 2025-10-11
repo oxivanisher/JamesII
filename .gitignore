@@ -8,6 +8,7 @@ src/JamesII.log*
 include/WiringPi-Python/*
 .idea/*
 venv/
+.venv/
 
 # Editor files
 nbproject/*

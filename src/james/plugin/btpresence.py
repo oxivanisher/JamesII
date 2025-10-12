@@ -274,8 +274,8 @@ class BTPresencePlugin(Plugin):
                                     if error_str not in self.l2ping_errors.keys():
                                         self.l2ping_errors[error_str] = 0
                                         self.send_broadcast(error_msg)
+                                        self.system_message_add(error_msg)
 
-                                    self.system_message_add(error_msg)
                                     self.logger.warning(error_msg)
                                     self.l2ping_errors[error_str] += 1
 

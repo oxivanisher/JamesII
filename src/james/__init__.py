@@ -700,7 +700,7 @@ class Core(object):
         """
         new_presence = {'location': self.location, 'plugin': plugin_name, 'host': self.hostname, 'users': users}
         self.logger.debug(f"publish_presence_event: {new_presence}")
-        self.system_message_add(plugin_name, f"Sending presence change to {new_presence} ({', '.join(users)})")
+        self.system_message_add(plugin_name, f"Sending presence change to persons: {', '.join(users)}")
         self.publish_presence_status(new_presence)
 
     def publish_presence_status(self, new_presence):
@@ -716,7 +716,8 @@ class Core(object):
             self.presence_channel.send(new_presence)
             self.unlock_core()
         except Exception as e:
-            self.logger.warning("Could not send presence update (%s)" % e)
+            self.logger.warning(f"Could not send presence update: {e}")
+            self.system_message_add("Core", f"Could not send presence update: {e}")
 
     # no_alarm_clock channel methods
     def check_no_alarm_clock(self):

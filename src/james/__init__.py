@@ -832,11 +832,14 @@ class Core(object):
             self.add_timeout(self.config['core']['pingtimeout'], self.master_send_nodes_online)
 
     # System message methods
-    def system_message_add(self, plugin, message, timestamp=time.time()):
+    def system_message_add(self, plugin, message, timestamp=None):
         """
         Add a new system message to the file.
         """
         self.logger.info(f"Add system message {plugin}: {message}")
+        if not timestamp:
+            timestamp = time.time()
+
         system_message = self.system_messages_get()
         system_message.append([plugin, message, timestamp])
         try:

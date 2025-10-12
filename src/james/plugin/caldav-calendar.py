@@ -259,12 +259,14 @@ class CaldavCalendarPlugin(Plugin):
                     return_string = f"{until_string:>11} {end.strftime('%H:%M')}:"
                     until_string = "And until"
 
-                elif now < end:
+                elif now <= end:
                     self.logger.debug(f"Upcoming today: {summary}")
                     return_string = f"{timed_today_string:>11} {start.strftime('%H:%M')}:"
                     timed_today_string = "At"
+                elif end > now:
+                    self.logger.debug(f"Ignoring already finished event: {summary}")
                 else:
-                    sys_msg = f"Past event still in list (open and save in calendar, seems to be a bug in nc calendar)? {summary}"
+                    sys_msg = f"The following event needs debugging, this should not be possible: {summary}"
                     self.logger.warning(sys_msg)
                     self.system_message_add(sys_msg)
             else:

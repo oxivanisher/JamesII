@@ -679,9 +679,9 @@ class Core(object):
         self.logger.debug("core.presence_listener: %s" % msg)
         (changed, presence_before, presence_now) = self.presences.process_presence_message(msg)
         if changed:
-            self.system_message_add("Core", f"Presence change at {msg['host']} detected by "
-                                                           f"{msg['plugin_name']}@{msg['host']}: "
-                                                           f"{', '.join(msg['users'])}")
+            self.system_message_add("Core", f"Presence change at {presence_now.location} detected by "
+                                                           f"{presence_now.plugin}@{presence_now.host}: "
+                                                           f"{', '.join(presence_now.users)}")
             self.logger.debug("Received presence update (listener). Calling process_presence_event on plugins.")
             for p in self.plugins:
                 p.process_presence_event(presence_before, presence_now)

@@ -99,7 +99,7 @@ class MpdClientWorker(object):
         # self.client = PersistentMPDClient() # not working test. if it still crashes, needs to be tested
         self.logger = self.plugin.utils.get_logger('worker.%s' % int(time.time() * 100), self.plugin.logger)
 
-        self.hidden_errors = ["Not connected"]
+        self.hidden_errors = ["Not connected", "Connection to server was reset"]
 
         self.check_connection()
 
@@ -151,13 +151,13 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError as e:
             if str(e) == "Connection lost while reading line":
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug("check_connection encountered well known mpd.ConnectionError: %s" % (str(e)))
                 self.unlock()
                 self.terminate()
             elif str(e) in self.hidden_errors:
-                self.logger.debug("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug("check_connection encountered known mpd.ConnectionError: %s" % (str(e)))
             else:
-                self.logger.info("check_connection encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.info("check_connection encountered unknown mpd.ConnectionError: %s" % (str(e)))
         #                self.client.close()
 
         except Exception as e:
@@ -175,9 +175,12 @@ class MpdClientWorker(object):
         self.unlock()
         signal.alarm(0)
 
+        # after handling current connection state, try to connect and return the result
         if self.connect():
+            self.logger.debug("check_connection successfully connected to MPD daemon.")
             return True
         else:
+            self.logger.warning("check_connection is enable to fix connection to MPD daemon.")
             return False
 
     def lock(self):
@@ -223,6 +226,9 @@ class MpdClientWorker(object):
                 return True
             else:
                 return False
+        else:
+            self.logger.warning("Unable to play_url because MPD connection failed.")
+            return False
 
     def play(self):
         if self.check_connection():
@@ -232,7 +238,7 @@ class MpdClientWorker(object):
             self.logger.debug("Playing")
             return True
         else:
-            self.logger.debug("Unable to play")
+            self.logger.warning("Unable to play because MPD connection failed.")
             return False
 
     def play_file(self, filename):
@@ -251,7 +257,7 @@ class MpdClientWorker(object):
             self.logger.debug("Playing")
             return True
         else:
-            self.logger.debug("Unable to play")
+            self.logger.warning("Unable to play because MPD connection failed.")
             return False
 
     def stop(self):
@@ -263,7 +269,7 @@ class MpdClientWorker(object):
             self.logger.debug("Stopped")
             return True
         else:
-            self.logger.debug("Unable to stop")
+            self.logger.warning("Unable to stop because MPD connection failed.")
             return False
 
     def clear(self):
@@ -275,7 +281,7 @@ class MpdClientWorker(object):
             self.logger.debug("Cleared playlist")
             return True
         else:
-            self.logger.debug("Unable to clear playlist")
+            self.logger.warning("Unable to clear playlist because MPD connection failed.")
             return False
 
     def status(self):
@@ -285,6 +291,9 @@ class MpdClientWorker(object):
             tmp_status['currentsong'] = self.client.currentsong()
             self.unlock()
             return tmp_status
+        else:
+            self.logger.warning("Unable to fetch status because MPD connection failed.")
+            return False
 
     def current_song(self):
         self.logger.debug('Fetching current song')
@@ -293,6 +302,9 @@ class MpdClientWorker(object):
             tmp_status = self.client.currentsong()
             self.unlock()
             return tmp_status
+        else:
+            self.logger.warning("Unable to fetch current_song because MPD connection failed.")
+            return False
 
     def setvol(self, volume):
         if self.check_connection():
@@ -308,7 +320,7 @@ class MpdClientWorker(object):
                 self.logger.debug("Set volume to %s" % volume)
                 return True
         else:
-            self.logger.debug('Unable setting volume')
+            self.logger.warning('Unable setting volume because MPD connection failed.')
             return False
 
     def terminate(self):

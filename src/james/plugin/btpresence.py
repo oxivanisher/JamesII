@@ -68,7 +68,6 @@ class BTPresencePlugin(Plugin):
         self.last_presence_check_duration = 0
         self.current_presence_sleep = 0
         self.missing_count = -1
-        self.messageCache = []
         self.always_at_home = False
         self.l2ping_errors = {}
         self.need_to_terminate = False
@@ -305,13 +304,13 @@ class BTPresencePlugin(Plugin):
         return mac_addresses
 
     def presence_check_worker_callback(self, mac_addresses):
-        self.logger.debug('Presence scan finished, found <%s>' % ', '.join(mac_addresses))
+        self.logger.debug(f"Presence scan finished, found the following macs: {', '.join(mac_addresses)}")
         self.presence_checks += 1
         self.last_presence_check_end = time.time()
         self.last_presence_check_duration = self.last_presence_check_end - self.last_presence_check_start
         persons_detected = []
 
-        # cleanup worker threads
+        # cleanup remaining worker threads
         self.worker_threads = [t for t in self.worker_threads if t.is_alive()]
 
         # registering the person for which devices as detected
@@ -323,27 +322,21 @@ class BTPresencePlugin(Plugin):
                             persons_detected.append(person)
 
         persons_detected = sorted(list(set(persons_detected)))
-        self.logger.debug("Presence found the following persons: %s" % ', '.join(persons_detected))
+        self.logger.debug(f"Detected the following persons: {', '.join(persons_detected)}")
 
         # if something changed, increment the presence_updates counter
         if self.tmp_users_here != persons_detected:
             self.presence_updates += 1
             if len(persons_detected):
-                self.logger.info('Bluetooth presence: Now at <%s>: ' % self.core.location + ', '.join(persons_detected))
+                self.logger.debug(f"Change detected: {', '.join(persons_detected)} at {self.core.location}")
             else:
-                self.logger.info('Bluetooth presence: Nobody is at <%s>' % self.core.location)
+                self.logger.debug(f"Change detected: Nobody at {self.core.location}")
 
         persons_left = set(self.tmp_users_here).difference(persons_detected)
         persons_entered = set(persons_detected).difference(self.tmp_users_here)
 
-        self.logger.debug("Persons left: %s" % ', '.join(persons_left))
-        self.logger.debug("Persons entered: %s" % ', '.join(persons_entered))
-
-        message = []
-        if persons_entered:
-            message.append(' and '.join(persons_entered) + ' entered')
-        if persons_left:
-            message.append(' and '.join(persons_left) + ' left')
+        self.logger.debug(f"Persons left: {', '.join(persons_left)}")
+        self.logger.debug(f"Persons entered: {', '.join(persons_entered)}")
 
         # saving the actual persons detected to temp var
         self.tmp_users_here = persons_detected
@@ -354,37 +347,25 @@ class BTPresencePlugin(Plugin):
             if self.missing_count == 0:
                 # this only happens on the very first run after startup to suppress the msg
                 pass
-            elif self.missing_count == int(self.config['miss_count']):
-                message = list(set(self.messageCache))
-                self.messageCache = []
-                message.append('Bluetooth presence is starting to watch on %s for <%s>!' %
-                               (self.core.hostname, self.core.location))
-                self.logger.info("Bluetooth presence missing-counter reached its max (%s), sending presence status: "
-                                 "%s@%s" % (self.config['miss_count'], self.users_here, self.core.location))
-                self.users_here = self.tmp_users_here
-                self.presence_event(self.users_here)
             elif self.missing_count < int(self.config['miss_count']):
-                self.logger.info('Bluetooth presence missing-counter increased to %s of %s' %
-                                 (self.missing_count, self.config['miss_count']))
-                self.messageCache = self.messageCache + message
-                message = []
+                self.logger.debug(f"Missing-counter increased to {self.missing_count} of {self.config['miss_count']}")
+            elif self.missing_count == int(self.config['miss_count']):
+                self.users_here = self.tmp_users_here
+                self.logger.info(f"Missing-counter reached its max of {self.config['miss_count']}. "
+                                 f"Sending presence event: {self.users_here}@{self.core.location}")
+                self.presence_event(self.users_here)
             else:
-                # since the count keeps counting, just ignore it and don't tell anyone about this
-                pass
+                # since the count keeps counting, just ignore it
+                self.logger.debug(f"Missing-counter now at {self.missing_count}, doing nothing")
 
-        if len(self.tmp_users_here) and self.tmp_users_here != self.users_here:
-            if self.missing_count >= int(self.config['miss_count']):
-                message.append('Bluetooth presence is stopping to watch on %s for <%s>!' %
-                               (self.core.hostname, self.core.location))
-            else:
-                message = []
+        else:
             # making sure, the missing counter is reset every time someone is around
             self.missing_count = 0
-            self.users_here = self.tmp_users_here
-            self.presence_event(self.users_here)
-
-        if len(message):
-            self.send_command(['jab', 'msg', ', '.join(message)])
+            if self.tmp_users_here != self.users_here:
+                self.logger.debug(f"Detected persons changed while somebody is at {self.core.location}. "
+                                  f" Sending presence event: {self.users_here}@{self.core.location}")
+                self.users_here = self.tmp_users_here
+                self.presence_event(self.users_here)
 
     def process_discovery_event(self, msg):
         if not self.proxy_send_lock:

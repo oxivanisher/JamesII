@@ -699,7 +699,8 @@ class Core(object):
         A presence plugin found a change in persons and wants to send this to all nodes
         """
         new_presence = {'location': self.location, 'plugin': plugin_name, 'host': self.hostname, 'users': users}
-        self.logger.debug("publish_presence_event: %s" % new_presence)
+        self.logger.debug(f"publish_presence_event: {new_presence}")
+        self.system_message_add(plugin_name, f"Sending presence change to {new_presence} ({', '.join(users)})")
         self.publish_presence_status(new_presence)
 
     def publish_presence_status(self, new_presence):

@@ -261,9 +261,6 @@ class BTPresencePlugin(Plugin):
                         ret = self.utils.popen_and_wait([self.tools['l2ping'], '-c', '1', mac])
                         clear_list = [s for s in ret if s != '']
 
-                        self.logger.warning(f"tmp debugging strange error 2: {ret}")
-                        self.logger.warning(f"tmp debugging strange error 2: {clear_list}")
-
                         for line in clear_list:
                             if "bytes from" in line:
                                 mac_addresses.append(mac)

@@ -81,7 +81,7 @@ class BTPresencePlugin(Plugin):
         users = sorted(list(set(users)))
         sys_msg = f"Publish presence change to: [{', '.join(users)}]"
         self.logger.debug(sys_msg)
-        self.system_message_add(sys_msg)
+        # self.system_message_add(sys_msg)
         self.core.presence_event(self.name, users)
 
     def start(self):

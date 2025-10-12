@@ -258,18 +258,14 @@ class CaldavCalendarPlugin(Plugin):
                     self.logger.debug(f"Event ongoing: {summary}")
                     return_string = f"{until_string:>11} {end.strftime('%H:%M')}:"
                     until_string = "And until"
-
-                elif now <= end:
+                elif now < start:
                     self.logger.debug(f"Upcoming today: {summary}")
                     return_string = f"{timed_today_string:>11} {start.strftime('%H:%M')}:"
                     timed_today_string = "At"
-                elif end > now:
-                    self.logger.debug(f"Ignoring already finished event: {summary}")
+                if end < start:
+                    self.logger.warning(f"Event {summary} has end before start ({start} > {end})")
                 else:
-                    sys_msg = (f"The following event needs debugging, this should not be possible "
-                               f"(start: {start}; end: {end}; now: {now}): {summary}")
-                    self.logger.warning(sys_msg)
-                    self.system_message_add(sys_msg)
+                    self.logger.debug(f"Ignoring already finished event: {summary}")
             else:
                 self.logger.debug(f"Future event: {summary}")
                 return_string = f"{timed_tomorrow_string:>11} {start.strftime('%H:%M')}:"

@@ -140,7 +140,6 @@ class Core(object):
         if 'myhostname' in list(self.broker_config.keys()):
             self.hostname = self.broker_config['myhostname']
         else:
-            # self.hostname = socket.getfqdn().split('.')[0].lower()
             self.hostname = socket.gethostname().lower()
 
         self.logger = self.utils.get_logger('%s.%s' % (self.hostname, int(time.time() * 100)))
@@ -163,28 +162,11 @@ class Core(object):
 
         atexit.register(self.terminate)
 
-        # setting up pika loggers
-        # pika.base_connection.logger = self.utils.getLogger('pika.adapters.base_connection', None)
-        # pika.base_connection.logheartbeat_intervalger.setLevel(logger.INFO)
-        # pika.blocking_connection.logger = self.utils.getLogger('pika.adapters.blocking_connection', None)
-        # pika.blocking_connection.LOGGER.setLevel(logger.INFO)
-
         try:
             self.os_username = getpass.getuser()
         except Exception as e:
             self.os_username = None
             pass
-
-        # this block can be removed once all the needed signals are registered
-        # ignored_signals = ['SIGCLD', 'SIGCHLD', 'SIGTSTP', 'SIGCONT', 'SIGWINCH', 'SIG_IGN', 'SIGPIPE']
-        # for i in [x for x in dir(signal) if x.startswith("SIG")]:
-        #     try:
-        #         if i not in ignored_signals:
-        #             signal.signal(getattr(signal,i),self.sighandler)
-        #     except RuntimeError,m:
-        #         pass
-        #     except ValueError,m:
-        #         pass
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
@@ -458,12 +440,10 @@ class Core(object):
         """Sends a request."""
         self.add_timeout(0, self.request_channel.send,
                          {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
-        # self.request_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def send_response(self, my_uuid, name, body, host, my_plugin):
         self.add_timeout(0, self.response_channel.send,
                          {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
-        # self.response_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def request_listener(self, msg):
         for p in self.plugins:
@@ -480,12 +460,10 @@ class Core(object):
         """Sends a data request."""
         self.add_timeout(0, self.data_request_channel.send,
                          {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
-        # self.data_request_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def send_data_response(self, my_uuid, name, body, host, my_plugin):
         self.add_timeout(0, self.data_response_channel.send,
                          {'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
-        # self.data_response_channel.send({'uuid': my_uuid, 'name': name, 'body': body, 'host': host, 'plugin': my_plugin})
 
     def data_request_listener(self, msg):
         for p in self.plugins:
@@ -509,12 +487,6 @@ class Core(object):
         """Manages the discovery channel messages."""
         if msg[0] == 'hello':
             """This host just joined us."""
-            # show_message = True
-            # try:
-            #     if not self.config['core']['debug']:
-            #         show_message = False
-            # except TypeError as e:
-            #     pass
 
             # register node in nodes_online
             args = self.utils.list_unicode_cleanup(msg)
@@ -679,8 +651,8 @@ class Core(object):
         self.logger.debug("core.presence_listener: %s" % msg)
         (changed, presence_before, presence_now) = self.presences.process_presence_message(msg)
         if changed:
-            self.system_message_add("Core", f"Presence change from <{', '.join(presence_before)}> to "
-                                                           f"<{', '.join(presence_now)}>")
+            self.system_message_add("Core", f"Presence change from [{', '.join(presence_before)}] to "
+                                                           f"[{', '.join(presence_now)}]")
             self.logger.debug("Received presence update (listener). Calling process_presence_event on plugins.")
             for p in self.plugins:
                 p.process_presence_event(presence_before, presence_now)
@@ -735,7 +707,7 @@ class Core(object):
         Listens to no_alarm_clock events changes on the no_alarm_clock channel and
         update the local storage.
         """
-        self.logger.debug("core.no_alarm_clock_listener: %s" % msg)
+        self.logger.debug(f"core.no_alarm_clock_listener: {msg}")
 
         if msg['plugin'] not in self.no_alarm_clock_data.keys():
             self.no_alarm_clock_data[msg['plugin']] = False
@@ -743,7 +715,8 @@ class Core(object):
             self.no_alarm_clock_data[msg['plugin']] = msg['events']
             global_alarmclock_str_state = 'disabled' if self.check_no_alarm_clock() else 'enabled'
             plugin_alarmclock_str_state = 'disabled' if msg['events'] else 'enabled'
-            self.logger.info(f"Received no_alarm_clock update for {msg['plugin']} to {plugin_alarmclock_str_state} (listener). Global alarm clock is now {global_alarmclock_str_state}.")
+            self.logger.info(f"Received no_alarm_clock update for {msg['plugin']} to {plugin_alarmclock_str_state} "
+                             f"(listener). Global alarm clock is now {global_alarmclock_str_state}.")
             self.no_alarm_clock_data[msg['plugin']] = msg['events']
 
     def no_alarm_clock_update(self, changed_events, no_alarm_clock_source):
@@ -784,7 +757,8 @@ class Core(object):
         if msg['plugin'] not in self.events_today.keys():
             self.events_today[msg['plugin']] = []
         if sorted(self.events_today[msg['plugin']]) != sorted(msg['events']):
-            self.logger.debug(f"Received events_today update (listener). Sender plugin is {msg['plugin']} and new value is {msg['events']}")
+            self.logger.debug(f"Received events_today update (listener). Sender plugin is {msg['plugin']} "
+                              f"and new value is {msg['events']}")
             self.events_today[msg['plugin']] = msg['events']
 
     def events_today_update(self, changed_status, events_today_source):
@@ -946,16 +920,12 @@ class Core(object):
                     self.terminate(2)
                 else:
                     self.logger.info("Ignoring Timeout exception on core, since shutdown is in progress.")
-            # except TypeError as e:
-            #     self.logger.critical("Pika sometimes crashed with TypeError due to multithreading and locked cores. "
-            #                          "This should not have happen again! Please investigate; Error: %s" % e)
-            #     self.terminate(2)
 
             # if I hang with threads or subthreads or stuff, comment the following block!
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 file_name = exc_tb.tb_frame.f_code.co_filename
-                self.logger.critical("Exception in core loop: %s in %s:%s %s" % (e, file_name, exc_tb.tb_lineno, exc_type))
+                self.logger.critical(f"Exception in core loop: {e} in {file_name}:{exc_tb.tb_lineno} {exc_type}")
                 if self.core_lock.acquire(False):
                     self.logger.warning("Core lock acquired, releasing it for forced shutdown.")
                     self.core_lock.release()
@@ -986,7 +956,7 @@ class Core(object):
 
         if not self.terminated:
             self.return_code = return_code
-            self.logger.warning("Core.terminate() called. My %s threads shall die now." % threading.active_count())
+            self.logger.warning(f"Core.terminate() called. My {threading.active_count()} threads shall die now.")
 
             # informing other nodes of my departure
             timeout = 3
@@ -1007,17 +977,6 @@ class Core(object):
                     self.connection.close()
             except Exception:
                 self.logger.debug("Core.terminate() raised an exception on closing pika connection")
-
-            # timeout = time.time() + 10  # 10 seconds from now
-            # while time.time() < timeout:
-            #     if not self.connection.is_closed:
-            #         # still safe to close
-            #         self.connection.close()
-            #         break
-            #     time.sleep(0.1)  # small delay to avoid busy loop
-            # else:
-            #     # timed out
-            #     self.logger.warning("RabbitMQ connection is still closing after 10 seconds, giving up.")
 
             # gather stats from all plugins
             saveStats = {}
@@ -1088,7 +1047,8 @@ class Core(object):
                 try:
                     t.join(timeout)
                     if t.is_alive():
-                        self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit after {timeout} seconds.")
+                        self.logger.warning(f"Thread {t.name} with PID {t.native_id} did not exit "
+                                            f"after {timeout} seconds.")
                 except RuntimeError:
                     self.logger.warning(f"Unable to join thread {t.name} because we would run into a deadlock.")
                     pass

@@ -266,7 +266,8 @@ class CaldavCalendarPlugin(Plugin):
                 elif end > now:
                     self.logger.debug(f"Ignoring already finished event: {summary}")
                 else:
-                    sys_msg = f"The following event needs debugging, this should not be possible: {summary}"
+                    sys_msg = (f"The following event needs debugging, this should not be possible "
+                               f"(start: {start} end: {end}): {summary}")
                     self.logger.warning(sys_msg)
                     self.system_message_add(sys_msg)
             else:

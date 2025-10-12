@@ -103,7 +103,7 @@ class CaldavCalendarPlugin(Plugin):
             elif isinstance(dt_obj, date):
                 return timezone.localize(datetime.combine(dt_obj, datetime.min.time()))
             else:
-                self.system_message(f"Unknown type date/time object detected")
+                self.system_message_add(f"Unknown type date/time object detected")
                 raise ValueError("Unsupported date/time object")
 
         def sort_key(event):
@@ -263,7 +263,9 @@ class CaldavCalendarPlugin(Plugin):
                     return_string = f"{timed_today_string:>11} {start.strftime('%H:%M')}:"
                     timed_today_string = "At"
                 if end < start:
-                    self.logger.warning(f"Event {summary} has end before start ({start} > {end})")
+                    sys_msg = f"Event {summary} has end before start ({start} > {end})"
+                    self.logger.warning(sys_msg)
+                    self.system_message_add(sys_msg)
                 else:
                     self.logger.debug(f"Ignoring already finished event: {summary}")
             else:

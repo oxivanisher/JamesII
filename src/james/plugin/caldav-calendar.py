@@ -183,7 +183,7 @@ class CaldavCalendarPlugin(Plugin):
 
         today = datetime.now(self.timezone).date()
         tomorrow = today + timedelta(days=1)
-        now = datetime.now(self.timezone)
+        now = datetime.now(self.timezone).replace(microsecond=0)
 
         still_string = "Still"
         until_string = "Until"

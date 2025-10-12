@@ -651,8 +651,6 @@ class Core(object):
         self.logger.debug("core.presence_listener: %s" % msg)
         (changed, presence_before, presence_now) = self.presences.process_presence_message(msg)
         if changed:
-            self.system_message_add("Core", f"Presence change from [{', '.join(presence_before)}] to "
-                                                           f"[{', '.join(presence_now)}]")
             self.logger.debug("Received presence update (listener). Calling process_presence_event on plugins.")
             for p in self.plugins:
                 p.process_presence_event(presence_before, presence_now)
@@ -673,6 +671,8 @@ class Core(object):
         A presence plugin found a change in persons and wants to send this to all nodes
         """
         new_presence = {'location': self.location, 'plugin': plugin_name, 'host': self.hostname, 'users': users}
+        self.system_message_add(plugin_name, f"Publish presence change from {self.hostname}@{self.location}: "
+                                                     f"[{', '.join(users)}]")
         self.logger.debug(f"publish_presence_event: {new_presence}")
         self.publish_presence_status(new_presence)
 

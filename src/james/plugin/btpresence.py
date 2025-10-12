@@ -227,14 +227,6 @@ class BTPresencePlugin(Plugin):
         else:
             self.core.add_timeout(time_remaining, self.presence_check_daemon)
 
-        # self.presence_check(None)
-        # sleep = self.config['sleep_short'] + random.randint(-2, 2)
-        # if len(self.users_here):
-        #     sleep = self.config['sleep_long'] + random.randint(-2, 2)
-        # self.logger.debug('Bluetooth presence scan sleeping for %s seconds' % sleep)
-        # self.current_presence_sleep = sleep
-        # self.core.add_timeout(sleep, self.presence_check_daemon)
-
     def presence_check(self, args):
         self.last_presence_check_start = time.time()
         # All this try/except should not be required ... but for some reason, we sometimes are not allowed to spawn a
@@ -253,18 +245,8 @@ class BTPresencePlugin(Plugin):
             self.presence_check_error_count = 0
         except Exception as e:
             self.presence_check_error_count += 1
-
-            if self.presence_check_error_count:
-                self.logger.warning(f"The btpresence check failed to spawn its thread ({self.presence_check_error_count}/3): {e}")
-                if self.presence_check_error_count > 2:
-                    sys_msg = f"Restarting the node to hopefully recover l2ping functionality after {self.presence_check_error_count} fails"
-                    self.logger.error(sys_msg)
-                    self.system_message_add(sys_msg)
-                    self.core.terminate(1)
-                else:
-                    # Simulating not having found any device
-                    self.presence_check_worker_callback([])
-
+            # Simulating not having found any device on l2ping error
+            self.presence_check_worker_callback([])
 
     def presence_check_worker(self):
         self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)

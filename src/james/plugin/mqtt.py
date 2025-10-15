@@ -74,8 +74,10 @@ class MqttPlugin(Plugin):
         self.retain_presence = self.config.get('retain_presence', True)
         self.retain_alarmclock = self.config.get('retain_alarmclock', True)
         self.retain_cron = self.config.get('retain_cron', True)
+        self.retain_stations = self.config.get('retain_stations', True)
+        self.retain_events = self.config.get('retain_events', False)
 
-        self.logger.debug(f"Retain settings - nodes: {self.retain_nodes}, presence: {self.retain_presence}, alarmclock: {self.retain_alarmclock}, cron: {self.retain_cron}")
+        self.logger.debug(f"Retain settings - nodes: {self.retain_nodes}, presence: {self.retain_presence}, alarmclock: {self.retain_alarmclock}, cron: {self.retain_cron}, stations: {self.retain_stations}, events: {self.retain_events}")
 
         # Topics
         self.topic_command = self.mqtt_base_topic + 'command'
@@ -83,14 +85,17 @@ class MqttPlugin(Plugin):
         self.topic_presence = self.mqtt_base_topic + 'state/presence'
         self.topic_alarmclock = self.mqtt_base_topic + 'state/alarmclock'
         self.topic_cron = self.mqtt_base_topic + 'state/cron'
+        self.topic_stations = self.mqtt_base_topic + 'state/stations'
+        self.topic_events = self.mqtt_base_topic + 'events'
 
-        self.logger.debug(f"Topics configured: command={self.topic_command}, nodes={self.topic_nodes}, presence={self.topic_presence}")
+        self.logger.debug(f"Topics configured: command={self.topic_command}, nodes={self.topic_nodes}, presence={self.topic_presence}, events={self.topic_events}")
 
         # State tracking for change detection
         self.last_nodes_state = None
         self.last_presence_state = None
         self.last_alarmclock_state = None
         self.last_cron_state = None
+        self.last_stations_state = None
 
         # Update interval in seconds
         self.update_interval = self.config.get('update_interval', 30)
@@ -101,6 +106,7 @@ class MqttPlugin(Plugin):
         self.commands.create_subcommand('status', 'Show MQTT connection status', self.cmd_status)
         self.commands.create_subcommand('reconnect', 'Reconnect to MQTT broker', self.cmd_reconnect)
         self.commands.create_subcommand('publish_all', 'Publish all states immediately', self.cmd_publish_all)
+        self.commands.create_subcommand('send', 'Send custom event to MQTT (mqtt send topic payload...)', self.cmd_send)
 
         self.logger.info(f"MQTT plugin initialized - broker: {self.mqtt_host}:{self.mqtt_port}, base_topic: {self.mqtt_base_topic}")
 
@@ -274,6 +280,7 @@ class MqttPlugin(Plugin):
         self.publish_presence_state(force)
         self.publish_alarmclock_state(force)
         self.publish_cron_state(force)
+        self.publish_stations_state(force)
         self.logger.debug("All states published")
 
     def publish_nodes_state(self, force=False):
@@ -490,6 +497,69 @@ class MqttPlugin(Plugin):
         except Exception as e:
             self.logger.error(f"Error publishing cron state: {e}")
 
+    def publish_stations_state(self, force=False):
+        """Publish radio stations list from mpd-client plugin"""
+        try:
+            # Check if mpd-client plugin is available
+            mpd_plugin = None
+            for plugin in self.core.plugins:
+                if plugin.command == 'mpd':
+                    mpd_plugin = plugin
+                    break
+
+            if not mpd_plugin:
+                self.logger.debug("MPD plugin not available, skipping stations state")
+                return
+
+            # Check if mpd-client plugin has stations configured
+            if not hasattr(mpd_plugin, 'stations') or not mpd_plugin.stations:
+                self.logger.debug("No stations configured in MPD plugin, skipping stations state")
+                return
+
+            # Build stations list
+            stations_list = []
+            for station_name in sorted(mpd_plugin.stations.keys()):
+                stations_list.append({
+                    'name': station_name,
+                    'url': mpd_plugin.stations[station_name]
+                })
+
+            # Get special station assignments
+            special_stations = {}
+            try:
+                if 'default_st' in mpd_plugin.config:
+                    special_stations['default'] = mpd_plugin.config['default_st']
+                if 'wakeup_st' in mpd_plugin.config:
+                    special_stations['wakeup'] = mpd_plugin.config['wakeup_st']
+                if 'sleep_st' in mpd_plugin.config:
+                    special_stations['sleep'] = mpd_plugin.config['sleep_st']
+            except Exception:
+                pass
+
+            state = {
+                'stations': stations_list,
+                'total': len(stations_list),
+                'special': special_stations,
+                'timestamp': int(time.time())
+            }
+
+            state_json = json.dumps(state)
+
+            # Only publish if changed or forced
+            if force or state_json != self.last_stations_state:
+                self.logger.debug(f"Publishing to {self.topic_stations} (retain={self.retain_stations})")
+                result = self.mqtt_client.publish(self.topic_stations, state_json, retain=self.retain_stations)
+                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                    self.last_stations_state = state_json
+                    self.logger.debug(f"Published stations state: {len(stations_list)} stations (mid: {result.mid})")
+                else:
+                    self.logger.error(f"Failed to publish stations state, rc: {result.rc}")
+            else:
+                self.logger.debug("Stations state unchanged, skipping publish")
+
+        except Exception as e:
+            self.logger.error(f"Error publishing stations state: {e}", exc_info=True)
+
     def process_discovery_event(self, msg):
         """Handle node discovery events (nodes coming online/offline)"""
         # Publish updated nodes state when topology changes
@@ -513,11 +583,13 @@ class MqttPlugin(Plugin):
             f"Update Interval: {self.update_interval}s",
             "",
             "Topics:",
-            f"  Command: {self.topic_command}",
-            f"  Nodes: {self.topic_nodes} (retain: {self.retain_nodes})",
-            f"  Presence: {self.topic_presence} (retain: {self.retain_presence})",
-            f"  Alarmclock: {self.topic_alarmclock} (retain: {self.retain_alarmclock})",
-            f"  Cron: {self.topic_cron} (retain: {self.retain_cron})"
+            f"  Command (sub): {self.topic_command}",
+            f"  Nodes (pub): {self.topic_nodes} (retain: {self.retain_nodes})",
+            f"  Presence (pub): {self.topic_presence} (retain: {self.retain_presence})",
+            f"  Alarmclock (pub): {self.topic_alarmclock} (retain: {self.retain_alarmclock})",
+            f"  Cron (pub): {self.topic_cron} (retain: {self.retain_cron})",
+            f"  Stations (pub): {self.topic_stations} (retain: {self.retain_stations})",
+            f"  Events (pub): {self.topic_events} (retain: {self.retain_events})"
         ]
         return ret
 
@@ -540,6 +612,51 @@ class MqttPlugin(Plugin):
             return ["Published all MQTT states"]
         else:
             return ["MQTT not connected"]
+
+    def cmd_send(self, args):
+        """Send custom event/message to MQTT events topic
+        Usage: mqtt send <subtopic> <payload...>
+        Example: mqtt send button/pressed "Living room button"
+        Example: mqtt send ir/remote "KEY_POWER"
+        """
+        if not self.mqtt_connected:
+            return ["MQTT not connected"]
+
+        if len(args) < 2:
+            return ["Usage: mqtt send <subtopic> <payload...>"]
+
+        subtopic = args[0]
+        payload = ' '.join(args[1:])
+
+        # Build full topic: base_topic + events/ + subtopic
+        # For example: james2/events/button/pressed
+        full_topic = self.topic_events + '/' + subtopic
+
+        try:
+            self.logger.info(f"Publishing custom event to {full_topic}: {payload}")
+
+            # Create event message with metadata
+            event = {
+                'topic': subtopic,
+                'payload': payload,
+                'hostname': self.core.hostname,
+                'timestamp': int(time.time())
+            }
+
+            event_json = json.dumps(event)
+
+            result = self.mqtt_client.publish(full_topic, event_json, retain=self.retain_events)
+
+            if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                self.logger.debug(f"Published event (mid: {result.mid})")
+                return [f"Published to {full_topic}"]
+            else:
+                self.logger.error(f"Failed to publish event, rc: {result.rc}")
+                return [f"Failed to publish (error code: {result.rc})"]
+
+        except Exception as e:
+            self.logger.error(f"Error sending MQTT event: {e}", exc_info=True)
+            return [f"Error: {e}"]
 
     def return_status(self, verbose=False):
         """Return plugin status"""

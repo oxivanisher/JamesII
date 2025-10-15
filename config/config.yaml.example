@@ -341,6 +341,8 @@ mqtt:
   retain_presence: true        # Retain presence state (default: true)
   retain_alarmclock: true      # Retain alarmclock state (default: true)
   retain_cron: true            # Retain cron/timer state (default: true)
+  retain_stations: true        # Retain radio stations list (default: true)
+  retain_events: false         # Retain user events (default: false)
 
   # Update interval for periodic state publishing (in seconds)
   update_interval: 30          # How often to publish state updates (default: 30)
@@ -350,11 +352,13 @@ mqtt:
     - node_name
 
   # Topics created:
-  #   james2/command         - Subscribe: send commands to JamesII
-  #   james2/state/nodes     - Publish: online nodes (JSON)
-  #   james2/state/presence  - Publish: presence state, who is home (JSON)
-  #   james2/state/alarmclock - Publish: alarm clock status (JSON)
-  #   james2/state/cron      - Publish: scheduled commands (JSON)
+  #   james2/command           - Subscribe: send commands to JamesII
+  #   james2/state/nodes       - Publish: online nodes (JSON)
+  #   james2/state/presence    - Publish: presence state, who is home (JSON)
+  #   james2/state/alarmclock  - Publish: alarm clock status (JSON)
+  #   james2/state/cron        - Publish: scheduled commands (JSON)
+  #   james2/state/stations    - Publish: radio stations list (JSON)
+  #   james2/events/<subtopic> - Publish: user-initiated events (use "mqtt send" command)
 
 locations:
 # configure locations (the system will default to 'home')

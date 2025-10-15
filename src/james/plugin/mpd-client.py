@@ -477,18 +477,12 @@ class MpdClientPlugin(Plugin):
 
         for station in list(self.config['stations'].keys()):
             self.stations[station] = self.config['stations'][station]
-            # methodName = 'tuneToStation_' + station
-            # def methodName(self):
-            #     print "baem"
-            #     self.radio_on(self.config['stations'][station])
             radio_on_command.create_subcommand(station, self.config['stations'][station], None)
 
     def terminate(self):
         self.logger.debug("Terminating MPD client worker")
         self.client_worker.terminate()
         self.logger.debug("MPD client worker exited")
-        # self.logger.debug("Calling wait_for_threads for MPD")
-        # self.wait_for_threads()
 
     def activate_talkover(self, args):
         self.logger.debug('Activating talkover')
@@ -497,9 +491,12 @@ class MpdClientPlugin(Plugin):
             self.talkover_volume = int(status['volume'])
         if self.client_worker.setvol(self.config['talk_volume']):
             self.talkoverActive = True
-            return ["Activate talkover"]
+            msg = "Activate talkover"
+            self.logger.info(msg)
         else:
-            return ["Unable to connect to MPD"]
+            msg = "Unable to activate talkover"
+            self.logger.warning(msg)
+        return [msg]
 
     def deactivate_talkover(self, args):
         self.logger.debug('Deactivating talkover')
@@ -525,9 +522,12 @@ class MpdClientPlugin(Plugin):
         self.logger.debug('Radio off')
         if self.client_worker.stop():
             self.client_worker.clear()
-            return ["Radio off"]
+            msg = "Radio off"
+            self.logger.info(msg)
         else:
-            return ["Unable to connect to MPD"]
+            msg = "Unable to stop radio."
+            self.logger.warning(msg)
+        return [msg]
 
     def radio_on(self, args):
         self.client_worker.lock()
@@ -552,11 +552,12 @@ class MpdClientPlugin(Plugin):
 
         if self.client_worker.play_url(radio_url, self.config['norm_volume']):
             self.radioStarted += 1
-            self.logger.debug('Radio on %s (%s)' % (radio_name, radio_url))
-            return ["Playing station %s" % radio_name]
+            self.logger.debug(f"Radio on {radio_name} ({radio_url})")
+            return [f"Playing station {radio_name}"]
         else:
-            self.logger.debug("Unable to connect to MPD")
-            return ["Unable to connect to MPD"]
+            msg = "Unable to get mpd status. Radio on not possible."
+            self.logger.warning(msg)
+            return [msg]
 
     def radio_toggle(self, args):
         self.logger.debug('Radio toggle')
@@ -569,9 +570,13 @@ class MpdClientPlugin(Plugin):
                 self.client_worker.play()
             else:
                 self.radio_on(args)
-            return ["Toggling radio"]
+            msg = "Toggling radio"
+            self.logger.info(msg)
         else:
-            return ["Unable to connect to MPD"]
+            msg = "Unable to get mpd status. Toggle radio not possible."
+            self.logger.warning(msg)
+
+        return [msg]
 
     def cmd_volume_set(self, args):
         self.logger.debug('Set volume to %s' % args[0])
@@ -584,14 +589,15 @@ class MpdClientPlugin(Plugin):
         except Exception:
             pass
 
-        self.logger.debug("Unable to set the volume to: %s" % volume)
-        return ["Unable to set the volume to: %s" % volume]
+        msg = f"Unable to set the volume to: {volume}"
+        self.logger.warning(msg)
+        return [msg]
 
     def cmd_volume_up(self, args):
         self.logger.debug('Increase volume by %s' % self.config['volume_steps'])
         volume = None
         tmp_state = self.client_worker.status()
-        if not (tmp_state):
+        if tmp_state:
             try:
                 self.logger.debug('Current client volume: %s' % tmp_state['volume'])
                 volume = max(0, min(int(tmp_state['volume']) + self.config['volume_steps'], 100))
@@ -601,25 +607,33 @@ class MpdClientPlugin(Plugin):
             except Exception:
                 pass
         else:
-            self.logger.warning("Unable to get mpd status. Volume up not possible")
+            msg = "Unable to get mpd status. Volume up not possible."
+            self.logger.warning(msg)
+            return [msg]
 
-        self.logger.debug("Unable to increase the volume to: %s" % volume)
-        return ["Unable to increase the volume to: %s" % volume]
+        msg = f"Unable to increase the volume to: {volume}"
+        self.logger.warning(msg)
+        return [msg]
 
     def cmd_volume_down(self, args):
         self.logger.debug('Decrease volume by %s' % self.config['volume_steps'])
         volume = None
         tmp_state = self.client_worker.status()
-        try:
-            self.logger.debug('Current client volume: %s' % tmp_state['volume'])
-            volume = max(0, min(int(tmp_state['volume']) - self.config['volume_steps'], 100))
-            self.logger.debug('Try to decrease the volume to: %s' % volume)
-            if self.client_worker.setvol(volume):
-                return ["Volume decreased to: %s" % volume]
-        except Exception:
-            pass
+        if tmp_state:
+            try:
+                self.logger.debug('Current client volume: %s' % tmp_state['volume'])
+                volume = max(0, min(int(tmp_state['volume']) - self.config['volume_steps'], 100))
+                self.logger.debug('Try to decrease the volume to: %s' % volume)
+                if self.client_worker.setvol(volume):
+                    return ["Volume decreased to: %s" % volume]
+            except Exception:
+                pass
+        else:
+            msg = "Unable to get mpd status. Volume down not possible."
+            self.logger.warning(msg)
+            return [msg]
 
-        self.logger.debug("Unable to decrease the volume to: %s" % volume)
+        self.logger.warning("Unable to decrease the volume to: %s" % volume)
         return ["Unable to decrease the volume to: %s" % volume]
 
     def mpd_sleep(self, args):
@@ -627,7 +641,9 @@ class MpdClientPlugin(Plugin):
         self.logger.debug('Activating sleep mode')
         if len(self.core.get_present_users_here()):
             if self.fade_in_progress:
-                self.logger.info("MPD Sleep mode NOT activated due other fade in progress")
+                msg = "MPD Sleep mode NOT activated due other fade in progress"
+                self.logger.info(msg)
+                return [msg]
             else:
                 self.radio_off(None)
                 self.client_worker.play_url(self.stations[self.config['sleep_st']],
@@ -640,9 +656,13 @@ class MpdClientPlugin(Plugin):
                 self.thread.start()
                 self.logger.debug(f"Spawned worker for mpd_sleep {self.thread.name} with PID {self.thread.native_id}")
                 self.worker_threads.append(self.thread)
-                self.logger.info("MPD Sleep mode activated")
+                msg = "MPD Sleep mode activated"
+                self.logger.info(msg)
+                return [msg]
         else:
+            msg = "MPD Sleep mode not activated. You are not here."
             self.logger.info("MPD Sleep mode not activated. You are not here.")
+            return [msg]
 
     def mpd_noise(self, args):
         self.noises += 1
@@ -666,8 +686,9 @@ class MpdClientPlugin(Plugin):
                 self.logger.info("MPD Noise mode activated")
                 return ["MPD Noise mode activated"]
         else:
-            self.logger.info("Noise not activated. You are not here.")
-            return ["Noise not activated. You are not here."]
+            msg = "Noise not activated. You are not here."
+            self.logger.info(msg)
+            return [msg]
 
     def mpd_wakeup(self, args):
         self.wakeups += 1
@@ -726,7 +747,7 @@ class MpdClientPlugin(Plugin):
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
-        if (self.client_worker.status()):
+        if self.client_worker.status():
             if int(self.client_worker.status()['volume']) == 0:
                 self.client_worker.stop()
                 self.client_worker.clear()
@@ -748,7 +769,7 @@ class MpdClientPlugin(Plugin):
                 self.logger.debug("Nobody is at home. Stopping radio.")
                 self.core.add_timeout(0, self.radio_off, False)
         else:
-            self.logger.debug("MPD NOT Processing presence event, since only 10 seconds have past since core startup")
+            self.logger.debug("MPD NOT Processing presence event, since only 10 seconds have past since core startup.")
 
     def return_status(self, verbose=False):
         self.logger.debug('Showing status')

@@ -16,14 +16,24 @@ class MqttThread(PluginThread):
 
     def work(self):
         self.logger.info("MQTT thread starting")
+        loop_count = 0
         while not self.plugin.terminated:
-            if self.plugin.mqtt_client and self.plugin.mqtt_connected:
+            if self.plugin.mqtt_client:
                 try:
-                    self.plugin.mqtt_client.loop(timeout=1.0)
+                    # Run MQTT network loop
+                    rc = self.plugin.mqtt_client.loop(timeout=1.0)
+                    if rc != 0:
+                        self.logger.warning(f"MQTT loop returned non-zero code: {rc}")
+
+                    loop_count += 1
+                    if loop_count % 60 == 0:  # Log every 60 iterations (roughly every minute)
+                        connected_str = "connected" if self.plugin.mqtt_connected else "not connected"
+                        self.logger.debug(f"MQTT thread alive, status: {connected_str}, loop iterations: {loop_count}")
                 except Exception as e:
-                    self.logger.error(f"MQTT loop error: {e}")
+                    self.logger.error(f"MQTT loop error: {e}", exc_info=True)
                     time.sleep(1)
             else:
+                self.logger.debug("MQTT client not initialized, waiting...")
                 time.sleep(1)
 
         self.logger.info("MQTT thread terminating")
@@ -36,6 +46,8 @@ class MqttPlugin(Plugin):
             raise Exception("paho-mqtt library not available. Install with: pip install paho-mqtt")
 
         super(MqttPlugin, self).__init__(core, descriptor)
+
+        self.logger.debug("Initializing MQTT plugin...")
 
         # MQTT connection state
         self.mqtt_client = None
@@ -50,9 +62,12 @@ class MqttPlugin(Plugin):
         self.mqtt_password = self.config.get('password', None)
         self.mqtt_base_topic = self.config.get('base_topic', 'james2/')
 
+        self.logger.debug(f"Config loaded - host: {self.mqtt_host}, port: {self.mqtt_port}, username: {self.mqtt_username}, base_topic: {self.mqtt_base_topic}")
+
         # Ensure base topic ends with /
         if not self.mqtt_base_topic.endswith('/'):
             self.mqtt_base_topic += '/'
+            self.logger.debug(f"Added trailing slash to base_topic: {self.mqtt_base_topic}")
 
         # Retain configuration for published states
         self.retain_nodes = self.config.get('retain_nodes', True)
@@ -60,12 +75,16 @@ class MqttPlugin(Plugin):
         self.retain_alarmclock = self.config.get('retain_alarmclock', True)
         self.retain_cron = self.config.get('retain_cron', True)
 
+        self.logger.debug(f"Retain settings - nodes: {self.retain_nodes}, presence: {self.retain_presence}, alarmclock: {self.retain_alarmclock}, cron: {self.retain_cron}")
+
         # Topics
         self.topic_command = self.mqtt_base_topic + 'command'
         self.topic_nodes = self.mqtt_base_topic + 'state/nodes'
         self.topic_presence = self.mqtt_base_topic + 'state/presence'
         self.topic_alarmclock = self.mqtt_base_topic + 'state/alarmclock'
         self.topic_cron = self.mqtt_base_topic + 'state/cron'
+
+        self.logger.debug(f"Topics configured: command={self.topic_command}, nodes={self.topic_nodes}, presence={self.topic_presence}")
 
         # State tracking for change detection
         self.last_nodes_state = None
@@ -76,6 +95,8 @@ class MqttPlugin(Plugin):
         # Update interval in seconds
         self.update_interval = self.config.get('update_interval', 30)
 
+        self.logger.debug(f"Update interval: {self.update_interval}s")
+
         # Commands
         self.commands.create_subcommand('status', 'Show MQTT connection status', self.cmd_status)
         self.commands.create_subcommand('reconnect', 'Reconnect to MQTT broker', self.cmd_reconnect)
@@ -85,17 +106,26 @@ class MqttPlugin(Plugin):
 
     def start(self):
         """Start the MQTT connection"""
-        self.connect_mqtt()
+        self.logger.info("Starting MQTT plugin...")
+        try:
+            self.connect_mqtt()
+            self.logger.debug("MQTT connection initiated")
+        except Exception as e:
+            self.logger.error(f"Failed to start MQTT connection: {e}", exc_info=True)
+            return
 
         # Start periodic state publishing
+        self.logger.debug("Scheduling periodic state updates")
         self.core.add_timeout(5, self.periodic_state_update)
 
     def terminate(self):
         """Clean shutdown of MQTT connection"""
+        self.logger.info("Terminating MQTT plugin...")
         self.terminated = True
 
         if self.mqtt_client and self.mqtt_connected:
             try:
+                self.logger.debug("Disconnecting from MQTT broker...")
                 self.mqtt_client.disconnect()
                 self.logger.info("MQTT client disconnected")
             except Exception as e:
@@ -103,60 +133,110 @@ class MqttPlugin(Plugin):
 
         # Wait for thread to exit
         if self.mqtt_thread:
+            self.logger.debug("Waiting for MQTT thread to exit...")
             self.wait_for_threads([self.mqtt_thread])
+            self.logger.debug("MQTT thread exited")
 
     def connect_mqtt(self):
         """Establish connection to MQTT broker"""
         try:
-            self.mqtt_client = mqtt.Client(client_id=f"james2_{self.core.hostname}_{self.name}")
+            client_id = f"james2_{self.core.hostname}_{self.name}"
+            self.logger.debug(f"Creating MQTT client with ID: {client_id}")
+            self.mqtt_client = mqtt.Client(client_id=client_id)
 
             # Set callbacks
+            self.logger.debug("Setting MQTT callbacks")
             self.mqtt_client.on_connect = self.on_mqtt_connect
             self.mqtt_client.on_disconnect = self.on_mqtt_disconnect
             self.mqtt_client.on_message = self.on_mqtt_message
 
             # Set authentication if provided
             if self.mqtt_username and self.mqtt_password:
+                self.logger.debug(f"Setting MQTT authentication for user: {self.mqtt_username}")
                 self.mqtt_client.username_pw_set(self.mqtt_username, self.mqtt_password)
+            else:
+                self.logger.debug("No MQTT authentication configured (anonymous connection)")
 
             # Connect
             self.logger.info(f"Connecting to MQTT broker at {self.mqtt_host}:{self.mqtt_port}")
-            self.mqtt_client.connect(self.mqtt_host, self.mqtt_port, 60)
+            self.logger.debug(f"Connection parameters - host: {self.mqtt_host}, port: {self.mqtt_port}, keepalive: 60")
+
+            try:
+                self.mqtt_client.connect(self.mqtt_host, self.mqtt_port, 60)
+                self.logger.debug("MQTT connect() called successfully")
+            except Exception as conn_err:
+                self.logger.error(f"MQTT connect() failed: {conn_err}", exc_info=True)
+                raise
 
             # Start background thread for MQTT loop
+            self.logger.debug("Starting MQTT background thread")
             self.mqtt_thread = MqttThread(self)
             self.mqtt_thread.start()
             self.worker_threads.append(self.mqtt_thread)
+            self.logger.debug(f"MQTT thread started: {self.mqtt_thread.name}")
 
         except Exception as e:
-            self.logger.error(f"Failed to connect to MQTT broker: {e}")
+            self.logger.error(f"Failed to connect to MQTT broker: {e}", exc_info=True)
             raise
 
     def on_mqtt_connect(self, client, userdata, flags, rc):
         """Callback when connected to MQTT broker"""
+        self.logger.debug(f"MQTT on_connect callback triggered - rc: {rc}, flags: {flags}")
+
+        # MQTT return codes
+        rc_messages = {
+            0: "Connection successful",
+            1: "Connection refused - incorrect protocol version",
+            2: "Connection refused - invalid client identifier",
+            3: "Connection refused - server unavailable",
+            4: "Connection refused - bad username or password",
+            5: "Connection refused - not authorized"
+        }
+
         if rc == 0:
             self.mqtt_connected = True
-            self.logger.info("Successfully connected to MQTT broker")
+            self.logger.info(f"Successfully connected to MQTT broker ({rc_messages.get(rc, 'Unknown')})")
+            self.logger.debug(f"Connection flags: {flags}")
 
             # Subscribe to command topic
-            client.subscribe(self.topic_command)
-            self.logger.info(f"Subscribed to {self.topic_command}")
+            self.logger.debug(f"Subscribing to command topic: {self.topic_command}")
+            result, mid = client.subscribe(self.topic_command)
+            if result == mqtt.MQTT_ERR_SUCCESS:
+                self.logger.info(f"Subscribed to {self.topic_command} (mid: {mid})")
+            else:
+                self.logger.error(f"Failed to subscribe to {self.topic_command}, result code: {result}")
 
             # Publish initial states
+            self.logger.debug("Scheduling initial state publish in 1 second")
             self.core.add_timeout(1, self.publish_all_states)
         else:
-            self.logger.error(f"Failed to connect to MQTT broker with code: {rc}")
+            error_msg = rc_messages.get(rc, f"Unknown error code: {rc}")
+            self.logger.error(f"Failed to connect to MQTT broker - {error_msg} (rc={rc})")
+            if rc == 4:
+                self.logger.error("Check your MQTT username and password configuration")
+            elif rc == 5:
+                self.logger.error("Client is not authorized - check broker ACL configuration")
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         """Callback when disconnected from MQTT broker"""
+        self.logger.debug(f"MQTT on_disconnect callback triggered - rc: {rc}")
         self.mqtt_connected = False
+
+        disconnect_reasons = {
+            0: "Clean disconnect",
+            1: "Unexpected disconnect - protocol error",
+            7: "Connection lost"
+        }
+
         if rc != 0:
-            self.logger.warning(f"Unexpected MQTT disconnection (code: {rc}), will auto-reconnect")
+            reason = disconnect_reasons.get(rc, f"Unknown reason (code: {rc})")
+            self.logger.warning(f"Unexpected MQTT disconnection - {reason}, will auto-reconnect")
         else:
-            self.logger.info("MQTT disconnected")
+            self.logger.info("MQTT disconnected cleanly")
 
     def on_mqtt_message(self, client, userdata, msg):
         """Callback when MQTT message received"""
+        self.logger.debug(f"MQTT message received - topic: {msg.topic}, qos: {msg.qos}, retain: {msg.retain}")
         try:
             payload = msg.payload.decode('utf-8')
             self.logger.info(f"MQTT command received on {msg.topic}: {payload}")
@@ -164,25 +244,37 @@ class MqttPlugin(Plugin):
             # Parse command and send to James
             command_args = payload.split()
             if command_args:
+                self.logger.debug(f"Scheduling command execution: {command_args}")
                 self.core.add_timeout(0, self.send_command, command_args)
+            else:
+                self.logger.warning("Received empty command payload")
         except Exception as e:
-            self.logger.error(f"Error processing MQTT message: {e}")
+            self.logger.error(f"Error processing MQTT message: {e}", exc_info=True)
 
     def periodic_state_update(self):
         """Periodically publish state updates"""
         if not self.terminated and self.mqtt_connected:
+            self.logger.debug(f"Periodic state update triggered (interval: {self.update_interval}s)")
             self.publish_all_states()
+            self.core.add_timeout(self.update_interval, self.periodic_state_update)
+        elif self.terminated:
+            self.logger.debug("Skipping periodic update - plugin is terminating")
+        elif not self.mqtt_connected:
+            self.logger.debug("Skipping periodic update - MQTT not connected, will retry")
             self.core.add_timeout(self.update_interval, self.periodic_state_update)
 
     def publish_all_states(self, force=False):
         """Publish all state topics"""
         if not self.mqtt_connected:
+            self.logger.debug("Skipping state publish - MQTT not connected")
             return
 
+        self.logger.debug(f"Publishing all states (force={force})")
         self.publish_nodes_state(force)
         self.publish_presence_state(force)
         self.publish_alarmclock_state(force)
         self.publish_cron_state(force)
+        self.logger.debug("All states published")
 
     def publish_nodes_state(self, force=False):
         """Publish nodes online state"""
@@ -214,12 +306,18 @@ class MqttPlugin(Plugin):
 
             # Only publish if changed or forced
             if force or state_json != self.last_nodes_state:
-                self.mqtt_client.publish(self.topic_nodes, state_json, retain=self.retain_nodes)
-                self.last_nodes_state = state_json
-                self.logger.debug(f"Published nodes state: {len(nodes_list)} nodes online")
+                self.logger.debug(f"Publishing to {self.topic_nodes} (retain={self.retain_nodes})")
+                result = self.mqtt_client.publish(self.topic_nodes, state_json, retain=self.retain_nodes)
+                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                    self.last_nodes_state = state_json
+                    self.logger.debug(f"Published nodes state: {len(nodes_list)} nodes online (mid: {result.mid})")
+                else:
+                    self.logger.error(f"Failed to publish nodes state, rc: {result.rc}")
+            else:
+                self.logger.debug("Nodes state unchanged, skipping publish")
 
         except Exception as e:
-            self.logger.error(f"Error publishing nodes state: {e}")
+            self.logger.error(f"Error publishing nodes state: {e}", exc_info=True)
 
     def publish_presence_state(self, force=False):
         """Publish presence state"""
@@ -268,12 +366,18 @@ class MqttPlugin(Plugin):
 
             # Only publish if changed or forced
             if force or state_json != self.last_presence_state:
-                self.mqtt_client.publish(self.topic_presence, state_json, retain=self.retain_presence)
-                self.last_presence_state = state_json
-                self.logger.debug(f"Published presence state: {len(users_here)} users at {self.core.location}")
+                self.logger.debug(f"Publishing to {self.topic_presence} (retain={self.retain_presence})")
+                result = self.mqtt_client.publish(self.topic_presence, state_json, retain=self.retain_presence)
+                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                    self.last_presence_state = state_json
+                    self.logger.debug(f"Published presence state: {len(users_here)} users at {self.core.location} (mid: {result.mid})")
+                else:
+                    self.logger.error(f"Failed to publish presence state, rc: {result.rc}")
+            else:
+                self.logger.debug("Presence state unchanged, skipping publish")
 
         except Exception as e:
-            self.logger.error(f"Error publishing presence state: {e}")
+            self.logger.error(f"Error publishing presence state: {e}", exc_info=True)
 
     def publish_alarmclock_state(self, force=False):
         """Publish alarm clock status"""

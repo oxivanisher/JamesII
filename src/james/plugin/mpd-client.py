@@ -180,7 +180,7 @@ class MpdClientWorker(object):
             self.logger.debug("check_connection successfully connected to MPD daemon.")
             return True
         else:
-            self.logger.warning("check_connection is enable to fix connection to MPD daemon.")
+            self.logger.warning("check_connection is unable to fix connection to MPD daemon.")
             return False
 
     def lock(self):
@@ -591,14 +591,17 @@ class MpdClientPlugin(Plugin):
         self.logger.debug('Increase volume by %s' % self.config['volume_steps'])
         volume = None
         tmp_state = self.client_worker.status()
-        try:
-            self.logger.debug('Current client volume: %s' % tmp_state['volume'])
-            volume = max(0, min(int(tmp_state['volume']) + self.config['volume_steps'], 100))
-            self.logger.debug('Try to increase the volume to: %s' % volume)
-            if self.client_worker.setvol(volume):
-                return ["Volume increased to: %s" % volume]
-        except Exception:
-            pass
+        if not (tmp_state):
+            try:
+                self.logger.debug('Current client volume: %s' % tmp_state['volume'])
+                volume = max(0, min(int(tmp_state['volume']) + self.config['volume_steps'], 100))
+                self.logger.debug('Try to increase the volume to: %s' % volume)
+                if self.client_worker.setvol(volume):
+                    return ["Volume increased to: %s" % volume]
+            except Exception:
+                pass
+        else:
+            self.logger.warning("Unable to get mpd status. Volume up not possible")
 
         self.logger.debug("Unable to increase the volume to: %s" % volume)
         return ["Unable to increase the volume to: %s" % volume]
@@ -713,8 +716,8 @@ class MpdClientPlugin(Plugin):
                     self.logger.info(msg)
                     return [msg]
         else:
-            msg = "Wakeup not activated. Unable to connect to MPD."
-            self.logger.info(msg)
+            msg = "Wakeup not activated. Unable to get status of MPD."
+            self.logger.warning(msg)
             return [msg]
 
     def fade_ended(self):
@@ -723,9 +726,12 @@ class MpdClientPlugin(Plugin):
         self.client_worker.lock()
         self.fade_in_progress = False
         self.client_worker.unlock()
-        if int(self.client_worker.status()['volume']) == 0:
-            self.client_worker.stop()
-            self.client_worker.clear()
+        if (self.client_worker.status()):
+            if int(self.client_worker.status()['volume']) == 0:
+                self.client_worker.stop()
+                self.client_worker.clear()
+        else:
+            self.logger.warning("Unable to get mpd status. MPD stop and clear not possible.")
         self.logger.debug("Fade ended")
 
     # react on presence events
@@ -782,6 +788,8 @@ class MpdClientPlugin(Plugin):
                     str_status = "Paused"
             else:
                 str_status = "Unknown"
+        else:
+            self.logger.warning("Unable to get mpd status. Plugin status returned will contain default values!")
 
         ret = {'state': str_status, 'title': title, 'name': name, 'volume': volume, 'radioStarted': self.radioStarted,
                'wakeups': self.wakeups, 'noises': self.noises, 'sleeps': self.sleeps, 'fades': self.fades}

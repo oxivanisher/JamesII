@@ -158,10 +158,15 @@ class ConsoleThread(threading.Thread):
             prefix += ','
 
         for node in matching_nodes:
-            # Add completion with comma (for adding more nodes)
-            completions.append(prefix + node + ',')
-            # Add completion with space (to finish node selection and start command)
-            completions.append(prefix + node + ' ')
+            # If there's only one match and it's exact, offer both comma and space
+            # Otherwise, just complete the node name (readline will handle the rest)
+            if len(matching_nodes) == 1 and node == current_part:
+                # Exact match - offer to add comma or space
+                completions.append(prefix + node + ',')
+                completions.append(prefix + node + ' ')
+            else:
+                # Partial match - just complete the node name
+                completions.append(prefix + node)
 
         return completions
 
@@ -205,24 +210,15 @@ class ConsoleThread(threading.Thread):
                     else:
                         self.keywords = self.plugin.commands.get_subcommand_names()
                         self.keywords += self.plugin.core.ghost_commands.get_subcommand_names()
-                        if len(remaining_args) == 1:
+                        if len(remaining_args) == 1 or (len(remaining_args) == 0):
                             self.keywords += self.plugin.core.config['core']['command_aliases']
 
-                    # Filter keywords based on the current word being typed
-                    remaining_args.append('')
-                    current_word = remaining_args[0]
-                    self.keywords = [name for name in self.keywords if name.startswith(current_word)]
-
-                    # Reconstruct the full completion by prepending the node prefix and command path
-                    # We need to add back the parts of the command that were already typed
-                    if cmd and cmd.get_depth() > 0:
-                        # Get the command path that was already matched
-                        command_path_parts = []
-                        temp_remaining = remaining_text.split(' ')[:cmd.get_depth()]
-                        command_prefix = ' '.join(temp_remaining) + ' ' if temp_remaining else ''
-                        self.keywords = [node_prefix + ' ' + command_prefix + name + ' ' for name in self.keywords]
-                    else:
-                        self.keywords = [node_prefix + ' ' + name + ' ' for name in self.keywords]
+                    # Filter keywords based on the current word being typed (the text parameter)
+                    # Since we changed delimiters, text now only contains the current word after the space
+                    self.keywords = [name for name in self.keywords if name.startswith(text)]
+                    # Just return the command name with a trailing space
+                    # Readline will handle replacing just the current token
+                    self.keywords = [name + ' ' for name in self.keywords]
                 else:
                     # Normal command completion (no @ prefix)
                     cmd = None

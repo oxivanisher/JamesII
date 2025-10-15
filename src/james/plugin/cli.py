@@ -23,6 +23,9 @@ class ConsoleThread(threading.Thread):
         else:
             readline.parse_and_bind("tab: complete")
 
+        # Set completer delimiters - remove @ and , so they're part of the word
+        # This allows @node1,node2 to be treated as a single token for completion
+        readline.set_completer_delims(' \t\n;')
         readline.set_completer(self.complete)
 
         history_file = os.path.join(os.path.expanduser("~"), ".james_cli_history")
@@ -166,6 +169,10 @@ class ConsoleThread(threading.Thread):
         # catch exceptions
         try:
             line = readline.get_line_buffer()
+            # Get the start position of the text being completed
+            begidx = readline.get_begidx()
+            endidx = readline.get_endidx()
+
             args = line.split(' ')
 
             if state == 0:
@@ -175,8 +182,9 @@ class ConsoleThread(threading.Thread):
                 is_node_cmd, node_prefix, remaining_text, is_completing_nodes = self._parse_node_prefix(line)
 
                 if is_node_cmd and is_completing_nodes:
-                    # Complete node names
-                    self.keywords = self._complete_node_names(line)
+                    # Complete node names using the text parameter which now includes @ and ,
+                    # thanks to our custom delimiter settings
+                    self.keywords = self._complete_node_names(text)
                 elif is_node_cmd and not is_completing_nodes:
                     # Node specification complete, complete commands
                     # Parse the remaining command

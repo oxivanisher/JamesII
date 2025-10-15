@@ -190,7 +190,9 @@ class ConsoleThread(threading.Thread):
                             cmd = None
 
                     if cmd:
-                        remaining_args = remaining_args[cmd.get_depth():]
+                        # Calculate how many args were consumed by the matched command
+                        depth = cmd.get_depth()
+                        remaining_args = remaining_args[depth:]
                         self.keywords = cmd.get_subcommand_names()
                     else:
                         self.keywords = self.plugin.commands.get_subcommand_names()
@@ -198,11 +200,21 @@ class ConsoleThread(threading.Thread):
                         if len(remaining_args) == 1:
                             self.keywords += self.plugin.core.config['core']['command_aliases']
 
-                    # Filter and add prefix back
+                    # Filter keywords based on the current word being typed
                     remaining_args.append('')
                     current_word = remaining_args[0]
                     self.keywords = [name for name in self.keywords if name.startswith(current_word)]
-                    self.keywords = [node_prefix + ' ' + name + ' ' for name in self.keywords]
+
+                    # Reconstruct the full completion by prepending the node prefix and command path
+                    # We need to add back the parts of the command that were already typed
+                    if cmd and cmd.get_depth() > 0:
+                        # Get the command path that was already matched
+                        command_path_parts = []
+                        temp_remaining = remaining_text.split(' ')[:cmd.get_depth()]
+                        command_prefix = ' '.join(temp_remaining) + ' ' if temp_remaining else ''
+                        self.keywords = [node_prefix + ' ' + command_prefix + name + ' ' for name in self.keywords]
+                    else:
+                        self.keywords = [node_prefix + ' ' + name + ' ' for name in self.keywords]
                 else:
                     # Normal command completion (no @ prefix)
                     cmd = None

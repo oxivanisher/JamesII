@@ -211,6 +211,10 @@ class Plugin(object):
     def process_presence_event(self, presence_before, presence_now):
         pass
 
+    # no_alarm_clock event method
+    def process_no_alarm_clock_event(self):
+        pass
+
     # discovery event method
     def process_discovery_event(self, msg):
         pass

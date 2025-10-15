@@ -710,7 +710,7 @@ class Core(object):
     def no_alarm_clock_listener(self, msg):
         """
         Listens to no_alarm_clock events changes on the no_alarm_clock channel and
-        update the local storage.
+        update the local storage. Calls process_no_alarm_clock_event() on all started plugins if state changed.
         """
         self.logger.debug(f"core.no_alarm_clock_listener: {msg}")
 
@@ -723,6 +723,11 @@ class Core(object):
             self.logger.info(f"Received no_alarm_clock update for {msg['plugin']} to {plugin_alarmclock_str_state} "
                              f"(listener). Global alarm clock is now {global_alarmclock_str_state}.")
             self.no_alarm_clock_data[msg['plugin']] = msg['events']
+
+            # Notify all plugins about alarm clock state change
+            self.logger.debug("Received alarm clock state update (listener). Calling process_no_alarm_clock_event on plugins.")
+            for p in self.plugins:
+                p.process_no_alarm_clock_event()
 
     def no_alarm_clock_update(self, changed_events, no_alarm_clock_source):
         """

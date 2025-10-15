@@ -568,9 +568,17 @@ class MqttPlugin(Plugin):
 
     def process_presence_event(self, presence_before, presence_now):
         """Handle presence change events"""
-        # Publish updated presence state
+        # Publish updated presence state immediately
         if self.mqtt_connected:
+            self.logger.debug("Presence change detected, publishing MQTT update")
             self.core.add_timeout(0, self.publish_presence_state, True)
+
+    def process_no_alarm_clock_event(self):
+        """Handle alarm clock state change events"""
+        # Publish updated alarm clock state immediately
+        if self.mqtt_connected and self.core.master:
+            self.logger.debug("Alarm clock state changed, publishing MQTT update")
+            self.core.add_timeout(0, self.publish_alarmclock_state, True)
 
     # Command handlers
     def cmd_status(self, args):

@@ -392,15 +392,21 @@ class FadeThread(PluginThread):
 
                 try:
                     self.last_vol = max(1, min(int(self.mpd_client.status()['volume']), 99))
+                    self.logger.debug(f"Current volume is {self.last_vol}")
                 except Exception:
-                    pass
+                    self.logger.warning("Unable to get current volume")
 
                 if increase:
                     self.last_vol += 1
                 else:
                     self.last_vol -= 1
 
-                self.mpd_client.setvol(self.last_vol)
+                try:
+                    self.mpd_client.setvol(self.last_vol)
+                    self.logger.debug(f"Volume set to {self.last_vol}")
+                except Exception as e:
+                    self.logger.warning(f"Unable to set volume to {self.last_vol}")
+
                 step_count = 0
 
             if increase:

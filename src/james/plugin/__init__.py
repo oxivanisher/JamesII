@@ -133,8 +133,9 @@ class Plugin:
                 args = [args]
             self.process_broadcast_command_response(args, host, plugin)
 
-    def send_data_request(self, name, args=[]):
+    def send_data_request(self, name, args=None):
         """ Sends a data command to the queue. """
+        args = args or []
         self.core.send_data_request(self.core.uuid, name, args, self.core.hostname, self.name)
 
     def send_data_response(self, my_uuid, name, body):
@@ -191,7 +192,8 @@ class Plugin:
         self.logger.debug('Deactivating debug')
         self.logger.setLevel(logging.INFO)
 
-    def wait_for_threads(self, thread_list=[]):
+    def wait_for_threads(self, thread_list=None):
+        thread_list = thread_list or []
         if not thread_list and len(self.worker_threads):
             thread_list = self.worker_threads
         for thread in thread_list:

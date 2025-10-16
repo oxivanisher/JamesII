@@ -251,7 +251,9 @@ class JabberThread(PluginThread):
         else:
             return 1
 
-    def create_message(self, to, header=[], body=[]):
+    def create_message(self, to, header=None, body=None):
+        header = header or []
+        body = body or []
         if len(header) == 0:
             return False
         message_list = [s for s in header if s != '']
@@ -463,13 +465,17 @@ class JabberPlugin(Plugin):
         return ["Message sent"]
 
     # methods for worker process
-    def send_xmpp_message(self, message_head=[], message_body=[], to=None):
+    def send_xmpp_message(self, message_head=None, message_body=None, to=None):
+        message_head = message_head or []
+        message_body = message_body or []
         self.sentChat += 1
         self.worker_lock.acquire()
         self.waiting_messages.append((message_head, message_body, to))
         self.worker_lock.release()
 
-    def send_xmpp_muc_message(self, message_head=[], message_body=[]):
+    def send_xmpp_muc_message(self, message_head=None, message_body=None):
+        message_head = message_head or []
+        message_body = message_body or []
         self.sentMuc += 1
         self.worker_lock.acquire()
         self.waiting_muc_messages.append((message_head, message_body))

@@ -41,7 +41,8 @@ class KodiPlugin(Plugin):
 
         self.commands.create_subcommand('test', 'test msg', self.get_active_player_details)
 
-    def send_rpc(self, method, params={}):
+    def send_rpc(self, method, params=None):
+        params = params or {}
         my_id = str(uuid.uuid1())
         rawData = [{"jsonrpc": "2.0", 'id': my_id, 'method': method, 'params': params}]
         self.logger.debug(f'Kodi RPC request: ({rawData}) ({method})')

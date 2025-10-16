@@ -195,7 +195,7 @@ class JabberThread(PluginThread):
                     try:
                         msg_text = '\n'.join(header)
                         if len(body):
-                            msg_text = msg_text + '\n' + '\n'.join(body)
+                            msg_text = f"{msg_text}\n{'\n'.join(body)}"
                         msg = xmpp.protocol.Message(body=msg_text)
                         msg.setTo(self.muc_room)
                         msg.setType('groupchat')

@@ -176,7 +176,7 @@ class Plugin:
             self.process_data_response(my_uuid, name, body, host, plugin)
 
     def cmd_avail(self, args):
-        return self.core.hostname + ' ' + self.name
+        return f"{self.core.hostname} {self.name}"
 
     def cmd_activate_debug(self, args):
         self.logger.setLevel(logging.DEBUG)

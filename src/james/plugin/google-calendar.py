@@ -254,7 +254,7 @@ class GoogleCalendarPlugin(Plugin):
             calendars = self.service.calendarList().list().execute()
             for cal in calendars['items']:
                 if cal['kind'] == 'calendar#calendarListEntry':
-                    ret_list.append(cal['id'] + ": " + cal['summary'])
+                    ret_list.append(f"{cal['id']}: {cal['summary']}")
             return ret_list
         except Exception as e:
             print(e)

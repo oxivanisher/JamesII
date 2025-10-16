@@ -26,7 +26,7 @@ class KodiPlugin(Plugin):
         if self.config['nodes'][self.core.hostname]['username']:
             auth_string = self.config['nodes'][self.core.hostname]['username']
         if self.config['nodes'][self.core.hostname]['password']:
-            auth_string = auth_string + ":" + self.config['nodes'][self.core.hostname]['password']
+            auth_string = f"{auth_string}:{self.config['nodes'][self.core.hostname]['password']}"
 
         self.connection_headers = {'Content-Type': 'application/json'}
         if auth_string:

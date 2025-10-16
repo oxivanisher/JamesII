@@ -638,7 +638,7 @@ class MqttPlugin(Plugin):
 
         # Build full topic: base_topic + events/ + subtopic
         # For example: james2/events/button/pressed
-        full_topic = self.topic_events + '/' + subtopic
+        full_topic = f"{self.topic_events}/{subtopic}"
 
         try:
             self.logger.info(f"Publishing custom event to {full_topic}: {payload}")

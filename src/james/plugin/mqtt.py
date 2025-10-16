@@ -45,7 +45,7 @@ class MqttPlugin(Plugin):
         if not MQTT_AVAILABLE:
             raise Exception("paho-mqtt library not available. Install with: pip install paho-mqtt")
 
-        super(MqttPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.logger.debug("Initializing MQTT plugin...")
 
@@ -295,7 +295,7 @@ class MqttPlugin(Plugin):
                 nodes_dict[hostname].append(uuid)
 
             nodes_list = []
-            for hostname in sorted(nodes_dict.keys()):
+            for hostname in sorted(nodes_dict):
                 nodes_list.append({
                     'hostname': hostname,
                     'instances': len(nodes_dict[hostname]),
@@ -518,7 +518,7 @@ class MqttPlugin(Plugin):
 
             # Build stations list
             stations_list = []
-            for station_name in sorted(mpd_plugin.stations.keys()):
+            for station_name in sorted(mpd_plugin.stations):
                 stations_list.append({
                     'name': station_name,
                     'url': mpd_plugin.stations[station_name]

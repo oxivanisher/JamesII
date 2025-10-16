@@ -26,7 +26,7 @@ from james.plugin import *
 class VoiceThread(PluginThread):
 
     def __init__(self, plugin, core, threshold, lang, timeout, channels, rate):
-        super(VoiceThread, self).__init__(plugin)
+        super().__init__(plugin)
 
         self.core = core
         self.threshold = threshold
@@ -175,7 +175,7 @@ class VoiceThread(PluginThread):
                             self.play_hertz_for(880, 0.1)
                             self.play_hertz_for(660, 0.1)
                             # self.play_beep(600, 2, 0.15)
-                            self.logger.debug("Detection data: %s" % voiceCommand)
+                            self.logger.debug(f"Detection data: {voiceCommand}")
                             self.core.add_timeout(0, self.plugin.on_text_detected, voiceCommand)
                             recording = False
                             self.plugin.workerLock.acquire()
@@ -228,7 +228,7 @@ class VoiceThread(PluginThread):
 class VoiceCommandsPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(VoiceCommandsPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.unknown_words_file = os.path.join(os.path.expanduser("~"), ".james_unknown_words")
 
@@ -281,7 +281,7 @@ class VoiceCommandsPlugin(Plugin):
                 file = open(self.unknown_words_file, 'w')
                 file.write(json.dumps(list(set(self.unknownWords))))
                 file.close()
-                self.logger.debug("Saving unknown words to %s" % self.unknown_words_file)
+                self.logger.debug(f"Saving unknown words to {self.unknown_words_file}")
             except IOError:
                 self.logger.warning("Could not save unknown words to file!")
 
@@ -314,16 +314,16 @@ class VoiceCommandsPlugin(Plugin):
             # filteredList = []
             # keywordFound = False
 
-            self.logger.debug("Detected text: %s" % ' '.join(rawTextList))
+            self.logger.debug(f"Detected text: {' '.join(rawTextList)}")
             replacedWords = []
             filteredList = []
             for word in rawTextList:
-                if word in list(self.replace.keys()):
+                if word in self.replace:
                     replacedWords.append(word)
                     filteredList.append(self.replace[word])
                 else:
                     filteredList.append(word)
-            self.logger.debug("Replaced words: %s" % ', '.join(replacedWords))
+            self.logger.debug(f"Replaced words: {', '.join(replacedWords)}")
 
             keywordIndex = -1
             if self.keyword in filteredList:
@@ -331,16 +331,18 @@ class VoiceCommandsPlugin(Plugin):
 
             filteredList = filteredList[keywordIndex + 1:]
             if len(filteredList) == 0:
-                self.logger.info("No command detected in: %s" % ' '.join(filteredList))
-                self.send_broadcast(["No command detected in: %s" % ' '.join(filteredList)])
+                msg = ' '.join(filteredList)
+                self.logger.info(f"No command detected in: {msg}")
+                self.send_broadcast([f"No command detected in: {msg}"])
                 self.playBeeps.append((440, 3, 0.15))
             elif keywordIndex == -1:
-                self.logger.info("No keyword detected in: %s" % ' '.join(filteredList))
-                self.send_broadcast(["No keyword detected in: %s" % ' '.join(filteredList)])
+                msg = ' '.join(filteredList)
+                self.logger.info(f"No keyword detected in: {msg}")
+                self.send_broadcast([f"No keyword detected in: {msg}"])
                 self.playBeeps.append((440, 3, 0.15))
             else:
                 commandFound = None
-                for command in list(self.voiceCommands.keys()):
+                for command in self.voiceCommands:
                     if command in ' '.join(filteredList):
                         commandFound = self.voiceCommands[command]
                 depth = -1
@@ -350,19 +352,21 @@ class VoiceCommandsPlugin(Plugin):
                     pass
 
                 if commandFound:
-                    self.logger.info("Found internal command (%s) in (%s)" % (commandFound, ' '.join(filteredList)))
-                    self.send_broadcast(
-                        ["Found internal command (%s) in (%s)" % (commandFound, ' '.join(filteredList))])
+                    cmd_text = ' '.join(filteredList)
+                    self.logger.info(f"Found internal command ({commandFound}) in ({cmd_text})")
+                    self.send_broadcast([f"Found internal command ({commandFound}) in ({cmd_text})"])
                     self.playBeeps.append((880, 2, 0.1))
                     self.send_command(commandFound.split())
                 elif depth >= 0:
-                    self.logger.info("Running command (%s)" % ' '.join(filteredList))
-                    self.send_broadcast(["Running command (%s)" % ' '.join(filteredList)])
+                    cmd_text = ' '.join(filteredList)
+                    self.logger.info(f"Running command ({cmd_text})")
+                    self.send_broadcast([f"Running command ({cmd_text})"])
                     self.playBeeps.append((880, 3, 0.1))
                     self.send_command(filteredList)
                 else:
-                    self.logger.info("Running Unknown command: %s" % ' '.join(filteredList))
-                    self.send_broadcast(["Running Unknown command: %s" % ' '.join(filteredList)])
+                    cmd_text = ' '.join(filteredList)
+                    self.logger.info(f"Running Unknown command: {cmd_text}")
+                    self.send_broadcast([f"Running Unknown command: {cmd_text}"])
                     self.playBeeps.append((440, 2, 0.1))
                     self.send_command(filteredList)
 

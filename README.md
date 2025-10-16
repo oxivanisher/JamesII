@@ -5,7 +5,7 @@ The system is also very handy in combination with RaspberryPi's ([www.raspberryp
 ## Things / Services you can use or interact with:
 * CLI (managed) interface with history and command completion
 * Cron (autoload on core node) which emulates a standard Unix like cron daemon
-* Dbus-Notify (passive) as a messaging front-end
+* Dbus-Notify (manual) as a messaging front-end
 * Espeak (managed) as a messaging front-end and some commands
 * Jabber (managed) as a messaging front-end and interface (has also MUC support)
 * Monitor (managed) to show what is going on in the console
@@ -22,7 +22,10 @@ noise)
 * Wakeonlan (managed) to wake up devices when you come home for example
 * Kodi (managed) to trigger database updates and display onscreen messages
 * Evdev (managed) to be controlled by IR devices (you have to configure your evdev things yourself!)
-* Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )... Yes, this is wy older than Alexa, Siri or Google Assistant
+* Voice-Commands (managed) to control James via voice! Just like LCARS (if you add some fantasy ;) )... Yes, this is way older than Alexa, Siri or Google Assistant
+* MQTT (managed) to integrate with MQTT-based systems like Node-RED and Home Assistant. Publishes state (presence, nodes, alarmclock, cron/timer, radio stations) and accepts commands via MQTT topics
+* Google Calendar (managed) to integrate with Google Calendar for presence detection and alarm clock control. Save your [`client_secret.json`](https://developers.google.com/calendar/api/quickstart/python) to `~/.james2_google_client_secret.json`
+* CalDAV Calendar (managed) to integrate with CalDAV servers (tested with Nextcloud calendar) for presence detection and alarm clock control
 
 ### Python 3
 JamesII is mostly ported to python 3. The core things are working great, but there might be errors found in the future. The most errors had to do with UTF-8, encoding and decoding things. The following plugins where not tested with python 3 since I don't use them (anymore?):
@@ -48,11 +51,9 @@ JamesII is mostly ported to python 3. The core things are working great, but the
 
 ### Not yet done:
 * HTTP Server (managed) (As front-end, console and also RESTful API for mobile clients)
-* Google Calendar integration > is working but needs more documentation. In short, save your [`client_secret.json`](https://developers.google.com/calendar/api/quickstart/python) to `~/.james2_google_client_secret.json`
-* CalDAV integration (tested with Nextcloud calendar)
 * YAML Schema to detect wrong config files
 * Doorbell extension for RaspberryPi Plugin
-* plugin requirement checks before load for external files
+* Plugin requirement checks before load for external files
 * Monitor LAN for unknown MAC addresses, MAC address db (see old james)
 
 ## You Need:
@@ -106,6 +107,13 @@ be reimplemented. :)
 * Clone JamesII to a directory as user "youruser"
 
 	git clone git://github.com/oxivanisher/JamesII.git
+
+* Install base requirements (ideally in a virtual environment)
+
+	cd JamesII
+	python3 -m venv venv
+	source venv/bin/activate  # On Windows: venv\Scripts\activate
+	pip install -r requirements.txt
 
 * Edit your main config file only on master node ([config/config.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/config.yaml.example "Base Config Example"))
 * Edit your broker config file on every node ([config/broker.yaml.example](https://github.com/oxivanisher/JamesII/blob/master/config/broker.yaml.example "Broker Example"))
@@ -189,9 +197,10 @@ This plugin uses a arduino connected via i2c to control a WS2812B RGB LED strip.
 ## Technologies and software used (incomplete!):
 * XMPP http://en.wikipedia.org/wiki/Extensible_Messaging_and_Presence_Protocol
 * AMQP http://en.wikipedia.org/wiki/AMQP
+* MQTT https://mqtt.org/
 * Motion http://www.lavrsen.dk/foswiki/bin/view/Motion/WebHome
 * eSpeak http://espeak.sourceforge.net/
-* MPD http://mpd.wikia.com/wiki/Music_Player_Daemon_Wik
+* MPD https://www.musicpd.org/
 * Transmission http://www.transmissionbt.com/
 * Kodi Media center https://kodi.wiki/
 * Raspberry Pi http://www.raspberrypi.org/

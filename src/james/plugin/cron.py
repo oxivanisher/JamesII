@@ -156,20 +156,17 @@ class CronPlugin(Plugin):
     def load_saved_commands(self):
         try:
             file = open(self.command_cron_file, 'r')
-            # self.cron_list = self.utils.convert_from_unicode(json.loads(file.read()))
             self.cron_list = json.loads(file.read())
             file.close()
             self.logger.debug(f"Loading crontab from {self.command_cron_file}")
             self.load_commands_from_cron_list()
         except IOError:
             pass
-        pass
 
     def load_commands_from_cron_list(self):
         self.crontab = CronTab()
         new_cron_list = []
         ret = True
-        # for cron_entry in self.utils.list_unicode_cleanup(self.cron_list):
         for cron_entry in self.cron_list:
             try:
                 cron_data = cron_entry.split(';')

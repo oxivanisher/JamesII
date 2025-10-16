@@ -115,7 +115,6 @@ class EvdevPlugin(Plugin):
         self.workerLock.acquire()
         self.workerRunning = False
         self.workerLock.release()
-        # self.wait_for_threads()
 
     def return_status(self, verbose=False):
         ret = {'commandsReceived': self.commandsReceived}

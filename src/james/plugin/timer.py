@@ -37,13 +37,11 @@ class TimerPlugin(Plugin):
     def load_saved_commands(self):
         try:
             file = open(self.command_cache_file, 'r')
-            # self.saved_commands = self.utils.convert_from_unicode(json.loads(file.read()))
             self.saved_commands = json.loads(file.read())
             file.close()
             self.logger.debug(f"Loading timed commands from {self.command_cache_file}")
         except IOError:
             pass
-        pass
 
     def save_commands(self):
         try:
@@ -161,7 +159,6 @@ class TimerPlugin(Plugin):
 
     # internal timer methods
     def timer_at(self, timestamp, command):
-        # self.saved_commands.append(( timestamp, self.utils.list_unicode_cleanup(command) ))
         self.logger.info(f"Saved command ({' '.join(command)}) {self.utils.get_nice_age(timestamp)} with timestamp ({timestamp})")
         self.saved_commands.append((timestamp, command))
         return f"Saved Command ({' '.join(command)}) {self.utils.get_nice_age(timestamp)}"

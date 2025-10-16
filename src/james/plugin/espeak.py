@@ -69,7 +69,6 @@ class EspeakPlugin(Plugin):
     def load_archived_messages(self):
         try:
             file = open(self.message_archive_file, 'r')
-            # self.archived_messages = self.utils.convert_from_unicode(json.loads(file.read()))
             self.archived_messages = json.loads(file.read())
             file.close()
         except IOError:
@@ -322,7 +321,6 @@ class EspeakPlugin(Plugin):
         return self.unmuted
 
     def terminate(self):
-        # self.wait_for_threads()
         pass
 
     def return_status(self, verbose=False):

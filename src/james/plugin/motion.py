@@ -54,13 +54,11 @@ class MotionPlugin(Plugin):
     def load_saved_state(self):
         try:
             file = open(self.log_file, 'r')
-            # self.log = self.utils.convert_from_unicode(json.loads(file.read()))
             self.log = json.loads(file.read())
             file.close()
             self.logger.debug(f"Loading motion events from {self.log_file}")
         except IOError:
             pass
-        pass
 
     def save_log(self):
         try:
@@ -74,7 +72,6 @@ class MotionPlugin(Plugin):
             self.system_message_add(sys_msg)
 
     def terminate(self):
-        # self.wait_for_threads()
         pass
 
     def log_event(self, message, file_name):

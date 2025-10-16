@@ -157,7 +157,6 @@ class SystemPlugin(Plugin):
 
         except IOError:
             pass
-        pass
 
     def cmd_get_details(self, args):
         # if plugin == 'system':

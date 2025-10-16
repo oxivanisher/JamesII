@@ -57,7 +57,6 @@ class Plugin:
             self.config = self.core.config[self.name]
         except KeyError:
             self.config = {}
-            pass
 
     def start(self):
         pass
@@ -70,10 +69,8 @@ class Plugin:
 
     def load_state(self, name, default_value):
         try:
-            # return self.core.loadedState[self.name][name]
             setattr(self, name, self.core.loadedState[self.name][name])
         except Exception:
-            # return default_value
             setattr(self, name, default_value)
 
     def process_command_response(self, args, host, plugin):
@@ -150,7 +147,6 @@ class Plugin:
                 res = self.return_status()
                 if res != {}:
                     self.send_data_response(self.core.uuid, name, res)
-                    # self.send_data_response(self.uuid, name, res)
             except KeyError:
                 pass
 
@@ -174,8 +170,6 @@ class Plugin:
                             self.send_data_response(my_uuid, name, res)
                 except KeyError:
                     pass
-
-        pass
 
     def handle_data_response(self, my_uuid, name, body, host, plugin):
         if name == 'status':

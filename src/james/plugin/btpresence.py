@@ -102,7 +102,6 @@ class BTPresencePlugin(Plugin):
             presence_file.close()
         except IOError:
             pass
-        pass
 
         try:
             # load saved presence persons
@@ -112,7 +111,6 @@ class BTPresencePlugin(Plugin):
             errors_file.close()
         except IOError:
             pass
-        pass
 
     def save_state(self, verbose=False):
         try:
@@ -362,7 +360,6 @@ class BTPresencePlugin(Plugin):
 
     def terminate(self):
         self.need_to_terminate = True
-        # self.wait_for_threads()
 
     def return_status(self, verbose=False):
         l2ping_errors = []

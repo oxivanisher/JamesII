@@ -4,7 +4,7 @@ import time
 import logging
 
 
-class BroadcastChannel(object):
+class BroadcastChannel:
     def __init__(self, core, name):
         self.core = core
         self.name = name
@@ -38,7 +38,7 @@ class BroadcastChannel(object):
                     logger.warning("Stopping to send msg!")
                     msg_sent = True
                 else:
-                    logger.info("Unable to send msg <%s>. Will retry in 3 sec")
+                    logger.info(f"Unable to send msg <{self.name}>. Will retry in 3 sec")
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):

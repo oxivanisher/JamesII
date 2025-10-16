@@ -1,0 +1,3 @@
+# plugin mqtt
+# MQTT client library for Python
+paho-mqtt>=1.6.0

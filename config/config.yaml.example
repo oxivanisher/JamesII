@@ -325,6 +325,41 @@ rgb-led:
   nodes:
     - node_name
 
+mqtt:
+  # MQTT broker connection settings for Node-RED and other MQTT integrations
+  host: localhost              # MQTT broker hostname (default: localhost)
+  port: 1883                   # MQTT broker port (default: 1883)
+  username: your_username      # Optional: MQTT username for authentication
+  password: your_password      # Optional: MQTT password for authentication
+
+  # Topic configuration
+  base_topic: james2/          # Base topic prefix for all MQTT messages (default: james2/)
+
+  # Retain settings - whether messages should be retained on the broker
+  # Retained messages allow new MQTT clients to see the last known state immediately
+  retain_nodes: true           # Retain nodes online state (default: true)
+  retain_presence: true        # Retain presence state (default: true)
+  retain_alarmclock: true      # Retain alarmclock state (default: true)
+  retain_cron: true            # Retain cron/timer state (default: true)
+  retain_stations: true        # Retain radio stations list (default: true)
+  retain_events: false         # Retain user events (default: false)
+
+  # Update interval for periodic state publishing (in seconds)
+  update_interval: 30          # How often to publish state updates (default: 30)
+
+  # Node configuration - which hosts should run this plugin
+  nodes:
+    - node_name
+
+  # Topics created:
+  #   james2/command           - Subscribe: send commands to JamesII
+  #   james2/state/nodes       - Publish: online nodes (JSON)
+  #   james2/state/presence    - Publish: presence state, who is home (JSON)
+  #   james2/state/alarmclock  - Publish: alarm clock status (JSON)
+  #   james2/state/cron        - Publish: scheduled commands (JSON)
+  #   james2/state/stations    - Publish: radio stations list (JSON)
+  #   james2/events/<subtopic> - Publish: user-initiated events (use "mqtt send" command)
+
 locations:
 # configure locations (the system will default to 'home')
 # node_name: location

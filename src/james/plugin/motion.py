@@ -11,7 +11,7 @@ from james.plugin import *
 class MotionPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(MotionPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         # FIXME (motion) copy files to folders for left events and bring order to the motion chaos :)
 
@@ -36,7 +36,7 @@ class MotionPlugin(Plugin):
                                         True)
         self.commands.create_subcommand('cam_lost', 'Will be called when motion loses the camera', self.cmd_cam_lost,
                                         True)
-        self.commands.create_subcommand('log', ('Shows the last %s events' % self.log_max_entries), self.cmd_show_log)
+        self.commands.create_subcommand('log', f'Shows the last {self.log_max_entries} events', self.cmd_show_log)
         self.commands.create_subcommand('watch',
                                         'Motion watches over you and starts the radio when movement is detected',
                                         self.cmd_watch_on)
@@ -57,7 +57,7 @@ class MotionPlugin(Plugin):
             # self.log = self.utils.convert_from_unicode(json.loads(file.read()))
             self.log = json.loads(file.read())
             file.close()
-            self.logger.debug("Loading motion events from %s" % self.log_file)
+            self.logger.debug(f"Loading motion events from {self.log_file}")
         except IOError:
             pass
         pass
@@ -67,7 +67,7 @@ class MotionPlugin(Plugin):
             file = open(self.log_file, 'w')
             file.write(json.dumps(self.log))
             file.close()
-            self.logger.debug("Saving motion events to %s" % self.log_file)
+            self.logger.debug(f"Saving motion events to {self.log_file}")
         except IOError:
             sys_msg = "Could not save motion events to file!"
             self.logger.warning(sys_msg)
@@ -95,7 +95,7 @@ class MotionPlugin(Plugin):
     def cmd_show_log(self, args):
         ret = []
         for (timestamp, message, file_name) in self.log:
-            ret.append("%-20s %s" % (self.utils.get_short_age(timestamp), message))
+            ret.append(f"{self.utils.get_short_age(timestamp):<20} {message}")
         return ret
 
     def cmd_cam_lost(self, args):
@@ -113,7 +113,7 @@ class MotionPlugin(Plugin):
             try:
                 if self.watch_mode:
                     command = self.config['nodes'][self.core.hostname]['watch_cmd']
-                    self.logger.info('Motion Watching starts command: %s' % command)
+                    self.logger.info(f'Motion Watching starts command: {command}')
                     self.send_command(command.split())
                 self.watch_mode = False
                 os.remove(args[0])
@@ -128,11 +128,11 @@ class MotionPlugin(Plugin):
             try:
                 file_path = args[0]
             except Exception as e:
-                return ["Please add the path to the file (%s)" % e]
+                return [f"Please add the path to the file ({e})"]
 
             file_name = ntpath.basename(file_path)
             if self.move_file(file_path, self.config['target-dir']):
-                self.logger.info('Motion: New Video file %s' % file_name)
+                self.logger.info(f'Motion: New Video file {file_name}')
 
     def cmd_img(self, args):
         if len(self.core.get_present_users_here()):
@@ -147,29 +147,29 @@ class MotionPlugin(Plugin):
             try:
                 file_path = args[0]
             except Exception as e:
-                return ["Please add the path to the file (%s)" % e]
+                return [f"Please add the path to the file ({e})"]
 
             file_name = ntpath.basename(file_path)
-            self.logger.info('Motion: New image file %s' % file_name)
+            self.logger.info(f'Motion: New image file {file_name}')
 
             self.last_event = time.time()
             self.movementsDetected += 1
 
-            alertMessage = "Movement detected at %s" % self.core.location
+            alertMessage = f"Movement detected at {self.core.location}"
 
             message = self.core.new_message(self.name)
             message.level = 2
             message.header = alertMessage
 
             if self.move_file(file_path, self.config['dropbox-dir']):
-                message.body = ("%s/%s" % (self.config['dropbox-url'], file_name))
+                message.body = f"{self.config['dropbox-url']}/{file_name}"
                 alertMessage += ": " + message.body
             message.send()
 
             self.send_command(['sys', 'alert', alertMessage])
 
             if self.move_file(file_path, self.config['target-dir']):
-                self.logger.info('Motion: New Image file %s' % file_name)
+                self.logger.info(f'Motion: New Image file {file_name}')
 
     def move_file(self, src_file, dst_path):
         try:

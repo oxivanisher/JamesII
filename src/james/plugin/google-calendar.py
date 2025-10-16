@@ -15,7 +15,7 @@ from james.plugin import *
 class GoogleCalendarPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(GoogleCalendarPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.commands.create_subcommand('events', 'Show calendar entries from google', self.cmd_events_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from google', self.cmd_calendar_speak)
@@ -48,8 +48,7 @@ class GoogleCalendarPlugin(Plugin):
                 creds.refresh(Request())
             else:
                 if not os.path.exists(client_secret_file):
-                    raise Exception("Please provide the google client_secret.jason file (see README.md) in location: %s"
-                                    % client_secret_file)
+                    raise Exception(f"Please provide the google client_secret.jason file (see README.md) in location: {client_secret_file}")
                 flow = InstalledAppFlow.from_client_secrets_file(client_secret_file, SCOPES)
                 creds = flow.run_local_server(port=0)
             with open(tokens_file, 'w') as token:
@@ -72,8 +71,7 @@ class GoogleCalendarPlugin(Plugin):
         seconds_until_midnight: int = int(86400 - seconds_since_midnight) # a day has 86400 seconds
         seconds_until_next_quarter_day: int = int(seconds_until_midnight % 21600 + 30) # 21600 seconds is 1/4 day
             # adding 30 seconds just to be sure it's the next day at midnight
-        self.logger.debug("Google calendar was just fetched. Will fetch again in %s seconds"
-                          % seconds_until_next_quarter_day)
+        self.logger.debug(f"Google calendar was just fetched. Will fetch again in {seconds_until_next_quarter_day} seconds")
         self.core.add_timeout(seconds_until_next_quarter_day, self.update_automatically)
 
     def fetch_events(self, calendar_id, page_token=None):
@@ -87,8 +85,7 @@ class GoogleCalendarPlugin(Plugin):
         midnight_today_utc_rfc3339 = midnight_today_utc.isoformat()
         last_second_tomorrow_utc_rfc3339 = last_second_tomorrow_utc.isoformat()
 
-        self.logger.debug("fetching events from <%s> to <%s>" % (midnight_today_utc_rfc3339,
-                                                                 last_second_tomorrow_utc_rfc3339))
+        self.logger.debug(f"fetching events from <{midnight_today_utc_rfc3339}> to <{last_second_tomorrow_utc_rfc3339}>")
 
         try:
             events = self.service.events().list(calendarId=calendar_id,
@@ -103,24 +100,24 @@ class GoogleCalendarPlugin(Plugin):
             if e == '':
                 self.logger.error("Event fetching error, probably oauth2 session refresh")
             else:
-                self.logger.error("Event fetching error: %s" % e)
+                self.logger.error(f"Event fetching error: {e}")
             return False
 
-        self.logger.debug("fetch_events returns: %s" % events)
+        self.logger.debug(f"fetch_events returns: {events}")
         return events
 
     def get_calendar_ids(self):
         person_client_ids = {}
         for person in self.core.get_present_users_here():
-            self.logger.debug("Found person: %s" % person)
+            self.logger.debug(f"Found person: {person}")
             person_client_ids[person] = []
             try:
                 for calendarId in self.core.config['persons'][person]['gcals']:
                     person_client_ids[person].append(calendarId)
-                    self.logger.debug("Found calendar: %s" % calendarId)
+                    self.logger.debug(f"Found calendar: {calendarId}")
             except KeyError:
                 pass
-        self.logger.debug("get_calendar_ids returns: %s" % person_client_ids)
+        self.logger.debug(f"get_calendar_ids returns: {person_client_ids}")
         return person_client_ids
 
     def request_events(self, show=True):
@@ -134,9 +131,9 @@ class GoogleCalendarPlugin(Plugin):
             person_client_ids = self.get_calendar_ids()
 
             for person in person_client_ids.keys():
-                self.logger.debug("Fetching calendars for person: %s" % person)
+                self.logger.debug(f"Fetching calendars for person: {person}")
                 for calendar in person_client_ids[person]:
-                    self.logger.debug("Fetching calendar: %s" % calendar)
+                    self.logger.debug(f"Fetching calendar: {calendar}")
                     calendar_events = []
                     events = self.fetch_events(calendar)
                     if not events:
@@ -152,11 +149,11 @@ class GoogleCalendarPlugin(Plugin):
                         else:
                             break
 
-                    self.logger.debug("Fetched %s events for calendar %s:" % (len(calendar_events), calendar))
+                    self.logger.debug(f"Fetched {len(calendar_events)} events for calendar {calendar}:")
                     for event in calendar_events:
                         self.logger.debug(event)
                 else:
-                    self.logger.debug("No calendars for: %s" % person)
+                    self.logger.debug(f"No calendars for: {person}")
 
                 self.event_cache_timestamp = time.time()
 
@@ -165,14 +162,14 @@ class GoogleCalendarPlugin(Plugin):
         no_alarm_clock_active = False
         events_today = []
         for (person, event) in self.event_cache:
-            self.logger.debug("Analyzing event for %s: %s" % (person, event['summary']))
+            self.logger.debug(f"Analyzing event for {person}: {event['summary']}")
             self.eventsFetched += 1
             return_string = False
             happening_today = False
             now = datetime.now()
 
             # whole day event:
-            if 'date' in list(event['start'].keys()):
+            if 'date' in event['start'].keys():
                 if event['start']['date'] == datetime.now(self.timezone).strftime('%Y-%m-%d'):
                     happening_today = True
                     return_string = "Today "
@@ -196,15 +193,15 @@ class GoogleCalendarPlugin(Plugin):
 
             # ignore ignored_events from config
             if event['summary'].lower() in [x.lower() for x in self.config['ignored_events']]:
-                self.logger.debug("Ignoring event because of ignored_events: %s" % event)
+                self.logger.debug(f"Ignoring event because of ignored_events: {event}")
                 continue
 
             # normal event (with start and end time):
-            elif 'dateTime' in list(event['start'].keys()):
+            elif 'dateTime' in event['start'].keys():
                 eventTimeStart = datetime.strptime(event['start']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 eventTimeEnd = datetime.strptime(event['end']['dateTime'][:-6], '%Y-%m-%dT%H:%M:%S')
                 if eventTimeStart.day > datetime.now().day:
-                    return_string = "Tomorrow at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                    return_string = f"Tomorrow at {eventTimeStart.hour:02d}:{eventTimeStart.minute:02d}: "
                 else:
 
                     # we collect all words to check for the no_alarm_clock_active override at the end
@@ -212,10 +209,10 @@ class GoogleCalendarPlugin(Plugin):
                     events_today.append(event['summary'])
 
                     if eventTimeStart < now < eventTimeEnd:
-                        return_string = "Until %02d:%02d today: " % (eventTimeEnd.hour, eventTimeEnd.minute)
+                        return_string = f"Until {eventTimeEnd.hour:02d}:{eventTimeEnd.minute:02d} today: "
 
                     elif now < eventTimeStart:
-                        return_string = "Today at %02d:%02d: " % (eventTimeStart.hour, eventTimeStart.minute)
+                        return_string = f"Today at {eventTimeStart.hour:02d}:{eventTimeStart.minute:02d}: "
 
             if return_string:
                 if event['status'] == "tentative":
@@ -226,17 +223,17 @@ class GoogleCalendarPlugin(Plugin):
 
         for word in event_words:
             if word.lower() in [x.lower() for x in self.config['no_alarm_clock_override']]:
-                self.logger.info("Found a event which overrides no_alarm_clock: %s" % word)
+                self.logger.info(f"Found a event which overrides no_alarm_clock: {word}")
                 no_alarm_clock_active = False
 
-        self.logger.debug("There are %s events in the cache." % len(return_list))
+        self.logger.debug(f"There are {len(return_list)} events in the cache.")
 
         self.core.no_alarm_clock_update(no_alarm_clock_active, 'gcal')
 
         self.core.events_today_update(events_today, 'gcal')
 
         if len(return_list):
-            self.logger.debug("Returning %s events" % len(return_list))
+            self.logger.debug(f"Returning {len(return_list)} events")
             if show:
                 return return_list
         return []

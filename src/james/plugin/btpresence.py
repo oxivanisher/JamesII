@@ -18,7 +18,7 @@ from james.plugin import *
 class BTPresencePlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(BTPresencePlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.users_here = []  # current value of users here which gets sent all the time
         self.tmp_users_here = []  # self.users_here cached to handle missing-counter
@@ -28,11 +28,11 @@ class BTPresencePlugin(Plugin):
                       'l2ping': '/usr/bin/l2ping',
                       'bluez-simple-agent': 'bluez-simple-agent'}
 
-        for tool in list(self.tools.keys()):
+        for tool in self.tools.keys():
             if os.path.isfile(self.tools[tool]):
-                self.logger.debug("%s found in %s" % (tool, self.tools[tool]))
+                self.logger.debug(f"{tool} found in {self.tools[tool]}")
             else:
-                self.logger.warning("%s NOT found in %s" % (tool, self.tools[tool]))
+                self.logger.warning(f"{tool} NOT found in {self.tools[tool]}")
 
         if os.path.isfile(self.tools['hcitool']):
             # self.commands.create_subcommand('discover', 'Scan for visible bluetooth devices', self.discover)
@@ -148,7 +148,7 @@ class BTPresencePlugin(Plugin):
 
     def prepare_pair(self, args):
         key = random.randint(1000, 9999)
-        pair_msg = "Bluetooth pairing key is: %s" % key
+        pair_msg = f"Bluetooth pairing key is: {key}"
         lines = self.utils.popen_and_wait([self.tools['bluez-simple-agent'], 'hci0', args[0], 'remove'])
         pair_data = [args[0], key]
         self.core.add_timeout(0, self.pair, pair_data)
@@ -161,25 +161,23 @@ class BTPresencePlugin(Plugin):
                              stdin=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         pair_out = p.communicate(input=bytes(pair_data[1]) + b'\n')[0]
-        self.logger.debug("BT Logging output: %s" % pair_out)
+        self.logger.debug(f"BT Logging output: {pair_out}")
 
     def show_persons(self, args):
         ret = []
         for person in self.users_here:
-            ret.append("%10s is here" % person)
+            ret.append(f"{person:>10} is here")
         return ret
 
     def always_at_home_on(self, args):
         self.always_at_home = True
-        self.logger.info("Presence always_at_home override ENABLED, sending presence status: "
-                         "%s@%s" % (self.always_at_home, self.core.location))
+        self.logger.info(f"Presence always_at_home override ENABLED, sending presence status: {self.always_at_home}@{self.core.location}")
         self.presence_event(self.users_here)
         return ["Always at home override ENABLED"]
 
     def always_at_home_off(self, args):
         self.always_at_home = False
-        self.logger.info("Presence always_at_home override DISABLED, sending presence status: "
-                         "%s@%s" % (self.always_at_home, self.core.location))
+        self.logger.info(f"Presence always_at_home override DISABLED, sending presence status: {self.always_at_home}@{self.core.location}")
         self.presence_event(self.users_here)
         return ["Always at home override DISABLED"]
 
@@ -251,12 +249,12 @@ class BTPresencePlugin(Plugin):
             self.presence_check_worker_callback([])
 
     def presence_check_worker(self):
-        self.logger.debug('Starting bluetooth presence scan for <%s>' % self.core.location)
+        self.logger.debug(f'Starting bluetooth presence scan for <{self.core.location}>')
         mac_addresses = []
-        for person in list(self.core.config['persons'].keys()):
+        for person in self.core.config['persons'].keys():
             try:
                 if self.core.config['persons'][person]['bt_devices']:
-                    for name in list(self.core.config['persons'][person]['bt_devices'].keys()):
+                    for name in self.core.config['persons'][person]['bt_devices'].keys():
                         mac = self.core.config['persons'][person]['bt_devices'][name]
                         ret = self.utils.popen_and_wait([self.tools['l2ping'], '-c', '1', mac])
                         clear_list = [s for s in ret if s != '']
@@ -299,7 +297,7 @@ class BTPresencePlugin(Plugin):
 
         # registering the person for which devices as detected
         for mac_address in mac_addresses:
-            for person in list(self.core.config['persons'].keys()):
+            for person in self.core.config['persons'].keys():
                 if 'bt_devices' in self.core.config['persons'][person].keys():
                     for device in self.core.config['persons'][person]['bt_devices'].values():
                         if device.lower() == mac_address.lower():

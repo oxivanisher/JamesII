@@ -7,7 +7,7 @@ from james.plugin import *
 class SysstatPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(SysstatPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.commands.create_subcommand('cpu', 'Show the current cpu usage for all cores', self.sysstat_cpu)
         self.commands.create_subcommand('mount', 'Show mounted disks and the usage', self.sysstat_mount)
@@ -21,14 +21,12 @@ class SysstatPlugin(Plugin):
         return_str = []
         for partition in partitions:
             usage = psutil.disk_usage(partition.mountpoint)
-            return_str.append("%s on %s as %s has %s%% used and %s free." %
-                              (partition.device, partition.mountpoint, partition.fstype, usage.percent, usage.free))
+            return_str.append(f"{partition.device} on {partition.mountpoint} as {partition.fstype} has {usage.percent}% used and {usage.free} free.")
         return return_str
 
     def sysstat_uptime(self, args):
-        return (['The System started %s, JamesII %s.' %
-                 (self.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0))),
-                  self.utils.get_nice_age(int(round(self.core.startup_timestamp, 0))))])
+        return ([f'The System started {self.utils.get_nice_age(int(round(psutil.BOOT_TIME, 0)))}, JamesII {self.utils.get_nice_age(int(round(self.core.startup_timestamp, 0)))}.'
+])
 
     def sysstat_net(self, args):
         interfaces = psutil.network_io_counters(pernic=True)
@@ -36,22 +34,14 @@ class SysstatPlugin(Plugin):
         for interface in interfaces:
             if interface != "lo":
                 net_interface = interfaces[interface]
-                return_str.append("%-5s Sent: %-8s Recv: %-8s" %
-                                  (interface, self.utils.bytes2human(net_interface.bytes_sent),
-                                   self.utils.bytes2human(net_interface.bytes_recv)))
+                return_str.append(f"{interface:<5} Sent: {self.utils.bytes2human(net_interface.bytes_sent):<8} Recv: {self.utils.bytes2human(net_interface.bytes_recv):<8}")
         return return_str
 
     def sysstat_who(self, args):
         users = psutil.get_users()
         return_str = []
         for user in users:
-            return_str.append("%-15s %-15s %s (%s)" %
-                              (user.name,
-                               user.terminal or '-',
-                               self.utils.get_short_age(user.started),
-                               # datetime.datetime.fromtimestamp(user.started).strftime("%Y-%m-%d %H:%M"),
-                               user.host)
-                              )
+            return_str.append(f"{user.name:<15} {user.terminal or '-':<15} {self.utils.get_short_age(user.started)} ({user.host})")
         return return_str
 
     def sysstat_cpu(self, args):
@@ -61,8 +51,8 @@ class SysstatPlugin(Plugin):
         cpus = psutil.cpu_percent(interval=1, percpu=True)
         for cpu in cpus:
             total += cpu
-            ret_str += "%4s%%" % (int(cpu))
-        return_str.append("load avg %3s%%; threads %s" % (int(total / psutil.NUM_CPUS), ret_str))
+            ret_str += f"{int(cpu):4}%"
+        return_str.append(f"load avg {int(total / psutil.NUM_CPUS):3}%; threads {ret_str}")
         return return_str
 
     def sysstat_mem(self, args):
@@ -71,19 +61,10 @@ class SysstatPlugin(Plugin):
         return_str = []
 
         if data['mem_avail']:
-            return_str.append("memory used %s/%s %s%%; avail %s; free %s" %
-                              (self.utils.bytes2human(data['mem'].used),
-                               self.utils.bytes2human(data['mem'].total),
-                               data['mem'].percent,
-                               self.utils.bytes2human(data['mem'].available),
-                               self.utils.bytes2human(data['mem'].free)))
+            return_str.append(f"memory used {self.utils.bytes2human(data['mem'].used)}/{self.utils.bytes2human(data['mem'].total)} {data['mem'].percent}%; avail {self.utils.bytes2human(data['mem'].available)}; free {self.utils.bytes2human(data['mem'].free)}")
 
         if data['swap_avail']:
-            return_str.append("swap used %s/%s %s%%; free %s" %
-                              (self.utils.bytes2human(data['swap'].used),
-                               self.utils.bytes2human(data['swap'].total),
-                               data['swap'].percent,
-                               self.utils.bytes2human(data['swap'].free)))
+            return_str.append(f"swap used {self.utils.bytes2human(data['swap'].used)}/{self.utils.bytes2human(data['swap'].total)} {data['swap'].percent}%; free {self.utils.bytes2human(data['swap'].free)}")
 
         return return_str
 

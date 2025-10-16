@@ -94,7 +94,7 @@ class CronTab(object):
         ret.append(ret_format % ('id', 'act', 'minutes', 'hours', 'days', 'months', 'dow', 'command'))
         for e in self.events:
             event_data = e.show()
-            for key in list(event_data.keys()):
+            for key in event_data.keys():
                 if event_data[key] == AllMatch():
                     event_data[key] = "*"
                 elif key == "act":
@@ -122,7 +122,7 @@ class CronTab(object):
 class CronPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(CronPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.commands.create_subcommand('add', 'Adds a cron command (*[*][*][*][*];cmd)', self.cmd_cron_add)
         self.commands.create_subcommand('remove', 'Removes a cron command (id)', self.cmd_cron_remove)
@@ -147,7 +147,7 @@ class CronPlugin(Plugin):
             file = open(self.command_cron_file, 'w')
             file.write(json.dumps(self.cron_list))
             file.close()
-            self.logger.debug("Saving crontab to %s" % self.command_cron_file)
+            self.logger.debug(f"Saving crontab to {self.command_cron_file}")
         except IOError:
             sys_msg = "Could not save cron tab to file!"
             self.logger.warning(sys_msg)
@@ -159,7 +159,7 @@ class CronPlugin(Plugin):
             # self.cron_list = self.utils.convert_from_unicode(json.loads(file.read()))
             self.cron_list = json.loads(file.read())
             file.close()
-            self.logger.debug("Loading crontab from %s" % self.command_cron_file)
+            self.logger.debug(f"Loading crontab from {self.command_cron_file}")
             self.load_commands_from_cron_list()
         except IOError:
             pass
@@ -208,7 +208,7 @@ class CronPlugin(Plugin):
                     except Exception as e:
                         pass
 
-                    new_cron_list.append("%s;%s;%s" % (cron_string, cmd_string, act_args))
+                    new_cron_list.append(f"{cron_string};{cmd_string};{act_args}")
                     self.add_cron_job(cron_args, cmd_args, act_args)
                 else:
                     ret = False
@@ -227,7 +227,7 @@ class CronPlugin(Plugin):
                 new_event.active = False
             self.crontab.add_event(new_event)
         except Exception as e:
-            self.logger.error("Error on adding cron command: %s" % e)
+            self.logger.error(f"Error on adding cron command: {e}")
             pass
 
     # cron commands
@@ -248,38 +248,38 @@ class CronPlugin(Plugin):
             del_data = self.cron_list[del_id]
             self.cron_list.remove(del_data)
             self.load_commands_from_cron_list()
-            return ["Removed job: %s" % del_data]
+            return [f"Removed job: {del_data}"]
         except Exception as e:
-            return ["Invalid syntax (%s)" % e]
+            return [f"Invalid syntax ({e})"]
 
     def cmd_cron_activate(self, args):
         try:
             act_id = int(args[0])
             old_str = self.cron_list[act_id]
             old_data = old_str.split(";")
-            new_data = "%s;%s;%s" % (old_data[0], old_data[1], "True")
+            new_data = f"{old_data[0]};{old_data[1]};True"
             self.cron_list[act_id] = new_data
             self.crontab.activate_event(act_id)
-            return ["Activated job: %s" % act_id]
+            return [f"Activated job: {act_id}"]
         except Exception as e:
-            return ["Invalid syntax (%s)" % e]
+            return [f"Invalid syntax ({e})"]
 
     def cmd_cron_deactivate(self, args):
         try:
             deact_id = int(args[0])
             old_str = self.cron_list[deact_id]
             old_data = old_str.split(";")
-            new_data = "%s;%s;%s" % (old_data[0], old_data[1], "False")
+            new_data = f"{old_data[0]};{old_data[1]};False"
             self.cron_list[deact_id] = new_data
             self.crontab.deactivate_event(deact_id)
-            return ["Deactivated job: %s" % deact_id]
+            return [f"Deactivated job: {deact_id}"]
         except Exception as e:
-            return ["Invalid syntax (%s)" % e]
+            return [f"Invalid syntax ({e})"]
 
     # internal cron methods
     def run_crontab_command(self, *args, **kwargs):
         self.jobsRun += 1
-        self.logger.info('Running Command (%s)' % (' '.join(args)))
+        self.logger.info(f"Running Command ({' '.join(args)})")
         self.send_command(args)
 
     def crontab_daemon_loop(self):

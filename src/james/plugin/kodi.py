@@ -9,7 +9,7 @@ from james.plugin import *
 class KodiPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(KodiPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.show_broadcast = False
 
@@ -44,7 +44,7 @@ class KodiPlugin(Plugin):
     def send_rpc(self, method, params={}):
         my_id = str(uuid.uuid1())
         rawData = [{"jsonrpc": "2.0", 'id': my_id, 'method': method, 'params': params}]
-        self.logger.debug('Kodi RPC request: (%s) (%s)' % (rawData, method))
+        self.logger.debug(f'Kodi RPC request: ({rawData}) ({method})')
 
         data = json.dumps(rawData)
         try:
@@ -53,11 +53,11 @@ class KodiPlugin(Plugin):
             h.request('POST', '/jsonrpc', data, self.connection_headers)
             r = h.getresponse()
             rpcReturn = json.loads(r.read())[0]
-            if 'error' in list(rpcReturn.keys()):
-                self.logger.debug('Kodi unable to process RPC request: (%s) (%s)' % (rawData, rpcReturn))
+            if 'error' in rpcReturn.keys():
+                self.logger.debug(f'Kodi unable to process RPC request: ({rawData}) ({rpcReturn})')
                 return False
             else:
-                self.logger.debug('Kodi RPC request successful: (%s) (%s)' % (rawData, rpcReturn))
+                self.logger.debug(f'Kodi RPC request successful: ({rawData}) ({rpcReturn})')
                 return rpcReturn
 
         except Exception as e:
@@ -128,7 +128,7 @@ class KodiPlugin(Plugin):
         status = self.return_status()
         niceStatus = "Stopped"
         if status['actId']:
-            niceStatus = "%s: %s %s" % (status['niceStatus'], status['niceName'], status['niceTime'])
+            niceStatus = f"{status['niceStatus']}: {status['niceName']} {status['niceTime']}"
         return niceStatus
 
     def alert(self, args):
@@ -140,9 +140,7 @@ class KodiPlugin(Plugin):
 
     def process_message(self, message):
         if message.level > 0:
-            header = '%s@%s (%s)' % (message.sender_name,
-                                     message.sender_host,
-                                     message.level)
+            header = f'{message.sender_name}@{message.sender_host} ({message.level})'
             body_list = []
             for line in self.utils.list_unicode_cleanup([message.header]):
                 body_list.append(line)
@@ -154,16 +152,16 @@ class KodiPlugin(Plugin):
             body = ' '.join(body_list)
 
             if self.send_rpc_message(header, body):
-                self.logger.debug("Showing msg: header (%s) body (%s)" % (header, body))
+                self.logger.debug(f"Showing msg: header ({header}) body ({body})")
             else:
                 return ["Could not send notification."]
 
     def process_broadcast_command_response(self, args, host, plugin):
         if self.show_broadcast:
-            header = "%s@%s" % (plugin, host)
+            header = f"{plugin}@{host}"
             body = ' '.join(self.utils.convert_from_unicode(args))
             if self.send_rpc_message(header, body):
-                self.logger.debug("Showing broadcast msg: header (%s) body (%s)" % (header, body))
+                self.logger.debug(f"Showing broadcast msg: header ({header}) body ({body})")
             else:
                 return ["Could not send notification."]
 
@@ -288,32 +286,24 @@ class KodiPlugin(Plugin):
 
             elif actType == 'episode':
                 actDetails = self.get_episode_details(actFileId)
-                niceName = "%s S%02dE%02d %s (%s)" % (
-                    actDetails['showtitle'], actDetails['season'], actDetails['episode'], actDetails['label'],
-                    actDetails['firstaired'])
+                niceName = f"{actDetails['showtitle']} S{actDetails['season']:02d}E{actDetails['episode']:02d} {actDetails['label']} ({actDetails['firstaired']})"
                 niceType = "Series"
 
             elif actType == 'movie':
                 niceType = "Movie"
                 actDetails = self.get_movie_details(actFileId)
                 if actDetails['year'] > 0:
-                    niceName = "%s (%s)" % (actDetails['originaltitle'], actDetails['year'])
+                    niceName = f"{actDetails['originaltitle']} ({actDetails['year']})"
                 else:
                     niceName = actDetails['originaltitle']
 
-            niceTime = "%s%% (%s:%02d:%02d/%s:%02d:%02d)" % (round(actPercentage, 0),
-                                                             actTime['hours'],
-                                                             actTime['minutes'],
-                                                             actTime['seconds'],
-                                                             actTotaltime['hours'],
-                                                             actTotaltime['minutes'],
-                                                             actTotaltime['seconds'])
+            niceTime = f"{round(actPercentage, 0)}% ({actTime['hours']}:{actTime['minutes']:02d}:{actTime['seconds']:02d}/{actTotaltime['hours']}:{actTotaltime['minutes']:02d}:{actTotaltime['seconds']:02d})"
             if actSpeed == 0:
-                niceStatus = "Paused (%s)" % niceType
+                niceStatus = f"Paused ({niceType})"
             if actSpeed == 1:
-                niceStatus = "Playing (%s)" % niceType
+                niceStatus = f"Playing ({niceType})"
             else:
-                niceStatus = "Playing at %sx (%s)" % (actSpeed, niceType)
+                niceStatus = f"Playing at {actSpeed}x ({niceType})"
 
         ret = {'updates': self.updates, 'niceName': niceName, 'updateNode': self.updateNode, 'actFile': actFile,
                'actId': actFileId, 'actType': actType, 'actDetails': actDetails, 'actSpeed': actSpeed,

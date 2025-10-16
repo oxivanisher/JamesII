@@ -9,12 +9,10 @@ from james.plugin import *
 class TransmissionPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(TransmissionPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.muted_words = self.utils.list_unicode_cleanup(self.config['dont_say'])
-        self.server_string = "%s@%s:%s" % (self.config['nodes'][self.core.hostname]['username'],
-                                           self.config['nodes'][self.core.hostname]['host'],
-                                           self.config['nodes'][self.core.hostname]['port'])
+        self.server_string = f"{self.config['nodes'][self.core.hostname]['username']}@{self.config['nodes'][self.core.hostname]['host']}:{self.config['nodes'][self.core.hostname]['port']}"
 
         self.tr_conn = None
         self.addedTorrents = 0
@@ -66,8 +64,7 @@ class TransmissionPlugin(Plugin):
             if peers == 0:
                 peers = "-"
 
-            return "%3s %5s %-18s %10s %6s %9s %8s %s" % (tid, qpos, status.rstrip(), rate.lstrip().rstrip(), peers,
-                                                          eta, ratio, name)
+            return f"{tid:>3} {qpos:>5} {status.rstrip():<18} {rate.lstrip().rstrip():>10} {peers!s:>6} {eta!s:>9} {ratio!s:>8} {name}"
 
         ret = []
         if self.connection_ok():
@@ -89,8 +86,8 @@ class TransmissionPlugin(Plugin):
                 ret.append(candy_output(torrent_id, torrent.queue_position, torrent.status,
                                         dl_rate, torrent.peersConnected, my_eta, torrent.uploadRatio, torrent.name))
         else:
-            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
-            ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
+            self.logger.warning(f"ERROR: Unable to connect to transmission host ({self.server_string})")
+            ret.append(f"ERROR: Unable to connect to transmission host ({self.server_string})")
         return ret
 
     def cmd_add(self, args):
@@ -99,19 +96,19 @@ class TransmissionPlugin(Plugin):
             try:
                 self.tr_conn.add_uri(args[0])
                 self.addedTorrents += 1
-                self.loggerlogger.info('Download of (%s) starting' % args[0])
+                self.logger.info(f'Download of ({args[0]}) starting')
                 self.send_command(['jab', 'msg', 'Torrent download started'])
                 return ["Torrent added"]
             except transmissionrpc.TransmissionError as e:
-                self.logger.warning('Torrent download not started due error (%s)' % args[0])
-                self.send_command(['jab', 'msg', 'Torrent download not started due error (%s)' % args[0]])
+                self.logger.warning(f'Torrent download not started due error ({args[0]})')
+                self.send_command(['jab', 'msg', f'Torrent download not started due error ({args[0]})'])
                 pass
             except IndexError:
                 return ["Syntax error!"]
                 pass
 
         else:
-            return ["ERROR: Unable to connect to transmission host (%s)" % self.server_string]
+            return [f"ERROR: Unable to connect to transmission host ({self.server_string})"]
 
     def cmd_remove(self, args):
         ret = []
@@ -120,12 +117,12 @@ class TransmissionPlugin(Plugin):
             for t_id in args:
                 try:
                     self.tr_conn.remove(int(t_id))
-                    ret.append("Removed Torrent ID: %s" % t_id)
+                    ret.append(f"Removed Torrent ID: {t_id}")
                 except Exception:
-                    ret.append("Unable to remove Torrent ID: %s" % t_id)
+                    ret.append(f"Unable to remove Torrent ID: {t_id}")
                     pass
         else:
-            ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
+            ret.append(f"ERROR: Unable to connect to transmission host ({self.server_string})")
         return ret
 
     def cmd_force(self, args):
@@ -135,15 +132,15 @@ class TransmissionPlugin(Plugin):
             for t_id in args:
                 try:
                     self.tr_conn.start(int(t_id), bypass_queue=True)
-                    self.logger.info("Force started Torrent ID: %s" % t_id)
-                    ret.append("Force started Torrent ID: %s" % t_id)
+                    self.logger.info(f"Force started Torrent ID: {t_id}")
+                    ret.append(f"Force started Torrent ID: {t_id}")
                 except Exception:
-                    self.logger.warning("Unable to force start Torrent ID: %s" % t_id)
-                    ret.append("Unable to force start Torrent ID: %s" % t_id)
+                    self.logger.warning(f"Unable to force start Torrent ID: {t_id}")
+                    ret.append(f"Unable to force start Torrent ID: {t_id}")
                     pass
         else:
-            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
-            ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
+            self.logger.warning(f"ERROR: Unable to connect to transmission host ({self.server_string})")
+            ret.append(f"ERROR: Unable to connect to transmission host ({self.server_string})")
         return ret
 
     def cmd_start(self, args):
@@ -153,15 +150,15 @@ class TransmissionPlugin(Plugin):
             for t_id in args:
                 try:
                     self.tr_conn.start(int(t_id))
-                    self.logger.info("Started Torrent ID: %s" % t_id)
-                    ret.append("Started Torrent ID: %s" % t_id)
+                    self.logger.info(f"Started Torrent ID: {t_id}")
+                    ret.append(f"Started Torrent ID: {t_id}")
                 except Exception:
-                    self.logger.warning("Unable to start Torrent ID: %s" % t_id)
-                    ret.append("Unable to start Torrent ID: %s" % t_id)
+                    self.logger.warning(f"Unable to start Torrent ID: {t_id}")
+                    ret.append(f"Unable to start Torrent ID: {t_id}")
                     pass
         else:
-            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
-            ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
+            self.logger.warning(f"ERROR: Unable to connect to transmission host ({self.server_string})")
+            ret.append(f"ERROR: Unable to connect to transmission host ({self.server_string})")
         return ret
 
     def cmd_stop(self, args):
@@ -171,14 +168,14 @@ class TransmissionPlugin(Plugin):
             for t_id in args:
                 try:
                     self.tr_conn.stop(int(t_id))
-                    ret.append("Stopped Torrent ID: %s" % t_id)
+                    ret.append(f"Stopped Torrent ID: {t_id}")
                 except Exception:
-                    ret.append("Unable to stop Torrent ID: %s" % t_id)
+                    ret.append(f"Unable to stop Torrent ID: {t_id}")
                     pass
             return ret
         else:
-            self.logger.warning("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
-            ret.append("ERROR: Unable to connect to transmission host (%s)" % self.server_string)
+            self.logger.warning(f"ERROR: Unable to connect to transmission host ({self.server_string})")
+            ret.append(f"ERROR: Unable to connect to transmission host ({self.server_string})")
 
     def worker_loop(self):
         if self.connection_ok():
@@ -188,23 +185,23 @@ class TransmissionPlugin(Plugin):
                     if torrent.isFinished and torrent.status == 'stopped' and torrent.percentDone == 1 \
                             and torrent.leftUntilDone == 0 and torrent.progress == 100:
                         newname = self.remove_muted_words(torrent.name)
-                        self.logger.info("Download of %s finished" % newname)
-                        self.send_command(['jab', 'msg', 'Torrent of %s finished' % newname])
+                        self.logger.info(f"Download of {newname} finished")
+                        self.send_command(['jab', 'msg', f'Torrent of {newname} finished'])
                         self.tr_conn.remove(torrent_id)
                         self.finishedTorrents += 1
             except ValueError:
                 self.logger.warning("FIXME: Strange ValueError occurred. FIX ME MASTER!")
             except transmissionrpc.error.TransmissionError as e:
-                self.logger.warning("TransmissionError occurred: %s" % e)
+                self.logger.warning(f"TransmissionError occurred: {e}")
             except Exception as e:
                 self.logger.warning("FIXME: Strange Exception occurred. FIX ME MASTER!")
         self.core.add_timeout(self.config['nodes'][self.core.hostname]['loop_time'], self.worker_loop)
 
     def cmd_test_connection(self, args):
         if self.connection_ok():
-            return ["Connection to %s established" % self.server_string]
+            return [f"Connection to {self.server_string} established"]
         else:
-            return ["Unable to connect to %s" % self.server_string]
+            return [f"Unable to connect to {self.server_string}"]
 
     # helper methods
     def remove_muted_words(self, text):

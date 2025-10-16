@@ -11,7 +11,7 @@ from james.plugin import *
 class EspeakPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(EspeakPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.message_archive_file = os.path.join(os.path.expanduser("~"), ".james_espeak_message_archive")
         self.mute_file = os.path.join(os.path.expanduser("~"), ".james_muted")
@@ -130,8 +130,7 @@ class EspeakPlugin(Plugin):
         # listing waiting messages
         ret = []
         for (timestamp, message) in self.archived_messages:
-            ret.append("%-20s %s" % (self.utils.get_nice_age(int(timestamp)),
-                                     message))
+            ret.append(f"{self.utils.get_nice_age(int(timestamp)):<20} {message}")
         if not ret:
             ret.append("no messages waiting")
         return ret
@@ -140,8 +139,7 @@ class EspeakPlugin(Plugin):
         # clear waiting messages
         ret = []
         for (timestamp, message) in self.archived_messages:
-            ret.append("%-20s %s" % (self.utils.get_nice_age(int(timestamp)),
-                                     message))
+            ret.append(f"{self.utils.get_nice_age(int(timestamp)):<20} {message}")
 
         if not ret:
             ret.append("No messages waiting")
@@ -296,19 +294,19 @@ class EspeakPlugin(Plugin):
                 if len(self.archived_messages) > 0:
                     # reading the log to the admin
                     if len(self.archived_messages) == 1:
-                        self.message_cache.append('While we where apart, the following thing happened:')
+                        self.message_cache.append('While we were apart, the following thing happened:')
                     else:
                         self.message_cache.append(
-                            f'While we where apart, the following {len(self.archived_messages)} things happened:')
+                            f'While we were apart, the following {len(self.archived_messages)} things happened:')
                     work_archived_messages = self.archived_messages
                     self.archived_messages = []
                     for (timestamp, message) in work_archived_messages:
-                        self.message_cache.append(self.utils.get_nice_age(int(timestamp)) + ", " + message)
+                        self.message_cache.append(f"{self.utils.get_nice_age(int(timestamp))}, {message}")
 
                     self.message_cache.append("End of Log")
 
                 else:
-                    self.message_cache.append('Nothing happened while we where apart.')
+                    self.message_cache.append('Nothing happened while we were apart.')
 
     def process_presence_event(self, presence_before, presence_now):
         self.logger.debug("Espeak Processing presence event")

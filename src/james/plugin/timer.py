@@ -11,7 +11,7 @@ from james.plugin import *
 class TimerPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(TimerPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.commands.create_subcommand('at', 'Runs a command at given time (hh:mm[:ss] [yyyy-mm-dd])',
                                         self.cmd_timer_at)
@@ -40,7 +40,7 @@ class TimerPlugin(Plugin):
             # self.saved_commands = self.utils.convert_from_unicode(json.loads(file.read()))
             self.saved_commands = json.loads(file.read())
             file.close()
-            self.logger.debug("Loading timed commands from %s" % self.command_cache_file)
+            self.logger.debug(f"Loading timed commands from {self.command_cache_file}")
         except IOError:
             pass
         pass
@@ -50,7 +50,7 @@ class TimerPlugin(Plugin):
             file = open(self.command_cache_file, 'w')
             file.write(json.dumps(self.saved_commands))
             file.close()
-            self.logger.debug("Saving timed commands to %s" % self.command_cache_file)
+            self.logger.debug(f"Saving timed commands to {self.command_cache_file}")
         except IOError:
             sys_msg = "Could not save cached commands to file!"
             self.logger.warning(sys_msg)
@@ -162,11 +162,9 @@ class TimerPlugin(Plugin):
     # internal timer methods
     def timer_at(self, timestamp, command):
         # self.saved_commands.append(( timestamp, self.utils.list_unicode_cleanup(command) ))
-        self.logger.info('Saved command (%s) %s with timestamp (%s)' % (
-            ' '.join(command), self.utils.get_nice_age(timestamp), timestamp))
+        self.logger.info(f"Saved command ({' '.join(command)}) {self.utils.get_nice_age(timestamp)} with timestamp ({timestamp})")
         self.saved_commands.append((timestamp, command))
-        return ("Saved Command (%s) %s" % (' '.join(command),
-                                           self.utils.get_nice_age(timestamp)))
+        return f"Saved Command ({' '.join(command)}) {self.utils.get_nice_age(timestamp)}"
 
     def command_daemon_loop(self):
         now = int(time.time())
@@ -192,7 +190,7 @@ class TimerPlugin(Plugin):
             if timestamp <= now:
                 self.commandsRun += 1
                 self.send_command(command)
-                self.logger.info('Running timed command (%s)' % command)
+                self.logger.info(f'Running timed command ({command})')
             else:
                 saved_commands_new.append((timestamp, command))
 

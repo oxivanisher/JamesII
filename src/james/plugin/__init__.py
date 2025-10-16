@@ -16,7 +16,7 @@ class PluginMode:
     MANUAL = 2
 
 
-class Plugin(object):
+class Plugin:
 
     def __init__(self, core, descriptor):
         self.uuid = str(uuid.uuid1())
@@ -115,7 +115,7 @@ class Plugin(object):
 
                 try:
                     if self.command == args[0]:
-                        self.logger.info('Processing command request (%s)' % ' '.join(args))
+                        self.logger.info(f"Processing command request ({' '.join(args)})")
                         res = self.core.commands.process_args(args)
                         if res:
                             self.send_response(my_uuid, name, res)
@@ -145,7 +145,7 @@ class Plugin(object):
         if name == 'status':
             args = self.utils.list_unicode_cleanup(body)
             try:
-                self.logger.debug('Processing status request from %s@%s' % (plugin, host))
+                self.logger.debug(f'Processing status request from {plugin}@{host}')
                 res = self.return_status()
                 if res != {}:
                     self.send_data_response(self.core.uuid, name, res)
@@ -167,7 +167,7 @@ class Plugin(object):
 
                 try:
                     if self.command == args[0]:
-                        self.logger.info('Processing data command request (%s)' % ' '.join(args))
+                        self.logger.info(f"Processing data command request ({' '.join(args)})")
                         res = self.core.data_commands.process_args(args)
                         if res:
                             self.send_data_response(my_uuid, name, res)
@@ -201,7 +201,7 @@ class Plugin(object):
                 if thread.is_alive():
                     self.logger.warning(f"Thread {thread.name} of {self.name} did not exit after 30 seconds")
 
-        self.logger.debug("All threads of plugin %s ended" % self.name)
+        self.logger.debug(f"All threads of plugin {self.name} ended")
 
     # msg methods
     def process_message(self, message):
@@ -251,11 +251,11 @@ class Plugin(object):
         ret = []
         data = self.return_status()
         try:
-            for key in list(self.return_status().keys()):
-                ret.append("%-30s: %s" % (Factory.descriptors[self.name]['detailsNames'][key], data[key]))
+            for key in self.return_status().keys():
+                ret.append(f"{Factory.descriptors[self.name]['detailsNames'][key]:<30}: {data[key]}")
             return ret
         except AttributeError:
-            self.logger.error("Error on cmd_show_plugin_status in %s" % self.name)
+            self.logger.error(f"Error on cmd_show_plugin_status in {self.name}")
 
     def alert(self, args):
         pass
@@ -266,10 +266,10 @@ class PluginThread(threading.Thread):
     def __init__(self, plugin):
         super(PluginThread, self).__init__()
         self.plugin = plugin
-        self.name = "Plugin: %s > Class: %s" % (self.plugin.name, self.__class__.__name__)
+        self.name = f"Plugin: {self.plugin.name} > Class: {self.__class__.__name__}"
         self.config = self.plugin.config
         self.utils = self.plugin.utils
-        self.logger = self.utils.get_logger('thread.%s' % int(time.time() * 100), self.plugin.logger)
+        self.logger = self.utils.get_logger(f'thread.{int(time.time() * 100)}', self.plugin.logger)
         try:
             if self.config['debug']:
                 self.logger.setLevel(logging.DEBUG)
@@ -278,7 +278,7 @@ class PluginThread(threading.Thread):
             pass
         except KeyError:
             pass
-        self.logger.debug('Plugin thread initialized for %s' % self.plugin)
+        self.logger.debug(f'Plugin thread initialized for {self.plugin}')
 
     def work(self):
         """
@@ -302,23 +302,23 @@ class PluginNotAvailable(Exception):
     pass
 
 
-class Factory(object):
+class Factory:
     descriptors = {}
 
     @classmethod
     def register_plugin(cls, descriptor):
-        if 'name' not in list(descriptor.keys()):
+        if 'name' not in descriptor:
             raise Exception("Plugin descriptor has no name field")
-        if 'help_text' not in list(descriptor.keys()):
-            raise Exception("Plugin descriptor of %s has no help_text field" % descriptor['name'])
-        if 'command' not in list(descriptor.keys()):
-            raise Exception("Plugin descriptor of %s has no command field" % descriptor['name'])
-        if 'mode' not in list(descriptor.keys()):
-            raise Exception("Plugin descriptor of %s has no mode field" % descriptor['name'])
-        if 'class' not in list(descriptor.keys()):
-            raise Exception("Plugin descriptor of %s has no class field" % descriptor['name'])
-        if 'detailsNames' not in list(descriptor.keys()):
-            raise Exception("Plugin descriptor of %s has no detailsNames field" % descriptor['name'])
+        if 'help_text' not in descriptor:
+            raise Exception(f"Plugin descriptor of {descriptor['name']} has no help_text field")
+        if 'command' not in descriptor:
+            raise Exception(f"Plugin descriptor of {descriptor['name']} has no command field")
+        if 'mode' not in descriptor:
+            raise Exception(f"Plugin descriptor of {descriptor['name']} has no mode field")
+        if 'class' not in descriptor:
+            raise Exception(f"Plugin descriptor of {descriptor['name']} has no class field")
+        if 'detailsNames' not in descriptor:
+            raise Exception(f"Plugin descriptor of {descriptor['name']} has no detailsNames field")
 
         cls.descriptors[descriptor['name']] = descriptor
 
@@ -330,7 +330,7 @@ class Factory(object):
         try:
             return cls.descriptors[name]['class']
         except KeyError as e:
-            raise PluginNotAvailable("Plugin '%s' not available" % name)
+            raise PluginNotAvailable(f"Plugin '{name}' not available")
 
     @classmethod
     def enum_plugin_classes_with_mode(cls, mode):

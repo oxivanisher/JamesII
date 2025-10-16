@@ -11,7 +11,7 @@ from james.plugin import *
 class DbusNotifyPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(DbusNotifyPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.bus = dbus.Bus(dbus.Bus.TYPE_SESSION)
         self.notify_id = 0
@@ -36,7 +36,7 @@ class DbusNotifyPlugin(Plugin):
             else:
                 message.body += "\n\n"
 
-            self.logger.debug('Processing msg with level %s: %s' % (int(message.level), message.header))
+            self.logger.debug(f'Processing msg with level {int(message.level)}: {message.header}')
 
             icon_name = ""
             if int(message.level) == 0:
@@ -52,11 +52,8 @@ class DbusNotifyPlugin(Plugin):
             except Exception:
                 icon_path = ''
 
-            brief_msg = ("%s: %s" % (message.sender_host,
-                                     message.header))
-            long_msg = ("%sPlugin: %s Host: %s" % (message.body,
-                                                   message.sender_name,
-                                                   message.sender_host))
+            brief_msg = f"{message.sender_host}: {message.header}"
+            long_msg = f"{message.body}Plugin: {message.sender_name} Host: {message.sender_host}"
 
             # The second param is the replacement id, so get the notify id back,
             # store it, and send it as the replacement on the next call.
@@ -75,7 +72,7 @@ class DbusNotifyPlugin(Plugin):
 
     def alert(self, args):
         message = ' '.join(args)
-        self.logger.debug('Processing alert msg: %s' % message)
+        self.logger.debug(f'Processing alert msg: {message}')
         # Connect to notification interface on DBUS.
         # http://www.galago-project.org/specs/notification/0.9/x408.html#command-notify
         # icon from http://www.iconfinder.com/search/?q=alert
@@ -95,8 +92,8 @@ class DbusNotifyPlugin(Plugin):
             except Exception:
                 icon_path = ''
 
-            brief_msg = ("%s" % message)
-            long_msg = ("JamesII Alert: %s" % message)
+            brief_msg = f"{message}"
+            long_msg = f"JamesII Alert: {message}"
 
             # The second param is the replacement id, so get the notify id back,
             # store it, and send it as the replacement on the next call.

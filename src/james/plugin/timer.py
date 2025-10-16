@@ -102,7 +102,7 @@ class TimerPlugin(Plugin):
 
             target_timestamp = int(target_time.strftime('%s'))
 
-        if target_timestamp > 0 and len(args) > 0:
+        if target_timestamp > 0 and args:
             if target_timestamp < time.time():
                 target_timestamp += 86400
             return [self.timer_at(target_timestamp, args)]
@@ -136,7 +136,7 @@ class TimerPlugin(Plugin):
             target_timestamp = int(target_time.strftime('%s'))
             ret.append(f"{is_active_str:25} | {target_timestamp} {self.utils.get_nice_age(target_timestamp)} {event['command']}")
 
-        if len(ret) > 0:
+        if ret:
             return ret
         else:
             return ["No commands found"]

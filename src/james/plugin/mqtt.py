@@ -362,7 +362,7 @@ class MqttPlugin(Plugin):
             users_here = self.core.get_present_users_here()
 
             state = {
-                'somebody_home': len(users_here) > 0,
+                'somebody_home': bool(users_here),
                 'users_here': users_here,
                 'this_location': self.core.location,
                 'all_locations': locations,

@@ -291,7 +291,7 @@ class EspeakPlugin(Plugin):
                         f"Hey {' and '.join(self.core.get_present_users_here())} it is now {self.utils.get_time_string()}")
 
             if self.core.is_admin_user_here():
-                if len(self.archived_messages) > 0:
+                if self.archived_messages:
                     # reading the log to the admin
                     if len(self.archived_messages) == 1:
                         self.message_cache.append('While we were apart, the following thing happened:')

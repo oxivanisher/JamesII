@@ -102,7 +102,7 @@ class CronTab(object):
                         event_data[key] = "+"
                     else:
                         event_data[key] = "-"
-                elif len(event_data[key]) > 0:
+                elif event_data[key]:
                     if key == 'cmd':
                         event_data[key] = ' '.join(event_data[key])
                     else:
@@ -232,7 +232,7 @@ class CronPlugin(Plugin):
 
     # cron commands
     def cmd_cron_add(self, args):
-        if len(args) > 0:
+        if args:
             self.cron_list.append(' '.join(args))
             if self.load_commands_from_cron_list():
                 return ["Command saved"]

@@ -79,7 +79,7 @@ class ConsoleThread(threading.Thread):
                         if best_match == self.plugin.core.ghost_commands:
                             self.plugin.commands.process_args(['help_text'] + args)
                         else:
-                            if len(best_match.subcommands) > 0:
+                            if best_match.subcommands:
                                 self.plugin.commands.process_args(['help_text'] + args)
                             else:
                                 self.plugin.send_command(args)
@@ -240,7 +240,7 @@ class ConsoleThread(threading.Thread):
                     self.keywords = [name for name in self.keywords if name.startswith(args[0])]
                     self.keywords = [name + " " for name in self.keywords]
 
-                return self.keywords[0] if len(self.keywords) > 0 else None
+                return self.keywords[0] if self.keywords else None
             else:
                 return self.keywords[state] if len(self.keywords) > state else None
 
@@ -348,7 +348,7 @@ class CliPlugin(Plugin):
 
     def cmd_help(self, args):
 
-        if len(args) > 0:
+        if args:
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:

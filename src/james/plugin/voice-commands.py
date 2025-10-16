@@ -276,7 +276,7 @@ class VoiceCommandsPlugin(Plugin):
         self.workerLock.release()
 
     def save_unknown_words(self):
-        if len(self.unknownWords) > 0:
+        if self.unknownWords:
             try:
                 file = open(self.unknown_words_file, 'w')
                 file.write(json.dumps(list(set(self.unknownWords))))
@@ -383,7 +383,7 @@ class VoiceCommandsPlugin(Plugin):
             return ["Syntax error. Use (hertz) (amount) (duration)"]
 
     def cmd_show_unknown(self, args):
-        if len(self.unknownWords) > 0:
+        if self.unknownWords:
             return ['(%s) ' % len(self.unknownWords) + ', '.join(self.unknownWords)]
         else:
             return ['No unknown words']

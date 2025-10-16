@@ -80,7 +80,7 @@ class JabberThread(PluginThread):
             my_roster = self.conn.getRoster()
             for i in my_roster.getItems():
                 self.roster[i] = my_roster.getStatus(i)
-            if len(self.roster) > 0:
+            if self.roster:
                 self.roster = self.plugin.utils.convert_from_unicode(self.roster)
 
             # self.logger.debug("Jabber worker roster: %s" % self.roster)
@@ -254,10 +254,10 @@ class JabberThread(PluginThread):
     def create_message(self, to, header=None, body=None):
         header = header or []
         body = body or []
-        if len(header) == 0:
+        if not header:
             return False
         message_list = [s for s in header if s != '']
-        if len(body) > 0:
+        if body:
             message_list = message_list + [s for s in body if s != '']
         message_text = '\n'.join(message_list)
         message = xmpp.protocol.Message(to, message_text)
@@ -576,7 +576,7 @@ class JabberPlugin(Plugin):
             if best_match == self.core.ghost_commands:
                 command = ['help'] + command
             else:
-                if len(best_match.subcommands) > 0:
+                if best_match.subcommands:
                     command = ['help'] + command
             if command[0] == 'help':
                 help_text = self.jabber_cmd_help(command[1:])
@@ -603,7 +603,7 @@ class JabberPlugin(Plugin):
             if best_match == self.core.ghost_commands:
                 command = ['help'] + command
             else:
-                if len(best_match.subcommands) > 0:
+                if best_match.subcommands:
                     command = ['help'] + command
             if command[0] == 'help':
                 help_text = self.jabber_cmd_help(command[1:])
@@ -622,7 +622,7 @@ class JabberPlugin(Plugin):
     # worker process help_text methods
     def jabber_cmd_help(self, args):
         ret = []
-        if len(args) > 0:
+        if args:
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:
@@ -644,7 +644,7 @@ class JabberPlugin(Plugin):
             c = command_obj.subcommands[command]
             if not c.hide:
                 ret.append(f"|{depth * '-' + ' ' + c.name:<19} {c.help}")
-                if len(c.subcommands) > 0:
+                if c.subcommands:
                     for line in self.return_command_help_lines(c, depth + 1):
                         ret.append(line)
         return ret

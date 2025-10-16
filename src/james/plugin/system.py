@@ -15,7 +15,7 @@ from james.plugin import *
 class SystemPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(SystemPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.crash_detection_file = os.path.join(os.getcwd(), ".james_crashed")
         self.command_aliases = self.core.config['core']['command_aliases']
@@ -157,7 +157,6 @@ class SystemPlugin(Plugin):
 
         except IOError:
             pass
-        pass
 
     def cmd_get_details(self, args):
         # if plugin == 'system':
@@ -192,7 +191,7 @@ class SystemPlugin(Plugin):
     def cmd_show_aliases(self, args):
         ret = []
         for command in sorted(self.command_aliases.keys()):
-            ret.append("%-10s %s" % (command, self.command_aliases[command]))
+            ret.append(f"{command:<10} {self.command_aliases[command]}")
         return ret
 
     def cmd_show_alarmclock_status(self, args):
@@ -254,7 +253,7 @@ class SystemPlugin(Plugin):
     def cmd_nodes_show(self, args):
         nodes_online_dict = {}
         nodes_online_list = []
-        for uuid in list(self.core.nodes_online.keys()):
+        for uuid in self.core.nodes_online.keys():
             hostname = self.core.nodes_online[uuid]
             try:
                 nodes_online_dict[hostname]
@@ -262,10 +261,10 @@ class SystemPlugin(Plugin):
                 nodes_online_dict[hostname] = 0
             nodes_online_dict[hostname] += 1
 
-        for node in list(nodes_online_dict.keys()):
+        for node in nodes_online_dict.keys():
             nodes_online_list.append(f"{node}({nodes_online_dict[node]})")
 
-        return ['[%s] ' % len(nodes_online_list) + ' '.join(sorted(nodes_online_list))]
+        return [f'[{len(nodes_online_list)}] ' + ' '.join(sorted(nodes_online_list))]
 
     def cmd_show_threads(self, args):
         ret = []
@@ -342,11 +341,11 @@ class SystemPlugin(Plugin):
                 srcUuid = command['uuid']
                 runCommand = self.command_aliases[request[0]].split() + args
                 self.send_command(runCommand, srcUuid)
-                self.logger.info('Processing command alias <%s> (%s)' % (request[0], ' '.join(runCommand)))
+                self.logger.info(f"Processing command alias <{request[0]}> ({' '.join(runCommand)})")
             except KeyError as e:
                 if depth == 0 and self.core.data_commands.get_best_match(request) != self.core.data_commands:
-                    self.logger.info('Unknown command (%s)' % e)
-                    self.send_broadcast(['Currently unknown command on core (%s)' % e])
+                    self.logger.info(f'Unknown command ({e})')
+                    self.send_broadcast([f'Currently unknown command on core ({e})'])
 
     def return_status(self, verbose=False):
         core_data = {'master': self.core.master, 'uuid': self.core.uuid, 'ip': self.get_ip([]),

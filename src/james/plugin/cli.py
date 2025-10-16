@@ -10,7 +10,7 @@ from james.plugin import *
 class ConsoleThread(threading.Thread):
 
     def __init__(self, plugin):
-        super(ConsoleThread, self).__init__()
+        super().__init__()
         self.plugin = plugin
         self.terminated = False
         self.logger = self.plugin.utils.get_logger('thread', self.plugin.logger)
@@ -38,9 +38,7 @@ class ConsoleThread(threading.Thread):
 
     def run(self):
 
-        self.logger.info("Interactive cli interface to JamesII (%s:%s) online." % (
-            self.plugin.core.broker_config['host'],
-            self.plugin.core.broker_config['port']))
+        self.logger.info(f"Interactive cli interface to JamesII ({self.plugin.core.broker_config['host']}:{self.plugin.core.broker_config['port']}) online.")
 
         while not self.terminated:
             self.plugin.worker_lock.acquire()
@@ -81,7 +79,7 @@ class ConsoleThread(threading.Thread):
                         if best_match == self.plugin.core.ghost_commands:
                             self.plugin.commands.process_args(['help_text'] + args)
                         else:
-                            if len(best_match.subcommands) > 0:
+                            if best_match.subcommands:
                                 self.plugin.commands.process_args(['help_text'] + args)
                             else:
                                 self.plugin.send_command(args)
@@ -242,7 +240,7 @@ class ConsoleThread(threading.Thread):
                     self.keywords = [name for name in self.keywords if name.startswith(args[0])]
                     self.keywords = [name + " " for name in self.keywords]
 
-                return self.keywords[0] if len(self.keywords) > 0 else None
+                return self.keywords[0] if self.keywords else None
             else:
                 return self.keywords[state] if len(self.keywords) > state else None
 
@@ -253,7 +251,7 @@ class ConsoleThread(threading.Thread):
 class CliPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(CliPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.console_thread = None
         self.cmd_line_mode = len(sys.argv) > 1
@@ -270,7 +268,7 @@ class CliPlugin(Plugin):
 
     def start(self):
         if self.cmd_line_mode:
-            self.logger.info('Sending command: %s' % ' '.join(sys.argv[1:]))
+            self.logger.info(f"Sending command: {' '.join(sys.argv[1:])}")
             self.send_command(sys.argv[1:])
             self.core.add_timeout(0, self.timeout_handler)
         else:
@@ -297,17 +295,17 @@ class CliPlugin(Plugin):
 
     def process_command_response(self, args, host, plugin):
         for line in args:
-            print(("D%13s@%-10s > %s" % (plugin, host, line)))
+            print(f"D{plugin:>13}@{host:<10} > {line}")
 
     def process_broadcast_command_response(self, args, host, plugin):
         for line in args:
-            print(("B%13s@%-10s > %s" % (plugin, host, line)))
+            print(f"B{plugin:>13}@{host:<10} > {line}")
 
     def process_presence_event(self, presence_before, presence_now):
         if len(presence_now):
-            self.logger.info("Presence event: %s is now at %s." % (', '.join(presence_now), self.core.location))
+            self.logger.info(f"Presence event: {', '.join(presence_now)} is now at {self.core.location}.")
         else:
-            self.logger.info("Presence event: Nobody is now at %s." % self.core.location)
+            self.logger.info(f"Presence event: Nobody is now at {self.core.location}.")
 
     def timeout_handler(self):
         self.core.terminate()
@@ -321,7 +319,7 @@ class CliPlugin(Plugin):
                 temp_str = "(master)"
             else:
                 temp_str = ""
-            print(("%-10s %-8s %s" % (self.core.nodes_online[node], temp_str, node)))
+            print(f"{self.core.nodes_online[node]:<10} {temp_str:<8} {node}")
         return True
 
     def cmd_exit(self, args):
@@ -344,33 +342,33 @@ class CliPlugin(Plugin):
             self.core.lock_core()
             message.send()
             self.core.unlock_core()
-            return "Message header: %s; body: %s" % (message.header, message.body)
+            return f"Message header: {message.header}; body: {message.body}"
         except Exception as e:
-            return "Message could not me sent (%s)" % e
+            return f"Message could not me sent ({e})"
 
     def cmd_help(self, args):
 
-        if len(args) > 0:
+        if args:
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:
-                    print(("%s:" % command.help))
+                    print(f"{command.help}:")
                 self.print_command_help_lines(command)
             else:
                 print("Command not found")
 
         else:
-            print(("%-20s %s" % ('Command:', 'Description:')))
+            print(f"{'Command:':<20} Description:")
 
-            print(("%-20s %s" % ('+', 'Local CLI Commands')))
+            print(f"{'+' :<20} Local CLI Commands")
             self.print_command_help_lines(self.commands, 1)
 
-            print(("%-20s %s" % ('+', 'Remote Commands')))
+            print(f"{'+' :<20} Remote Commands")
             self.print_command_help_lines(self.core.ghost_commands, 1)
 
-            print(("%-20s %s" % ('+', 'Command Aliases')))
+            print(f"{'+' :<20} Command Aliases")
             for command in sorted(self.core.config['core']['command_aliases'].keys()):
-                print("|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command]))
+                print(f"|- {command:<17} {self.core.config['core']['command_aliases'][command]}")
 
         return True
 
@@ -378,8 +376,8 @@ class CliPlugin(Plugin):
         for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
-                print(("|%-19s %s" % (depth * "-" + " " + c.name, c.help)))
-                if len(list(c.subcommands.keys())) > 0:
+                print(f"|{depth * '-' + ' ' + c.name:<19} {c.help}")
+                if len(c.subcommands.keys()) > 0:
                     self.print_command_help_lines(c, depth + 1)
         return True
 

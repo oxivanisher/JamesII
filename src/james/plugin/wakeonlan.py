@@ -6,13 +6,13 @@ from james.plugin import *
 class WakeOnLanPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(WakeOnLanPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.core = core
         self.wol_devices = []
-        for person in list(self.core.config['persons'].keys()):
+        for person in self.core.config['persons'].keys():
             try:
-                for name in list(self.core.config['persons'][person]['eth_devices'].keys()):
+                for name in self.core.config['persons'][person]['eth_devices'].keys():
                     self.wol_devices.append((name, self.core.config['persons'][person]['eth_devices'][name], person))
             except KeyError:
                 pass
@@ -26,7 +26,7 @@ class WakeOnLanPlugin(Plugin):
     def wol_list(self, args):
         ret = []
         for (name, mac, person) in self.wol_devices:
-            ret.append("%-20s %-10s %s" % (mac, person, name))
+            ret.append(f"{mac:<20} {person:<10} {name}")
         return ret
 
     def wol_wake(self, args):
@@ -42,7 +42,7 @@ class WakeOnLanPlugin(Plugin):
         if host:
             self.wakeups += 1
             self.utils.wake_on_lan(host)
-            return ["waking %s (%s)" % (args[0], host)]
+            return [f"waking {args[0]} ({host})"]
 
     def process_presence_event(self, presence_before, presence_now):
         if (time.time() - self.core.startup_timestamp) > 10:
@@ -62,7 +62,7 @@ class WakeOnLanPlugin(Plugin):
                 ret = []
                 for (name, mac, person) in self.wol_devices:
                     self.core.add_timeout(0, self.utils.wake_on_lan, str(mac))
-                    ret.append('WOL Woke host %s (%s) for %s' % (name, mac, person))
+                    ret.append(f'WOL Woke host {name} ({mac}) for {person}')
                 self.logger.info(ret)
 
     def return_status(self, verbose=False):

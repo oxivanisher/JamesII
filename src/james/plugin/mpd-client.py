@@ -14,7 +14,7 @@ class PersistentMPDClient(mpd.MPDClient):
     # this class is from here: https://github.com/bdutro/PersistentMPDClient/blob/master/PersistentMPDClient.py
 
     def __init__(self, my_socket=None, host=None, port=None):
-        super(PersistentMPDClient, self).__init__()
+        super().__init__()
         self.socket = my_socket
         self.host = host
         self.port = port
@@ -121,10 +121,10 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError as e:
             if str(e) != "Not connected":
-                self.logger.warning("connect encountered mpd.ConnectionError: %s" % (str(e)))
+                self.logger.warning(f"connect encountered mpd.ConnectionError: {e}")
         except mpd.base.ConnectionError as e:
             if str(e) != "Not connected":
-                self.logger.warning("connect encountered mpd.base.ConnectionError: %s" % (str(e)))
+                self.logger.warning(f"connect encountered mpd.base.ConnectionError: {e}")
         except Exception as e:
             if hasattr(e, 'errno'):
                 if e.errno == 32:
@@ -132,9 +132,9 @@ class MpdClientWorker(object):
                 elif e.errno == 111:
                     self.logger.warning("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.warning('connect unhandled exception: %s' % e)
+                    self.logger.warning(f'connect unhandled exception: {e}')
             else:
-                self.logger.warning('connect unhandled exception, no errno available: %s' % e)
+                self.logger.warning(f'connect unhandled exception, no errno available: {e}')
 
         self.unlock()
         signal.alarm(0)
@@ -151,13 +151,13 @@ class MpdClientWorker(object):
             return True
         except mpd.ConnectionError as e:
             if str(e) == "Connection lost while reading line":
-                self.logger.debug("check_connection encountered well known mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug(f"check_connection encountered well known mpd.ConnectionError: {e}")
                 self.unlock()
                 self.terminate()
             elif str(e) in self.hidden_errors:
-                self.logger.debug("check_connection encountered known mpd.ConnectionError: %s" % (str(e)))
+                self.logger.debug(f"check_connection encountered known mpd.ConnectionError: {e}")
             else:
-                self.logger.info("check_connection encountered unknown mpd.ConnectionError: %s" % (str(e)))
+                self.logger.info(f"check_connection encountered unknown mpd.ConnectionError: {e}")
         #                self.client.close()
 
         except Exception as e:
@@ -168,9 +168,9 @@ class MpdClientWorker(object):
                 elif e.errno == 111:
                     self.logger.debug("connect is unable to connect to MPD daemon.")
                 else:
-                    self.logger.error('connect unhandled exception: %s' % e)
+                    self.logger.error(f'connect unhandled exception: {e}')
             else:
-                self.logger.error('connect unhandled exception, no errno available: %s' % e)
+                self.logger.error(f'connect unhandled exception, no errno available: {e}')
 
         self.unlock()
         signal.alarm(0)
@@ -191,7 +191,7 @@ class MpdClientWorker(object):
             self.worker_lock.release()
 
     def play_url(self, uri, volume=-1):
-        self.logger.debug('Trying to play URI (%s) with volume (%s)' % (uri, volume))
+        self.logger.debug(f'Trying to play URI ({uri}) with volume ({volume})')
         if self.check_connection():
             self.lock()
             self.client.command_list_ok_begin()
@@ -208,7 +208,7 @@ class MpdClientWorker(object):
                         self.client.add(source.decode('UTF-8').strip().replace('icy://', 'http://'))
                         url_found = True
             except Exception as e:
-                self.logger.warning('Unable to open URL (%s): %s' % (uri, e))
+                self.logger.warning(f'Unable to open URL ({uri}): {e}')
                 pass
 
             if url_found:
@@ -217,12 +217,12 @@ class MpdClientWorker(object):
             try:
                 self.client.command_list_end()
             except Exception as e:
-                self.logger.warning('MPD Warning: %s' % e)
+                self.logger.warning(f'MPD Warning: {e}')
 
             self.unlock()
 
             if url_found:
-                self.logger.debug("Playing URI: %s" % uri)
+                self.logger.debug(f"Playing URI: {uri}")
                 return True
             else:
                 return False
@@ -317,7 +317,7 @@ class MpdClientWorker(object):
             if 0 <= volume <= 100:
                 self.client.setvol(volume)
                 self.unlock()
-                self.logger.debug("Set volume to %s" % volume)
+                self.logger.debug(f"Set volume to {volume}")
                 return True
         else:
             self.logger.warning('Unable setting volume because MPD connection failed.')
@@ -340,11 +340,11 @@ class MpdClientWorker(object):
 class FadeThread(PluginThread):
 
     def __init__(self, plugin, mpd_client, fade_time, target_vol):
-        super(FadeThread, self).__init__(plugin)
+        super().__init__(plugin)
         self.mpd_client = mpd_client
         self.fade_time = fade_time
         self.target_vol = target_vol
-        self.name = "%s > Created: %s" % (self.name, self.utils.get_time_string())
+        self.name = f"{self.name} > Created: {self.utils.get_time_string()}"
 
         # calc fade_time
         self.mpd_client.lock()
@@ -353,7 +353,7 @@ class FadeThread(PluginThread):
         self.start_volume = int(self.mpd_client.status()['volume'])
         self.last_vol = self.start_volume
 
-        self.logger.debug("Fade initialized with volume %s" % self.start_volume)
+        self.logger.debug(f"Fade initialized with volume {self.start_volume}")
 
         # self.work()
 
@@ -425,7 +425,7 @@ class FadeThread(PluginThread):
 class MpdClientPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(MpdClientPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.myhost = 'localhost'
         self.myport = 6600
@@ -451,13 +451,12 @@ class MpdClientPlugin(Plugin):
 
         radio_command = self.commands.create_subcommand('radio', 'Control the web radio', None)
         radio_on_command = radio_command.create_subcommand('on',
-                                                           'Turn the radio on [station] default %s ' % self.config[
-                                                               'default_st'], self.radio_on)
+                                                           f"Turn the radio on [station] default {self.config['default_st']}", self.radio_on)
         radio_command.create_subcommand('off', 'Turn the radio off', self.radio_off)
         radio_command.create_subcommand('toggle', 'Toggles the radio on and off', self.radio_toggle)
-        radio_command.create_subcommand('sleep', 'Start mpd sleep mode with station %s' % self.config['sleep_st'],
+        radio_command.create_subcommand('sleep', f"Start mpd sleep mode with station {self.config['sleep_st']}",
                                         self.mpd_sleep)
-        radio_command.create_subcommand('wakeup', 'Start mpd wakup mode with station %s' % self.config['wakeup_st'],
+        radio_command.create_subcommand('wakeup', f"Start mpd wakup mode with station {self.config['wakeup_st']}",
                                         self.mpd_wakeup)
         radio_command.create_subcommand('list', 'Lists all known stations', self.cmd_list_stations)
 
@@ -481,7 +480,7 @@ class MpdClientPlugin(Plugin):
             self.config['volume_steps'] = 1
         self.config['volume_steps'] = int(self.config['volume_steps'])
 
-        for station in list(self.config['stations'].keys()):
+        for station in self.config['stations'].keys():
             self.stations[station] = self.config['stations'][station]
             radio_on_command.create_subcommand(station, self.config['stations'][station], None)
 
@@ -520,8 +519,8 @@ class MpdClientPlugin(Plugin):
 
     def cmd_list_stations(self, args):
         ret = []
-        for station in list(self.stations.keys()):
-            ret.append("%-12s %s" % (station, self.stations[station]))
+        for station in self.stations.keys():
+            ret.append(f"{station:<12} {self.stations[station]}")
         return ret
 
     def radio_off(self, args):
@@ -568,7 +567,7 @@ class MpdClientPlugin(Plugin):
     def radio_toggle(self, args):
         self.logger.debug('Radio toggle')
         tmp_state = self.client_worker.status()
-        self.logger.debug('Current state: %s' % tmp_state)
+        self.logger.debug(f'Current state: {tmp_state}')
         if tmp_state:
             if tmp_state['state'] == 'play':
                 self.radio_off(args)
@@ -585,13 +584,13 @@ class MpdClientPlugin(Plugin):
         return [msg]
 
     def cmd_volume_set(self, args):
-        self.logger.debug('Set volume to %s' % args[0])
+        self.logger.debug(f'Set volume to {args[0]}')
         volume = None
         try:
             volume = int(args[0])
             if 0 <= volume <= 100:
                 if self.client_worker.setvol(volume):
-                    return ["Volume set to: %s" % volume]
+                    return [f"Volume set to: {volume}"]
         except Exception:
             pass
 
@@ -600,16 +599,16 @@ class MpdClientPlugin(Plugin):
         return [msg]
 
     def cmd_volume_up(self, args):
-        self.logger.debug('Increase volume by %s' % self.config['volume_steps'])
+        self.logger.debug(f'Increase volume by {self.config["volume_steps"]}')
         volume = None
         tmp_state = self.client_worker.status()
         if tmp_state:
             try:
-                self.logger.debug('Current client volume: %s' % tmp_state['volume'])
+                self.logger.debug(f'Current client volume: {tmp_state["volume"]}')
                 volume = max(0, min(int(tmp_state['volume']) + self.config['volume_steps'], 100))
-                self.logger.debug('Try to increase the volume to: %s' % volume)
+                self.logger.debug(f'Try to increase the volume to: {volume}')
                 if self.client_worker.setvol(volume):
-                    return ["Volume increased to: %s" % volume]
+                    return [f"Volume increased to: {volume}"]
             except Exception:
                 pass
         else:
@@ -622,16 +621,16 @@ class MpdClientPlugin(Plugin):
         return [msg]
 
     def cmd_volume_down(self, args):
-        self.logger.debug('Decrease volume by %s' % self.config['volume_steps'])
+        self.logger.debug(f'Decrease volume by {self.config["volume_steps"]}')
         volume = None
         tmp_state = self.client_worker.status()
         if tmp_state:
             try:
-                self.logger.debug('Current client volume: %s' % tmp_state['volume'])
+                self.logger.debug(f'Current client volume: {tmp_state["volume"]}')
                 volume = max(0, min(int(tmp_state['volume']) - self.config['volume_steps'], 100))
-                self.logger.debug('Try to decrease the volume to: %s' % volume)
+                self.logger.debug(f'Try to decrease the volume to: {volume}')
                 if self.client_worker.setvol(volume):
-                    return ["Volume decreased to: %s" % volume]
+                    return [f"Volume decreased to: {volume}"]
             except Exception:
                 pass
         else:
@@ -639,8 +638,8 @@ class MpdClientPlugin(Plugin):
             self.logger.warning(msg)
             return [msg]
 
-        self.logger.warning("Unable to decrease the volume to: %s" % volume)
-        return ["Unable to decrease the volume to: %s" % volume]
+        self.logger.warning(f"Unable to decrease the volume to: {volume}")
+        return [f"Unable to decrease the volume to: {volume}"]
 
     def mpd_sleep(self, args):
         self.sleeps += 1
@@ -768,8 +767,7 @@ class MpdClientPlugin(Plugin):
             if len(presence_now):
                 self.logger.debug("Somebody is home. Check to see if a coming_home radio station is configured.")
                 if 'coming_home' in self.config['nodes'][self.core.hostname].keys():
-                    self.logger.debug("coming_home radio station is %s, starting to play." %
-                                      self.config['nodes'][self.core.hostname]['coming_home'])
+                    self.logger.debug(f"coming_home radio station is {self.config['nodes'][self.core.hostname]['coming_home']}, starting to play.")
                     self.core.add_timeout(0, self.radio_on, [self.config['nodes'][self.core.hostname]['coming_home']])
             else:
                 self.logger.debug("Nobody is at home. Stopping radio.")
@@ -796,17 +794,17 @@ class MpdClientPlugin(Plugin):
 
         if status:
             str_status = status['state']
-            if 'volume' in list(status.keys()):
+            if 'volume' in status.keys():
                 volume = status['volume']
             else:
                 volume = "-1"
 
-            if 'name' in list(current_song.keys()):
+            if 'name' in current_song.keys():
                 name = current_song['name']
-            if 'title' in list(current_song.keys()):
+            if 'title' in current_song.keys():
                 title = current_song['title']
 
-            if 'state' in list(status.keys()):
+            if 'state' in status.keys():
                 if status['state'] == "play":
                     str_status = "Playing"
                 elif status['state'] == "stop":

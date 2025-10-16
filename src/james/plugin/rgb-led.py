@@ -8,7 +8,7 @@ from james.plugin import *
 class RGBLEDPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(RGBLEDPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.commands.create_subcommand('sunrise', 'Start a sunrise', self.cmd_sunrise)
         self.commands.create_subcommand('color', 'Set the color', self.cmd_color)
@@ -24,11 +24,11 @@ class RGBLEDPlugin(Plugin):
         self.address = 0x04
 
     def send_over_i2c(self, what, arguments=[0]):
-        self.logger.info("Sending command %s over i2c with args: %s" % (what, arguments))
+        self.logger.info(f"Sending command {what} over i2c with args: {arguments}")
         try:
             self.bus.write_i2c_block_data(self.address, what, [int(i) for i in arguments])
         except IOError as e:
-            self.logger.info("send_over_i2c encountered a IOError: %s" % (str(e)))
+            self.logger.info(f"send_over_i2c encountered a IOError: {e}")
 
     def cmd_sunrise(self, args):
         if len(self.core.get_present_users_here()):
@@ -46,7 +46,7 @@ class RGBLEDPlugin(Plugin):
     def cmd_color(self, args):
         if len(self.core.get_present_users_here()):
             self.color(args)
-            return ["Fixed color set to %s" % ', '.join(args)]
+            return [f"Fixed color set to {', '.join(args)}"]
         else:
             msg = "Fixed color not activated. You are not here."
             self.logger.info(msg)
@@ -55,7 +55,7 @@ class RGBLEDPlugin(Plugin):
     def cmd_fade(self, args):
         if len(self.core.get_present_users_here()):
             self.fade(args)
-            return ["Fade to color %s" % ', '.join(args)]
+            return [f"Fade to color {', '.join(args)}"]
         else:
             msg = "Fade to color not activated. You are not here."
             self.logger.info(msg)

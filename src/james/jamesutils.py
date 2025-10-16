@@ -9,7 +9,7 @@ import logging
 import re
 
 
-class JamesUtils(object):
+class JamesUtils:
 
     def __init__(self, core):
         self.core = core
@@ -24,17 +24,17 @@ class JamesUtils(object):
         if age == 0:
             return ''
         elif age < 60:
-            return '%ss' % age
+            return f'{age}s'
         elif 59 < age < 3600:
-            return '%sm' % (int(age / 60))
+            return f'{int(age / 60)}m'
         elif 3600 <= age < 86400:
-            return '%sh' % (int(age / 3600))
+            return f'{int(age / 3600)}h'
         elif 86400 <= age < 604800:
-            return '%sd' % (int(age / 86400))
+            return f'{int(age / 86400)}d'
         elif 604800 <= age < 31449600:
-            return '%sw' % (int(age / 604800))
+            return f'{int(age / 604800)}w'
         else:
-            return '%sy' % (int(age / 31449600))
+            return f'{int(age / 31449600)}y'
 
     def get_nice_age(self, timestamp):
         age = int(time.time() - timestamp)
@@ -62,19 +62,19 @@ class JamesUtils(object):
         # FIXME 2 if blocks for the future and the past
         elif 60 > age >= 0:
             if age == 1:
-                return '%s second ago' % age
+                return f'{age} second ago'
             else:
-                return '%s seconds ago' % age
+                return f'{age} seconds ago'
         elif 3600 > age >= 0:
             if (int(age / 60)) == 1:
-                return '%s minute ago' % (int(age / 60))
+                return f'{int(age / 60)} minute ago'
             else:
-                return '%s minutes ago' % (int(age / 60))
+                return f'{int(age / 60)} minutes ago'
         elif 60 > in_time >= 0:
             if in_time == 1:
-                return 'in %s second' % in_time
+                return f'in {in_time} second'
             else:
-                return 'in %s seconds' % in_time
+                return f'in {in_time} seconds'
         elif 3600 > in_time >= 0:
             if int(in_time / 60) == 1:
                 minute_str = 'minute'
@@ -86,24 +86,18 @@ class JamesUtils(object):
             else:
                 second_str = 'seconds'
 
-            return 'in %s %s and %s %s' % (int(in_time / 60), minute_str, int(in_time % 60), second_str)
+            return f'in {int(in_time / 60)} {minute_str} and {int(in_time % 60)} {second_str}'
 
         elif last_midnight_timestamp < event_timestamp < (last_midnight_timestamp + 86400):
-            return 'today at %s:%s:%s' % (event.strftime('%H'),
-                                          event.strftime('%M'),
-                                          event.strftime('%S'))
+            return f"today at {event.strftime('%H')}:{event.strftime('%M')}:{event.strftime('%S')}"
         elif (last_midnight_timestamp - 86400) < event_timestamp < now_timestamp:
-            return 'yesterday at %s:%s:%s' % (event.strftime('%H'),
-                                              event.strftime('%M'),
-                                              event.strftime('%S'))
+            return f"yesterday at {event.strftime('%H')}:{event.strftime('%M')}:{event.strftime('%S')}"
         elif 604800 >= age >= 0:
             return event.strftime('last %A')
         elif past_newyear_timestamp < event_timestamp < now_timestamp:
             return event.strftime('this year at %A the %d of %B at %H:%M:%S')
         elif next_midnight_timestamp <= event_timestamp < (next_midnight_timestamp + 86400):
-            return 'tomorrow at %s:%s:%s' % (event.strftime('%H'),
-                                             event.strftime('%M'),
-                                             event.strftime('%S'))
+            return f"tomorrow at {event.strftime('%H')}:{event.strftime('%M')}:{event.strftime('%S')}"
         elif 604800 >= in_time >= 0:
             return event.strftime('next %A at %H:%M:%S')
         elif future_newyear_timestamp < event_timestamp < (
@@ -192,7 +186,7 @@ class JamesUtils(object):
     def get_time_string(self):
         now = datetime.datetime.now()
 
-        return "%s:%02d" % (now.hour, now.minute)
+        return f"{now.hour}:{now.minute:02d}"
 
     def bytes2human(self, n):
         # http://code.activestate.com/recipes/578019
@@ -203,12 +197,12 @@ class JamesUtils(object):
         for s in reversed(symbols):
             if n >= prefix[s]:
                 value = float(n) / prefix[s]
-                return '%.1f%s' % (value, s)
-        return "%sB" % n
+                return f'{value:.1f}{s}'
+        return f"{n}B"
 
     def wake_on_lan(self, macaddress):
         logger = self.get_logger('jamesutils', self.core.logger)
-        logger.debug('Wake on lan called for (%s)' % macaddress)
+        logger.debug(f'Wake on lan called for ({macaddress})')
         # http://code.activestate.com/recipes/358449-wake-on-lan/
         """ Switches on remote computers using WOL. """
 
@@ -254,7 +248,7 @@ class JamesUtils(object):
         except UnicodeDecodeError as e:
             if self.list_unicode_cleanup_tmp != data:
                 logger = self.get_logger('jamesutils')
-                logger.warning("Error in list_unicode_cleanup, not unicode cleared: %s" % data)
+                logger.warning(f"Error in list_unicode_cleanup, not unicode cleared: {data}")
                 self.list_unicode_cleanup_tmp = data
             args = data
 
@@ -266,7 +260,7 @@ class JamesUtils(object):
         Runs the given command in a subprocess but will not spawn a subprocess.
         """
         logger = self.get_logger('jamesutils', self.core.logger)
-        logger.debug('popenAndWait: %s' % command)
+        logger.debug(f'popenAndWait: {command}')
         ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
         return ret.decode('UTF-8').split("\n")
 

@@ -65,7 +65,7 @@ class DbStatus(object):
 class HttpServerPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(HttpServerPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.update_timeout = 60
         try:
@@ -90,8 +90,7 @@ class HttpServerPlugin(Plugin):
 
         if not config['port']:
             config['port'] = 3306
-        dbConnectionString = "%s://%s:%s@%s:%s/%s" % (config['schema'], config['user'], config['password'],
-                                                      config['host'], config['port'], config['database'])
+        dbConnectionString = f"{config['schema']}://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
 
         database = create_database(dbConnectionString)
         try:
@@ -147,12 +146,12 @@ class HttpServerPlugin(Plugin):
             result = self.store.find(DbCommand)
             for command in result:
                 plainCommand = self.utils.convert_from_unicode(json.loads(command.command))
-                self.logger.info('Running command: %s' % ' '.join(plainCommand))
+                self.logger.info(f"Running command: {' '.join(plainCommand)}")
                 self.send_command(plainCommand)
             result.remove()
             self.store.commit()
         except Exception as e:
-            self.logger.error('Error: %s' % e)
+            self.logger.error(f'Error: {e}')
 
     def send_waiting_commands_loop(self):
         self.send_waiting_commands()
@@ -167,7 +166,7 @@ class HttpServerPlugin(Plugin):
         newEntry.data = str(json.dumps(args))
         self.store.add(newEntry)
         self.store.commit()
-        self.logger.debug('Saved command response from %s' % host)
+        self.logger.debug(f'Saved command response from {host}')
 
     def process_broadcast_command_response(self, args, host, plugin):
         newEntry = DbBroadcastCommandResponse()
@@ -177,7 +176,7 @@ class HttpServerPlugin(Plugin):
         newEntry.data = str(json.dumps(args))
         self.store.add(newEntry)
         self.store.commit()
-        self.logger.debug('Saved broadcast command response from %s' % host)
+        self.logger.debug(f'Saved broadcast command response from {host}')
 
     def process_data_response(self, uuid, name, current_status, hostname, plugin):
         if name == 'status':
@@ -188,7 +187,7 @@ class HttpServerPlugin(Plugin):
                 newEntry.hostname = str(hostname)
                 self.store.add(newEntry)
                 self.store.commit()
-                self.logger.debug('Processed new Host UUID: %s %s' % (hostname, uuid))
+                self.logger.debug(f'Processed new Host UUID: {hostname} {uuid}')
 
             result = self.store.find(DbStatus, And(DbStatus.uuid == str(uuid), DbStatus.plugin == str(plugin))).one()
             if result:
@@ -202,7 +201,7 @@ class HttpServerPlugin(Plugin):
                 newEntry.data = str(json.dumps(current_status))
                 self.store.add(newEntry)
             self.store.commit()
-            self.logger.debug('Processed data status update from %s@%s (%s)' % (plugin, hostname, uuid))
+            self.logger.debug(f'Processed data status update from {plugin}@{hostname} ({uuid})')
 
     def alert(self, args):
         newEntry = DbAlertResponse()

@@ -5,7 +5,7 @@ class CommandNotFound(Exception):
     pass
 
 
-class Command(object):
+class Command:
 
     def __init__(self, name, help_text='', handler=None, hide=False):
         self.parent = None
@@ -25,7 +25,7 @@ class Command(object):
         self.handler = None
 
         # repair parent links
-        for cmd in list(self.subcommands.values()):
+        for cmd in self.subcommands.values():
             cmd.parent = self
 
     def add_subcommand(self, subcommand):
@@ -38,7 +38,7 @@ class Command(object):
 
     def merge_subcommand(self, subcommand):
         if subcommand.name in self.subcommands:
-            for s in list(subcommand.subcommands.values()):
+            for s in subcommand.subcommands.values():
                 self.subcommands[subcommand.name].merge_subcommand(s)
         else:
             self.subcommands[subcommand.name] = subcommand
@@ -51,7 +51,7 @@ class Command(object):
     # remove a subcommand so plugins can unregister their default commands
     def remove_subcommand(self, name):
         new_cmds = {}
-        for cmd in list(self.subcommands.keys()):
+        for cmd in self.subcommands.keys():
             if name != cmd:
                 new_cmds[cmd] = self.subcommands[cmd]
         self.subcommands = new_cmds
@@ -96,17 +96,17 @@ class Command(object):
 
     def get_subcommand_names(self):
         ret_keys = []
-        for subcommand in list(self.subcommands.keys()):
+        for subcommand in self.subcommands.keys():
             if not self.subcommands[subcommand].hide:
                 ret_keys.append(subcommand)
         return ret_keys
 
     def __str__(self):
-        return "[Command] %s" % self.name
+        return f"[Command] {self.name}"
 
     def list(self, args=None):
         return_list = []
-        for subcommand in list(self.subcommands.keys()):
+        for subcommand in self.subcommands.keys():
             return_list.append({
                 'name': self.subcommands[subcommand].name,
                 'help_text': self.subcommands[subcommand].help,

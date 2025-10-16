@@ -45,7 +45,7 @@ class MqttPlugin(Plugin):
         if not MQTT_AVAILABLE:
             raise Exception("paho-mqtt library not available. Install with: pip install paho-mqtt")
 
-        super(MqttPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.logger.debug("Initializing MQTT plugin...")
 
@@ -295,7 +295,7 @@ class MqttPlugin(Plugin):
                 nodes_dict[hostname].append(uuid)
 
             nodes_list = []
-            for hostname in sorted(nodes_dict.keys()):
+            for hostname in sorted(nodes_dict):
                 nodes_list.append({
                     'hostname': hostname,
                     'instances': len(nodes_dict[hostname]),
@@ -362,7 +362,7 @@ class MqttPlugin(Plugin):
             users_here = self.core.get_present_users_here()
 
             state = {
-                'somebody_home': len(users_here) > 0,
+                'somebody_home': bool(users_here),
                 'users_here': users_here,
                 'this_location': self.core.location,
                 'all_locations': locations,
@@ -518,7 +518,7 @@ class MqttPlugin(Plugin):
 
             # Build stations list
             stations_list = []
-            for station_name in sorted(mpd_plugin.stations.keys()):
+            for station_name in sorted(mpd_plugin.stations):
                 stations_list.append({
                     'name': station_name,
                     'url': mpd_plugin.stations[station_name]
@@ -638,7 +638,7 @@ class MqttPlugin(Plugin):
 
         # Build full topic: base_topic + events/ + subtopic
         # For example: james2/events/button/pressed
-        full_topic = self.topic_events + '/' + subtopic
+        full_topic = f"{self.topic_events}/{subtopic}"
 
         try:
             self.logger.info(f"Publishing custom event to {full_topic}: {payload}")

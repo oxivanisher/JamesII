@@ -31,7 +31,7 @@ from . import presence
 try:
     pika.adapters.blocking_connection.log
 except AttributeError:
-    class PikaLogDummy(object):
+    class PikaLogDummy:
         def debug(*args):
             pass
 
@@ -77,12 +77,12 @@ class Timeout:
 
 class ThreadedCore(threading.Thread):
     def __init__(self, passive=False):
-        super(ThreadedCore, self).__init__()
+        super().__init__()
         self.core = Core(passive, False)
         self.utils = jamesutils.JamesUtils(self.core)
         self.internalLogger = self.utils.get_logger('ThreadedCore', self.core.logger)
         self.internalLogger.info('Initialized')
-        self.name = "ThreadedCore: %s" % self.__class__.__name__
+        self.name = f"ThreadedCore: {self.__class__.__name__}"
 
     def get_logger(self, name):
         return self.utils.get_logger('ext_' + name, self.core.logger)
@@ -102,7 +102,7 @@ class ThreadedCore(threading.Thread):
         return result
 
 
-class Core(object):
+class Core:
 
     def __init__(self, passive=False, catch_signals=True):
         self.plugins = []
@@ -137,12 +137,12 @@ class Core(object):
         except Exception as e:
             raise BrokerConfigNotLoaded()
 
-        if 'myhostname' in list(self.broker_config.keys()):
+        if 'myhostname' in self.broker_config:
             self.hostname = self.broker_config['myhostname']
         else:
             self.hostname = socket.gethostname().lower()
 
-        self.logger = self.utils.get_logger('%s.%s' % (self.hostname, int(time.time() * 100)))
+        self.logger = self.utils.get_logger(f'{self.hostname}.{int(time.time() * 100)}')
         self.logger.setLevel(logging.DEBUG)
 
         self.logger.debug(f"JamesII starting up with PID {os.getpid()}")
@@ -155,10 +155,10 @@ class Core(object):
             file = open(self.stats_file, 'r')
             self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
             file.close()
-            self.logger.debug("Loading states from %s" % self.stats_file)
+            self.logger.debug(f"Loading states from {self.stats_file}")
 
         except Exception:
-            self.logger.warning("Unable to load states from %s" % self.stats_file)
+            self.logger.warning(f"Unable to load states from {self.stats_file}")
 
         atexit.register(self.terminate)
 
@@ -197,7 +197,7 @@ class Core(object):
             self.logger.info("No configuration file found. Defaulting to client mode.")
             mode_output = "client"
         except Exception as e:
-            self.logger.warning("Unable to load config even tough the file exists! %s" % e)
+            self.logger.warning(f"Unable to load config even tough the file exists! {e}")
             sys.exit(2)
 
         # check for passive mode
@@ -208,7 +208,7 @@ class Core(object):
             mode_output = "passive"
 
         # Show welcome header
-        self.logger.debug("JamesII %s node %s starting up" % (mode_output, self.hostname))
+        self.logger.debug(f"JamesII {mode_output} node {self.hostname} starting up")
 
         # Create global connection
         connected = False
@@ -222,7 +222,7 @@ class Core(object):
                                                                                     credentials=cred))
             connected = True
         except Exception as e:
-            self.logger.warning("Could not connect to RabbitMQ server on default port! %s" % e)
+            self.logger.warning(f"Could not connect to RabbitMQ server on default port! {e}")
 
         # Create global connection on fallback port
         if not connected:
@@ -237,7 +237,7 @@ class Core(object):
                                                                                         credentials=cred))
             except Exception as e:
                 self.logger.critical(
-                    "Could not connect to RabbitMQ server on default and fallback port. Exiting! %s" % e)
+                    f"Could not connect to RabbitMQ server on default and fallback port. Exiting! {e}")
                 sys.exit(2)
 
         # Create discovery & configuration channels
@@ -289,17 +289,13 @@ class Core(object):
         if self.config['netlogger']['nodes']:
             for target_host in self.config['netlogger']['nodes']:
                 self.logger.debug(
-                    'Adding NetLogger host %s:%s' % (target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT))
+                    f'Adding NetLogger host {target_host}:{logging.handlers.DEFAULT_TCP_LOGGING_PORT}')
                 socketHandler = logging.handlers.SocketHandler(target_host, logging.handlers.DEFAULT_TCP_LOGGING_PORT)
                 socketHandler.setLevel(logging.DEBUG)
                 self.logger.addHandler(socketHandler)
 
-        self.logger.debug("%s@%s; %s; %s; %s; %s:%s" % (self.hostname,
-                                                        self.location,
-                                                        self.uuid,
-                                                        self.os_username,
-                                                        self.master,
-                                                        self.broker_config['host'], self.broker_config['port']))
+        self.logger.debug(f"{self.hostname}@{self.location}; {self.uuid}; {self.os_username}; "
+                          f"{self.master}; {self.broker_config['host']}:{self.broker_config['port']}")
 
         self.logger.debug("RabbitMQ: Create request & response channels")
         self.request_channel = broadcastchannel.BroadcastChannel(self, 'request')
@@ -334,7 +330,7 @@ class Core(object):
             self.presences.load(json.loads(file.read()))
             file.close()
             if self.config['core']['debug']:
-                self.logger.debug("Loading presences from %s" % self.presences_file)
+                self.logger.debug(f"Loading presences from {self.presences_file}")
         except IOError:
             pass
         except ValueError:
@@ -346,14 +342,14 @@ class Core(object):
         # Load plugins
         path = os.path.join(os.path.dirname(__file__), 'plugin')
 
-        self.logger.debug("Loading plugins from: %s" % path)
+        self.logger.debug(f"Loading plugins from: {path}")
         (loaded_plugins, plugin_warnings, plugin_descr_error) = plugin.Factory.find_plugins(path)
 
-        self.logger.debug('Plugins available: %s' % len(loaded_plugins))
+        self.logger.debug(f'Plugins available: {len(loaded_plugins)}')
         for (plugin_name, plugin_error) in plugin_warnings:
-            self.logger.warning('Plugin %s unavailable: %s' % (plugin_name, str(plugin_error)))
+            self.logger.warning(f'Plugin {plugin_name} unavailable: {plugin_error}')
         for plugin_name in plugin_descr_error:
-            self.logger.error('Plugin %s has no valid descriptor' % plugin_name)
+            self.logger.error(f'Plugin {plugin_name} has no valid descriptor')
 
     # core methods
     def _set_main_loop_sleep(self, initial = False):
@@ -386,13 +382,13 @@ class Core(object):
 
         if self.main_loop_sleep != main_loop_sleep:
             if not initial:
-                self.logger.info("Set main loop sleep to %s from %s" % (main_loop_sleep, source))
+                self.logger.info(f"Set main loop sleep to {main_loop_sleep} from {source}")
             self.main_loop_sleep = main_loop_sleep
 
     # plugin methods
     def load_plugin(self, name):
         try:
-            self.logger.debug("Loading plugin '%s'" % name)
+            self.logger.debug(f"Loading plugin '{name}'")
             c = plugin.Factory.get_plugin_class(name)
             self.instantiate_plugin(c)
         except plugin.PluginNotAvailable as e:
@@ -403,13 +399,13 @@ class Core(object):
         manual_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.MANUAL):
             manual_plugins.append(c.name)
-        self.logger.debug("Ignoring manual plugins: %s" % ', '.join(manual_plugins))
+        self.logger.debug(f"Ignoring manual plugins: {', '.join(manual_plugins)}")
 
         autoload_plugins = []
         for c in plugin.Factory.enum_plugin_classes_with_mode(plugin.PluginMode.AUTOLOAD):
             autoload_plugins.append(c.name)
             self.instantiate_plugin(c)
-        self.logger.debug("Autoloading plugins: %s" % ', '.join(autoload_plugins))
+        self.logger.debug(f"Autoloading plugins: {', '.join(autoload_plugins)}")
 
         # output = "Loading managed plugins:"
         managed_plugins = []
@@ -429,7 +425,7 @@ class Core(object):
                 managed_plugins.append(c.name)
                 self.instantiate_plugin(c)
 
-        self.logger.debug("Loading managed plugins: %s" % ', '.join(managed_plugins))
+        self.logger.debug(f"Loading managed plugins: {', '.join(managed_plugins)}")
 
     def instantiate_plugin(self, cls):
         p = cls(self, cls.descriptor)
@@ -492,7 +488,7 @@ class Core(object):
             args = self.utils.list_unicode_cleanup(msg)
             self.nodes_online[args[2]] = args[1]
             if self.master:
-                self.logger.debug('New node (%s) detected' % args[1])
+                self.logger.debug(f'New node ({args[1]}) detected')
 
             # Broadcast configuration if master
             if self.master:
@@ -551,7 +547,7 @@ class Core(object):
             try:
                 self.nodes_online.pop(msg[2])
                 if self.master:
-                    self.logger.debug('Node (%s) is now offline' % msg[1])
+                    self.logger.debug(f'Node ({msg[1]}) is now offline')
             except KeyError:
                 pass
 
@@ -592,12 +588,12 @@ class Core(object):
             if not self.utils.dict_deep_compare(self.config, new_config):
                 if self.uuid == sender_uuid == self.master_node:
                     cfg_diff = []
-                    for key in list(self.config.keys()):
+                    for key in self.config:
                         if key not in new_config:
                             cfg_diff.append(key)
                     if len(cfg_diff):
-                        self.logger.warning("Somehow, we sent a new config event if we already are the master! "
-                                            "There is probably a problem in our config: %s" % (", ".join(cfg_diff)))
+                        self.logger.warning(f"Somehow, we sent a new config event if we already are the master! "
+                                            f"There is probably a problem in our config: {', '.join(cfg_diff)}")
                     else:
                         self.logger.debug("Received my own config probably after I sent it because of a node startup.")
 
@@ -648,7 +644,7 @@ class Core(object):
         Listens to presence changes on the presence channel and update the local storage.
         Calls process_presence_event() on all started plugins if something changed here.
         """
-        self.logger.debug("core.presence_listener: %s" % msg)
+        self.logger.debug(f"core.presence_listener: {msg}")
         (changed, presence_before, presence_now) = self.presences.process_presence_message(msg)
         if changed:
             self.logger.debug("Received presence update (listener). Calling process_presence_event on plugins.")
@@ -688,7 +684,7 @@ class Core(object):
         """
         send the new_presence presence over the presence channel.
         """
-        self.logger.debug("Publishing presence update %s" % new_presence)
+        self.logger.debug(f"Publishing presence update {new_presence}")
         try:
             self.lock_core()
             self.presence_channel.send(new_presence)
@@ -733,7 +729,7 @@ class Core(object):
         """
         Always call the publish method
         """
-        self.logger.debug("publish_no_alarm_clock_events: %s" % changed_events)
+        self.logger.debug(f"publish_no_alarm_clock_events: {changed_events}")
         self.publish_no_alarm_clock_events(changed_events, no_alarm_clock_source)
 
     def publish_no_alarm_clock_events(self, new_events, no_alarm_clock_source):
@@ -746,8 +742,7 @@ class Core(object):
         """
         send the new_events no_alarm_clock events over the no_alarm_clock channel.
         """
-        self.logger.debug("Publishing no_alarm_clock events update %s from plugin %s" %
-                          (new_events, no_alarm_clock_source))
+        self.logger.debug(f"Publishing no_alarm_clock events update {new_events} from plugin {no_alarm_clock_source}")
         try:
             self.lock_core()
             self.no_alarm_clock_channel.send({'events': new_events,
@@ -755,7 +750,7 @@ class Core(object):
                                               'plugin': no_alarm_clock_source})
             self.unlock_core()
         except Exception as e:
-            self.logger.warning("Could not send no_alarm_clock events (%s)" % e)
+            self.logger.warning(f"Could not send no_alarm_clock events ({e})")
 
     # events_today channel methods
     def events_today_listener(self, msg):
@@ -763,7 +758,7 @@ class Core(object):
         Listens to events_today events changes on the events_today channel and
         update the local storage.
         """
-        self.logger.debug("core.events_today_listener: %s" % msg)
+        self.logger.debug(f"core.events_today_listener: {msg}")
         if msg['plugin'] not in self.events_today.keys():
             self.events_today[msg['plugin']] = []
         if sorted(self.events_today[msg['plugin']]) != sorted(msg['events']):
@@ -788,8 +783,7 @@ class Core(object):
         """
         send the new_events events_today events over the events_today channel.
         """
-        self.logger.debug("Publishing events_today events update %s from plugin %s" %
-                          (new_events, events_today_source))
+        self.logger.debug(f"Publishing events_today events update {new_events} from plugin {events_today_source}")
         try:
             self.lock_core()
             self.events_today_channel.send({'events': new_events,
@@ -797,7 +791,7 @@ class Core(object):
                                             'plugin': events_today_source})
             self.unlock_core()
         except Exception as e:
-            self.logger.warning("Could not send events_today events (%s)" % e)
+            self.logger.warning(f"Could not send events_today events ({e})")
 
     # discovery methods
     def ping_nodes(self):
@@ -817,9 +811,9 @@ class Core(object):
         """
         if self.master:
             nodes_online = []
-            for node in list(self.nodes_online.keys()):
+            for node in self.nodes_online:
                 nodes_online.append(self.nodes_online[node])
-            self.logger.debug('Publishing online nodes: %s' % nodes_online)
+            self.logger.debug(f'Publishing online nodes: {nodes_online}')
 
             self.lock_core()
             self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
@@ -851,7 +845,7 @@ class Core(object):
             with open(self.system_messages_file, 'w') as f:
                 json.dump(system_message, f)
         except IOError as e:
-            self.logger.error(f"Could not write to file {e}")
+            self.logger.error(f"Could not write to system messages file {e}")
 
     def system_messages_get(self):
         """
@@ -864,7 +858,7 @@ class Core(object):
                 with open(self.system_messages_file) as f:
                     system_message = json.load(f)
         except IOError as e:
-            self.logger.warning("Could not read system messages file (%s)" % e)
+            self.logger.warning(f"Could not read system messages file ({e})")
 
         return system_message
 
@@ -877,7 +871,7 @@ class Core(object):
             with open(self.system_messages_file, 'w') as f:
                 json.dump([["core", "System messages cleared", time.time()]], f)
         except IOError as e:
-            self.logger.error("Could not clear system messages (%s)" % e)
+            self.logger.error(f"Could not clear system messages ({e})")
 
     # base methods
     def run(self):
@@ -995,10 +989,10 @@ class Core(object):
             saveStats = {}
             timeout = 10
             for p in self.plugins:
-                self.logger.debug(f"Collecting stats for plugin %s (with {timeout} seconds timeout)" % p.name)
+                self.logger.debug(f"Collecting stats for plugin {p.name} (with {timeout} seconds timeout)")
                 with Timeout(timeout):
                     saveStats[p.name] = p.save_state(True)
-                    self.logger.debug(f"Stats collected for plugin %s" % p.name)
+                    self.logger.debug(f"Stats collected for plugin {p.name}")
 
             # save stats to file
             try:
@@ -1070,7 +1064,7 @@ class Core(object):
             self.terminated = True
 
     # threading methods
-    class Timeout(object):
+    class Timeout:
         def __init__(self, seconds, handler, args, kwargs):
             self.seconds = seconds
             self.deadline = time.time() + seconds
@@ -1096,7 +1090,7 @@ class Core(object):
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 file_name = exc_tb.tb_frame.f_code.co_filename
                 self.logger.critical(
-                    "Exception 1 in process_timeouts: %s in %s:%s %s" % (e, file_name, exc_tb.tb_lineno, exc_type))
+                    f"Exception 1 in process_timeouts: {e} in {file_name}:{exc_tb.tb_lineno} {exc_type}")
 
         # Process events
         current_timeout = None
@@ -1105,18 +1099,17 @@ class Core(object):
             for timeout in self.timeouts:
                 current_timeout = timeout
                 if timeout.deadline <= now:
-                    self.logger.debug('Processing timeout %s' % timeout.handler)
+                    self.logger.debug(f'Processing timeout {timeout.handler}')
                     timeout.handler(*timeout.args, **timeout.kwargs)
             self.timeouts = [t for t in self.timeouts if t.deadline > now]
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             file_name = exc_tb.tb_frame.f_code.co_filename
             self.logger.critical(
-                "Exception 2 in process_timeouts: %s in %s:%s %s > %s" %
-                (e, file_name, exc_tb.tb_lineno, exc_type, current_timeout))
-            self.logger.critical('timeout.handler: %s' % current_timeout.handler)
-            self.logger.critical('timeout.seconds: %s' % current_timeout.seconds)
-            self.logger.critical('timeout.deadline: %s' % current_timeout.deadline)
+                f"Exception 2 in process_timeouts: {e} in {file_name}:{exc_tb.tb_lineno} {exc_type} > {current_timeout}")
+            self.logger.critical(f'timeout.handler: {current_timeout.handler}')
+            self.logger.critical(f'timeout.seconds: {current_timeout.seconds}')
+            self.logger.critical(f'timeout.deadline: {current_timeout.deadline}')
 
             # if some event let the client crash, remove it from the list so that the node does not loop forever
             #

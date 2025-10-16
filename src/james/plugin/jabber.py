@@ -20,7 +20,7 @@ from james.plugin import *
 class JabberThread(PluginThread):
 
     def __init__(self, plugin, users, cfg_jid, password, muc_room=None, muc_nick='james'):
-        super(JabberThread, self).__init__(plugin)
+        super().__init__(plugin)
         self.cfg_jid = cfg_jid
         self.password = password
         self.active = True
@@ -45,10 +45,10 @@ class JabberThread(PluginThread):
         conres = self.conn.connect()
 
         if not conres:
-            self.logger.warning("Unable to connect to server %s!" % jid.getDomain())
+            self.logger.warning(f"Unable to connect to server {jid.getDomain()}!")
             self.active = False
         else:
-            self.logger.info("Successfully connect to server %s!" % jid.getDomain())
+            self.logger.info(f"Successfully connect to server {jid.getDomain()}!")
             self.active = True
 
         if self.active:
@@ -58,11 +58,11 @@ class JabberThread(PluginThread):
             authres = self.conn.auth(jid.getNode(), self.password, resource=jid.getResource())
 
             if not authres:
-                self.logger.error("Unable to authorize on %s - check login/password." % jid.getDomain())
+                self.logger.error(f"Unable to authorize on {jid.getDomain()} - check login/password.")
                 self.active = False
             if authres != 'sasl':
                 self.logger.warning(
-                    "Warning: unable to perform SASL auth on %s. Old authentication method used!" % jid.getDomain())
+                    f"Warning: unable to perform SASL auth on {jid.getDomain()}. Old authentication method used!")
 
             # lets go online
             self.conn.sendInitPresence(requestRoster=1)
@@ -80,7 +80,7 @@ class JabberThread(PluginThread):
             my_roster = self.conn.getRoster()
             for i in my_roster.getItems():
                 self.roster[i] = my_roster.getStatus(i)
-            if len(self.roster) > 0:
+            if self.roster:
                 self.roster = self.plugin.utils.convert_from_unicode(self.roster)
 
             # self.logger.debug("Jabber worker roster: %s" % self.roster)
@@ -107,7 +107,7 @@ class JabberThread(PluginThread):
                 if not self.reconnecting_loop > 12:
                     self.reconnecting_loop += 1
                 if self.reconnecting_loop > 1:
-                    self.logger.info("Jabber worker reconnect delay: %s" % (self.reconnecting_loop * 5))
+                    self.logger.info(f"Jabber worker reconnect delay: {self.reconnecting_loop * 5}")
                     time.sleep(self.reconnecting_loop * 5)
             self.xmpp_connect()
         else:
@@ -117,7 +117,7 @@ class JabberThread(PluginThread):
     def connect_to_room(self):
         # do we have to connect to a muc room?
         if self.muc_room:
-            self.conn.send(xmpp.Presence(to='%s/%s' % (self.muc_room, self.muc_nick)))
+            self.conn.send(xmpp.Presence(to=f'{self.muc_room}/{self.muc_nick}'))
 
         # resend status msg
         new_status = self.status_message
@@ -160,9 +160,8 @@ class JabberThread(PluginThread):
         except IOError:
             self.logger.debug("IOError on processing incoming stanzas")
             self.xmpp_disconnect()
-            sys.exc_clear()
         except Exception as e:
-            self.logger.info("Error %s on processing incoming stanzas. Disconnecting" % e)
+            self.logger.info(f"Error {e} on processing incoming stanzas. Disconnecting")
             self.xmpp_disconnect()
 
         if not self.conn.isConnected():
@@ -177,12 +176,12 @@ class JabberThread(PluginThread):
         if self.muc_room:
             muc_user_jids = []
             amount_users = len(self.users)
-            for muc_user in list(self.muc_users.keys()):
+            for muc_user in self.muc_users:
                 try:
                     muc_user_jids.append(self.muc_users[muc_user].split('/')[0])
                 except AttributeError:
                     self.logger.warning(
-                        "The bug hunt is on: Got a unparsable muc user list %s" % (self.muc_users[muc_user]))
+                        f"The bug hunt is on: Got a unparsable muc user list {self.muc_users[muc_user]}")
 
             for (header, body) in self.plugin.waiting_muc_messages:
                 amount_chat_deliveries = 0
@@ -190,20 +189,20 @@ class JabberThread(PluginThread):
                     if userJid not in muc_user_jids:
                         amount_chat_deliveries += 1
                         self.plugin.waiting_messages.append((header, body, userJid))
-                        self.logger.debug("Delivering MUC msg to %s via private chat" % userJid)
+                        self.logger.debug(f"Delivering MUC msg to {userJid} via private chat")
 
                 if amount_chat_deliveries < amount_users:
                     try:
                         msg_text = '\n'.join(header)
                         if len(body):
-                            msg_text = msg_text + '\n' + '\n'.join(body)
+                            msg_text = f"{msg_text}\n{'\n'.join(body)}"
                         msg = xmpp.protocol.Message(body=msg_text)
                         msg.setTo(self.muc_room)
                         msg.setType('groupchat')
                         self.conn.send(msg)
-                        self.logger.debug("Send MUC msg: %s" % msg_text)
+                        self.logger.debug(f"Send MUC msg: {msg_text}")
                     except Exception as e:
-                        self.logger.warning("Send MUC msg ERROR: %s" % e)
+                        self.logger.warning(f"Send MUC msg ERROR: {e}")
                 else:
                     self.logger.debug("Not delivering msg to MUC, all users where contacted via private msg.")
         # see if we must send direct messages
@@ -219,12 +218,12 @@ class JabberThread(PluginThread):
                     # muc_send = False
                     for (jid, name) in self.users:
                         # see if user is in muc online and then send it there only
-                        for mucJid in list(self.muc_users.keys()):
+                        for mucJid in self.muc_users:
                             try:
                                 online_jid = self.plugin.utils.convert_from_unicode(self.muc_users[mucJid]).split('/')
                             except AttributeError:
-                                self.logger.warning("The bug hunt is on: Searching for online Jid %s" % (
-                                    self.plugin.utils.convert_from_unicode(self.muc_users[mucJid])))
+                                self.logger.warning(
+                                    f"The bug hunt is on: Searching for online Jid {self.plugin.utils.convert_from_unicode(self.muc_users[mucJid])}")
                             # if online_jid[0] == jid:
                             # muc_send = True
                             # else:
@@ -234,7 +233,7 @@ class JabberThread(PluginThread):
                     # if muc_send:
 
             except Exception as e:
-                self.logger.debug("Send direct msg ERROR: %s" % e)
+                self.logger.debug(f"Send direct msg ERROR: {e}")
         # see if we must change our status
         if self.plugin.jabber_status_string != self.status_message:
             self.status_message = self.plugin.jabber_status_string
@@ -252,11 +251,13 @@ class JabberThread(PluginThread):
         else:
             return 1
 
-    def create_message(self, to, header=[], body=[]):
-        if len(header) == 0:
+    def create_message(self, to, header=None, body=None):
+        header = header or []
+        body = body or []
+        if not header:
             return False
         message_list = [s for s in header if s != '']
-        if len(body) > 0:
+        if body:
             message_list = message_list + [s for s in body if s != '']
         message_text = '\n'.join(message_list)
         message = xmpp.protocol.Message(to, message_text)
@@ -271,11 +272,11 @@ class JabberThread(PluginThread):
     def message_callback(self, conn, message):
         message_type = message.__getitem__('type')
         who = str(message.getFrom())
-        self.logger.debug("Message callback from %s (%s)" % (who, message_type))
+        self.logger.debug(f"Message callback from {who} ({message_type})")
 
         try:
             if message.getBody()[0] == "!":
-                self.logger.debug("Ignoring msg starting with ! from user: %s" % str(message.getFrom()))
+                self.logger.debug(f"Ignoring msg starting with ! from user: {message.getFrom()}")
                 return
         except Exception:
             pass
@@ -287,49 +288,46 @@ class JabberThread(PluginThread):
             real_jid = None
             if message_type == 'groupchat':
                 # ignoring messages from the room itself ?!?
-                if who == self.muc_room + "/" + self.muc_nick:
+                if who == f"{self.muc_room}/{self.muc_nick}":
                     self.logger.debug("Received MUC msg from channel and ignoring it")
                     return
                 try:
                     real_jid = self.muc_users[message.getFrom()].split('/')[0]
-                    self.logger.debug("Received MUC msg from user: %s" % str(message.getFrom()))
+                    self.logger.debug(f"Received MUC msg from user: {message.getFrom()}")
                 except AttributeError:
                     self.logger.warning(
-                        "The bug hunt is on: Got a msg from %s in groupchat" % (self.muc_users[message.getFrom()]))
+                        f"The bug hunt is on: Got a msg from {self.muc_users[message.getFrom()]} in groupchat")
                 except Exception as e:
-                    self.logger.debug("RealJID's DB: %s" % self.muc_users)
-                    self.logger.info("Received MUC msg from non online user: %s (%s)" % (who, e))
+                    self.logger.debug(f"RealJID's DB: {self.muc_users}")
+                    self.logger.info(f"Received MUC msg from non online user: {who} ({e})")
             elif message_type == 'chat':
                 try:
                     real_jid = str(message.getFrom()).split('/')[0]
-                    self.logger.debug("Received chat msg from user: %s" % str(message.getFrom()))
+                    self.logger.debug(f"Received chat msg from user: {message.getFrom()}")
                 except AttributeError:
-                    self.logger.warning("The bug hunt is on: Got a msg from %s in chat" % (str(message.getFrom())))
+                    self.logger.warning(f"The bug hunt is on: Got a msg from {message.getFrom()} in chat")
 
             # check if it is a msg from myself
             if real_jid:
-                if str(message.getFrom()) != "%s/%s" % (self.muc_room, self.muc_nick):
+                if str(message.getFrom()) != f"{self.muc_room}/{self.muc_nick}":
                     admin = False
                     # check if the user is a admin
                     for (userJid, username) in self.users:
-                        # print "(userJid, username): %s %s" % (userJid, username)
-                        # userJid = self.plugin.utils.convert_from_unicode(jid)
-                        # print "userJid: %s" % userJid
                         try:
                             if userJid == real_jid.split('/')[0]:
                                 admin = True
                         except AttributeError:
                             self.logger.warning(
-                                "The bug hunt is on: Unable to check for admin permissions for %s" % real_jid)
+                                f"The bug hunt is on: Unable to check for admin permissions for {real_jid}")
 
                     if admin:
-                        self.logger.debug("Processing authorized msg from user %s" % (message.getFrom()))
+                        self.logger.debug(f"Processing authorized msg from user {message.getFrom()}")
                         self.plugin.core.add_timeout(0, self.plugin.on_authorized_xmpp_message, message, real_jid)
                     elif real_jid in self.config['ignored']:
                         # ignored user
-                        self.logger.debug("Ignoring msg from user %s" % (message.getFrom()))
+                        self.logger.debug(f"Ignoring msg from user {message.getFrom()}")
                     else:
-                        self.logger.warning("Processing unauthorized msg from user %s" % (message.getFrom()))
+                        self.logger.warning(f"Processing unauthorized msg from user {message.getFrom()}")
                         self.plugin.core.add_timeout(0, self.plugin.on_unauthorized_xmpp_message, message, real_jid)
 
     def disconnect_callback(self, conn, message):
@@ -339,7 +337,7 @@ class JabberThread(PluginThread):
     def iq_callback(self, conn, iq):
         iq_type = iq.getType()
         who = str(iq.getFrom())
-        self.logger.debug("Presence callback from %s (%s)" % (who, iq_type))
+        self.logger.debug(f"Presence callback from {who} ({iq_type})")
         # self.logger.debug("iq") # callback: %s" % msg)
         if iq_type == 'get':
             pass
@@ -356,7 +354,7 @@ class JabberThread(PluginThread):
         prs_type = presence.getType()
         who = str(presence.getFrom())
         # src_jid = self.plugin.utils.convert_from_unicode(presence.getJid()).split('/')
-        self.logger.debug("Presence callback from %s (%s)" % (who, prs_type))
+        self.logger.debug(f"Presence callback from {who} ({prs_type})")
 
         if prs_type == 'subscribe':
             self.conn.send(xmpp.Presence(to=who, typ='subscribed'))
@@ -364,27 +362,26 @@ class JabberThread(PluginThread):
         # elif prs_type == 'presence':
         #     self.logger.debug("::: %s" % msg.__getitem__('jid'))
         elif prs_type == 'unavailable':
-            self.logger.debug("Remove online user: %s" % who)
+            self.logger.debug(f"Remove online user: {who}")
             try:
                 del self.muc_users[who]
             except Exception as e:
-                self.logger.debug("Remove online user error: %s" % e)
+                self.logger.debug(f"Remove online user error: {e}")
         else:
             if presence.getJid():
-                if who != "%s/%s" % (self.muc_room, self.muc_nick):
+                if who != f"{self.muc_room}/{self.muc_nick}":
                     status = self.my_roster.getShow(presence.getJid())
-                    # print "%s -> %s" % (who, status)
                     if status in [None, 'chat']:
-                        self.logger.debug("User now available (online, chat): %s" % who)
+                        self.logger.debug(f"User now available (online, chat): {who}")
                         # self.muc_users[who] = src_jid[0]
                         self.muc_users[who] = presence.getJid()
                     elif status in ['xa', 'away', 'dnd']:
-                        self.logger.debug("User now unavailable (offline, afk, dnd): %s" % who)
+                        self.logger.debug(f"User now unavailable (offline, afk, dnd): {who}")
                         try:
                             del self.muc_users[who]
                         except Exception as e:
-                            self.logger.debug("Remove online user error: %s" % e)
-        self.logger.debug("Users online: %s" % (' '.join(self.muc_users)))
+                            self.logger.debug(f"Remove online user error: {e}")
+        self.logger.debug(f"Users online: {' '.join(self.muc_users)}")
 
     # called when the worker ends
     def on_exit(self, result):
@@ -395,7 +392,7 @@ class JabberPlugin(Plugin):
 
     def __init__(self, core, descriptor):
 
-        super(JabberPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.jabberThread = False
         self.worker_exit = False
@@ -427,7 +424,7 @@ class JabberPlugin(Plugin):
 
     # plugin methods
     def start(self):
-        for person in list(self.core.config['persons'].keys()):
+        for person in self.core.config['persons']:
             try:
                 self.users.append((self.core.config['persons'][person]['jid'], person))
             except Exception:
@@ -450,7 +447,7 @@ class JabberPlugin(Plugin):
     def cmd_list_users(self, args):
         ret = []
         for (jid, name) in self.users:
-            ret.append("%-15s %s" % (jid, name))
+            ret.append(f"{jid:<15} {name}")
         return ret
 
     def cmd_broadcast_on(self, args):
@@ -462,18 +459,23 @@ class JabberPlugin(Plugin):
         return ["Broadcast messages will no longer be shown"]
 
     def cmd_msg(self, args):
-        self.logger.debug('Sending msg (%s)' % ' '.join(args))
-        self.send_xmpp_muc_message(['Message: ' + ' '.join(args)])
+        msg = ' '.join(args)
+        self.logger.debug(f'Sending msg ({msg})')
+        self.send_xmpp_muc_message([f'Message: {msg}'])
         return ["Message sent"]
 
     # methods for worker process
-    def send_xmpp_message(self, message_head=[], message_body=[], to=None):
+    def send_xmpp_message(self, message_head=None, message_body=None, to=None):
+        message_head = message_head or []
+        message_body = message_body or []
         self.sentChat += 1
         self.worker_lock.acquire()
         self.waiting_messages.append((message_head, message_body, to))
         self.worker_lock.release()
 
-    def send_xmpp_muc_message(self, message_head=[], message_body=[]):
+    def send_xmpp_muc_message(self, message_head=None, message_body=None):
+        message_head = message_head or []
+        message_body = message_body or []
         self.sentMuc += 1
         self.worker_lock.acquire()
         self.waiting_muc_messages.append((message_head, message_body))
@@ -497,7 +499,7 @@ class JabberPlugin(Plugin):
         try:
             msg_types[message.__getitem__('type')](message)
         except KeyError:
-            self.logger.debug("Received unknown msg type: %s" % message.__getitem__('type'))
+            self.logger.debug(f"Received unknown msg type: {message.__getitem__('type')}")
             pass
 
     def on_unauthorized_xmpp_message(self, message, realjid):
@@ -507,9 +509,9 @@ class JabberPlugin(Plugin):
             self.unauthMessages += 1
             try:
                 bad_user = str(message.getFrom()).split('/')[1]
-                self.send_xmpp_muc_message(['%s (%s), you are not authorized!' % (bad_user, realjid)])
+                self.send_xmpp_muc_message([f'{bad_user} ({realjid}), you are not authorized!'])
             except AttributeError:
-                self.logger.warning("The bug hunt is on: Got a unauthorized msg from %s" % (str(message.getFrom())))
+                self.logger.warning(f"The bug hunt is on: Got a unauthorized msg from {message.getFrom()}")
 
     def on_chat_msg(self, message):
         self.receivedChat += 1
@@ -517,7 +519,7 @@ class JabberPlugin(Plugin):
             jid_data = str(message.getFrom()).split('/')
             jid_from = jid_data[0]
         except AttributeError:
-            self.logger.warning("The bug hunt is on: Got a chat msg from %s" % (str(message.getFrom())))
+            self.logger.warning(f"The bug hunt is on: Got a chat msg from {message.getFrom()}")
         try:
             jid_ress = jid_data[1]
 
@@ -539,7 +541,7 @@ class JabberPlugin(Plugin):
                 jid_data = str(message.getFrom()).split('/')
                 jid_from = jid_data[1]
             except AttributeError:
-                self.logger.warning("The bug hunt is on: Got a group chat msg from %s" % (str(message.getFrom())))
+                self.logger.warning(f"The bug hunt is on: Got a group chat msg from {message.getFrom()}")
             # ignore my own messages
             if not message.getBody():
                 self.logger.debug("Received empty group chat msg")
@@ -555,11 +557,10 @@ class JabberPlugin(Plugin):
                 except IndexError:
                     pass
                 except AttributeError:
-                    self.logger.warning("The bug hunt is on: Got a muc_nic msg (%s) from %s" % (message.getBody(),
-                                                                                                jid_from))
+                    self.logger.warning(f"The bug hunt is on: Got a muc_nic msg ({message.getBody()}) from {jid_from}")
 
     def on_error_msg(self, message):
-        self.logger.error("Received error msg: %s" % message)
+        self.logger.error(f"Received error msg: {message}")
         pass
 
     # worker callback helper methods
@@ -575,11 +576,11 @@ class JabberPlugin(Plugin):
             if best_match == self.core.ghost_commands:
                 command = ['help'] + command
             else:
-                if len(best_match.subcommands) > 0:
+                if best_match.subcommands:
                     command = ['help'] + command
             if command[0] == 'help':
                 help_text = self.jabber_cmd_help(command[1:])
-                header_text = ['Subcommands for (%s) are:' % best_match.name]
+                header_text = [f'Subcommands for ({best_match.name}) are:']
                 if best_match == self.core.ghost_commands:
                     header_text = ['Commands are:']
 
@@ -591,9 +592,9 @@ class JabberPlugin(Plugin):
         self.commandsRunMuc += 1
         if command[0] == 'help':
             help_text = self.jabber_cmd_help(command[1:])
-            help_text.append("%-20s %s" % ('+', 'Command Aliases'))
+            help_text.append(f"{'+':<20} Command Aliases")
             for command in sorted(self.core.config['core']['command_aliases'].keys()):
-                help_text.append("|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command]))
+                help_text.append(f"|- {command:<17} {self.core.config['core']['command_aliases'][command]}")
             self.send_xmpp_muc_message(['Commands are:'], help_text)
         elif command[0] in self.core.config['core']['command_aliases']:
             self.send_command(command)
@@ -602,17 +603,17 @@ class JabberPlugin(Plugin):
             if best_match == self.core.ghost_commands:
                 command = ['help'] + command
             else:
-                if len(best_match.subcommands) > 0:
+                if best_match.subcommands:
                     command = ['help'] + command
             if command[0] == 'help':
                 help_text = self.jabber_cmd_help(command[1:])
-                header_text = ['Subcommands for (%s) are:' % best_match.name]
+                header_text = [f'Subcommands for ({best_match.name}) are:']
                 if best_match == self.core.ghost_commands:
                     header_text = ['Commands are:']
-                    help_text.append("%-20s %s" % ('+', 'Command Aliases'))
+                    help_text.append(f"{'+':<20} Command Aliases")
                     for command in sorted(self.core.config['core']['command_aliases'].keys()):
                         help_text.append(
-                            "|- %-17s %s" % (command, self.core.config['core']['command_aliases'][command]))
+                            f"|- {command:<17} {self.core.config['core']['command_aliases'][command]}")
 
                 self.send_xmpp_muc_message(header_text, help_text)
             else:
@@ -621,18 +622,18 @@ class JabberPlugin(Plugin):
     # worker process help_text methods
     def jabber_cmd_help(self, args):
         ret = []
-        if len(args) > 0:
+        if args:
             command = self.core.ghost_commands.get_best_match(args)
             if command:
                 if command.help:
-                    ret.append("%s:" % command.help)
-                ret.append("%-20s %s" % ('Command:', 'Description:'))
+                    ret.append(f"{command.help}:")
+                ret.append(f"{'Command:':<20} Description:")
                 for line in self.return_command_help_lines(command):
                     ret.append(line)
             else:
                 ret.append("Command not found")
         else:
-            ret.append("%-20s %s" % ('Command:', 'Description:'))
+            ret.append(f"{'Command:':<20} Description:")
             for line in self.return_command_help_lines(self.core.ghost_commands, 1):
                 ret.append(line)
         return ret
@@ -642,8 +643,8 @@ class JabberPlugin(Plugin):
         for command in sorted(command_obj.subcommands.keys()):
             c = command_obj.subcommands[command]
             if not c.hide:
-                ret.append("|%-19s %s" % (depth * "-" + " " + c.name, c.help))
-                if len(list(c.subcommands.keys())) > 0:
+                ret.append(f"|{depth * '-' + ' ' + c.name:<19} {c.help}")
+                if c.subcommands:
                     for line in self.return_command_help_lines(c, depth + 1):
                         ret.append(line)
         return ret
@@ -681,7 +682,7 @@ class JabberPlugin(Plugin):
     def process_command_response(self, args, host, plugin):
         message = ['Direct:']
         for line in args:
-            message.append("%10s@%-10s: %s" % (plugin, host, line))
+            message.append(f"{plugin:>10}@{host:<10}: {line}")
         self.send_xmpp_muc_message(message)
         # if not len(self.core.get_present_users_here()):
         #     self.send_xmpp_message(msg)
@@ -689,7 +690,7 @@ class JabberPlugin(Plugin):
     def process_broadcast_command_response(self, args, host, plugin):
         message = ['Broadcast:']
         for line in args:
-            message.append("%10s@%-10s: %s" % (plugin, host, line))
+            message.append(f"{plugin:>10}@{host:<10}: {line}")
         self.send_xmpp_muc_message(message)
 
         send_msg = False
@@ -702,9 +703,7 @@ class JabberPlugin(Plugin):
 
     def process_message(self, message):
         if message.level > 1:
-            message_text = ['Message with level %s from %s@%s:' % (message.level,
-                                                                   message.sender_name,
-                                                                   message.sender_host)]
+            message_text = [f'Message with level {message.level} from {message.sender_name}@{message.sender_host}:']
             for line in self.utils.list_unicode_cleanup([message.header]):
                 message_text.append(line)
             try:
@@ -730,17 +729,17 @@ class JabberPlugin(Plugin):
                 self.core.add_timeout(0, self.set_jabber_status)
 
     def set_jabber_status(self):
-        message = "%s. %s nodes online." % (self.presence_status_string,
-                                            self.nodes_online_num)
+        message = f"{self.presence_status_string}. {self.nodes_online_num} nodes online."
         if self.last_xmpp_status_message != message:
-            self.logger.debug('Setting status msg to (%s)' % message)
+            self.logger.debug(f'Setting status msg to ({message})')
             self.change_xmpp_status_message(message)
             self.last_xmpp_status_message = message
 
     def alert(self, args):
         if not len(self.core.get_present_users_here()):
-            self.logger.debug('Alerting (%s)' % ' '.join(args))
-            self.send_xmpp_muc_message(['Alert: ' + ' '.join(args)])
+            msg = ' '.join(args)
+            self.logger.debug(f'Alerting ({msg})')
+            self.send_xmpp_muc_message([f'Alert: {msg}'])
 
     def return_status(self, verbose=False):
         ret = {'receivedMuc': self.receivedMuc, 'receivedChat': self.receivedChat, 'sentMuc': self.sentMuc,

@@ -33,7 +33,7 @@ def create_birthday_message(summary):
 class CaldavCalendarPlugin(Plugin):
 
     def __init__(self, core, descriptor):
-        super(CaldavCalendarPlugin, self).__init__(core, descriptor)
+        super().__init__(core, descriptor)
 
         self.commands.create_subcommand('events', 'Show calendar entries from caldav', self.cmd_events_show)
         self.commands.create_subcommand('speak', 'Speak calendar entries from caldav', self.cmd_calendar_speak)

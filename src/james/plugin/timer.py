@@ -134,7 +134,7 @@ class TimerPlugin(Plugin):
             target_time = target_time.replace(hour=event['hour'])
             target_time = target_time.replace(minute=event['minute'])
             target_timestamp = int(target_time.strftime('%s'))
-            ret.append(f"{is_active_str:25} | {target_timestamp} {self.utils.get_nice_age(target_timestamp)} {event['command']}")
+            ret.append(f"{is_active_str:25} | {target_timestamp} {self.utils.get_nice_age(target_timestamp)}: {event['command']}")
 
         if len(ret) > 0:
             return ret

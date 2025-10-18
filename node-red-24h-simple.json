@@ -1,0 +1,73 @@
+[
+    {
+        "id": "n1_mqtt_in",
+        "type": "mqtt in",
+        "z": "",
+        "name": "Cron State",
+        "topic": "james2/state/cron",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 120,
+        "y": 120,
+        "wires": [
+            ["n2_process"]
+        ]
+    },
+    {
+        "id": "n2_process",
+        "type": "function",
+        "z": "",
+        "name": "Process Commands",
+        "func": "const now = Math.floor(Date.now() / 1000);\nconst p = msg.payload;\nconst all = [];\n\n// Cron jobs - use within_24h flag\nif (p.cron_jobs) {\n    p.cron_jobs.forEach(j => {\n        if (j.within_24h === true) {\n            all.push({\n                type: 'CRON',\n                color: '#3498db',\n                ts: j.next_run,\n                cmd: j.command\n            });\n        }\n    });\n}\n\n// Adhoc commands - use within_24h flag\nif (p.adhoc_commands) {\n    p.adhoc_commands.forEach(c => {\n        if (c.within_24h === true) {\n            all.push({\n                type: 'TIMER',\n                color: '#e74c3c',\n                ts: c.timestamp,\n                cmd: c.command\n            });\n        }\n    });\n}\n\n// Calendar events - use within_24h flag (only active events)\nif (p.calendar_events) {\n    p.calendar_events.forEach(e => {\n        if (e.within_24h === true) {\n            all.push({\n                type: 'EVENT',\n                color: '#27ae60',\n                ts: e.timestamp,\n                cmd: e.command\n            });\n        }\n    });\n}\n\n// Sort by time\nall.sort((a, b) => a.ts - b.ts);\n\n// Add countdown\nall.forEach(c => {\n    const diff = c.ts - now;\n    const mins = Math.floor(diff / 60);\n    const hours = Math.floor(mins / 60);\n    \n    if (diff < 60) {\n        c.when = `${diff}s`;\n    } else if (mins < 60) {\n        c.when = `${mins}m`;\n    } else {\n        const m = mins % 60;\n        c.when = `${hours}h ${m}m`;\n    }\n});\n\nmsg.payload = all;\nmsg.total = all.length;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 120,
+        "wires": [
+            ["n3_html"]
+        ]
+    },
+    {
+        "id": "n3_html",
+        "type": "function",
+        "z": "",
+        "name": "Build HTML",
+        "func": "const cmds = msg.payload;\nconst total = msg.total;\n\nlet rows = '';\n\nif (cmds.length === 0) {\n    rows = '<tr><td colspan=\"2\" style=\"text-align:center;color:#999;padding:20px\">Nothing scheduled</td></tr>';\n} else {\n    cmds.forEach(c => {\n        rows += `<tr>\n            <td><span style=\"background:${c.color};color:white;padding:4px 10px;border-radius:3px;font-size:12px;font-weight:bold;display:inline-block;min-width:60px;text-align:center\">${c.type}</span> <span style=\"color:#e67e22;font-weight:bold;margin-left:8px\">${c.when}</span></td>\n            <td><code style=\"background:#ecf0f1;padding:4px 8px;border-radius:3px;font-family:monospace\">${c.cmd}</code></td>\n        </tr>`;\n    });\n}\n\nmsg.payload = `\n<div style=\"font-family:Arial,sans-serif\">\n    <div style=\"background:#34495e;color:white;padding:8px 12px;margin-bottom:8px;border-radius:4px;font-size:13px\">\n        <b>Next 24 hours:</b> ${total} command${total !== 1 ? 's' : ''}\n    </div>\n    <table style=\"width:100%;border-collapse:collapse\">\n        <tbody style=\"font-size:13px\">\n            ${rows}\n        </tbody>\n    </table>\n</div>\n`;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 120,
+        "wires": [
+            ["n4_ui"]
+        ]
+    },
+    {
+        "id": "n4_ui",
+        "type": "ui_template",
+        "z": "",
+        "group": "",
+        "name": "Display",
+        "order": 0,
+        "width": "6",
+        "height": "4",
+        "format": "<div ng-bind-html=\"msg.payload\"></div>",
+        "storeOutMessages": false,
+        "fwdInMessages": false,
+        "resendOnRefresh": true,
+        "className": "",
+        "x": 620,
+        "y": 120,
+        "wires": [[]]
+    }
+]

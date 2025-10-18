@@ -97,6 +97,9 @@ class MqttPlugin(Plugin):
         self.last_cron_state = None
         self.last_stations_state = None
 
+        # Discovery event debouncing
+        self.pending_discovery_update = False
+
         # Update interval in seconds
         self.update_interval = self.config.get('update_interval', 30)
 
@@ -421,66 +424,139 @@ class MqttPlugin(Plugin):
             self.logger.error(f"Error publishing alarmclock state: {e}")
 
     def publish_cron_state(self, force=False):
-        """Publish cron/timer status (mcp show equivalent)"""
+        """Publish cron/timer status (both 'cron show' and 'mcp show' equivalent)"""
         try:
-            # Check if timer plugin is available
+            # Calculate 24-hour window
+            now = int(time.time())
+            twenty_four_hours = 86400
+
+            # Get cron jobs (recurring unix-style cron)
+            cron_jobs = []
+            cron_plugin = None
+            for plugin in self.core.plugins:
+                if plugin.command == 'cron':
+                    cron_plugin = plugin
+                    break
+
+            if cron_plugin and hasattr(cron_plugin, 'crontab'):
+                # Import AllMatch from cron plugin to check type
+                from james.plugin.cron import AllMatch
+                import datetime
+
+                for idx, event in enumerate(cron_plugin.crontab.events):
+                    event_data = event.show()
+
+                    # Convert special values to readable format - check if type is AllMatch or instance
+                    def format_cron_field(field_value):
+                        if isinstance(field_value, type(AllMatch())) or str(type(field_value).__name__) == 'AllMatch':
+                            return '*'
+                        elif len(field_value) > 0:
+                            return ','.join(str(x) for x in field_value)
+                        else:
+                            return '-'
+
+                    minutes_str = format_cron_field(event_data['minutes'])
+                    hours_str = format_cron_field(event_data['hours'])
+                    days_str = format_cron_field(event_data['days'])
+                    months_str = format_cron_field(event_data['months'])
+                    dow_str = format_cron_field(event_data['dow'])
+
+                    # Calculate next execution time to determine if within 24h
+                    within_24h = False
+                    next_run_timestamp = None
+                    if event_data['act']:  # Only check if active
+                        try:
+                            # Check next 24 hours worth of minutes to find next execution
+                            current_dt = datetime.datetime.now()
+                            for minutes_ahead in range(0, 24 * 60 + 1):  # Check every minute for next 24 hours
+                                check_dt = current_dt + datetime.timedelta(minutes=minutes_ahead)
+                                if event.match_time(check_dt):
+                                    within_24h = True
+                                    next_run_timestamp = int(check_dt.timestamp())
+                                    break
+                        except Exception as e:
+                            self.logger.debug(f"Error calculating next cron run time: {e}")
+
+                    cron_jobs.append({
+                        'id': idx,
+                        'active': event_data['act'],
+                        'schedule': {
+                            'minutes': minutes_str,
+                            'hours': hours_str,
+                            'days': days_str,
+                            'months': months_str,
+                            'dow': dow_str
+                        },
+                        'schedule_str': f"{minutes_str} {hours_str} {days_str} {months_str} {dow_str}",
+                        'command': ' '.join(event_data['cmd']) if isinstance(event_data['cmd'], (list, tuple)) else str(event_data['cmd']),
+                        'within_24h': within_24h,
+                        'next_run': next_run_timestamp
+                    })
+
+            # Get timer plugin (one-time timed commands)
+            timed_commands = []
+            calendar_events = []
             timer_plugin = None
             for plugin in self.core.plugins:
                 if plugin.command == 'mcp':
                     timer_plugin = plugin
                     break
 
-            if not timer_plugin:
-                self.logger.debug("Timer plugin not available, skipping cron state")
-                return
-
-            # Get timed commands
-            timed_commands = []
-            for (timestamp, command) in timer_plugin.saved_commands:
-                timed_commands.append({
-                    'timestamp': timestamp,
-                    'time_str': self.utils.get_nice_age(timestamp),
-                    'command': ' '.join(command),
-                    'type': 'adhoc'
-                })
-
-            # Get calendar-based events if configured
-            calendar_events = []
-            if 'timed_calendar_events' in timer_plugin.config:
-                import pytz
-                import datetime
-
-                timezone = pytz.timezone(self.core.config['core']['timezone'])
-                target_time = datetime.datetime.now(timezone)
-
-                for event in timer_plugin.config['timed_calendar_events']:
-                    event_active = False
-                    event_active_plugin = ""
-
-                    for plugin in self.core.events_today.keys():
-                        for event_name in event['event_names']:
-                            if event_name.lower() in [x.lower() for x in self.core.events_today[plugin]]:
-                                event_active = True
-                                event_active_plugin = plugin
-
-                    target_time_copy = target_time.replace(second=0)
-                    target_time_copy = target_time_copy.replace(hour=event['hour'])
-                    target_time_copy = target_time_copy.replace(minute=event['minute'])
-                    target_timestamp = int(target_time_copy.strftime('%s'))
-
-                    calendar_events.append({
-                        'timestamp': target_timestamp,
-                        'time_str': self.utils.get_nice_age(target_timestamp),
-                        'command': event['command'],
-                        'type': 'calendar',
-                        'active': event_active,
-                        'active_plugin': event_active_plugin if event_active else None,
-                        'event_names': event['event_names']
+            if timer_plugin:
+                # Get adhoc timed commands
+                for (timestamp, command) in timer_plugin.saved_commands:
+                    within_24h = (timestamp - now) <= twenty_four_hours and timestamp >= now
+                    timed_commands.append({
+                        'timestamp': timestamp,
+                        'time_str': self.utils.get_nice_age(timestamp),
+                        'command': ' '.join(command),
+                        'type': 'adhoc',
+                        'within_24h': within_24h
                     })
 
+                # Get calendar-based events if configured
+                if 'timed_calendar_events' in timer_plugin.config:
+                    import pytz
+                    import datetime
+
+                    timezone = pytz.timezone(self.core.config['core']['timezone'])
+                    target_time = datetime.datetime.now(timezone)
+
+                    for event in timer_plugin.config['timed_calendar_events']:
+                        event_active = False
+                        event_active_plugin = ""
+
+                        for plugin in self.core.events_today.keys():
+                            for event_name in event['event_names']:
+                                if event_name.lower() in [x.lower() for x in self.core.events_today[plugin]]:
+                                    event_active = True
+                                    event_active_plugin = plugin
+
+                        target_time_copy = target_time.replace(second=0)
+                        target_time_copy = target_time_copy.replace(hour=event['hour'])
+                        target_time_copy = target_time_copy.replace(minute=event['minute'])
+                        target_timestamp = int(target_time_copy.strftime('%s'))
+
+                        # Check if event is within 24 hours AND active
+                        # Only events that are both active and within 24h should have within_24h = True
+                        within_24h = event_active and (target_timestamp - now) <= twenty_four_hours and target_timestamp >= now
+
+                        calendar_events.append({
+                            'timestamp': target_timestamp,
+                            'time_str': self.utils.get_nice_age(target_timestamp),
+                            'command': event['command'],
+                            'type': 'calendar',
+                            'active': event_active,
+                            'active_plugin': event_active_plugin if event_active else None,
+                            'event_names': event['event_names'],
+                            'within_24h': within_24h
+                        })
+
             state = {
+                'cron_jobs': cron_jobs,
                 'adhoc_commands': timed_commands,
                 'calendar_events': calendar_events,
+                'total_cron': len(cron_jobs),
                 'total_adhoc': len(timed_commands),
                 'total_calendar': len(calendar_events),
                 'timestamp': int(time.time())
@@ -492,10 +568,10 @@ class MqttPlugin(Plugin):
             if force or state_json != self.last_cron_state:
                 self.mqtt_client.publish(self.topic_cron, state_json, retain=self.retain_cron)
                 self.last_cron_state = state_json
-                self.logger.debug(f"Published cron state: {len(timed_commands)} adhoc, {len(calendar_events)} calendar")
+                self.logger.debug(f"Published cron state: {len(cron_jobs)} cron jobs, {len(timed_commands)} adhoc, {len(calendar_events)} calendar")
 
         except Exception as e:
-            self.logger.error(f"Error publishing cron state: {e}")
+            self.logger.error(f"Error publishing cron state: {e}", exc_info=True)
 
     def publish_stations_state(self, force=False):
         """Publish radio stations list from mpd-client plugin"""
@@ -560,11 +636,18 @@ class MqttPlugin(Plugin):
         except Exception as e:
             self.logger.error(f"Error publishing stations state: {e}", exc_info=True)
 
+    def _publish_nodes_debounced(self):
+        """Debounced nodes state publisher - resets the pending flag"""
+        self.pending_discovery_update = False
+        self.publish_nodes_state(force=True)
+
     def process_discovery_event(self, msg):
         """Handle node discovery events (nodes coming online/offline)"""
         # Publish updated nodes state when topology changes
-        if self.mqtt_connected:
-            self.core.add_timeout(1, self.publish_nodes_state, True)
+        # Use debouncing to avoid multiple rapid updates when many nodes connect at once
+        if self.mqtt_connected and not self.pending_discovery_update:
+            self.pending_discovery_update = True
+            self.core.add_timeout(1, self._publish_nodes_debounced)
 
     def process_presence_event(self, presence_before, presence_now):
         """Handle presence change events"""

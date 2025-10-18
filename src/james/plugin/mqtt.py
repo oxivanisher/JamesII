@@ -537,8 +537,9 @@ class MqttPlugin(Plugin):
                         target_time_copy = target_time_copy.replace(minute=event['minute'])
                         target_timestamp = int(target_time_copy.strftime('%s'))
 
-                        # Check if event is within 24 hours
-                        within_24h = (target_timestamp - now) <= twenty_four_hours and target_timestamp >= now
+                        # Check if event is within 24 hours AND active
+                        # Only events that are both active and within 24h should have within_24h = True
+                        within_24h = event_active and (target_timestamp - now) <= twenty_four_hours and target_timestamp >= now
 
                         calendar_events.append({
                             'timestamp': target_timestamp,

@@ -262,8 +262,8 @@ class BTPresencePlugin(Plugin):
                                 mac_addresses.append(mac)
                             if "Can't connect:" in line:
                                 error_str = line[15:]
-                                if error_str == "Host is down":
-                                    self.logger.debug(f'Bluetooth host {mac} is down')
+                                if error_str in ["Host is down", "Connection timed out"]:
+                                    self.logger.debug(f'Bluetooth host {mac} is unreachable')
                                 else:
                                     error_msg = f'Bluetooth l2ping error for {mac}: {error_str}'
 

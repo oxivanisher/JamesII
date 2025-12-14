@@ -271,7 +271,8 @@ class JamesUtils:
         else:
             # %(module)s
             file_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(msg)s')
-            screen_formatter = ShortNameFormatter('%(asctime)s %(levelname)-8s %(shortname)-15s %(msg)s')
+            # screen_formatter = ShortNameFormatter('%(asctime)s %(levelname)-8s %(shortname)-15s %(msg)s')
+            screen_formatter = ShortNameFormatter('%(levelname)-8s %(shortname)-15s %(msg)s')
 
             log = logging.getLogger(name)
             log.setLevel(logging.INFO)

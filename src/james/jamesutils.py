@@ -264,15 +264,19 @@ class JamesUtils:
         ret = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
         return ret.decode('UTF-8').split("\n")
 
-    def get_logger(self, name, parent=None):
+    def get_logger(self, name, parent=None, is_cli_mode=False):
 
         if parent:
             return parent.getChild(name)
         else:
             # %(module)s
             file_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(name)s: %(msg)s')
-            # screen_formatter = ShortNameFormatter('%(asctime)s %(levelname)-8s %(shortname)-15s %(msg)s')
-            screen_formatter = ShortNameFormatter('%(levelname)-8s %(shortname)-15s %(msg)s')
+            # CLI mode formatter includes timestamp for standalone CLI usage
+            if is_cli_mode:
+                screen_formatter = ShortNameFormatter('%(asctime)s %(levelname)-8s %(shortname)-15s %(msg)s')
+            else:
+                # Daemon mode formatter omits timestamp (systemd adds it)
+                screen_formatter = ShortNameFormatter('%(levelname)-8s %(shortname)-15s %(msg)s')
 
             log = logging.getLogger(name)
             log.setLevel(logging.INFO)

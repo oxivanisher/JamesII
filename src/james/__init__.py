@@ -142,7 +142,7 @@ class Core:
         else:
             self.hostname = socket.gethostname().lower()
 
-        self.logger = self.utils.get_logger(f'{self.hostname}.{int(time.time() * 100)}')
+        self.logger = self.utils.get_logger(f'{self.hostname}.{int(time.time() * 100)}', is_cli_mode=passive)
         self.logger.setLevel(logging.DEBUG)
 
         self.logger.debug(f"JamesII starting up with PID {os.getpid()}")

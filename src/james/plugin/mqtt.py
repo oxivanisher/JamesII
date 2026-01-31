@@ -6,31 +6,81 @@ from james.plugin import *
 
 try:
     import paho.mqtt.client as mqtt
+    from paho.mqtt.enums import MQTTErrorCode
     MQTT_AVAILABLE = True
 except ImportError:
     MQTT_AVAILABLE = False
+    MQTTErrorCode = None
 
 
 class MqttThread(PluginThread):
     """Background thread for MQTT client loop"""
 
+    def get_error_name(self, rc):
+        """Get human-readable name for MQTT error code"""
+        if MQTTErrorCode is not None:
+            try:
+                return MQTTErrorCode(rc).name
+            except (ValueError, AttributeError):
+                pass
+        return str(rc)
+
     def work(self):
         self.logger.info("MQTT thread starting")
         loop_count = 0
+        consecutive_errors = 0
+        last_error_log_time = 0
         while not self.plugin.terminated:
             if self.plugin.mqtt_client:
                 try:
                     # Run MQTT network loop
                     rc = self.plugin.mqtt_client.loop(timeout=1.0)
                     if rc != 0:
-                        self.logger.warning(f"MQTT loop returned non-zero code: {rc}")
+                        consecutive_errors += 1
+                        error_name = self.get_error_name(rc)
+
+                        # Rate-limit logging: only log once per 30 seconds for repeated errors
+                        current_time = time.time()
+                        if current_time - last_error_log_time >= 30:
+                            self.logger.warning(
+                                f"MQTT loop error: {error_name} (code {rc}), "
+                                f"consecutive errors: {consecutive_errors}"
+                            )
+                            last_error_log_time = current_time
+
+                        # Connection lost or no connection - attempt reconnect with backoff
+                        if rc in (4, 7):  # MQTT_ERR_NO_CONN, MQTT_ERR_CONN_LOST
+                            # Exponential backoff: 1s, 2s, 4s, 8s, ... up to 60s
+                            backoff = min(60, 2 ** min(consecutive_errors - 1, 6))
+                            self.logger.info(
+                                f"Connection lost ({error_name}), attempting reconnect in {backoff}s..."
+                            )
+                            time.sleep(backoff)
+
+                            if not self.plugin.terminated:
+                                try:
+                                    self.plugin.mqtt_client.reconnect()
+                                    self.logger.info("Reconnect initiated")
+                                except Exception as e:
+                                    self.logger.warning(f"Reconnect failed: {e}")
+                        else:
+                            # Other errors: simple backoff
+                            backoff = min(30, consecutive_errors)
+                            time.sleep(backoff)
+                    else:
+                        # Success - reset error counter
+                        if consecutive_errors > 0:
+                            self.logger.info(
+                                f"MQTT loop recovered after {consecutive_errors} consecutive errors"
+                            )
+                        consecutive_errors = 0
 
                     loop_count += 1
                     if loop_count % 60 == 0:  # Log every 60 iterations (roughly every minute)
                         connected_str = "connected" if self.plugin.mqtt_connected else "not connected"
                         self.logger.debug(f"MQTT thread alive, status: {connected_str}, loop iterations: {loop_count}")
                 except Exception as e:
-                    self.logger.error(f"MQTT loop error: {e}", exc_info=True)
+                    self.logger.error(f"MQTT loop exception: {e}", exc_info=True)
                     time.sleep(1)
             else:
                 self.logger.debug("MQTT client not initialized, waiting...")

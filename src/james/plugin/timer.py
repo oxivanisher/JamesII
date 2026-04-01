@@ -187,7 +187,8 @@ class TimerPlugin(Plugin):
             if timestamp <= now:
                 self.commandsRun += 1
                 self.send_command(command)
-                self.logger.info(f'Running timed command ({command})')
+                cmd_str = ' '.join(command) if isinstance(command, list) else command
+                self.logger.info(f'Running timed command ({cmd_str})')
             else:
                 saved_commands_new.append((timestamp, command))
 

@@ -134,7 +134,7 @@ class Core:
         # Load broker configuration here, in case the hostname has to be specified
         try:
             self.broker_config = config.YamlConfig("../config/broker.yaml").get_values()
-        except Exception as e:
+        except Exception:
             raise BrokerConfigNotLoaded()
 
         if 'myhostname' in self.broker_config:
@@ -163,9 +163,8 @@ class Core:
 
         try:
             self.os_username = getpass.getuser()
-        except Exception as e:
+        except Exception:
             self.os_username = None
-            pass
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
@@ -286,7 +285,7 @@ class Core:
             self.ping_nodes()
             try:
                 self.location = self.config['locations'][self.hostname]
-            except Exception as e:
+            except KeyError:
                 pass
 
         # registering network logger handlers
@@ -580,7 +579,7 @@ class Core:
                 if not new_config['core']['debug']:
                     self.logger.debug('Setting loglevel to INFO')
                     self.logger.setLevel(logging.INFO)
-            except TypeError as e:
+            except TypeError:
                 pass
 
             self.logger.debug("Received config")
@@ -591,7 +590,7 @@ class Core:
 
             try:
                 self.location = self.utils.convert_from_unicode(self.config['locations'][self.hostname])
-            except Exception as e:
+            except KeyError:
                 self.location = 'home'
         else:
             if not self.utils.dict_deep_compare(self.config, new_config):

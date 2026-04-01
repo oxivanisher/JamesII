@@ -247,22 +247,24 @@ class Core:
 
         # Send hello
         self.lock_core()
-        self.discovery_channel.send(['hello', self.hostname, self.uuid])
-        self.unlock_core()
+        try:
+            self.discovery_channel.send(['hello', self.hostname, self.uuid])
+        finally:
+            self.unlock_core()
 
         # Wait for configuration if not master
         if not self.master:
             self.logger.debug("Waiting for config")
             while not self.config:
+                locked = False
                 try:
                     with Timeout(180):
                         self.lock_core()
+                        locked = True
                         self.connection.process_data_events()
-                        self.unlock_core()
                 except KeyboardInterrupt:
                     self.logger.warning("Keyboard interrupt detected. Exiting...")
                     sys.exit(3)
-                    pass
                 except pika.exceptions.ChannelClosed:
                     # channel closed error
                     self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
@@ -274,6 +276,9 @@ class Core:
                     self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 except Timeout.Timeout:
                     self.logger.critical("Detected hanging core. Exiting...")
+                finally:
+                    if locked:
+                        self.unlock_core()
 
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
@@ -491,9 +496,11 @@ class Core:
             # Broadcast configuration if master
             if self.master:
                 self.lock_core()
-                self.config_channel.send((self.config, self.uuid))
-                self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-                self.unlock_core()
+                try:
+                    self.config_channel.send((self.config, self.uuid))
+                    self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+                finally:
+                    self.unlock_core()
 
                 # send current no_alarm_clock value
                 self.logger.debug("Sending current no_alarm_clock value")
@@ -511,16 +518,20 @@ class Core:
             for p in self.plugins:
                 if p.commands:
                     self.lock_core()
-                    self.discovery_channel.send(['commands', p.commands])
-                    self.unlock_core()
+                    try:
+                        self.discovery_channel.send(['commands', p.commands])
+                    finally:
+                        self.unlock_core()
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
             if not self.master:
                 self.logger.debug('Node ping received, sending pong')
             self.lock_core()
-            self.discovery_channel.send(['pong', self.hostname, self.uuid])
-            self.unlock_core()
+            try:
+                self.discovery_channel.send(['pong', self.hostname, self.uuid])
+            finally:
+                self.unlock_core()
 
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
@@ -617,8 +628,10 @@ class Core:
         Sends a msg over the msg channel.
         """
         self.lock_core()
-        self.message_channel.send(msg)
-        self.unlock_core()
+        try:
+            self.message_channel.send(msg)
+        finally:
+            self.unlock_core()
 
     def new_message(self, name="uninitialized_message"):
         """
@@ -685,8 +698,10 @@ class Core:
         self.logger.debug(f"Publishing presence update {new_presence}")
         try:
             self.lock_core()
-            self.presence_channel.send(new_presence)
-            self.unlock_core()
+            try:
+                self.presence_channel.send(new_presence)
+            finally:
+                self.unlock_core()
         except Exception as e:
             self.logger.warning(f"Could not send presence update: {e}")
             self.system_message_add("Core", f"Could not send presence update: {e}")
@@ -743,10 +758,12 @@ class Core:
         self.logger.debug(f"Publishing no_alarm_clock events update {new_events} from plugin {no_alarm_clock_source}")
         try:
             self.lock_core()
-            self.no_alarm_clock_channel.send({'events': new_events,
-                                              'host': self.hostname,
-                                              'plugin': no_alarm_clock_source})
-            self.unlock_core()
+            try:
+                self.no_alarm_clock_channel.send({'events': new_events,
+                                                  'host': self.hostname,
+                                                  'plugin': no_alarm_clock_source})
+            finally:
+                self.unlock_core()
         except Exception as e:
             self.logger.warning(f"Could not send no_alarm_clock events ({e})")
 
@@ -784,10 +801,12 @@ class Core:
         self.logger.debug(f"Publishing events_today events update {new_events} from plugin {events_today_source}")
         try:
             self.lock_core()
-            self.events_today_channel.send({'events': new_events,
-                                            'host': self.hostname,
-                                            'plugin': events_today_source})
-            self.unlock_core()
+            try:
+                self.events_today_channel.send({'events': new_events,
+                                                'host': self.hostname,
+                                                'plugin': events_today_source})
+            finally:
+                self.unlock_core()
         except Exception as e:
             self.logger.warning(f"Could not send events_today events ({e})")
 
@@ -799,8 +818,10 @@ class Core:
         if self.master:
             self.logger.debug('Pinging slave nodes.')
             self.lock_core()
-            self.discovery_channel.send(['ping', self.hostname, self.uuid])
-            self.unlock_core()
+            try:
+                self.discovery_channel.send(['ping', self.hostname, self.uuid])
+            finally:
+                self.unlock_core()
 
     def master_send_nodes_online(self):
         """
@@ -814,8 +835,10 @@ class Core:
             self.logger.debug(f'Publishing online nodes: {nodes_online}')
 
             self.lock_core()
-            self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-            self.unlock_core()
+            try:
+                self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+            finally:
+                self.unlock_core()
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
     def master_ping_nodes(self):
@@ -881,8 +904,10 @@ class Core:
         for p in self.plugins:
             if p.commands:
                 self.lock_core()
-                self.discovery_channel.send(['commands', p.commands])
-                self.unlock_core()
+                try:
+                    self.discovery_channel.send(['commands', p.commands])
+                finally:
+                    self.unlock_core()
 
         if self.passive:
             self.logger.debug(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
@@ -892,16 +917,20 @@ class Core:
             p.start()
 
         while not self.terminated:
+            locked = False
             try:
                 with Timeout(180):
                     self.lock_core()
-                with Timeout(180):
-                    self.connection.process_data_events()
-                with Timeout(180):
-                    self.process_timeouts()
-                with Timeout(180):
-                    self.unlock_core()
-                    # self.logger.debug("process events")
+                    locked = True
+                try:
+                    with Timeout(180):
+                        self.connection.process_data_events()
+                    with Timeout(180):
+                        self.process_timeouts()
+                finally:
+                    if locked:
+                        with Timeout(180):
+                            self.unlock_core()
                 # cpu utilization from 100% to 0%
                 time.sleep(self.main_loop_sleep)
             except KeyboardInterrupt:

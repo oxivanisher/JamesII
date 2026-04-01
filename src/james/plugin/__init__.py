@@ -27,7 +27,7 @@ class Plugin:
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help_text'], None)
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help_text'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
-        self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
+        self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status)
         self.commands.create_subcommand('alert', "Alert some text (head) (body)", self.alert, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)

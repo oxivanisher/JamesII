@@ -60,6 +60,7 @@ class Command:
             for s in subcommand.subcommands.values():
                 self.subcommands[subcommand.name].merge_subcommand(s)
         else:
+            subcommand.parent = self
             self.subcommands[subcommand.name] = subcommand
 
     # creates a new subcommand and returns reference to it

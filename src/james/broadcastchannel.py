@@ -3,6 +3,21 @@ import pika
 import time
 import logging
 
+from james.command import Command
+
+
+class _JamesEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Command):
+            return obj.to_dict()
+        return super().default(obj)
+
+
+def _james_decoder(d):
+    if d.get('__type__') == 'Command':
+        return Command.from_dict(d)
+    return d
+
 
 class BroadcastChannel:
     def __init__(self, core, name):
@@ -24,7 +39,7 @@ class BroadcastChannel:
         msg_sent = False
         try_count = 0
 
-        body = json.dumps(msg).encode('utf-8')
+        body = json.dumps(msg, cls=_JamesEncoder).encode('utf-8')
 
         while not msg_sent:
             try:
@@ -44,7 +59,7 @@ class BroadcastChannel:
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):
-        msg = json.loads(body.decode('utf-8'))
+        msg = json.loads(body.decode('utf-8'), object_hook=_james_decoder)
 
         for listener in self.listeners:
             listener(msg)

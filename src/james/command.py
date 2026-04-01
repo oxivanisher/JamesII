@@ -28,6 +28,25 @@ class Command:
         for cmd in self.subcommands.values():
             cmd.parent = self
 
+    def to_dict(self):
+        return {
+            '__type__': 'Command',
+            'name': self.name,
+            'help': self.help,
+            'hide': self.hide,
+            'subcommands': {n: c.to_dict() for n, c in self.subcommands.items()}
+        }
+
+    @classmethod
+    def from_dict(cls, d):
+        cmd = cls(d['name'], d.get('help', ''), None, d.get('hide', False))
+        for name, sub in d.get('subcommands', {}).items():
+            # object_hook processes bottom-up, so values are already Command instances
+            if isinstance(sub, cls):
+                sub.parent = cmd
+                cmd.subcommands[name] = sub
+        return cmd
+
     def add_subcommand(self, subcommand):
         try:
             return self.subcommands[subcommand.name]

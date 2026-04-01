@@ -285,7 +285,7 @@ class Core:
             self.ping_nodes()
             try:
                 self.location = self.config['locations'][self.hostname]
-            except KeyError:
+            except (KeyError, TypeError):
                 pass
 
         # registering network logger handlers
@@ -590,7 +590,7 @@ class Core:
 
             try:
                 self.location = self.utils.convert_from_unicode(self.config['locations'][self.hostname])
-            except KeyError:
+            except (KeyError, TypeError):
                 self.location = 'home'
         else:
             if not self.utils.dict_deep_compare(self.config, new_config):

@@ -251,7 +251,8 @@ class RaspberryPlugin(Plugin):
 
         self.pull_up = {}
         if 'pull_up' in self.config['nodes'][self.core.hostname].keys():
-            self.pull_up = self.config['nodes'][self.core.hostname]['pull_up']
+            # JSON round-trip converts integer dict keys to strings; restore them
+            self.pull_up = {int(k): v for k, v in self.config['nodes'][self.core.hostname]['pull_up'].items()}
 
         self.led_pins = []
         if 'led_pins' in self.config['nodes'][self.core.hostname].keys():

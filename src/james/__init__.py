@@ -915,6 +915,9 @@ class Core:
         for p in self.plugins:
             p.start()
 
+        if not self.passive:
+            self.add_timeout(300, self._periodic_save_stats)
+
         while not self.terminated:
             locked = False
             try:
@@ -973,6 +976,31 @@ class Core:
     def unlock_core(self):
         self.core_lock.release()
 
+    def _save_stats(self, save_stats=None):
+        """Save plugin stats atomically. Collects current stats if not provided."""
+        if save_stats is None:
+            save_stats = {}
+            for p in self.plugins:
+                save_stats[p.name] = p.save_state()
+
+        tmp_path = self.stats_file + '.tmp'
+        try:
+            with open(tmp_path, 'w') as file:
+                file.write(json.dumps(save_stats))
+            os.replace(tmp_path, self.stats_file)
+            self.logger.debug(f"Saved stats to {self.stats_file}")
+        except (IOError, OSError):
+            if self.passive:
+                self.logger.info("Could not save stats to file")
+            else:
+                self.logger.warning("Could not save stats to file")
+
+    def _periodic_save_stats(self):
+        """Called periodically from the main loop to persist stats without a clean shutdown."""
+        if not self.terminating:
+            self._save_stats()
+            self.add_timeout(300, self._periodic_save_stats)
+
     def terminate(self, return_code=0):
         """
         Terminate the core. This method will first call the terminate() method on each plugin.
@@ -1021,15 +1049,7 @@ class Core:
                     self.logger.debug(f"Stats collected for plugin {p.name}")
 
             # save stats to file
-            try:
-                with open(self.stats_file, 'w') as file:
-                    file.write(json.dumps(saveStats))
-                self.logger.debug(f"Saved stats to {self.stats_file}")
-            except IOError:
-                if self.passive:
-                    self.logger.info("Could not save stats to file")
-                else:
-                    self.logger.warning("Could not save stats to file")
+            self._save_stats(saveStats)
 
             # save presence to file
             try:

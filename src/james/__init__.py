@@ -152,9 +152,8 @@ class Core:
 
         self.loadedState = {}
         try:
-            file = open(self.stats_file, 'r')
-            self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
-            file.close()
+            with open(self.stats_file, 'r') as file:
+                self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
             self.logger.debug(f"Loading states from {self.stats_file}")
 
         except Exception:
@@ -326,9 +325,8 @@ class Core:
         self.data_response_channel.add_listener(self.data_response_listener)
 
         try:
-            file = open(self.presences_file, 'r')
-            self.presences.load(json.loads(file.read()))
-            file.close()
+            with open(self.presences_file, 'r') as file:
+                self.presences.load(json.loads(file.read()))
             if self.config['core']['debug']:
                 self.logger.debug(f"Loading presences from {self.presences_file}")
         except IOError:
@@ -996,9 +994,8 @@ class Core:
 
             # save stats to file
             try:
-                file = open(self.stats_file, 'w')
-                file.write(json.dumps(saveStats))
-                file.close()
+                with open(self.stats_file, 'w') as file:
+                    file.write(json.dumps(saveStats))
                 self.logger.debug(f"Saved stats to {self.stats_file}")
             except IOError:
                 if self.passive:
@@ -1008,9 +1005,8 @@ class Core:
 
             # save presence to file
             try:
-                file = open(self.presences_file, 'w')
-                file.write(json.dumps(self.presences.dump()))
-                file.close()
+                with open(self.presences_file, 'w') as file:
+                    file.write(json.dumps(self.presences.dump()))
                 self.logger.debug(f"Saving presences to {self.presences_file}")
             except IOError:
                 if self.passive:

@@ -1,4 +1,4 @@
-import pickle
+import json
 import pika
 import time
 import logging
@@ -24,13 +24,15 @@ class BroadcastChannel:
         msg_sent = False
         try_count = 0
 
-        body = pickle.dumps(msg)
+        body = json.dumps(msg).encode('utf-8')
 
         while not msg_sent:
             try:
                 self.core.lock_core()
-                self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
-                self.core.unlock_core()
+                try:
+                    self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
+                finally:
+                    self.core.unlock_core()
                 msg_sent = True
             except pika.exceptions.ConnectionClosed:
                 try_count += 1
@@ -42,7 +44,7 @@ class BroadcastChannel:
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):
-        msg = pickle.loads(body)
+        msg = json.loads(body.decode('utf-8'))
 
         for listener in self.listeners:
             listener(msg)

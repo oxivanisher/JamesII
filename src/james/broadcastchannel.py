@@ -59,7 +59,14 @@ class BroadcastChannel:
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):
-        msg = json.loads(body.decode('utf-8'), object_hook=_james_decoder)
+        try:
+            msg = json.loads(body.decode('utf-8'), object_hook=_james_decoder)
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            logging.getLogger('broadcastchannel').warning(
+                f"Dropping undecodable message on '{self.name}' channel "
+                f"(likely a pickle message from an outdated node): {e}"
+            )
+            return
 
         for listener in self.listeners:
             listener(msg)

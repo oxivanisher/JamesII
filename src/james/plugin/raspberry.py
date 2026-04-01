@@ -1,4 +1,3 @@
-import inspect
 import lgpio
 import time
 import threading
@@ -6,18 +5,22 @@ import math
 
 from james.plugin import *
 
-# lgpio changed gpio_claim_input's parameter order between versions:
-#   old: gpio_claim_input(handle, gpio, lFlags=0)
-#   new: gpio_claim_input(handle, lFlags, gpio)
-# Detect which is installed and provide a stable wrapper.
-_lgpio_params = list(inspect.signature(lgpio.gpio_claim_input).parameters.keys())
-_LGPIO_NEW_API = len(_lgpio_params) > 1 and _lgpio_params[1] == 'lFlags'
+# lgpio changed gpio_claim_input's parameter order between versions, and some
+# builds have mismatched Python wrapper names vs. C semantics, so inspect is
+# unreliable. Probe at first flagged call and remember the result.
+_lgpio_new_api = None  # None=undetected, True=new(lFlags,gpio), False=old(gpio,lFlags)
 
 def _gpio_claim_input(handle, gpio, lFlags=0):
-    if _LGPIO_NEW_API:
+    global _lgpio_new_api
+    if _lgpio_new_api is True:
         return lgpio.gpio_claim_input(handle, lFlags, gpio)
-    else:
-        return lgpio.gpio_claim_input(handle, gpio, lFlags)
+    try:
+        result = lgpio.gpio_claim_input(handle, gpio, lFlags)
+        _lgpio_new_api = False
+        return result
+    except TypeError:
+        _lgpio_new_api = True
+        return lgpio.gpio_claim_input(handle, lFlags, gpio)
 
 
 class BlinkLed(object):

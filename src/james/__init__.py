@@ -497,7 +497,7 @@ class Core:
             if self.master:
                 self.lock_core()
                 try:
-                    self.config_channel.send((self.config, self.uuid))
+                    self.config_channel.send([self.config, self.uuid])
                     self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
                 finally:
                     self.unlock_core()

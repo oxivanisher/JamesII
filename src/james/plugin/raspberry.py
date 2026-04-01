@@ -58,10 +58,10 @@ class RaspberryThread(PluginThread):
         for pin in self.pull_up.keys():
             if self.pull_up[pin]:
                 self.logger.info(f"Raspberry plugin pulling up pin {pin}")
-                lgpio.gpio_claim_input(self.chip, pin, lgpio.SET_PULL_UP)
+                lgpio.gpio_claim_input(self.chip, lgpio.SET_PULL_UP, pin)
             else:
                 self.logger.info(f"Raspberry plugin pulling down pin {pin}")
-                lgpio.gpio_claim_input(self.chip, pin, lgpio.SET_PULL_DOWN)
+                lgpio.gpio_claim_input(self.chip, lgpio.SET_PULL_DOWN, pin)
 
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:

@@ -1,9 +1,23 @@
+import inspect
 import lgpio
 import time
 import threading
 import math
 
 from james.plugin import *
+
+# lgpio changed gpio_claim_input's parameter order between versions:
+#   old: gpio_claim_input(handle, gpio, lFlags=0)
+#   new: gpio_claim_input(handle, lFlags, gpio)
+# Detect which is installed and provide a stable wrapper.
+_lgpio_params = list(inspect.signature(lgpio.gpio_claim_input).parameters.keys())
+_LGPIO_NEW_API = len(_lgpio_params) > 1 and _lgpio_params[1] == 'lFlags'
+
+def _gpio_claim_input(handle, gpio, lFlags=0):
+    if _LGPIO_NEW_API:
+        return lgpio.gpio_claim_input(handle, lFlags, gpio)
+    else:
+        return lgpio.gpio_claim_input(handle, gpio, lFlags)
 
 
 class BlinkLed(object):
@@ -58,14 +72,14 @@ class RaspberryThread(PluginThread):
         for pin in self.pull_up.keys():
             if self.pull_up[pin]:
                 self.logger.info(f"Raspberry plugin pulling up pin {pin}")
-                lgpio.gpio_claim_input(self.chip, lgpio.SET_PULL_UP, pin)
+                _gpio_claim_input(self.chip, pin, lgpio.SET_PULL_UP)
             else:
                 self.logger.info(f"Raspberry plugin pulling down pin {pin}")
-                lgpio.gpio_claim_input(self.chip, lgpio.SET_PULL_DOWN, pin)
+                _gpio_claim_input(self.chip, pin, lgpio.SET_PULL_DOWN)
 
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
-            lgpio.gpio_claim_input(self.chip, pin)   # already pulled above if needed
+            _gpio_claim_input(self.chip, pin)   # already pulled above if needed
             self.pin_state_cache['switch'][pin] = {
                 'count': 0,
                 'state': self.read_pin(pin)
@@ -76,7 +90,7 @@ class RaspberryThread(PluginThread):
 
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
-            lgpio.gpio_claim_input(self.chip, pin)
+            _gpio_claim_input(self.chip, pin)
             initial_state = self.read_pin(pin)
             self.pin_state_cache['buttons'][pin] = {
                 'count': 0,

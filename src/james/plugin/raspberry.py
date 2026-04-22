@@ -5,6 +5,23 @@ import math
 
 from james.plugin import *
 
+# lgpio changed gpio_claim_input's parameter order between versions, and some
+# builds have mismatched Python wrapper names vs. C semantics, so inspect is
+# unreliable. Probe at first flagged call and remember the result.
+_lgpio_new_api = None  # None=undetected, True=new(lFlags,gpio), False=old(gpio,lFlags)
+
+def _gpio_claim_input(handle, gpio, lFlags=0):
+    global _lgpio_new_api
+    if _lgpio_new_api is True:
+        return lgpio.gpio_claim_input(handle, lFlags, gpio)
+    try:
+        result = lgpio.gpio_claim_input(handle, gpio, lFlags)
+        _lgpio_new_api = False
+        return result
+    except TypeError:
+        _lgpio_new_api = True
+        return lgpio.gpio_claim_input(handle, lFlags, gpio)
+
 
 class BlinkLed(object):
     # LED blink class, returns true when finished
@@ -58,14 +75,14 @@ class RaspberryThread(PluginThread):
         for pin in self.pull_up.keys():
             if self.pull_up[pin]:
                 self.logger.info(f"Raspberry plugin pulling up pin {pin}")
-                lgpio.gpio_claim_input(self.chip, pin, lgpio.SET_PULL_UP)
+                _gpio_claim_input(self.chip, pin, lgpio.SET_PULL_UP)
             else:
                 self.logger.info(f"Raspberry plugin pulling down pin {pin}")
-                lgpio.gpio_claim_input(self.chip, pin, lgpio.SET_PULL_DOWN)
+                _gpio_claim_input(self.chip, pin, lgpio.SET_PULL_DOWN)
 
         self.pin_state_cache['switch'] = {}
         for pin in self.switch_pins:
-            lgpio.gpio_claim_input(self.chip, pin)   # already pulled above if needed
+            _gpio_claim_input(self.chip, pin)   # already pulled above if needed
             self.pin_state_cache['switch'][pin] = {
                 'count': 0,
                 'state': self.read_pin(pin)
@@ -76,7 +93,7 @@ class RaspberryThread(PluginThread):
 
         self.pin_state_cache['buttons'] = {}
         for pin in self.button_pins:
-            lgpio.gpio_claim_input(self.chip, pin)
+            _gpio_claim_input(self.chip, pin)
             initial_state = self.read_pin(pin)
             self.pin_state_cache['buttons'][pin] = {
                 'count': 0,
@@ -234,7 +251,8 @@ class RaspberryPlugin(Plugin):
 
         self.pull_up = {}
         if 'pull_up' in self.config['nodes'][self.core.hostname].keys():
-            self.pull_up = self.config['nodes'][self.core.hostname]['pull_up']
+            # JSON round-trip converts integer dict keys to strings; restore them
+            self.pull_up = {int(k): v for k, v in self.config['nodes'][self.core.hostname]['pull_up'].items()}
 
         self.led_pins = []
         if 'led_pins' in self.config['nodes'][self.core.hostname].keys():

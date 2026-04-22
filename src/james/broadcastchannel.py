@@ -1,7 +1,22 @@
-import pickle
+import json
 import pika
 import time
 import logging
+
+from james.command import Command
+
+
+class _JamesEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Command):
+            return obj.to_dict()
+        return super().default(obj)
+
+
+def _james_decoder(d):
+    if d.get('__type__') == 'Command':
+        return Command.from_dict(d)
+    return d
 
 
 class BroadcastChannel:
@@ -24,13 +39,15 @@ class BroadcastChannel:
         msg_sent = False
         try_count = 0
 
-        body = pickle.dumps(msg)
+        body = json.dumps(msg, cls=_JamesEncoder).encode('utf-8')
 
         while not msg_sent:
             try:
                 self.core.lock_core()
-                self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
-                self.core.unlock_core()
+                try:
+                    self.channel.basic_publish(exchange=self.name, routing_key='', body=body)
+                finally:
+                    self.core.unlock_core()
                 msg_sent = True
             except pika.exceptions.ConnectionClosed:
                 try_count += 1
@@ -42,7 +59,14 @@ class BroadcastChannel:
                     time.sleep(3)
 
     def recv(self, channel, method, properties, body):
-        msg = pickle.loads(body)
+        try:
+            msg = json.loads(body.decode('utf-8'), object_hook=_james_decoder)
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            logging.getLogger('broadcastchannel').warning(
+                f"Dropping undecodable message on '{self.name}' channel "
+                f"(likely a pickle message from an outdated node): {e}"
+            )
+            return
 
         for listener in self.listeners:
             listener(msg)

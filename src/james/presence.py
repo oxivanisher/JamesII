@@ -40,7 +40,7 @@ class Presences(object):
         self.core = core
 
     def check_timeouts(self):
-        for presence in self.presences:
+        for presence in list(self.presences):
             if not presence.is_timeout_ok():
                 self.core.logger.debug(
                     "Presence from host %s and plugin %s removed, due to node not sending updates (presence_timeout):" % (

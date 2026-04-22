@@ -123,7 +123,7 @@ class JamesUtils:
                                 wait_seconds += multiplier * count
                                 args.pop(index)
                                 args.pop(index - 1)
-                        except Exception as e:
+                        except (ValueError, TypeError):
                             pass
 
         try:
@@ -168,7 +168,7 @@ class JamesUtils:
                 data = arg.split(':')
                 minutes = int(data[1])
                 hours = int(data[0])
-        except Exception as e:
+        except (ValueError, AttributeError):
             pass
         return hours * 3600 + minutes * 60 + int(seconds)
 
@@ -180,7 +180,7 @@ class JamesUtils:
                 if 0 < int(data[1]) < 13:
                     if 0 < int(data[2]) < 32:
                         return [int(data[0]), int(data[1]), int(data[2])]
-        except Exception as e:
+        except (ValueError, IndexError, AttributeError):
             return False
 
     def get_time_string(self):
@@ -245,7 +245,7 @@ class JamesUtils:
     def list_unicode_cleanup(self, data):
         try:
             args = [s.strip() for s in data]
-        except UnicodeDecodeError as e:
+        except UnicodeDecodeError:
             if self.list_unicode_cleanup_tmp != data:
                 logger = self.get_logger('jamesutils')
                 logger.warning(f"Error in list_unicode_cleanup, not unicode cleared: {data}")
@@ -293,9 +293,8 @@ class JamesUtils:
                 filehandler.setLevel(logging.DEBUG)
                 filehandler.setFormatter(file_formatter)
                 log.addHandler(filehandler)
-            except Exception:
+            except (OSError, IOError):
                 log.warning("WARNING: Unable to open Logfile for writing")
-                pass
 
             return log
 

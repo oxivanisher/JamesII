@@ -134,7 +134,7 @@ class Core:
         # Load broker configuration here, in case the hostname has to be specified
         try:
             self.broker_config = config.YamlConfig("../config/broker.yaml").get_values()
-        except Exception as e:
+        except Exception:
             raise BrokerConfigNotLoaded()
 
         if 'myhostname' in self.broker_config:
@@ -152,9 +152,8 @@ class Core:
 
         self.loadedState = {}
         try:
-            file = open(self.stats_file, 'r')
-            self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
-            file.close()
+            with open(self.stats_file, 'r') as file:
+                self.loadedState = self.utils.convert_from_unicode(json.loads(file.read()))
             self.logger.debug(f"Loading states from {self.stats_file}")
 
         except Exception:
@@ -164,9 +163,8 @@ class Core:
 
         try:
             self.os_username = getpass.getuser()
-        except Exception as e:
+        except Exception:
             self.os_username = None
-            pass
 
         # catching signals
         self.signal_names = dict((k, v) for v, k in signal.__dict__.items() if v.startswith('SIG'))
@@ -248,22 +246,24 @@ class Core:
 
         # Send hello
         self.lock_core()
-        self.discovery_channel.send(['hello', self.hostname, self.uuid])
-        self.unlock_core()
+        try:
+            self.discovery_channel.send(['hello', self.hostname, self.uuid])
+        finally:
+            self.unlock_core()
 
         # Wait for configuration if not master
         if not self.master:
             self.logger.debug("Waiting for config")
             while not self.config:
+                locked = False
                 try:
                     with Timeout(180):
                         self.lock_core()
+                        locked = True
                         self.connection.process_data_events()
-                        self.unlock_core()
                 except KeyboardInterrupt:
                     self.logger.warning("Keyboard interrupt detected. Exiting...")
                     sys.exit(3)
-                    pass
                 except pika.exceptions.ChannelClosed:
                     # channel closed error
                     self.logger.critical("Lost connection to RabbitMQ server! (ChannelClosed)")
@@ -275,6 +275,9 @@ class Core:
                     self.logger.critical("Lost connection to RabbitMQ server! (AMQPConnectionError)")
                 except Timeout.Timeout:
                     self.logger.critical("Detected hanging core. Exiting...")
+                finally:
+                    if locked:
+                        self.unlock_core()
 
         # set some stuff that would be triggered by getting config.
         # this is probably not nicely done.
@@ -282,7 +285,7 @@ class Core:
             self.ping_nodes()
             try:
                 self.location = self.config['locations'][self.hostname]
-            except Exception as e:
+            except (KeyError, TypeError):
                 pass
 
         # registering network logger handlers
@@ -326,9 +329,8 @@ class Core:
         self.data_response_channel.add_listener(self.data_response_listener)
 
         try:
-            file = open(self.presences_file, 'r')
-            self.presences.load(json.loads(file.read()))
-            file.close()
+            with open(self.presences_file, 'r') as file:
+                self.presences.load(json.loads(file.read()))
             if self.config['core']['debug']:
                 self.logger.debug(f"Loading presences from {self.presences_file}")
         except IOError:
@@ -493,9 +495,11 @@ class Core:
             # Broadcast configuration if master
             if self.master:
                 self.lock_core()
-                self.config_channel.send((self.config, self.uuid))
-                self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-                self.unlock_core()
+                try:
+                    self.config_channel.send([self.config, self.uuid])
+                    self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+                finally:
+                    self.unlock_core()
 
                 # send current no_alarm_clock value
                 self.logger.debug("Sending current no_alarm_clock value")
@@ -513,16 +517,20 @@ class Core:
             for p in self.plugins:
                 if p.commands:
                     self.lock_core()
-                    self.discovery_channel.send(['commands', p.commands])
-                    self.unlock_core()
+                    try:
+                        self.discovery_channel.send(['commands', p.commands])
+                    finally:
+                        self.unlock_core()
 
         elif msg[0] == 'ping':
             """We received a ping request. Be a good boy and send a pong."""
             if not self.master:
                 self.logger.debug('Node ping received, sending pong')
             self.lock_core()
-            self.discovery_channel.send(['pong', self.hostname, self.uuid])
-            self.unlock_core()
+            try:
+                self.discovery_channel.send(['pong', self.hostname, self.uuid])
+            finally:
+                self.unlock_core()
 
         elif msg[0] == 'commands':
             """We received new commands. Save them locally."""
@@ -571,7 +579,7 @@ class Core:
                 if not new_config['core']['debug']:
                     self.logger.debug('Setting loglevel to INFO')
                     self.logger.setLevel(logging.INFO)
-            except TypeError as e:
+            except TypeError:
                 pass
 
             self.logger.debug("Received config")
@@ -582,7 +590,7 @@ class Core:
 
             try:
                 self.location = self.utils.convert_from_unicode(self.config['locations'][self.hostname])
-            except Exception as e:
+            except (KeyError, TypeError):
                 self.location = 'home'
         else:
             if not self.utils.dict_deep_compare(self.config, new_config):
@@ -619,8 +627,10 @@ class Core:
         Sends a msg over the msg channel.
         """
         self.lock_core()
-        self.message_channel.send(msg)
-        self.unlock_core()
+        try:
+            self.message_channel.send(msg)
+        finally:
+            self.unlock_core()
 
     def new_message(self, name="uninitialized_message"):
         """
@@ -687,8 +697,10 @@ class Core:
         self.logger.debug(f"Publishing presence update {new_presence}")
         try:
             self.lock_core()
-            self.presence_channel.send(new_presence)
-            self.unlock_core()
+            try:
+                self.presence_channel.send(new_presence)
+            finally:
+                self.unlock_core()
         except Exception as e:
             self.logger.warning(f"Could not send presence update: {e}")
             self.system_message_add("Core", f"Could not send presence update: {e}")
@@ -745,10 +757,12 @@ class Core:
         self.logger.debug(f"Publishing no_alarm_clock events update {new_events} from plugin {no_alarm_clock_source}")
         try:
             self.lock_core()
-            self.no_alarm_clock_channel.send({'events': new_events,
-                                              'host': self.hostname,
-                                              'plugin': no_alarm_clock_source})
-            self.unlock_core()
+            try:
+                self.no_alarm_clock_channel.send({'events': new_events,
+                                                  'host': self.hostname,
+                                                  'plugin': no_alarm_clock_source})
+            finally:
+                self.unlock_core()
         except Exception as e:
             self.logger.warning(f"Could not send no_alarm_clock events ({e})")
 
@@ -786,10 +800,12 @@ class Core:
         self.logger.debug(f"Publishing events_today events update {new_events} from plugin {events_today_source}")
         try:
             self.lock_core()
-            self.events_today_channel.send({'events': new_events,
-                                            'host': self.hostname,
-                                            'plugin': events_today_source})
-            self.unlock_core()
+            try:
+                self.events_today_channel.send({'events': new_events,
+                                                'host': self.hostname,
+                                                'plugin': events_today_source})
+            finally:
+                self.unlock_core()
         except Exception as e:
             self.logger.warning(f"Could not send events_today events ({e})")
 
@@ -801,8 +817,10 @@ class Core:
         if self.master:
             self.logger.debug('Pinging slave nodes.')
             self.lock_core()
-            self.discovery_channel.send(['ping', self.hostname, self.uuid])
-            self.unlock_core()
+            try:
+                self.discovery_channel.send(['ping', self.hostname, self.uuid])
+            finally:
+                self.unlock_core()
 
     def master_send_nodes_online(self):
         """
@@ -816,8 +834,10 @@ class Core:
             self.logger.debug(f'Publishing online nodes: {nodes_online}')
 
             self.lock_core()
-            self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
-            self.unlock_core()
+            try:
+                self.discovery_channel.send(['nodes_online', self.nodes_online, self.uuid])
+            finally:
+                self.unlock_core()
             self.add_timeout(self.config['core']['sleeptimeout'], self.master_ping_nodes)
 
     def master_ping_nodes(self):
@@ -883,8 +903,10 @@ class Core:
         for p in self.plugins:
             if p.commands:
                 self.lock_core()
-                self.discovery_channel.send(['commands', p.commands])
-                self.unlock_core()
+                try:
+                    self.discovery_channel.send(['commands', p.commands])
+                finally:
+                    self.unlock_core()
 
         if self.passive:
             self.logger.debug(time.strftime("JamesII Ready on %A the %d of %B at %H:%M:%S", time.localtime()))
@@ -893,17 +915,24 @@ class Core:
         for p in self.plugins:
             p.start()
 
+        if not self.passive:
+            self.add_timeout(300, self._periodic_save_stats)
+
         while not self.terminated:
+            locked = False
             try:
                 with Timeout(180):
                     self.lock_core()
-                with Timeout(180):
-                    self.connection.process_data_events()
-                with Timeout(180):
-                    self.process_timeouts()
-                with Timeout(180):
-                    self.unlock_core()
-                    # self.logger.debug("process events")
+                    locked = True
+                try:
+                    with Timeout(180):
+                        self.connection.process_data_events()
+                    with Timeout(180):
+                        self.process_timeouts()
+                finally:
+                    if locked:
+                        with Timeout(180):
+                            self.unlock_core()
                 # cpu utilization from 100% to 0%
                 time.sleep(self.main_loop_sleep)
             except KeyboardInterrupt:
@@ -946,6 +975,31 @@ class Core:
 
     def unlock_core(self):
         self.core_lock.release()
+
+    def _save_stats(self, save_stats=None):
+        """Save plugin stats atomically. Collects current stats if not provided."""
+        if save_stats is None:
+            save_stats = {}
+            for p in self.plugins:
+                save_stats[p.name] = p.save_state()
+
+        tmp_path = self.stats_file + '.tmp'
+        try:
+            with open(tmp_path, 'w') as file:
+                file.write(json.dumps(save_stats))
+            os.replace(tmp_path, self.stats_file)
+            self.logger.debug(f"Saved stats to {self.stats_file}")
+        except (IOError, OSError):
+            if self.passive:
+                self.logger.info("Could not save stats to file")
+            else:
+                self.logger.warning("Could not save stats to file")
+
+    def _periodic_save_stats(self):
+        """Called periodically from the main loop to persist stats without a clean shutdown."""
+        if not self.terminating:
+            self._save_stats()
+            self.add_timeout(300, self._periodic_save_stats)
 
     def terminate(self, return_code=0):
         """
@@ -995,22 +1049,12 @@ class Core:
                     self.logger.debug(f"Stats collected for plugin {p.name}")
 
             # save stats to file
-            try:
-                file = open(self.stats_file, 'w')
-                file.write(json.dumps(saveStats))
-                file.close()
-                self.logger.debug(f"Saved stats to {self.stats_file}")
-            except IOError:
-                if self.passive:
-                    self.logger.info("Could not save stats to file")
-                else:
-                    self.logger.warning("Could not save stats to file")
+            self._save_stats(saveStats)
 
             # save presence to file
             try:
-                file = open(self.presences_file, 'w')
-                file.write(json.dumps(self.presences.dump()))
-                file.close()
+                with open(self.presences_file, 'w') as file:
+                    file.write(json.dumps(self.presences.dump()))
                 self.logger.debug(f"Saving presences to {self.presences_file}")
             except IOError:
                 if self.passive:

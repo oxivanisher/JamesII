@@ -101,7 +101,8 @@ class MqttPlugin(Plugin):
 
         # MQTT connection state
         self.mqtt_client = None
-        self.mqtt_connected = False
+        self._mqtt_connected = False
+        self._mqtt_connected_lock = threading.Lock()
         self.terminated = False
         self.mqtt_thread = None
 
@@ -162,6 +163,16 @@ class MqttPlugin(Plugin):
         self.commands.create_subcommand('send', 'Send custom event to MQTT (mqtt send topic payload...)', self.cmd_send)
 
         self.logger.info(f"MQTT plugin initialized - broker: {self.mqtt_host}:{self.mqtt_port}, base_topic: {self.mqtt_base_topic}")
+
+    @property
+    def mqtt_connected(self):
+        with self._mqtt_connected_lock:
+            return self._mqtt_connected
+
+    @mqtt_connected.setter
+    def mqtt_connected(self, value):
+        with self._mqtt_connected_lock:
+            self._mqtt_connected = value
 
     def start(self):
         """Start the MQTT connection"""

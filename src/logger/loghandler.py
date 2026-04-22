@@ -64,7 +64,7 @@ class RecordSaverWorkerThread(threading.Thread):
                                                             plugin TEXT, \
                                                             p_child TEXT)", noresult=True))
             # print "Table created"
-        except Exception as e:
+        except Exception:
             # print "Table not created"
             pass
         self.store.commit()

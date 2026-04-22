@@ -27,7 +27,7 @@ class Plugin:
         self.commands = core.commands.create_subcommand(descriptor['command'], descriptor['help_text'], None)
         self.data_commands = core.data_commands.create_subcommand(descriptor['command'], descriptor['help_text'], None)
         self.commands.create_subcommand('avail', "Show available plugins", self.cmd_avail, True)
-        self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status, True)
+        self.commands.create_subcommand('status', "Shows detailed plugin status", self.cmd_show_plugin_status)
         self.commands.create_subcommand('alert', "Alert some text (head) (body)", self.alert, True)
 
         debug_command = self.commands.create_subcommand('debug', 'Activates or deactivates debug output', None, True)
@@ -43,11 +43,7 @@ class Plugin:
         try:
             if self.config['debug']:
                 self.cmd_activate_debug([])
-        except AttributeError:
-            pass
-        except KeyError:
-            pass
-        except TypeError:
+        except (AttributeError, KeyError):
             pass
 
         self.worker_threads = []
@@ -70,7 +66,7 @@ class Plugin:
     def load_state(self, name, default_value):
         try:
             setattr(self, name, self.core.loadedState[self.name][name])
-        except Exception:
+        except (KeyError, TypeError):
             setattr(self, name, default_value)
 
     def process_command_response(self, args, host, plugin):
@@ -99,7 +95,7 @@ class Plugin:
 
     def handle_request(self, my_uuid, name, body, host, plugin):
         run_command = True
-        if body[0][0] == '@':
+        if body and body[0] and body[0][0] == '@':
             run_command = False
             hosts = body[0].replace('@', '').split(',')
             if self.core.hostname.lower() in [x.lower() for x in hosts]:
@@ -116,7 +112,7 @@ class Plugin:
                         res = self.core.commands.process_args(args)
                         if res:
                             self.send_response(my_uuid, name, res)
-                except KeyError:
+                except (IndexError, KeyError):
                     pass
 
     def handle_response(self, my_uuid, name, body, host, plugin):
@@ -147,12 +143,12 @@ class Plugin:
                 res = self.return_status()
                 if res != {}:
                     self.send_data_response(self.core.uuid, name, res)
-            except KeyError:
+            except (IndexError, KeyError):
                 pass
 
         elif name == 'cmd':
             run_command = True
-            if body[0][0] == '@':
+            if body and body[0] and body[0][0] == '@':
                 run_command = False
                 hosts = body[0].replace('@', '').split(',')
                 if self.core.hostname.lower() in [x.lower() for x in hosts]:
@@ -168,7 +164,7 @@ class Plugin:
                         res = self.core.data_commands.process_args(args)
                         if res:
                             self.send_data_response(my_uuid, name, res)
-                except KeyError:
+                except (IndexError, KeyError):
                     pass
 
     def handle_data_response(self, my_uuid, name, body, host, plugin):
@@ -270,9 +266,7 @@ class PluginThread(threading.Thread):
             if self.config['debug']:
                 self.logger.setLevel(logging.DEBUG)
                 self.logger.debug("Debug activated")
-        except AttributeError:
-            pass
-        except KeyError:
+        except (AttributeError, KeyError):
             pass
         self.logger.debug(f'Plugin thread initialized for {self.plugin}')
 
@@ -325,7 +319,7 @@ class Factory:
     def get_plugin_class(cls, name):
         try:
             return cls.descriptors[name]['class']
-        except KeyError as e:
+        except KeyError:
             raise PluginNotAvailable(f"Plugin '{name}' not available")
 
     @classmethod
@@ -376,7 +370,7 @@ class Factory:
             try:
                 descriptor = plugin.__dict__['descriptor']
                 cls.register_plugin(descriptor)
-            except KeyError as e:
+            except KeyError:
                 plugin_descr_error.append(name)
                 continue
 

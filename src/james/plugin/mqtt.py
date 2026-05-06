@@ -276,9 +276,9 @@ class MqttPlugin(Plugin):
             else:
                 self.logger.error(f"Failed to subscribe to {self.topic_command}, result code: {result}")
 
-            # Publish initial states
+            # Publish initial states (force=True to repopulate retained messages on new broker session)
             self.logger.debug("Scheduling initial state publish in 1 second")
-            self.core.add_timeout(1, self.publish_all_states)
+            self.core.add_timeout(1, self.publish_all_states, True)
         else:
             error_msg = rc_messages.get(rc, f"Unknown error code: {rc}")
             self.logger.error(f"Failed to connect to MQTT broker - {error_msg} (rc={rc})")

@@ -684,6 +684,10 @@ class Core:
         if changed:
             self.system_message_add(plugin_name, f"Publish presence change from {self.hostname}@"
                                                  f"{self.location}: [{', '.join(users)}]")
+            # Notify local plugins directly: when this node is the source, presence_listener won't
+            # fire process_presence_event because the cache is already updated before broadcast.
+            for p in self.plugins:
+                p.process_presence_event(presence_before, presence_now)
         self.logger.debug(f"publish_presence_event: {new_presence}")
         self.publish_presence_status(new_presence)
 

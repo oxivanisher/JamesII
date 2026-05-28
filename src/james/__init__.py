@@ -1048,9 +1048,12 @@ class Core:
             timeout = 10
             for p in self.plugins:
                 self.logger.debug(f"Collecting stats for plugin {p.name} (with {timeout} seconds timeout)")
-                with Timeout(timeout):
-                    saveStats[p.name] = p.save_state(True)
-                    self.logger.debug(f"Stats collected for plugin {p.name}")
+                try:
+                    with Timeout(timeout):
+                        saveStats[p.name] = p.save_state(True)
+                        self.logger.debug(f"Stats collected for plugin {p.name}")
+                except Timeout.Timeout:
+                    self.logger.warning(f"Timeout collecting stats for plugin {p.name}, skipping")
 
             # save stats to file
             self._save_stats(saveStats)
@@ -1073,17 +1076,23 @@ class Core:
             timeout = 10
             for p in self.plugins:
                 self.logger.debug(f"Calling terminate() on plugin {p.name} (with {timeout} seconds timeout)")
-                with Timeout(timeout):
-                    p.terminate()
-                    self.logger.debug(f"Terminated plugin {p.name}")
+                try:
+                    with Timeout(timeout):
+                        p.terminate()
+                        self.logger.debug(f"Terminated plugin {p.name}")
+                except Timeout.Timeout:
+                    self.logger.warning(f"Timeout terminating plugin {p.name}")
 
             # wait for plugin threads to terminate all its threads in 30 seconds
             timeout = 31
             for p in self.plugins:
                 self.logger.debug(f"Calling wait_for_threads() on plugin {p.name} (with {timeout} seconds timeout)")
-                with Timeout(timeout):
-                    p.wait_for_threads()
-                    self.logger.debug(f"All threads ended for plugin {p.name}")
+                try:
+                    with Timeout(timeout):
+                        p.wait_for_threads()
+                        self.logger.debug(f"All threads ended for plugin {p.name}")
+                except Timeout.Timeout:
+                    self.logger.warning(f"Timeout waiting for threads of plugin {p.name}")
 
             # check if all child threads are done and kill them if not
             timeout = 5

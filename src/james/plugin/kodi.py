@@ -50,7 +50,8 @@ class KodiPlugin(Plugin):
         data = json.dumps(rawData)
         try:
             h = http.client.HTTPConnection(self.config['nodes'][self.core.hostname]['host'],
-                                           port=self.config['nodes'][self.core.hostname]['port'])
+                                           port=self.config['nodes'][self.core.hostname]['port'],
+                                           timeout=5)
             h.request('POST', '/jsonrpc', data, self.connection_headers)
             r = h.getresponse()
             rpcReturn = json.loads(r.read())[0]
